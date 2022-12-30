@@ -1,4 +1,66 @@
 ﻿function New-BGInfoValue {
+    <#
+    .SYNOPSIS
+    Special function that provides a way to create a value that will be displayed on the background image.
+
+    .DESCRIPTION
+    Special function that provides a way to create a value that will be displayed on the background image.
+    It allows using builtin values, or custom values depending on user needs.
+
+    .PARAMETER Name
+    Label that will be used on the left side of the value.
+
+    .PARAMETER Value
+    Cystom Value that will be displayed on the right side of the label.
+
+    .PARAMETER BuiltinValue
+    Builtin value that will be displayed on the right side of the label. It can be one of the following:
+    - UserName - Current user name
+    - HostName - Current host name
+    - FullUserName - Current user name with domain
+    - CpuName - CPU name
+    - CpuMaxClockSpeed - CPU max clock speed
+    - CpuCores - CPU cores
+    - CpuLogicalCores - CPU logical cores
+    - RAMSize - RAM size
+    - RAMSpeed - RAM speed
+    - RAMPartNumber - RAM part number
+
+    .PARAMETER Color
+    Color for the label. If not provided it will be taken from the parent New-BGInfo command.
+
+    .PARAMETER FontSize
+    Font size for the label. If not provided it will be taken from the parent New-BGInfo command.
+
+    .PARAMETER FontFamilyName
+    Font family name for the label. If not provided it will be taken from the parent New-BGInfo command.
+
+    .PARAMETER ValueColor
+    Color for the value. If not provided it will be taken first from Color of the label and if that is not provided from the parent New-BGInfo command.
+
+    .PARAMETER ValueFontSize
+    Font size for the value. If not provided it will be taken first from FontSize of the label and if that is not provided from the parent New-BGInfo command.
+
+    .PARAMETER ValueFontFamilyName
+    Font family name for the value. If not provided it will be taken first from FontFamilyName of the label and if that is not provided from the parent New-BGInfo command.
+
+    .EXAMPLE
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+    New-BGInfoValue -BuiltinValue FullUserName
+    New-BGInfoValue -BuiltinValue CpuName
+
+    .EXAMPLE
+    # Lets get all drives and their labels
+    foreach ($Disk in (Get-Disk)) {
+        $Volumes = $Disk | Get-Partition | Get-Volume
+        foreach ($V in $Volumes) {
+            New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
+        }
+    }
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding(DefaultParameterSetName = 'Values')]
     param(
         [parameter(ParameterSetName = 'Values', Mandatory)]

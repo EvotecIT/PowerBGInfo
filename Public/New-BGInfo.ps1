@@ -1,4 +1,96 @@
 ﻿function New-BGInfo {
+    <#
+    .SYNOPSIS
+    Provides a simple way to create PowerBGInfo configuration.
+
+    .DESCRIPTION
+    Provides a simple way to create PowerBGInfo configuration.
+    It allows writting useful information on your desktop background.
+    Every time the script is run, it will update existing image with new information.
+
+    .PARAMETER BGInfoContent
+    Special parameter that works as a scriptblock. It takes input and converts it into configuration.
+    By using New-BGInfoLabel and New-BGInfoValue along with other supported PowerShell commands you can create your own configuration.
+
+    .PARAMETER FilePath
+    Path to the image that will be used as a background. If not provided current Desktop Background will be used.
+
+    .PARAMETER ConfigurationDirectory
+    Path to the directory where configuration will be stored, and where image for desktop background will be placed. If not provided, it will be stored in C:\TEMP
+
+    .PARAMETER FontFamilyName
+    Font family name that will be used to display information for Label.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If ValueFontFamilyName is not provided it will be used as a default value for that property as well
+
+    .PARAMETER Color
+    Color that will be used to display information for Label.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If ValueColor is not provided it will be used as a default value for that property as well
+
+    .PARAMETER FontSize
+    Font size that will be used to display information for Label.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If ValueFontSize is not provided it will be used as a default value for that property as well
+
+    .PARAMETER ValueColor
+    Color that will be used to display information for Value.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If not provided it will be taken from Color property.
+
+    .PARAMETER ValueFontSize
+    Font size that will be used to display information for Value.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If not provided it will be taken from FontSize property.
+
+    .PARAMETER ValueFontFamilyName
+    Font family name that will be used to display information for Value.
+    It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+    If not provided it will be taken from FontFamilyName property.
+
+    .PARAMETER SpaceBetweenLines
+    Length of the space between lines
+
+    .PARAMETER SpaceBetweenColumns
+    Length of the space between columns (Label and Value)
+
+    .PARAMETER PositionX
+    Position of the first column on the X axis.
+
+    .PARAMETER PositionY
+    Position of the first column on the Y axis.
+
+    .PARAMETER MonitorIndex
+    Index of the monitor that will be used to display the background image. By default it will be 0 (first monitor)
+
+    .PARAMETER WallpaperFit
+    WHat to do with the image if it is not the same size as the monitor resolution. It can be one of the following: 'Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill'
+
+    .EXAMPLE
+    New-BGInfo -MonitorIndex 0 {
+        # Lets add computer name, but lets use builtin values for that
+        New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+        New-BGInfoValue -BuiltinValue FullUserName
+        New-BGInfoValue -BuiltinValue CpuName
+        New-BGInfoValue -BuiltinValue CpuLogicalCores
+        New-BGInfoValue -BuiltinValue RAMSize
+        New-BGInfoValue -BuiltinValue RAMSpeed
+
+        # Lets add Label, but without any values, kinf of like section starting
+        New-BGInfoLabel -Name "Drives" -Color LemonChiffon -FontSize 16 -FontFamilyName 'Calibri'
+
+        # Lets get all drives and their labels
+        foreach ($Disk in (Get-Disk)) {
+            $Volumes = $Disk | Get-Partition | Get-Volume
+            foreach ($V in $Volumes) {
+                New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
+            }
+        }
+    } -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param(
         [parameter(Mandatory)][scriptblock] $BGInfoContent,
