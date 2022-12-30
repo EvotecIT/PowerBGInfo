@@ -27,6 +27,10 @@
             ModuleVersion = '0.0.2'
             ModuleName    = 'ImagePlayground'
             Guid          = 'ff5469f2-c542-4318-909e-fd054d16821f'
+        }, @{
+            ModuleVersion = '0.0.254'
+            ModuleName    = 'PSSharedGoods'
+            Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
         })
     RootModule             = 'PowerBGInfo.psm1'
 }
