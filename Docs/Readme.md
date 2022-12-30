@@ -1,9 +1,9 @@
 ---
 Module Name: PowerBGInfo
-Module Guid: 91b9c52d-6a39-4a65-a276-409b9390ee04
+Module Guid: {{ Update Module Guid }}
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
-Locale: en-US
+Help Version: {{ Update Help Version }}
+Locale: {{ Update Locale }}
 ---
 
 # PowerBGInfo Module
@@ -12,6 +12,9 @@ Locale: en-US
 
 ## PowerBGInfo Cmdlets
 ### [New-BGInfo](New-BGInfo.md)
+{{ Fill in the Synopsis }}
+
+### [New-BGInfoLabel](New-BGInfoLabel.md)
 {{ Fill in the Synopsis }}
 
 ### [New-BGInfoValue](New-BGInfoValue.md)
