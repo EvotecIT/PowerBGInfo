@@ -31,11 +31,11 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Color
-{{ Fill Color Description }}
+### -Name
+{{ Fill Name Description }}
 
 ```yaml
-Type: Color
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -46,16 +46,16 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FontFamilyName
-{{ Fill FontFamilyName Description }}
+### -Color
+{{ Fill Color Description }}
 
 ```yaml
-Type: String
+Type: Color
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -70,14 +70,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -FontFamilyName
+{{ Fill FontFamilyName Description }}
 
 ```yaml
 Type: String
@@ -85,7 +85,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -12,9 +12,16 @@ schema: 2.0.0
 
 ## SYNTAX
 
+### Values (Default)
 ```
-New-BGInfoValue [[-Name] <String>] [[-Value] <String>] [[-Color] <Color>] [[-FontSize] <Single>]
- [[-FontFamilyName] <String>] [<CommonParameters>]
+New-BGInfoValue -Name <String> -Value <String> [-Color <Color>] [-FontSize <Single>] [-FontFamilyName <String>]
+ [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>] [<CommonParameters>]
+```
+
+### Builtin
+```
+New-BGInfoValue -BuiltinValue <String> [-Color <Color>] [-FontSize <Single>] [-FontFamilyName <String>]
+ [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,6 +38,51 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
+### -Name
+{{ Fill Name Description }}
+
+```yaml
+Type: String
+Parameter Sets: Values
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Value
+{{ Fill Value Description }}
+
+```yaml
+Type: String
+Parameter Sets: Values
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BuiltinValue
+{{ Fill BuiltinValue Description }}
+
+```yaml
+Type: String
+Parameter Sets: Builtin
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Color
 {{ Fill Color Description }}
 
@@ -40,22 +92,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FontFamilyName
-{{ Fill FontFamilyName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -70,14 +107,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -FontFamilyName
+{{ Fill FontFamilyName Description }}
 
 ```yaml
 Type: String
@@ -85,14 +122,44 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Value
-{{ Fill Value Description }}
+### -ValueColor
+{{ Fill ValueColor Description }}
+
+```yaml
+Type: Color
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontSize
+{{ Fill ValueFontSize Description }}
+
+```yaml
+Type: Single
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontFamilyName
+{{ Fill ValueFontFamilyName Description }}
 
 ```yaml
 Type: String
@@ -100,7 +167,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

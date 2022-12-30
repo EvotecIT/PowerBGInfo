@@ -13,8 +13,11 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-New-BGInfo [[-BGInfoContent] <ScriptBlock>] [[-FilePath] <String>] [[-FilePathOutput] <String>]
- [<CommonParameters>]
+New-BGInfo [-BGInfoContent] <ScriptBlock> [[-FilePath] <String>] [-ConfigurationDirectory] <String>
+ [[-FontFamilyName] <String>] [[-Color] <Color>] [[-FontSize] <Int32>] [[-ValueColor] <Color>]
+ [[-ValueFontSize] <Single>] [[-ValueFontFamilyName] <String>] [[-SpaceBetweenLines] <Int32>]
+ [[-SpaceBetweenColumns] <Int32>] [[-PositionX] <Int32>] [[-PositionY] <Int32>] [[-MonitorIndex] <Int32>]
+ [[-WallpaperFit] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -39,8 +42,8 @@ Type: ScriptBlock
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: 0
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -55,14 +58,29 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FilePathOutput
-{{ Fill FilePathOutput Description }}
+### -ConfigurationDirectory
+{{ Fill ConfigurationDirectory Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FontFamilyName
+{{ Fill FontFamilyName Description }}
 
 ```yaml
 Type: String
@@ -70,7 +88,172 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Color
+{{ Fill Color Description }}
+
+```yaml
+Type: Color
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FontSize
+{{ Fill FontSize Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueColor
+{{ Fill ValueColor Description }}
+
+```yaml
+Type: Color
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontSize
+{{ Fill ValueFontSize Description }}
+
+```yaml
+Type: Single
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 8
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontFamilyName
+{{ Fill ValueFontFamilyName Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 9
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SpaceBetweenLines
+{{ Fill SpaceBetweenLines Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 10
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SpaceBetweenColumns
+{{ Fill SpaceBetweenColumns Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 11
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PositionX
+{{ Fill PositionX Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 12
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PositionY
+{{ Fill PositionY Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 13
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitorIndex
+{{ Fill MonitorIndex Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 14
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WallpaperFit
+{{ Fill WallpaperFit Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 15
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
