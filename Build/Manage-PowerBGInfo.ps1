@@ -36,6 +36,7 @@ $Configuration = @{
             RequiredModules        = @(
                 @{ ModuleName = 'DesktopManager'; ModuleVersion = "Latest"; Guid = '56f85fa6-c622-4204-8e97-3d99e3e06e75' }
                 @{ ModuleName = 'ImagePlayground'; ModuleVersion = "Latest"; Guid = 'ff5469f2-c542-4318-909e-fd054d16821f' }
+                @{ ModuleName = 'PSSharedGoods'; ModuleVersion = 'Latest'; Guid = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe' }
             )
             DotNetFrameworkVersion = '4.7.2'
         }
