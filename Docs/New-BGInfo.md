@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-BGInfo
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Provides a simple way to create PowerBGInfo configuration.
 
 ## SYNTAX
 
@@ -21,21 +21,44 @@ New-BGInfo [-BGInfoContent] <ScriptBlock> [[-FilePath] <String>] [-Configuration
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Provides a simple way to create PowerBGInfo configuration.
+It allows writting useful information on your desktop background.
+Every time the script is run, it will update existing image with new information.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
+New-BGInfo -MonitorIndex 0 {
 
-{{ Add example description here }}
+
+# Lets add computer name, but lets use builtin values for that
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+    New-BGInfoValue -BuiltinValue FullUserName
+    New-BGInfoValue -BuiltinValue CpuName
+    New-BGInfoValue -BuiltinValue CpuLogicalCores
+    New-BGInfoValue -BuiltinValue RAMSize
+    New-BGInfoValue -BuiltinValue RAMSpeed
+
+    # Lets add Label, but without any values, kinf of like section starting
+    New-BGInfoLabel -Name "Drives" -Color LemonChiffon -FontSize 16 -FontFamilyName 'Calibri'
+
+    # Lets get all drives and their labels
+    foreach ($Disk in (Get-Disk)) {
+        $Volumes = $Disk | Get-Partition | Get-Volume
+        foreach ($V in $Volumes) {
+            New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
+        }
+    }
+} -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
+```
 
 ## PARAMETERS
 
 ### -BGInfoContent
-{{ Fill BGInfoContent Description }}
+Special parameter that works as a scriptblock.
+It takes input and converts it into configuration.
+By using New-BGInfoLabel and New-BGInfoValue along with other supported PowerShell commands you can create your own configuration.
 
 ```yaml
 Type: ScriptBlock
@@ -50,7 +73,8 @@ Accept wildcard characters: False
 ```
 
 ### -FilePath
-{{ Fill FilePath Description }}
+Path to the image that will be used as a background.
+If not provided current Desktop Background will be used.
 
 ```yaml
 Type: String
@@ -65,7 +89,8 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationDirectory
-{{ Fill ConfigurationDirectory Description }}
+Path to the directory where configuration will be stored, and where image for desktop background will be placed.
+If not provided, it will be stored in C:\TEMP
 
 ```yaml
 Type: String
@@ -80,7 +105,9 @@ Accept wildcard characters: False
 ```
 
 ### -FontFamilyName
-{{ Fill FontFamilyName Description }}
+Font family name that will be used to display information for Label.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If ValueFontFamilyName is not provided it will be used as a default value for that property as well
 
 ```yaml
 Type: String
@@ -89,13 +116,15 @@ Aliases:
 
 Required: False
 Position: 4
-Default value: None
+Default value: Calibri
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Color
-{{ Fill Color Description }}
+Color that will be used to display information for Label.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If ValueColor is not provided it will be used as a default value for that property as well
 
 ```yaml
 Type: Color
@@ -104,13 +133,15 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: None
+Default value: [SixLabors.ImageSharp.Color]::Black
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -FontSize
-{{ Fill FontSize Description }}
+Font size that will be used to display information for Label.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If ValueFontSize is not provided it will be used as a default value for that property as well
 
 ```yaml
 Type: Int32
@@ -119,13 +150,15 @@ Aliases:
 
 Required: False
 Position: 6
-Default value: None
+Default value: 16
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueColor
-{{ Fill ValueColor Description }}
+Color that will be used to display information for Value.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If not provided it will be taken from Color property.
 
 ```yaml
 Type: Color
@@ -134,13 +167,15 @@ Aliases:
 
 Required: False
 Position: 7
-Default value: None
+Default value: [SixLabors.ImageSharp.Color]::Black
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueFontSize
-{{ Fill ValueFontSize Description }}
+Font size that will be used to display information for Value.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If not provided it will be taken from FontSize property.
 
 ```yaml
 Type: Single
@@ -149,13 +184,15 @@ Aliases:
 
 Required: False
 Position: 8
-Default value: None
+Default value: 16
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueFontFamilyName
-{{ Fill ValueFontFamilyName Description }}
+Font family name that will be used to display information for Value.
+It's only used if New-BGInfoLabel or New-BGIInfoValue doesn't provide it's own value.
+If not provided it will be taken from FontFamilyName property.
 
 ```yaml
 Type: String
@@ -164,13 +201,13 @@ Aliases:
 
 Required: False
 Position: 9
-Default value: None
+Default value: Calibri
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -SpaceBetweenLines
-{{ Fill SpaceBetweenLines Description }}
+Length of the space between lines
 
 ```yaml
 Type: Int32
@@ -179,13 +216,13 @@ Aliases:
 
 Required: False
 Position: 10
-Default value: None
+Default value: 10
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -SpaceBetweenColumns
-{{ Fill SpaceBetweenColumns Description }}
+Length of the space between columns (Label and Value)
 
 ```yaml
 Type: Int32
@@ -194,13 +231,13 @@ Aliases:
 
 Required: False
 Position: 11
-Default value: None
+Default value: 30
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -PositionX
-{{ Fill PositionX Description }}
+Position of the first column on the X axis.
 
 ```yaml
 Type: Int32
@@ -209,13 +246,13 @@ Aliases:
 
 Required: False
 Position: 12
-Default value: None
+Default value: 10
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -PositionY
-{{ Fill PositionY Description }}
+Position of the first column on the Y axis.
 
 ```yaml
 Type: Int32
@@ -224,13 +261,14 @@ Aliases:
 
 Required: False
 Position: 13
-Default value: None
+Default value: 10
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -MonitorIndex
-{{ Fill MonitorIndex Description }}
+Index of the monitor that will be used to display the background image.
+By default it will be 0 (first monitor)
 
 ```yaml
 Type: Int32
@@ -239,13 +277,14 @@ Aliases:
 
 Required: False
 Position: 14
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -WallpaperFit
-{{ Fill WallpaperFit Description }}
+WHat to do with the image if it is not the same size as the monitor resolution.
+It can be one of the following: 'Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill'
 
 ```yaml
 Type: String
@@ -264,11 +303,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+General notes
 
 ## RELATED LINKS

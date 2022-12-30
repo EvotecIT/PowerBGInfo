@@ -8,7 +8,8 @@ schema: 2.0.0
 # New-BGInfoLabel
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Provides ability to set label without value.
+It can be used to separate different sections of information.
 
 ## SYNTAX
 
@@ -18,21 +19,23 @@ New-BGInfoLabel [[-Name] <String>] [[-Color] <Color>] [[-FontSize] <Single>] [[-
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Provides ability to set label without value.
+It can be used to separate different sections of information.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
+# Lets add Label, but without any values, kinf of like section starting
 
-{{ Add example description here }}
+
+New-BGInfoLabel -Name "Drives" -Color LemonChiffon -FontSize 16 -FontFamilyName 'Calibri'
+```
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+Name of the label/section
 
 ```yaml
 Type: String
@@ -47,7 +50,8 @@ Accept wildcard characters: False
 ```
 
 ### -Color
-{{ Fill Color Description }}
+Color for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: Color
@@ -62,7 +66,8 @@ Accept wildcard characters: False
 ```
 
 ### -FontSize
-{{ Fill FontSize Description }}
+Font size for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: Single
@@ -71,13 +76,14 @@ Aliases:
 
 Required: False
 Position: 3
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -FontFamilyName
-{{ Fill FontFamilyName Description }}
+Font family name for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: String
@@ -96,11 +102,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+General notes
 
 ## RELATED LINKS

@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-BGInfoValue
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Special function that provides a way to create a value that will be displayed on the background image.
 
 ## SYNTAX
 
@@ -25,21 +25,37 @@ New-BGInfoValue -BuiltinValue <String> [-Color <Color>] [-FontSize <Single>] [-F
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Special function that provides a way to create a value that will be displayed on the background image.
+It allows using builtin values, or custom values depending on user needs.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+
+
+New-BGInfoValue -BuiltinValue FullUserName
+New-BGInfoValue -BuiltinValue CpuName
 ```
 
-{{ Add example description here }}
+### EXAMPLE 2
+```
+# Lets get all drives and their labels
+
+
+foreach ($Disk in (Get-Disk)) {
+    $Volumes = $Disk | Get-Partition | Get-Volume
+    foreach ($V in $Volumes) {
+        New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
+    }
+}
+```
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+Label that will be used on the left side of the value.
 
 ```yaml
 Type: String
@@ -54,7 +70,7 @@ Accept wildcard characters: False
 ```
 
 ### -Value
-{{ Fill Value Description }}
+Cystom Value that will be displayed on the right side of the label.
 
 ```yaml
 Type: String
@@ -69,7 +85,18 @@ Accept wildcard characters: False
 ```
 
 ### -BuiltinValue
-{{ Fill BuiltinValue Description }}
+Builtin value that will be displayed on the right side of the label.
+It can be one of the following:
+- UserName - Current user name
+- HostName - Current host name
+- FullUserName - Current user name with domain
+- CpuName - CPU name
+- CpuMaxClockSpeed - CPU max clock speed
+- CpuCores - CPU cores
+- CpuLogicalCores - CPU logical cores
+- RAMSize - RAM size
+- RAMSpeed - RAM speed
+- RAMPartNumber - RAM part number
 
 ```yaml
 Type: String
@@ -84,7 +111,8 @@ Accept wildcard characters: False
 ```
 
 ### -Color
-{{ Fill Color Description }}
+Color for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: Color
@@ -99,7 +127,8 @@ Accept wildcard characters: False
 ```
 
 ### -FontSize
-{{ Fill FontSize Description }}
+Font size for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: Single
@@ -108,13 +137,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -FontFamilyName
-{{ Fill FontFamilyName Description }}
+Font family name for the label.
+If not provided it will be taken from the parent New-BGInfo command.
 
 ```yaml
 Type: String
@@ -129,7 +159,8 @@ Accept wildcard characters: False
 ```
 
 ### -ValueColor
-{{ Fill ValueColor Description }}
+Color for the value.
+If not provided it will be taken first from Color of the label and if that is not provided from the parent New-BGInfo command.
 
 ```yaml
 Type: Color
@@ -144,7 +175,8 @@ Accept wildcard characters: False
 ```
 
 ### -ValueFontSize
-{{ Fill ValueFontSize Description }}
+Font size for the value.
+If not provided it will be taken first from FontSize of the label and if that is not provided from the parent New-BGInfo command.
 
 ```yaml
 Type: Single
@@ -153,13 +185,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueFontFamilyName
-{{ Fill ValueFontFamilyName Description }}
+Font family name for the value.
+If not provided it will be taken first from FontFamilyName of the label and if that is not provided from the parent New-BGInfo command.
 
 ```yaml
 Type: String
@@ -178,11 +211,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+General notes
 
 ## RELATED LINKS
