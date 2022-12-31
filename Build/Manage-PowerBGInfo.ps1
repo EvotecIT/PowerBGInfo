@@ -15,7 +15,7 @@ $Configuration = @{
             # ID used to uniquely identify this module
             GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
             # Version number of this module.
-            ModuleVersion          = '0.0.1'
+            ModuleVersion          = '0.0.X'
             # Author of this module
             Author                 = 'Przemyslaw Klys'
             # Company or vendor of this module
@@ -165,10 +165,10 @@ $Configuration = @{
             Verbose         = $false
         }
         PublishModule      = @{  # requires Enable to be on to process all of that
-            Enabled      = $false
+            Enabled      = $true
             Prerelease   = ''
             RequireForce = $false
-            GitHub       = $false
+            GitHub       = $true
         }
     }
 }
