@@ -1,4 +1,4 @@
-@{
+﻿@{
     AliasesToExport        = @()
     Author                 = 'Przemyslaw Klys'
     CmdletsToExport        = @()
@@ -20,17 +20,17 @@
         }
     }
     RequiredModules        = @(@{
-            Guid          = '56f85fa6-c622-4204-8e97-3d99e3e06e75'
-            ModuleName    = 'DesktopManager'
             ModuleVersion = '0.0.3'
+            ModuleName    = 'DesktopManager'
+            Guid          = '56f85fa6-c622-4204-8e97-3d99e3e06e75'
         }, @{
-            Guid          = 'ff5469f2-c542-4318-909e-fd054d16821f'
-            ModuleName    = 'ImagePlayground'
             ModuleVersion = '0.0.4'
+            ModuleName    = 'ImagePlayground'
+            Guid          = 'ff5469f2-c542-4318-909e-fd054d16821f'
         }, @{
-            Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
-            ModuleName    = 'PSSharedGoods'
             ModuleVersion = '0.0.254'
+            ModuleName    = 'PSSharedGoods'
+            Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
         })
     RootModule             = 'PowerBGInfo.psm1'
 }

@@ -143,7 +143,10 @@ $Configuration = @{
             ClassesDotSource    = $false
             SignMerged          = $true
             CreateFileCatalog   = $false # not working
-            Releases            = $true
+            Releases            = @{
+                Enabled         = $true
+                Path            = "$PSScriptRoot\..\Releases"
+            }
             ReleasesUnpacked    = @{
                 Enabled         = $true
                 IncludeTagName  = $true
