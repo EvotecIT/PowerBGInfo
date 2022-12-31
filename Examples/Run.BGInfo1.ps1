@@ -19,4 +19,4 @@ New-BGInfo -MonitorIndex 0 {
             New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
         }
     }
-} -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Stretch
+} -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
