@@ -129,11 +129,11 @@
         return
     }
 
-    if ($Configuration['OriginalImage'] -ne "") {
-        Write-Verbose -Message "New-BGInfo - Wallpaper ($WallpaperPath) already has BGInfo applied, reusing what is set."
-    } else {
-        $Configuration['OriginalImage'] = $WallpaperPath
-    }
+    # if ($Configuration['OriginalImage'] -ne "") {
+    #    Write-Verbose -Message "New-BGInfo - Wallpaper ($WallpaperPath) already has BGInfo applied, reusing what is set."
+    #} else {
+    $Configuration['OriginalImage'] = $WallpaperPath
+    #}
 
     # Copy wallpaper to use as a base
     $FileName = [io.path]::GetFileName($Configuration['OriginalImage'])
