@@ -9,7 +9,7 @@
     DotNetFrameworkVersion = '4.7.2'
     FunctionsToExport      = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue')
     GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
-    ModuleVersion          = '0.0.2'
+    ModuleVersion          = '0.0.3'
     PowerShellVersion      = '5.1'
     PrivateData            = @{
         PSData = @{
