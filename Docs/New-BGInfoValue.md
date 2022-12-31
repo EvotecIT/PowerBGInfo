@@ -20,8 +20,9 @@ New-BGInfoValue -Name <String> -Value <String> [-Color <Color>] [-FontSize <Sing
 
 ### Builtin
 ```
-New-BGInfoValue -BuiltinValue <String> [-Color <Color>] [-FontSize <Single>] [-FontFamilyName <String>]
- [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>] [<CommonParameters>]
+New-BGInfoValue [-Name <String>] -BuiltinValue <String> [-Color <Color>] [-FontSize <Single>]
+ [-FontFamilyName <String>] [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -63,6 +64,18 @@ Parameter Sets: Values
 Aliases:
 
 Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+```yaml
+Type: String
+Parameter Sets: Builtin
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
