@@ -12,11 +12,12 @@ Locale: en-US
 
 ## PowerBGInfo Cmdlets
 ### [New-BGInfo](New-BGInfo.md)
-{{ Fill in the Description }}
+Provides a simple way to create PowerBGInfo configuration.
 
 ### [New-BGInfoLabel](New-BGInfoLabel.md)
-{{ Fill in the Description }}
+Provides ability to set label without value.
+It can be used to separate different sections of information.
 
 ### [New-BGInfoValue](New-BGInfoValue.md)
-{{ Fill in the Description }}
+Special function that provides a way to create a value that will be displayed on the background image.
 
