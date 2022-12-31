@@ -63,24 +63,19 @@
     #>
     [CmdletBinding(DefaultParameterSetName = 'Values')]
     param(
+        [parameter(ParameterSetName = 'Builtin')]
         [parameter(ParameterSetName = 'Values', Mandatory)]
         [string] $Name,
         [parameter(ParameterSetName = 'Values', Mandatory)]
         [string] $Value,
         [parameter(ParameterSetName = 'Builtin', Mandatory)]
         [ValidateSet(
-            'UserName',
-            'HostName',
-            'FullUserName',
-            'CpuName',
-            'CpuMaxClockSpeed',
-            'CpuCores',
-            'CpuLogicalCores',
-            'RAMSize',
-            'RAMSpeed',
-            'RAMPartNumber'
+            'UserName', 'HostName', 'FullUserName',
+            'CpuName', 'CpuMaxClockSpeed', 'CpuCores', 'CpuLogicalCores',
+            'RAMSize', 'RAMSpeed', 'RAMPartNumber',
+            'BiosVersion', 'BiosManufacturer', 'BiosReleaseDate',
+            'OSName', 'OSVersion', 'OSArchitecture', 'OSBuild', 'OSInstallDate', 'OSLastBootUpTime'
         )][string] $BuiltinValue,
-
         [parameter(ParameterSetName = 'Values')]
         [parameter(ParameterSetName = 'Builtin')]
         [SixLabors.ImageSharp.Color] $Color,
@@ -107,6 +102,10 @@
             $ComputerCPU = Get-ComputerCPU
         } elseif ($BuiltinValue -in 'RAMSize', 'RAMSpeed', 'RAMPartNumber') {
             $ComputerRAM = Get-ComputerRAM
+        } elseif ($BuiltinValue -in 'BiosVersion', 'BiosManufacturer', 'BiosReleaseDate') {
+            $ComputerBios = Get-ComputerBios
+        } elseif ($BuiltinValue -in 'OSName', 'OSVersion', 'OSArchitecture', 'OSBuild', 'OSInstallDate', 'OSLastBootUpTime') {
+            $ComputerOS = Get-ComputerOperatingSystem
         }
         if ($BuiltinValue -eq 'UserName') {
             $SetValue = $env:USERNAME
@@ -127,9 +126,31 @@
         } elseif ($BuiltinValue -eq 'RAMSpeed') {
             $SetValue = ($ComputerRAM.Speed | ForEach-Object { $_.ToString('N0') + 'MHz' }) -join " / "
         } elseif ($BuiltinValue -eq 'RAMPartNumber') {
-            $SetValue = $ComputerRAM.PartNumber -join ", "
+            $SetValue = $ComputerRAM.PartNumber.Trim() -join ", "
+        } elseif ($BuiltinValue -eq 'BiosVersion') {
+            $SetValue = $ComputerBios.Version
+        } elseif ($BuiltinValue -eq 'BiosManufacturer') {
+            $SetValue = $ComputerBios.Manufacturer
+        } elseif ($BuiltinValue -eq 'BiosReleaseDate') {
+            $SetValue = $ComputerBios.ReleaseDate
+        } elseif ($BuiltinValue -eq 'OSName') {
+            $SetValue = $ComputerOS.OperatingSystem
+        } elseif ($BuiltinValue -eq 'OSVersion') {
+            $SetValue = $ComputerOS.OperatingSystemVersion
+        } elseif ($BuiltinValue -eq 'OSArchitecture') {
+            $SetValue = $ComputerOS.OSArchitecture
+        } elseif ($BuiltinValue -eq 'OSBuild') {
+            $SetValue = $ComputerOS.OperatingSystemBuild
+        } elseif ($BuiltinValue -eq 'OSInstallDate') {
+            $SetValue = $ComputerOS.InstallDate
+        } elseif ($BuiltinValue -eq 'OSLastBootUpTime') {
+            $SetValue = $ComputerOS.LastBootUpTime
         }
-        $SetName = $BuiltinValue
+        if ($Name) {
+            $SetName = $Name
+        } else {
+            $SetName = $BuiltinValue
+        }
     } else {
         $SetValue = $Value
         $SetName = $Name
