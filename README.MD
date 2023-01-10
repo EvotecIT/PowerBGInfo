@@ -33,6 +33,12 @@ Install-Module PowerBGInfo -Force -Verbose
 
 When there's an update you can update it using same command which will install new module version.
 
+## Known Issues
+
+This module will work fine for PowerShell 5.1 and PowerShell 7+.
+**Currently the module has a problem when running in VSCode PowerShell extension when on PowerShell 5.1 (other versions work fine!)**
+It works fine when running in PowerShell 5.1 console, or ISE (shrug!).
+
 ## Usage
 
 Here's a small taste of the code:
