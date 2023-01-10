@@ -33,6 +33,8 @@ When there's an update you can update it using same command which will install n
 
 ## Usage
 
+Here's a small taste of the code:
+
 ```powershell
 New-BGInfo -MonitorIndex 0 {
     # Lets add computer name, but lets use builtin values for that
@@ -55,3 +57,36 @@ New-BGInfo -MonitorIndex 0 {
     }
 } -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
 ```
+
+Here's how the wallpaper will look like:
+
+![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
+
+You can also use only builtin values
+
+```powershell
+New-BGInfo -MonitorIndex 0 {
+    # Lets add computer name, but lets use builtin values for that
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+    New-BGInfoValue -BuiltinValue FullUserName -Color White
+    New-BGInfoValue -BuiltinValue CpuName -Color White
+    New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
+    New-BGInfoValue -BuiltinValue RAMSize -Color White
+    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([SixLabors.ImageSharp.Color]::Aquamarine)
+    New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
+    New-BGInfoValue -BuiltinValue BiosVersion -Color White
+    New-BGInfoValue -BuiltinValue BiosManufacturer -Color White
+    New-BGInfoValue -BuiltinValue BiosReleaseDate -Color White
+    New-BGInfoValue -BuiltinValue OSName -Color White -Name "Operating System"
+    New-BGInfoValue -BuiltinValue OSVersion -Color White
+    New-BGInfoValue -BuiltinValue OSArchitecture -Color White
+    New-BGInfoValue -BuiltinValue OSBuild -Color White
+    New-BGInfoValue -BuiltinValue OSInstallDate -Color White
+    New-BGInfoValue -BuiltinValue OSLastBootUpTime -Color White
+
+} -FilePath "C:\Support\GitHub\PowerBGInfo\Examples\Samples\TapN-Evotec-1600x900.jpg" -ConfigurationDirectory $PSScriptRoot\Output -PositionX 75 -PositionY 75 -WallpaperFit Fit
+```
+
+Here's the output from command above
+
+![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/TapN-Evotec-1600x900.jpg)
