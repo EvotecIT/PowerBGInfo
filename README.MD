@@ -21,6 +21,8 @@
 **PowerBGInfo** is a PowerShell module that is used to generate background information for Windows machines.
 It's a replacement for [BGInfo](https://technet.microsoft.com/en-us/sysinternals/bginfo.aspx) that doesn't require installation and is much more flexible.
 
+You can read about this project on this [blog post](https://evotec.xyz/powerbginfo-powershell-alternative-to-sysinternals-bginfo/) that tells a little backstory and shows few things.
+
 ## Installation
 
 Install from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerBGInfo) is as easy as:
