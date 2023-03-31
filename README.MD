@@ -47,13 +47,14 @@ Here's a small taste of the code:
 New-BGInfo -MonitorIndex 0 {
     # Lets add computer name, but lets use builtin values for that
     New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
-    New-BGInfoValue -BuiltinValue FullUserName
+    # Lets add user name, but lets use builtin values for that
+    New-BGInfoValue -BuiltinValue FullUserName -Name "FullUserName" -Color White
     New-BGInfoValue -BuiltinValue CpuName
     New-BGInfoValue -BuiltinValue CpuLogicalCores
     New-BGInfoValue -BuiltinValue RAMSize
     New-BGInfoValue -BuiltinValue RAMSpeed
 
-    # Lets add Label, but without any values, kinf of like section starting
+    # Lets add Label, but without any values, kind of like section starting
     New-BGInfoLabel -Name "Drives" -Color LemonChiffon -FontSize 16 -FontFamilyName 'Calibri'
 
     # Lets get all drives and their labels
