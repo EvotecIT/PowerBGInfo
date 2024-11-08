@@ -137,7 +137,10 @@
 
     # Copy wallpaper to use as a base
     $FileName = [io.path]::GetFileName($Configuration['OriginalImage'])
-    $FilePathOutput = [io.path]::Combine($ConfigurationDirectory, $FileName)
+    $FileNameWithoutExtension = [io.path]::GetFileNameWithoutExtension(($Configuration['OriginalImage']))
+    $FileNameExtension = $FileName | Split-Path -Extension
+    $NewFileName = "$($FileNameWithoutExtension)_PowerBgInfo" + $FileNameExtension
+    $FilePathOutput = [io.path]::Combine($ConfigurationDirectory, $NewFileName)
 
     # Wallpaper and output are the same file, if so, we already applied BGInfo at least once
     if ($FilePathOutput -ne $Configuration['OriginalImage'] ) {
