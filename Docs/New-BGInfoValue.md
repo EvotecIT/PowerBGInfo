@@ -110,6 +110,17 @@ It can be one of the following:
 - RAMSize - RAM size
 - RAMSpeed - RAM speed
 - RAMPartNumber - RAM part number
+- BiosVersion - BIOS version
+- BiosManufacturer - BIOS manufacturer
+- BiosReleaseDate - BIOS release date
+- OSName - OS name
+- OSVersion - OS version
+- OSArchitecture - OS architecture
+- OSBuild - OS build
+- OSInstallDate - OS install date
+- OSLastBootUpTime - OS last boot up time
+- UserDNSDomain - User DNS domain
+- FQDN - Fully qualified domain name
 
 ```yaml
 Type: String
