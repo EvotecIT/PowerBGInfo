@@ -121,6 +121,8 @@ It can be one of the following:
 - OSLastBootUpTime - OS last boot up time
 - UserDNSDomain - User DNS domain
 - FQDN - Fully qualified domain name
+- IPv4Address - IPv4 address
+- IPv6Address - IPv6 address
 
 ```yaml
 Type: String

@@ -36,6 +36,8 @@
     - OSLastBootUpTime - OS last boot up time
     - UserDNSDomain - User DNS domain
     - FQDN - Fully qualified domain name
+    - IPv4Address - IPv4 address
+    - IPv6Address - IPv6 address
 
     .PARAMETER Color
     Color for the label. If not provided it will be taken from the parent New-BGInfo command.
@@ -86,7 +88,8 @@
             'RAMSize', 'RAMSpeed', 'RAMPartNumber',
             'BiosVersion', 'BiosManufacturer', 'BiosReleaseDate',
             'OSName', 'OSVersion', 'OSArchitecture', 'OSBuild', 'OSInstallDate', 'OSLastBootUpTime',
-            'UserDNSDomain', 'FQDN'
+            'UserDNSDomain', 'FQDN',
+            'IPv4Address', 'IPv6Address'
         )][string] $BuiltinValue,
         [parameter(ParameterSetName = 'Values')]
         [parameter(ParameterSetName = 'Builtin')]
@@ -160,7 +163,12 @@
         } elseif ($BuiltinValue -eq 'UserDNSDomain') {
             $SetValue = $env:USERDNSDOMAIN
         } elseif ($BuiltinValue -eq 'FQDN') {
-            $SetValue = ((Get-CimInstance win32_computersystem).name).ToLower() + '.' + ((Get-CimInstance win32_computersystem).domain).ToLower()
+            $SetValue = ((Get-CimInstance win32_computersystem).name + '.' + (Get-CimInstance win32_computersystem).domain).ToLower()
+        } elseif ($BuiltinValue -eq 'IPv4Address') {
+            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv4Address.IPAddress
+        }
+          elseif ($BuiltinValue -eq 'IPv6Address') {
+            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv6Address.IPAddress
         }
         if ($Name) {
             $SetName = $Name
