@@ -25,6 +25,19 @@
     - RAMSize - RAM size
     - RAMSpeed - RAM speed
     - RAMPartNumber - RAM part number
+    - BiosVersion - BIOS version
+    - BiosManufacturer - BIOS manufacturer
+    - BiosReleaseDate - BIOS release date
+    - OSName - OS name
+    - OSVersion - OS version
+    - OSArchitecture - OS architecture
+    - OSBuild - OS build
+    - OSInstallDate - OS install date
+    - OSLastBootUpTime - OS last boot up time
+    - UserDNSDomain - User DNS domain
+    - FQDN - Fully qualified domain name
+    - IPv4Address - IPv4 address
+    - IPv6Address - IPv6 address
 
     .PARAMETER Color
     Color for the label. If not provided it will be taken from the parent New-BGInfo command.
@@ -74,7 +87,9 @@
             'CpuName', 'CpuMaxClockSpeed', 'CpuCores', 'CpuLogicalCores',
             'RAMSize', 'RAMSpeed', 'RAMPartNumber',
             'BiosVersion', 'BiosManufacturer', 'BiosReleaseDate',
-            'OSName', 'OSVersion', 'OSArchitecture', 'OSBuild', 'OSInstallDate', 'OSLastBootUpTime'
+            'OSName', 'OSVersion', 'OSArchitecture', 'OSBuild', 'OSInstallDate', 'OSLastBootUpTime',
+            'UserDNSDomain', 'FQDN',
+            'IPv4Address', 'IPv6Address'
         )][string] $BuiltinValue,
         [parameter(ParameterSetName = 'Values')]
         [parameter(ParameterSetName = 'Builtin')]
@@ -145,6 +160,15 @@
             $SetValue = $ComputerOS.InstallDate
         } elseif ($BuiltinValue -eq 'OSLastBootUpTime') {
             $SetValue = $ComputerOS.LastBootUpTime
+        } elseif ($BuiltinValue -eq 'UserDNSDomain') {
+            $SetValue = $env:USERDNSDOMAIN
+        } elseif ($BuiltinValue -eq 'FQDN') {
+            $SetValue = ((Get-CimInstance win32_computersystem).name + '.' + (Get-CimInstance win32_computersystem).domain).ToLower()
+        } elseif ($BuiltinValue -eq 'IPv4Address') {
+            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv4Address.IPAddress
+        }
+          elseif ($BuiltinValue -eq 'IPv6Address') {
+            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv6Address.IPAddress
         }
         if ($Name) {
             $SetName = $Name
