@@ -1,4 +1,10 @@
-﻿### 0.0.4 - 2024.11.14
+﻿### 0.0.5 - 2024.11.19
+#### What's new
+- Fixes PowerShell 5.1 support
+
+**Full Changelog**: https://github.com/EvotecIT/PowerBGInfo/compare/v0.0.4...v0.0.5
+
+### 0.0.4 - 2024.11.14
 #### What's Changed
 * Avoid overwrite of original image and add new BuiltInValues by @dejil06 in https://github.com/EvotecIT/PowerBGInfo/pull/12
 
