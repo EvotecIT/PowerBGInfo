@@ -138,7 +138,7 @@
     # Copy wallpaper to use as a base
     $FileName = [io.path]::GetFileName($Configuration['OriginalImage'])
     $FileNameWithoutExtension = [io.path]::GetFileNameWithoutExtension(($Configuration['OriginalImage']))
-    $FileNameExtension = $FileName | Split-Path -Extension
+    $FileNameExtension = [io.path]::GetExtension($FileName)
     $NewFileName = "$($FileNameWithoutExtension)_PowerBgInfo" + $FileNameExtension
     $FilePathOutput = [io.path]::Combine($ConfigurationDirectory, $NewFileName)
 
