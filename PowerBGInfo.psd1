@@ -4,12 +4,12 @@
     CmdletsToExport        = @()
     CompanyName            = 'Evotec'
     CompatiblePSEditions   = @('Desktop', 'Core')
-    Copyright              = '(c) 2011 - 2024 Przemyslaw Klys @ Evotec. All rights reserved.'
+    Copyright              = '(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.'
     Description            = 'PowerBGInfo is a module that allows you to create background images with information about your environment.'
     DotNetFrameworkVersion = '4.7.2'
     FunctionsToExport      = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue')
     GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
-    ModuleVersion          = '0.0.5'
+    ModuleVersion          = '0.0.6'
     PowerShellVersion      = '5.1'
     PrivateData            = @{
         PSData = @{
@@ -22,7 +22,7 @@
     RequiredModules        = @(@{
             Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
             ModuleName    = 'PSSharedGoods'
-            ModuleVersion = '0.0.300'
+            ModuleVersion = '0.0.303'
         }, @{
             Guid          = '56f85fa6-c622-4204-8e97-3d99e3e06e75'
             ModuleName    = 'DesktopManager'
