@@ -66,6 +66,15 @@
     .PARAMETER WallpaperFit
     WHat to do with the image if it is not the same size as the monitor resolution. It can be one of the following: 'Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill'
 
+    .PARAMETER TextPosition
+    Where to place the text. It can be one of the following: 'TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft', 'MiddleCenter', 'MiddleRight', 'BottomLeft', 'BottomCenter', 'BottomRight'
+
+    .PARAMETER SpaceX
+    Space on the X axis from the edge of the screen
+
+    .PARAMETER SpaceY
+    Space on the Y axis from the edge of the screen
+
     .EXAMPLE
     New-BGInfo -MonitorIndex 0 {
         # Lets add computer name, but lets use builtin values for that
@@ -107,7 +116,10 @@
         [int] $PositionX = 10,
         [int] $PositionY = 10,
         [int] $MonitorIndex = 0,
-        [ValidateSet('Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill')][string] $WallpaperFit
+        [int] $SpaceX = 10,
+        [int] $SpaceY = 10,
+        [ValidateSet('Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill')][string] $WallpaperFit,
+        [ValidateSet('TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft', 'MiddleCenter', 'MiddleRight', 'BottomLeft', 'BottomCenter', 'BottomRight')][string] $TextPosition = 'TopLeft'
     )
 
     $ConfigurationPath = [io.path]::Combine($ConfigurationDirectory, "PowerBGInfoConfiguration.xml")
@@ -129,11 +141,7 @@
         return
     }
 
-    # if ($Configuration['OriginalImage'] -ne "") {
-    #    Write-Verbose -Message "New-BGInfo - Wallpaper ($WallpaperPath) already has BGInfo applied, reusing what is set."
-    #} else {
     $Configuration['OriginalImage'] = $WallpaperPath
-    #}
 
     # Copy wallpaper to use as a base
     $FileName = [io.path]::GetFileName($Configuration['OriginalImage'])
@@ -159,45 +167,34 @@
     # Do assesment of the longest text so we can make sure columns are not overlapping
     $HighestWidth = 0
     $HighestHeight = 0
+    $HighestValueWidth = 0
     foreach ($Info in $BGContent) {
 
-        if ($Info.Color) {
-            #$SetColor = $Info.Color
-        } else {
+        if (-not $Info.Color) {
             $Info.Color = $Color
         }
-        if ($Info.FontSize) {
-            #$SetFontSize = $Info.FontSize
-        } else {
+        if (-not $Info.FontSize) {
             $Info.FontSize = $FontSize
         }
-        if ($Info.FontFamilyName) {
-            #$SetFontFamilyName = $Info.FontFamilyName
-        } else {
+        if (-not $Info.FontFamilyName) {
             $Info.FontFamilyName = $FontFamilyName
         }
         if ($Info.Type -ne 'Label') {
-            if ($Info.ValueColor) {
-                #$SetValueColor = $Info.ValueColor
-            } else {
+            if (-not $Info.ValueColor) {
                 if ($Info.Color) {
                     $Info.ValueColor = $Info.Color
                 } else {
                     $Info.ValueColor = $ValueColor
                 }
             }
-            if ($Info.ValueFontSize) {
-                #$SetValueFontSize = $Info.ValueFontSize
-            } else {
+            if (-not $Info.ValueFontSize) {
                 if ($Info.FontSize) {
                     $Info.ValueFontSize = $Info.FontSize
                 } else {
                     $Info.ValueFontSize = $ValueFontSize
                 }
             }
-            if ($Info.ValueFontFamilyName) {
-                # $SetValueFontFamilyName = $Info.ValueFontFamilyName
-            } else {
+            if (-not $Info.ValueFontFamilyName) {
                 if ($Info.FontFamilyName) {
                     $Info.ValueFontFamilyName = $Info.FontFamilyName
                 } else {
@@ -212,7 +209,49 @@
         if ($SizeOfText.Height -gt $HighestHeight) {
             $HighestHeight = $SizeOfText.Height
         }
+        # Calculate the width of value column
+        if ($Info.Type -ne 'Label') {
+            $ValueSize = $Image.GetTextSize($Info.Value, $Info.ValueFontSize, $Info.ValueFontFamilyName)
+            if ($ValueSize.Width -gt $HighestValueWidth) {
+                $HighestValueWidth = $ValueSize.Width
+            }
+        }
     }
+
+    # Calculate total width needed for both columns
+    $TotalWidth = $HighestWidth + $SpaceBetweenColumns + $HighestValueWidth
+
+    if ($TextPosition -eq 'TopLeft') {
+        $StartX = $SpaceX
+        $PositionY = $SpaceY
+    } elseif ($TextPosition -eq 'TopCenter') {
+        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+        $PositionY = $SpaceY
+    } elseif ($TextPosition -eq 'TopRight') {
+        $StartX = $Image.Width - $TotalWidth - $SpaceX
+        $PositionY = $SpaceY
+    } elseif ($TextPosition -eq 'MiddleLeft') {
+        $StartX = $SpaceX
+        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+    } elseif ($TextPosition -eq 'MiddleCenter') {
+        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+    } elseif ($TextPosition -eq 'MiddleRight') {
+        $StartX = $Image.Width - $TotalWidth - $SpaceX
+        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+    } elseif ($TextPosition -eq 'BottomLeft') {
+        $StartX = $SpaceX
+        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+    } elseif ($TextPosition -eq 'BottomCenter') {
+        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+    } elseif ($TextPosition -eq 'BottomRight') {
+        $StartX = $Image.Width - $TotalWidth - $SpaceX
+        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+    }
+
+    $PositionX = $StartX
+
     # Add text
     foreach ($Info in $BGContent) {
         if ($Info.Type -eq 'Label') {

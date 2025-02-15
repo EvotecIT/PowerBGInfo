@@ -112,7 +112,6 @@
     )
 
     if ($BuiltinValue) {
-
         if ($BuiltinValue -in 'CPUName', 'CpuMaxClockSpeed', 'CpuCores', 'CpuLogicalCores') {
             $ComputerCPU = Get-ComputerCPU
         } elseif ($BuiltinValue -in 'RAMSize', 'RAMSpeed', 'RAMPartNumber') {
@@ -165,10 +164,9 @@
         } elseif ($BuiltinValue -eq 'FQDN') {
             $SetValue = ((Get-CimInstance win32_computersystem).name + '.' + (Get-CimInstance win32_computersystem).domain).ToLower()
         } elseif ($BuiltinValue -eq 'IPv4Address') {
-            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv4Address.IPAddress
-        }
-          elseif ($BuiltinValue -eq 'IPv6Address') {
-            $SetValue = (Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected"}).IPv6Address.IPAddress
+            $SetValue = (Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected" }).IPv4Address.IPAddress
+        } elseif ($BuiltinValue -eq 'IPv6Address') {
+            $SetValue = (Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected" }).IPv6Address.IPAddress
         }
         if ($Name) {
             $SetName = $Name
