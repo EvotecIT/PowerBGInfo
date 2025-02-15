@@ -170,43 +170,31 @@
     $HighestValueWidth = 0
     foreach ($Info in $BGContent) {
 
-        if ($Info.Color) {
-            #$SetColor = $Info.Color
-        } else {
+        if (-not $Info.Color) {
             $Info.Color = $Color
         }
-        if ($Info.FontSize) {
-            #$SetFontSize = $Info.FontSize
-        } else {
+        if (-not $Info.FontSize) {
             $Info.FontSize = $FontSize
         }
-        if ($Info.FontFamilyName) {
-            #$SetFontFamilyName = $Info.FontFamilyName
-        } else {
+        if (-not $Info.FontFamilyName) {
             $Info.FontFamilyName = $FontFamilyName
         }
         if ($Info.Type -ne 'Label') {
-            if ($Info.ValueColor) {
-                #$SetValueColor = $Info.ValueColor
-            } else {
+            if (-not $Info.ValueColor) {
                 if ($Info.Color) {
                     $Info.ValueColor = $Info.Color
                 } else {
                     $Info.ValueColor = $ValueColor
                 }
             }
-            if ($Info.ValueFontSize) {
-                #$SetValueFontSize = $Info.ValueFontSize
-            } else {
+            if (-not $Info.ValueFontSize) {
                 if ($Info.FontSize) {
                     $Info.ValueFontSize = $Info.FontSize
                 } else {
                     $Info.ValueFontSize = $ValueFontSize
                 }
             }
-            if ($Info.ValueFontFamilyName) {
-                # $SetValueFontFamilyName = $Info.ValueFontFamilyName
-            } else {
+            if (-not $Info.ValueFontFamilyName) {
                 if ($Info.FontFamilyName) {
                     $Info.ValueFontFamilyName = $Info.FontFamilyName
                 } else {
