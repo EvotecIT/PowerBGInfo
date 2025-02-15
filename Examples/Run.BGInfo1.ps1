@@ -1,4 +1,6 @@
-﻿Import-Module .\PowerBGInfo.psd1 -Force
+﻿Clear-Host
+
+Import-Module .\PowerBGInfo.psd1 -Force
 
 New-BGInfo -MonitorIndex 0 {
     # Lets add computer name, but lets use builtin values for that
@@ -20,4 +22,4 @@ New-BGInfo -MonitorIndex 0 {
             New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
         }
     }
-} -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -WallpaperFit Center -TextPosition MiddleCenter -SpaceBetweenColumns 50
+} -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -WallpaperFit Stretch -TextPosition TopRight -SpaceBetweenColumns 50 -UseScreenCoordinates
