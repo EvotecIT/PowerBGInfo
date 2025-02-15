@@ -9,7 +9,7 @@
     DotNetFrameworkVersion = '4.7.2'
     FunctionsToExport      = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue')
     GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
-    ModuleVersion          = '0.0.6'
+    ModuleVersion          = '1.0.0'
     PowerShellVersion      = '5.1'
     PrivateData            = @{
         PSData = @{
@@ -26,7 +26,7 @@
         }, @{
             Guid          = '56f85fa6-c622-4204-8e97-3d99e3e06e75'
             ModuleName    = 'DesktopManager'
-            ModuleVersion = '0.0.3'
+            ModuleVersion = '2.0.1'
         }, @{
             Guid          = 'ff5469f2-c542-4318-909e-fd054d16821f'
             ModuleName    = 'ImagePlayground'
