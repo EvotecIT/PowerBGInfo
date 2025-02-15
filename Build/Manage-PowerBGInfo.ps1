@@ -10,7 +10,7 @@ Invoke-ModuleBuild -ModuleName 'PowerBGInfo' {
         # ID used to uniquely identify this module
         GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
         # Version number of this module.
-        ModuleVersion          = '0.0.X'
+        ModuleVersion          = '1.0.X'
         # Author of this module
         Author                 = 'Przemyslaw Klys'
         # Company or vendor of this module
@@ -33,7 +33,7 @@ Invoke-ModuleBuild -ModuleName 'PowerBGInfo' {
     New-ConfigurationManifest @Manifest
 
     New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid Auto -Version Latest
-    New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '0.0.3'
+    New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '2.0.1'
     New-ConfigurationModule -Type RequiredModule -Name 'ImagePlayground' -Guid Auto -Version '0.0.8'
     New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword', 'PSPublishModule'
     New-ConfigurationModuleSkip -IgnoreModuleName @('NetTCPIP', 'Microsoft.PowerShell.Utility', 'Microsoft.PowerShell.Management', 'CimCmdlets')
