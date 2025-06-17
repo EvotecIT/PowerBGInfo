@@ -75,6 +75,9 @@
     .PARAMETER SpaceY
     Space on the Y axis from the edge of the screen
 
+    .PARAMETER UseScreenCoordinates
+    If set, the script will use screen coordinates instead of image coordinates. This is useful when you have multiple monitors with different resolutions.
+
     .EXAMPLE
     New-BGInfo -MonitorIndex 0 {
         # Lets add computer name, but lets use builtin values for that
@@ -160,12 +163,31 @@
         Write-Warning -Message "New-BGInfo - Wallpaper ($FilePathOutput) not found. Copying failed?"
         return
     }
-    # Load the file
+    # Load the file and get monitor info
     $Image = Get-Image -FilePath $FilePathOutput
+    if ($UseScreenCoordinates) {
+        $Monitor = Get-DesktopMonitor -Index $MonitorIndex
+        $ScreenWidth = $Monitor.PositionRight - $Monitor.PositionLeft
+        $ScreenHeight = $Monitor.PositionBottom - $Monitor.PositionTop
+
+        # Handle image scaling based on WallpaperFit
+        if ($WallpaperFit -in 'Fill', 'Stretch') {
+            $Image.Resize($ScreenWidth, $ScreenHeight)
+            $ScaleX = 1
+            $ScaleY = 1
+        } else {
+            # Calculate scaling factors
+            $ScaleX = $ScreenWidth / $Image.Width
+            $ScaleY = $ScreenHeight / $Image.Height
+        }
+    } else {
+        $ScaleX = 1
+        $ScaleY = 1
+    }
 
     $BGContent = & $BGInfoContent
 
-    # Do assesment of the longest text so we can make sure columns are not overlapping
+    # Do assessment of the longest text so we can make sure columns are not overlapping
     $HighestWidth = 0
     $HighestHeight = 0
     $HighestValueWidth = 0
@@ -222,33 +244,66 @@
     # Calculate total width needed for both columns
     $TotalWidth = $HighestWidth + $SpaceBetweenColumns + $HighestValueWidth
 
-    if ($TextPosition -eq 'TopLeft') {
-        $StartX = $SpaceX
-        $PositionY = $SpaceY
-    } elseif ($TextPosition -eq 'TopCenter') {
-        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
-        $PositionY = $SpaceY
-    } elseif ($TextPosition -eq 'TopRight') {
-        $StartX = $Image.Width - $TotalWidth - $SpaceX
-        $PositionY = $SpaceY
-    } elseif ($TextPosition -eq 'MiddleLeft') {
-        $StartX = $SpaceX
-        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
-    } elseif ($TextPosition -eq 'MiddleCenter') {
-        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
-        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
-    } elseif ($TextPosition -eq 'MiddleRight') {
-        $StartX = $Image.Width - $TotalWidth - $SpaceX
-        $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
-    } elseif ($TextPosition -eq 'BottomLeft') {
-        $StartX = $SpaceX
-        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
-    } elseif ($TextPosition -eq 'BottomCenter') {
-        $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
-        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
-    } elseif ($TextPosition -eq 'BottomRight') {
-        $StartX = $Image.Width - $TotalWidth - $SpaceX
-        $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+    # Calculate positions with scaling if using screen coordinates
+    if ($UseScreenCoordinates) {
+        if ($TextPosition -eq 'TopLeft') {
+            $StartX = $SpaceX / $ScaleX
+            $PositionY = $SpaceY / $ScaleY
+        } elseif ($TextPosition -eq 'TopCenter') {
+            $StartX = ($ScreenWidth / 2 - $TotalWidth * $ScaleX / 2) / $ScaleX
+            $PositionY = $SpaceY / $ScaleY
+        } elseif ($TextPosition -eq 'TopRight') {
+            $StartX = ($ScreenWidth - $TotalWidth * $ScaleX - $SpaceX) / $ScaleX
+            $PositionY = $SpaceY / $ScaleY
+        } elseif ($TextPosition -eq 'MiddleLeft') {
+            $StartX = $SpaceX / $ScaleX
+            $PositionY = ($ScreenHeight / 2 - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY / 2) / $ScaleY
+        } elseif ($TextPosition -eq 'MiddleCenter') {
+            $StartX = ($ScreenWidth / 2 - $TotalWidth * $ScaleX / 2) / $ScaleX
+            $PositionY = ($ScreenHeight / 2 - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY / 2) / $ScaleY
+        } elseif ($TextPosition -eq 'MiddleRight') {
+            $StartX = ($ScreenWidth - $TotalWidth * $ScaleX - $SpaceX) / $ScaleX
+            $PositionY = ($ScreenHeight / 2 - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY / 2) / $ScaleY
+        } elseif ($TextPosition -eq 'BottomLeft') {
+            $StartX = $SpaceX / $ScaleX
+            $PositionY = ($ScreenHeight - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY - $SpaceY) / $ScaleY
+        } elseif ($TextPosition -eq 'BottomCenter') {
+            $StartX = ($ScreenWidth / 2 - $TotalWidth * $ScaleX / 2) / $ScaleX
+            $PositionY = ($ScreenHeight - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY - $SpaceY) / $ScaleY
+        } elseif ($TextPosition -eq 'BottomRight') {
+            $StartX = ($ScreenWidth - $TotalWidth * $ScaleX - $SpaceX) / $ScaleX
+            $PositionY = ($ScreenHeight - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) * $ScaleY - $SpaceY) / $ScaleY
+        }
+    } else {
+        # Use existing image-based positioning code
+        if ($TextPosition -eq 'TopLeft') {
+            $StartX = $SpaceX
+            $PositionY = $SpaceY
+        } elseif ($TextPosition -eq 'TopCenter') {
+            $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+            $PositionY = $SpaceY
+        } elseif ($TextPosition -eq 'TopRight') {
+            $StartX = $Image.Width - $TotalWidth - $SpaceX
+            $PositionY = $SpaceY
+        } elseif ($TextPosition -eq 'MiddleLeft') {
+            $StartX = $SpaceX
+            $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+        } elseif ($TextPosition -eq 'MiddleCenter') {
+            $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+            $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+        } elseif ($TextPosition -eq 'MiddleRight') {
+            $StartX = $Image.Width - $TotalWidth - $SpaceX
+            $PositionY = ($Image.Height / 2) - (($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) / 2)
+        } elseif ($TextPosition -eq 'BottomLeft') {
+            $StartX = $SpaceX
+            $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+        } elseif ($TextPosition -eq 'BottomCenter') {
+            $StartX = ($Image.Width / 2) - ($TotalWidth / 2)
+            $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+        } elseif ($TextPosition -eq 'BottomRight') {
+            $StartX = $Image.Width - $TotalWidth - $SpaceX
+            $PositionY = $Image.Height - ($BGContent.Count * ($HighestHeight + $SpaceBetweenLines)) - $SpaceY
+        }
     }
 
     $PositionX = $StartX

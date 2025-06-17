@@ -1,4 +1,6 @@
-﻿Import-Module $PSScriptRoot\..\PowerBGInfo.psd1 -Force
+Clear-Host
+
+Import-Module $PSScriptRoot\..\PowerBGInfo.psd1 -Force
 
 New-BGInfo -MonitorIndex 0 {
     # Lets add computer name, but lets use builtin values for that
