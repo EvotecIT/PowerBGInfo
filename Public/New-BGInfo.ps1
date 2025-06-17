@@ -119,7 +119,8 @@
         [int] $SpaceX = 10,
         [int] $SpaceY = 10,
         [ValidateSet('Center', 'Fit', 'Stretch', 'Tile', 'Span', 'Fill')][string] $WallpaperFit,
-        [ValidateSet('TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft', 'MiddleCenter', 'MiddleRight', 'BottomLeft', 'BottomCenter', 'BottomRight')][string] $TextPosition = 'TopLeft'
+        [ValidateSet('TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft', 'MiddleCenter', 'MiddleRight', 'BottomLeft', 'BottomCenter', 'BottomRight')][string] $TextPosition = 'TopLeft',
+        [ValidateSet('Wallpaper', 'LogonScreen', 'Both')][string] $Target = 'Wallpaper'
     )
 
     $ConfigurationPath = [io.path]::Combine($ConfigurationDirectory, "PowerBGInfoConfiguration.xml")
@@ -265,11 +266,19 @@
     # lets now save image after modifications
     Save-Image -Image $Image -FilePath $FilePathOutput
 
-    # finally lets set the image as wallpapeer
-    if ($WallpaperFit) {
-        Set-DesktopWallpaper -Index $MonitorIndex -FilePath $FilePathOutput -Position $WallpaperFit
-    } else {
-        Set-DesktopWallpaper -Index $MonitorIndex -FilePath $FilePathOutput
+    # Set the image based on target
+    if ($Target -in 'Wallpaper', 'Both') {
+        # Set as wallpaper
+        if ($WallpaperFit) {
+            Set-DesktopWallpaper -Index $MonitorIndex -FilePath $FilePathOutput -Position $WallpaperFit
+        } else {
+            Set-DesktopWallpaper -Index $MonitorIndex -FilePath $FilePathOutput
+        }
+    }
+
+    if ($Target -in 'LogonScreen', 'Both') {
+        # Set as logon screen
+        Set-LogonScreen -FilePath $FilePathOutput
     }
 
     # lets export configuration, so we know what was done
