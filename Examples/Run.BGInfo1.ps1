@@ -1,3 +1,5 @@
+# Example using compiled cmdlets
+
 Clear-Host
 
 Import-Module $PSScriptRoot\..\PowerBGInfo.psd1 -Force
