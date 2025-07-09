@@ -67,6 +67,9 @@ public class CmdletNewBGInfo : PSCmdlet
     [Parameter]
     public string Target { get; set; } = "Wallpaper";
 
+    [Parameter]
+    public SwitchParameter UseScreenCoordinates { get; set; }
+
     protected override void ProcessRecord()
     {
         var config = new BgInfoConfiguration
@@ -88,7 +91,8 @@ public class CmdletNewBGInfo : PSCmdlet
             SpaceY = SpaceY,
             WallpaperFit = WallpaperFit,
             TextPosition = TextPosition,
-            Target = Target
+            Target = Target,
+            UseScreenCoordinates = UseScreenCoordinates.IsPresent
         };
 
         var results = BGInfoContent.Invoke();
@@ -103,5 +107,4 @@ public class CmdletNewBGInfo : PSCmdlet
         var generator = new BgInfoGenerator(new ImageService(), new WallpaperService());
         var path = generator.Generate(config);
         WriteObject(path);
-    }
-}
+    }}
