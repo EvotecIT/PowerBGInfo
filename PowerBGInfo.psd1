@@ -1,7 +1,7 @@
 ﻿@{
     AliasesToExport        = @()
     Author                 = 'Przemyslaw Klys'
-    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'Set-LogonScreen')
+    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue')
     CompanyName            = 'Evotec'
     CompatiblePSEditions   = @('Desktop', 'Core')
     Copyright              = '(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.'

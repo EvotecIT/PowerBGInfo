@@ -186,20 +186,3 @@ public class NewBGInfoValueCommand : PSCmdlet
         WriteObject(entry);
     }
 }
-
-[Cmdlet(VerbsCommon.Set, "LogonScreen")]
-public class SetLogonScreenCommand : PSCmdlet
-{
-    [Parameter(Mandatory = true)]
-    public string FilePath { get; set; } = string.Empty;
-
-    protected override void EndProcessing()
-    {
-        var path = System.IO.Path.GetFullPath(FilePath);
-        const string regPath = "HKLM:SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PersonalizationCSP";
-        using var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(regPath);
-        key.SetValue("LockScreenImagePath", path, Microsoft.Win32.RegistryValueKind.String);
-        key.SetValue("LockScreenImageUrl", path, Microsoft.Win32.RegistryValueKind.String);
-        key.SetValue("LockScreenImageStatus", 1, Microsoft.Win32.RegistryValueKind.DWord);
-    }
-}
