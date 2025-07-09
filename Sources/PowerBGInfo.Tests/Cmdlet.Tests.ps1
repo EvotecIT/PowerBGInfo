@@ -7,3 +7,10 @@ Describe 'New-BGInfoValue cmdlet' {
         $entry.Value | Should -Be 'X'
     }
 }
+
+Describe 'New-BGInfo cmdlet parameters' {
+    It 'supports UseScreenCoordinates' {
+        $command = Get-Command New-BGInfo
+        $command.Parameters.Keys | Should -Contain 'UseScreenCoordinates'
+    }
+}

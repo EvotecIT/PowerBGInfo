@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using ImagePlayground;
 using SixLabors.ImageSharp;
 using DesktopManager;
@@ -57,9 +58,105 @@ public class BgInfoGenerator
                 if (valSize.Width > highestValueWidth) highestValueWidth = valSize.Width;
             }
         }
+        var totalWidth = highestWidth + config.SpaceBetweenColumns + highestValueWidth;
 
-        float posX = config.PositionX;
-        float posY = config.PositionY;
+        float posX;
+        float posY;
+
+        if (config.UseScreenCoordinates)
+        {
+            var monitor = new Monitors().GetMonitors(index: config.MonitorIndex).First();
+            var screenWidth = monitor.PositionRight - monitor.PositionLeft;
+            var screenHeight = monitor.PositionBottom - monitor.PositionTop;
+
+            float scaleX;
+            float scaleY;
+
+            if (config.WallpaperFit is DesktopWallpaperPosition.Fill or DesktopWallpaperPosition.Stretch)
+            {
+                image.Resize(screenWidth, screenHeight);
+                scaleX = 1;
+                scaleY = 1;
+            }
+            else
+            {
+                scaleX = (float)screenWidth / image.Width;
+                scaleY = (float)screenHeight / image.Height;
+            }
+
+            posX = config.SpaceX / scaleX;
+            posY = config.SpaceY / scaleY;
+
+            switch (config.TextPosition)
+            {
+                case "TopCenter":
+                    posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
+                    break;
+                case "TopRight":
+                    posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
+                    break;
+                case "MiddleLeft":
+                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    break;
+                case "MiddleCenter":
+                    posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
+                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    break;
+                case "MiddleRight":
+                    posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
+                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    break;
+                case "BottomLeft":
+                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    break;
+                case "BottomCenter":
+                    posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
+                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    break;
+                case "BottomRight":
+                    posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
+                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    break;
+            }
+        }
+        else
+        {
+            posX = config.SpaceX;
+            posY = config.SpaceY;
+
+            switch (config.TextPosition)
+            {
+                case "TopCenter":
+                    posX = (image.Width / 2f) - (totalWidth / 2f);
+                    break;
+                case "TopRight":
+                    posX = image.Width - totalWidth - config.SpaceX;
+                    break;
+                case "MiddleLeft":
+                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    break;
+                case "MiddleCenter":
+                    posX = (image.Width / 2f) - (totalWidth / 2f);
+                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    break;
+                case "MiddleRight":
+                    posX = image.Width - totalWidth - config.SpaceX;
+                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    break;
+                case "BottomLeft":
+                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    break;
+                case "BottomCenter":
+                    posX = (image.Width / 2f) - (totalWidth / 2f);
+                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    break;
+                case "BottomRight":
+                    posX = image.Width - totalWidth - config.SpaceX;
+                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    break;
+            }
+        }
+
         foreach (var entry in config.Entries)
         {
             if (entry.Type == BgInfoEntryType.Label)
