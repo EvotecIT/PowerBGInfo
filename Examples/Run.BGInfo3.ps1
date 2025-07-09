@@ -1,3 +1,5 @@
+# Example using compiled cmdlets
+
 ﻿Import-Module .\PowerBGInfo.psd1 -Force
 
 New-BGInfo -MonitorIndex 0 {

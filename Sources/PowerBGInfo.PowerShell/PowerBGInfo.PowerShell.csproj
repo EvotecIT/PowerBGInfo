@@ -14,9 +14,17 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-    <ItemGroup>
+  <ItemGroup>
         <ProjectReference Include="..\PowerBGInfo\PowerBGInfo.csproj" />
-    </ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+        <PackageReference Include="System.Management.Automation" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
+        <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.3.0" />
+  </ItemGroup>
 
     <PropertyGroup>
         <!-- This is needed for XmlDoc2CmdletDoc to generate a PowerShell documentation file. -->
