@@ -1,6 +1,6 @@
-﻿Clear-Host
+﻿Import-Module 'PSPublishModule' -Force -ErrorAction Stop
 
-Invoke-ModuleBuild -ModuleName 'PowerBGInfo' {
+Build-Module -ModuleName 'PowerBGInfo' {
     # Usual defaults as per standard module
     $Manifest = [ordered] @{
         # Minimum version of the Windows PowerShell engine required by this module
