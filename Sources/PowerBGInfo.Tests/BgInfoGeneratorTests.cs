@@ -19,7 +19,7 @@ public class BgInfoGeneratorTests
         var generator = new BgInfoGenerator(imageService, wallpaperService);
         var config = new BgInfoConfiguration
         {
-            FilePath = Path.Combine("Examples","Samples","TapC-Evotec-2560x1080.jpg"),
+            FilePath = Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"),
             ConfigurationDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName())
         };
         config.Entries.Add(new BgInfoEntry{Type=BgInfoEntryType.Value, Name="Test", Value="1"});

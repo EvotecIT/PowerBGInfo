@@ -27,4 +27,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg">
+      <Link>TapC-Evotec-2560x1080.jpg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
