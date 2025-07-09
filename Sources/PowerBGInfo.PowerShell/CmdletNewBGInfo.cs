@@ -8,7 +8,7 @@ namespace PowerBGInfo.PowerShell;
 
 [Cmdlet(VerbsCommon.New, "BGInfo")]
 [OutputType(typeof(string))]
-public class NewBGInfoCommand : PSCmdlet
+public class CmdletNewBGInfo : PSCmdlet
 {
     [Parameter(Mandatory = true)]
     public ScriptBlock BGInfoContent { get; set; } = null!;
@@ -103,86 +103,5 @@ public class NewBGInfoCommand : PSCmdlet
         var generator = new BgInfoGenerator(new ImageService(), new WallpaperService());
         var path = generator.Generate(config);
         WriteObject(path);
-    }
-}
-
-[Cmdlet(VerbsCommon.New, "BGInfoLabel")]
-[OutputType(typeof(BgInfoEntry))]
-public class NewBGInfoLabelCommand : PSCmdlet
-{
-    [Parameter(Mandatory = true)]
-    public string Name { get; set; } = string.Empty;
-
-    [Parameter]
-    public Color Color { get; set; } = Color.Black;
-
-    [Parameter]
-    public float FontSize { get; set; } = 16;
-
-    [Parameter]
-    public string FontFamilyName { get; set; } = "Calibri";
-
-    protected override void EndProcessing()
-    {
-        var entry = new BgInfoEntry
-        {
-            Type = BgInfoEntryType.Label,
-            Name = Name,
-            Color = Color,
-            FontSize = FontSize,
-            FontFamilyName = FontFamilyName
-        };
-        WriteObject(entry);
-    }
-}
-
-[Cmdlet(VerbsCommon.New, "BGInfoValue")]
-[OutputType(typeof(BgInfoEntry))]
-public class NewBGInfoValueCommand : PSCmdlet
-{
-    [Parameter(ParameterSetName = "Values")]
-    [Parameter(ParameterSetName = "Builtin")]
-    public string Name { get; set; } = string.Empty;
-
-    [Parameter(ParameterSetName = "Values")]
-    public string Value { get; set; } = string.Empty;
-
-    [Parameter(ParameterSetName = "Builtin")]
-    public string BuiltinValue { get; set; } = string.Empty;
-
-    [Parameter]
-    public Color Color { get; set; } = Color.Black;
-
-    [Parameter]
-    public float FontSize { get; set; } = 16;
-
-    [Parameter]
-    public string FontFamilyName { get; set; } = "Calibri";
-
-    [Parameter]
-    public Color ValueColor { get; set; } = Color.Black;
-
-    [Parameter]
-    public float ValueFontSize { get; set; } = 16;
-
-    [Parameter]
-    public string ValueFontFamilyName { get; set; } = "Calibri";
-
-    protected override void EndProcessing()
-    {
-        string finalValue = string.IsNullOrEmpty(BuiltinValue) ? Value : SystemInfoProvider.GetValue(BuiltinValue);
-        var entry = new BgInfoEntry
-        {
-            Type = BgInfoEntryType.Value,
-            Name = string.IsNullOrEmpty(Name) ? BuiltinValue : Name,
-            Value = finalValue,
-            Color = Color,
-            FontSize = FontSize,
-            FontFamilyName = FontFamilyName,
-            ValueColor = ValueColor,
-            ValueFontSize = ValueFontSize,
-            ValueFontFamilyName = ValueFontFamilyName
-        };
-        WriteObject(entry);
     }
 }
