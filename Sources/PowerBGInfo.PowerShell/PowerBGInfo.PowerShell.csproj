@@ -7,24 +7,36 @@
         <Description>PowerShell Module to analyze Domain Health</Description>
         <AssemblyName>PowerBGInfo.PowerShell</AssemblyName>
         <AssemblyTitle>PowerBGInfo.PowerShell</AssemblyTitle>
-        <VersionPrefix>0.1.0</VersionPrefix>
+        <VersionPrefix>1.0.0</VersionPrefix>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Company>Evotec</Company>
         <Authors>Przemyslaw Klys</Authors>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
+        <Using Include="DesktopManager" />
+        <Using Include="System.Collections" />
+        <Using Include="System.Management.Automation" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="System.Threading" />
+        <Using Include="System" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Text" />
+        <Using Include="System.IO" />
+        <Using Include="System.Net" />
+        <Using Include="System.Diagnostics" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\PowerBGInfo\PowerBGInfo.csproj" />
-  </ItemGroup>
+    </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-        <PackageReference Include="System.Management.Automation" Version="6.0.4" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
-        <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.3.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" PrivateAssets="all" />
+    </ItemGroup>
 
     <PropertyGroup>
         <!-- This is needed for XmlDoc2CmdletDoc to generate a PowerShell documentation file. -->

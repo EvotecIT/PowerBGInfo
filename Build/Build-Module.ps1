@@ -32,10 +32,10 @@ Invoke-ModuleBuild -ModuleName 'PowerBGInfo' {
     }
     New-ConfigurationManifest @Manifest
 
-    New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid Auto -Version Latest
-    New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '2.0.1'
-    New-ConfigurationModule -Type RequiredModule -Name 'ImagePlayground' -Guid Auto -Version '0.0.8'
-    New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword', 'PSPublishModule'
+    #New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid Auto -Version Latest
+    #New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '2.0.1'
+    #New-ConfigurationModule -Type RequiredModule -Name 'ImagePlayground' -Guid Auto -Version '0.0.8'
+    #New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword', 'PSPublishModule'
     New-ConfigurationModuleSkip -IgnoreModuleName @('NetTCPIP', 'Microsoft.PowerShell.Utility', 'Microsoft.PowerShell.Management', 'CimCmdlets')
 
     $ConfigurationFormat = [ordered] @{
@@ -82,7 +82,28 @@ Invoke-ModuleBuild -ModuleName 'PowerBGInfo' {
 
     #New-ConfigurationImportModule -ImportSelf
 
-    New-ConfigurationBuild -Enable:$true -SignModule -MergeModuleOnBuild -MergeFunctionsFromApprovedModules -CertificateThumbprint '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+    $newConfigurationBuildSplat = @{
+        Enable                            = $true
+        SignModule                        = $true
+        MergeModuleOnBuild                = $true
+        MergeFunctionsFromApprovedModules = $true
+        CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+        ResolveBinaryConflicts            = $true
+        ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
+        NETProjectName                    = 'PowerBGInfo.PowerShell'
+        NETConfiguration                  = 'Release'
+        NETFramework                      = 'net8.0', 'net472'
+        NETHandleAssemblyWithSameName     = $true
+        #NETMergeLibraryDebugging          = $true
+        DotSourceLibraries                = $true
+        DotSourceClasses                  = $true
+        DeleteTargetModuleBeforeBuild     = $true
+        NETBinaryModuleDocumenation       = $true
+        RefreshPSD1Only                   = $true
+    }
+
+    New-ConfigurationBuild @newConfigurationBuildSplat
+
 
     New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot\..\Artefacts\Unpacked" -ModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -RequiredModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -AddRequiredModules
     New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot\..\Artefacts\Packed" -ArtefactName '<ModuleName>.v<ModuleVersion>.zip'
