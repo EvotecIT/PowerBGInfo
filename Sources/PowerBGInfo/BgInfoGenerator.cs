@@ -6,17 +6,30 @@ using DesktopManager;
 
 namespace PowerBGInfo;
 
+/// <summary>
+/// Generates BGInfo overlays and applies them to the configured target.
+/// </summary>
 public class BgInfoGenerator
 {
     private readonly ImageService _imageService;
     private readonly IWallpaperService _wallpaperService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BgInfoGenerator"/> class.
+    /// </summary>
+    /// <param name="imageService">Image service used to load and save images.</param>
+    /// <param name="wallpaperService">Wallpaper service used for applying output.</param>
     public BgInfoGenerator(ImageService imageService, IWallpaperService wallpaperService)
     {
         _imageService = imageService;
         _wallpaperService = wallpaperService;
     }
 
+    /// <summary>
+    /// Generates the BGInfo image and returns the output file path.
+    /// </summary>
+    /// <param name="config">Configuration controlling layout and output.</param>
+    /// <returns>Path to the generated image.</returns>
     public string Generate(BgInfoConfiguration config)
     {
         Directory.CreateDirectory(config.ConfigurationDirectory);
@@ -87,33 +100,32 @@ public class BgInfoGenerator
             posX = config.SpaceX / scaleX;
             posY = config.SpaceY / scaleY;
 
-            switch (config.TextPosition)
-            {
-                case "TopCenter":
+            switch (config.TextPosition) {
+                case BgInfoTextPosition.TopCenter:
                     posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
                     break;
-                case "TopRight":
+                case BgInfoTextPosition.TopRight:
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
                     break;
-                case "MiddleLeft":
+                case BgInfoTextPosition.MiddleLeft:
                     posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
                     break;
-                case "MiddleCenter":
+                case BgInfoTextPosition.MiddleCenter:
                     posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
                     posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
                     break;
-                case "MiddleRight":
+                case BgInfoTextPosition.MiddleRight:
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
                     posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
                     break;
-                case "BottomLeft":
+                case BgInfoTextPosition.BottomLeft:
                     posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
                     break;
-                case "BottomCenter":
+                case BgInfoTextPosition.BottomCenter:
                     posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
                     posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
                     break;
-                case "BottomRight":
+                case BgInfoTextPosition.BottomRight:
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
                     posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
                     break;
@@ -124,33 +136,32 @@ public class BgInfoGenerator
             posX = config.SpaceX;
             posY = config.SpaceY;
 
-            switch (config.TextPosition)
-            {
-                case "TopCenter":
+            switch (config.TextPosition) {
+                case BgInfoTextPosition.TopCenter:
                     posX = (image.Width / 2f) - (totalWidth / 2f);
                     break;
-                case "TopRight":
+                case BgInfoTextPosition.TopRight:
                     posX = image.Width - totalWidth - config.SpaceX;
                     break;
-                case "MiddleLeft":
+                case BgInfoTextPosition.MiddleLeft:
                     posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
                     break;
-                case "MiddleCenter":
+                case BgInfoTextPosition.MiddleCenter:
                     posX = (image.Width / 2f) - (totalWidth / 2f);
                     posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
                     break;
-                case "MiddleRight":
+                case BgInfoTextPosition.MiddleRight:
                     posX = image.Width - totalWidth - config.SpaceX;
                     posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
                     break;
-                case "BottomLeft":
+                case BgInfoTextPosition.BottomLeft:
                     posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
                     break;
-                case "BottomCenter":
+                case BgInfoTextPosition.BottomCenter:
                     posX = (image.Width / 2f) - (totalWidth / 2f);
                     posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
                     break;
-                case "BottomRight":
+                case BgInfoTextPosition.BottomRight:
                     posX = image.Width - totalWidth - config.SpaceX;
                     posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
                     break;
@@ -173,8 +184,7 @@ public class BgInfoGenerator
 
         _imageService.Save(image, outputPath);
 
-        if (config.Target is "Wallpaper" or "Both")
-        {
+        if (config.Target is BgInfoTarget.Wallpaper or BgInfoTarget.Both) {
             _wallpaperService.SetWallpaper(config.MonitorIndex, outputPath, config.WallpaperFit);
         }
 
