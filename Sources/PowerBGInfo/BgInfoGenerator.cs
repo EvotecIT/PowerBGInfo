@@ -36,9 +36,7 @@ public class BgInfoGenerator
         Directory.CreateDirectory(config.ConfigurationDirectory);
 
         var monitors = new Monitors();
-        var imagePath = string.IsNullOrEmpty(config.FilePath)
-            ? monitors.GetWallpaper(config.MonitorIndex)
-            : config.FilePath;
+        var imagePath = ResolveBaseImagePath(config, index => monitors.GetWallpaper(index));
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
@@ -49,7 +47,7 @@ public class BgInfoGenerator
         }
 
         using var image = hasBaseImage
-            ? LoadBaseImage(imagePath, outputPath)
+            ? LoadBaseImage(imagePath!, outputPath)
             : CreateBaseImage(config, monitors, outputPath);
 
         var entryLayouts = BuildEntryLayouts(image, config);
@@ -219,6 +217,23 @@ public class BgInfoGenerator
         return image;
     }
 
+    internal static string? ResolveBaseImagePath(BgInfoConfiguration config, Func<int, string?> getWallpaper)
+    {
+        if (!string.IsNullOrWhiteSpace(config.FilePath))
+        {
+            return config.FilePath;
+        }
+
+        try
+        {
+            return getWallpaper(config.MonitorIndex);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static (int Width, int Height) GetMonitorSize(Monitors monitors, int monitorIndex)
     {
         var monitor = monitors.GetMonitors(index: monitorIndex).FirstOrDefault()
@@ -247,7 +262,7 @@ public class BgInfoGenerator
         return System.Drawing.Color.FromArgb(255, r, g, b);
     }
 
-    private static string BuildOutputPath(BgInfoConfiguration config, string imagePath, bool hasBaseImage)
+    private static string BuildOutputPath(BgInfoConfiguration config, string? imagePath, bool hasBaseImage)
     {
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {

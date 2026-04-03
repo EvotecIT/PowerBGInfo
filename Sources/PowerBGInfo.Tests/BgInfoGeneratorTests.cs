@@ -53,6 +53,20 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
+    public void ResolveBaseImagePathReturnsNullWhenWallpaperLookupThrows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var config = new BgInfoConfiguration();
+        var path = BgInfoGenerator.ResolveBaseImagePath(config, _ => throw new IOException("No wallpaper configured."));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
     public void GenerateCallsAllUsersWhenRequested()
     {
         if (!OperatingSystem.IsWindows())
@@ -73,6 +87,31 @@ public class BgInfoGeneratorTests
         generator.Generate(config);
         Assert.Equal(1, wallpaperService.AllUsersCalls);
         Assert.Equal(1, wallpaperService.Calls);
+    }
+
+    [Fact]
+    public void GenerateCallsLogonWallpaperWhenRequested()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"),
+            ConfigurationDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName()),
+            Target = BgInfoTarget.LogonScreen
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        generator.Generate(config);
+
+        Assert.Equal(1, wallpaperService.LogonCalls);
+        Assert.Equal(0, wallpaperService.Calls);
     }
 
     [Fact]

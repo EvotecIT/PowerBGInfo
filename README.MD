@@ -84,6 +84,54 @@ Here's how the wallpaper will look like:
 - Stable output path: use `-OutputFileName` to control the output name and path.
 - Charts: use `New-BGInfoChart` to add sparklines or bar charts with optional history.
 
+## Deployment recipes
+
+Custom text works on both sides of the layout, so you can compute the left column yourself instead of relying only on builtin labels:
+
+```powershell
+$bgHostname = $env:COMPUTERNAME
+$bgUsername = if ($user = (Get-CimInstance Win32_ComputerSystem).UserName) {
+    $user.Split('\')[-1]
+} else {
+    'Unknown'
+}
+
+New-BGInfo -MonitorIndex 0 -Target File {
+    New-BGInfoValue -Name $bgHostname -Value $bgUsername -Color LemonChiffon -ValueColor White -FontSize 24 -FontFamilyName 'Calibri'
+    New-BGInfoValue -Name 'Support' -Value 'helpdesk@contoso.com'
+}
+```
+
+Apply the generated wallpaper for existing profiles and the default profile used by new users:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -AllUsers {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+Skip the default profile if you only want current user profiles updated:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -AllUsers -ExcludeDefaultUserProfile {
+    New-BGInfoValue -BuiltinValue HostName
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+Apply to the logon/lock screen, or to both the desktop wallpaper and logon screen in one run:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -Target Both {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+For Remote Desktop Session Host / terminal server scenarios, run PowerBGInfo in each user session when you need per-user values such as `FullUserName`. `-AllUsers` is best for staging the same generated wallpaper to many profiles, not for rendering unique user data offline.
+
+On Windows 11 24H2, keep the default wallpaper refresh behavior enabled unless you have a specific reason to disable it. PowerBGInfo writes a temporary refresh file first to avoid Windows reusing a cached wallpaper path after relogon.
+
 ## Charts (MVP)
 
 ```powershell
