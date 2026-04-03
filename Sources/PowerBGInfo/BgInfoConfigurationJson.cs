@@ -167,6 +167,15 @@ public static class BgInfoConfigurationJson {
             }
         }
 
+        if (model.Variables != null) {
+            foreach (var variableModel in model.Variables) {
+                var variable = MapVariable(variableModel);
+                if (variable != null) {
+                    configuration.Variables.Add(variable);
+                }
+            }
+        }
+
         if (model.Charts != null) {
             foreach (var chartModel in model.Charts) {
                 var chart = MapChart(chartModel);
@@ -224,12 +233,24 @@ public static class BgInfoConfigurationJson {
                     Name = entry.Name,
                     Value = string.IsNullOrWhiteSpace(entry.BuiltinValue) ? entry.Value : null,
                     BuiltinValue = entry.BuiltinValue,
+                    ForEach = entry.ForEach,
                     Color = entry.Color.HasValue ? BgInfoColorParser.ToHex(entry.Color.Value) : null,
                     FontSize = entry.FontSize,
                     FontFamilyName = entry.FontFamilyName,
                     ValueColor = entry.ValueColor.HasValue ? BgInfoColorParser.ToHex(entry.ValueColor.Value) : null,
                     ValueFontSize = entry.ValueFontSize,
                     ValueFontFamilyName = entry.ValueFontFamilyName
+                });
+            }
+        }
+
+        if (configuration.Variables.Count > 0) {
+            model.Variables = new List<BgInfoVariableFile>();
+            foreach (var variable in configuration.Variables) {
+                model.Variables.Add(new BgInfoVariableFile {
+                    Name = variable.Name,
+                    Provider = variable.Provider.ToString(),
+                    Argument = variable.Argument
                 });
             }
         }
@@ -295,6 +316,9 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.BuiltinValue)) {
             entry.BuiltinValue = model.BuiltinValue;
         }
+        if (!string.IsNullOrWhiteSpace(model.ForEach)) {
+            entry.ForEach = model.ForEach;
+        }
 
         if (!string.IsNullOrWhiteSpace(model.BuiltinValue) && string.IsNullOrWhiteSpace(model.Value)) {
             if (string.IsNullOrWhiteSpace(entry.Name)) {
@@ -312,6 +336,22 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.ValueFontFamilyName)) entry.ValueFontFamilyName = model.ValueFontFamilyName;
 
         return entry;
+    }
+
+    private static BgInfoVariable? MapVariable(BgInfoVariableFile model) {
+        if (model == null || string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Provider)) {
+            return null;
+        }
+
+        if (!Enum.TryParse(model.Provider, true, out BgInfoVariableProvider provider)) {
+            return null;
+        }
+
+        return new BgInfoVariable {
+            Name = model.Name!,
+            Provider = provider,
+            Argument = model.Argument
+        };
     }
 
     private static BgInfoChart? MapChart(BgInfoChartFile model) {
@@ -436,8 +476,15 @@ public static class BgInfoConfigurationJson {
         public int? ChartStackOffsetY { get; set; }
         public bool? ChartStackAlignToTextBlock { get; set; }
         public bool? ChartStackOutsideTextBlock { get; set; }
+        public List<BgInfoVariableFile>? Variables { get; set; }
         public List<BgInfoEntryFile>? Entries { get; set; }
         public List<BgInfoChartFile>? Charts { get; set; }
+    }
+
+    internal sealed class BgInfoVariableFile {
+        public string? Name { get; set; }
+        public string? Provider { get; set; }
+        public string? Argument { get; set; }
     }
 
     internal sealed class BgInfoEntryFile {
@@ -445,6 +492,7 @@ public static class BgInfoConfigurationJson {
         public string? Name { get; set; }
         public string? Value { get; set; }
         public string? BuiltinValue { get; set; }
+        public string? ForEach { get; set; }
         public string? Color { get; set; }
         public float? FontSize { get; set; }
         public string? FontFamilyName { get; set; }

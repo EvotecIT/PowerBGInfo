@@ -33,6 +33,11 @@ public class BgInfoEntry {
     /// </summary>
     public string? BuiltinValue { get; set; }
     /// <summary>
+    /// Gets or sets the variable name that should be expanded for this entry.
+    /// When set, <see cref="Name"/> and <see cref="Value"/> are treated as templates.
+    /// </summary>
+    public string? ForEach { get; set; }
+    /// <summary>
     /// Gets or sets the label color.
     /// </summary>
     public Color? Color { get; set; }

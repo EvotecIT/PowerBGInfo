@@ -210,6 +210,12 @@ public class CmdletNewBGInfo : PSCmdlet {
                 continue;
             }
 
+            if (item?.BaseObject is BgInfoVariable variable)
+            {
+                config.Variables.Add(variable);
+                continue;
+            }
+
             if (item?.BaseObject is BgInfoChart chart)
             {
                 config.Charts.Add(chart);

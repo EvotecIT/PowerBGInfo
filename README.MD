@@ -119,6 +119,8 @@ The last command exports JSON from PowerShell and renders it with the CLI, which
 
 - builtin values such as `HostName`, `FullUserName`, `OSName`
 - chart metrics such as `CpuPercent`, `MemoryPercent`, `DiskFreePercent`
+- native variables/providers such as `Volumes`
+- loop/template entries via `-ForEach`
 - layout, colors, fonts, spacing, target, wallpaper options, and chart settings
 
 What it does not preserve today is arbitrary PowerShell source code. For example, a `foreach ($Disk in Get-Disk) { ... }` block is executed during export, and the produced entries are written to JSON as normal values. The JSON does not currently embed executable user PowerShell.
@@ -127,6 +129,23 @@ That means there are two supported patterns today:
 
 - use builtin values and chart metrics when you want the CLI to recalculate data on each run
 - use custom PowerShell to compute values once, export the resulting entries, and let the CLI render that snapshot later
+
+There is now a third middle-ground pattern for reusable native loops:
+
+- define a provider-backed variable in PowerShell
+- reference it with `-ForEach`
+- let the CLI expand it at runtime without PowerShell
+
+Example:
+
+```powershell
+New-BGInfo {
+    New-BGInfoVariable -Name Volumes -Provider Volumes
+    New-BGInfoValue -ForEach Volumes -Name 'Drive {{DriveLetter}}' -Value '{{SizeRemaining}} free ({{FreePercent}}%)'
+} -ConfigurationDirectory .\Output -Target File -JsonPath .\bginfo-volumes.json -ExportOnly
+```
+
+That exports JSON the CLI can execute directly. See `Examples\Run.BGInfo5.ps1` and `Examples\Configuration\PowerBGInfo.Volumes.json`.
 
 ## PowerShell inline usage
 

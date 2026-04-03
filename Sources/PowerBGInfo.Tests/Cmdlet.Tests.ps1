@@ -17,6 +17,22 @@ Describe 'New-BGInfoValue cmdlet' {
         $entry.Value | Should -Not -BeNullOrEmpty
         $entry.BuiltinValue | Should -Be 'HostName'
     }
+
+    It 'creates template entries for foreach variables' {
+        $entry = New-BGInfoValue -ForEach 'Volumes' -Name 'Drive {{DriveLetter}}' -Value '{{SizeRemaining}}'
+        $entry.ForEach | Should -Be 'Volumes'
+        $entry.Name | Should -Be 'Drive {{DriveLetter}}'
+        $entry.Value | Should -Be '{{SizeRemaining}}'
+        $entry.BuiltinValue | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'New-BGInfoVariable cmdlet' {
+    It 'creates provider-backed variables' {
+        $variable = New-BGInfoVariable -Name Volumes -Provider Volumes
+        $variable.Name | Should -Be 'Volumes'
+        $variable.Provider.ToString() | Should -Be 'Volumes'
+    }
 }
 
 Describe 'New-BGInfo cmdlet parameters' {
@@ -41,6 +57,11 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'ChartLayout'
         $command.Parameters.Keys | Should -Contain 'ChartStackAlignToTextBlock'
         $command.Parameters.Keys | Should -Contain 'ChartStackOutsideTextBlock'
+    }
+
+    It 'supports recipe variables through inline content' {
+        $command = Get-Command New-BGInfoVariable
+        $command.Parameters.Keys | Should -Contain 'Provider'
     }
 }
 
@@ -175,6 +196,29 @@ Describe 'CLI interoperability' {
 
         & $cliPath --config $configPath --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'inline.png') | Should -BeTrue
+    }
+
+    It 'renders provider-backed foreach entries through the CLI' {
+        $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
+        $sampleImage = (Resolve-Path -Path $sampleImage).Path
+        $outputDir = Join-Path -Path $TestDrive -ChildPath 'volume-cli'
+        $configPath = Join-Path -Path $TestDrive -ChildPath 'volume-cli.json'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        New-BGInfo {
+            New-BGInfoVariable -Name Volumes -Provider Volumes
+            New-BGInfoValue -ForEach Volumes -Name 'Drive {{DriveLetter}}' -Value '{{SizeRemaining}}'
+        } -FilePath $sampleImage -ConfigurationDirectory $outputDir -Target File -OutputFileName 'volumes.png' -JsonPath $configPath -ExportOnly | Out-Null
+
+        $json = Get-Content -LiteralPath $configPath -Raw
+        $json | Should -Match '"Provider"\s*:\s*"Volumes"'
+        $json | Should -Match '"ForEach"\s*:\s*"Volumes"'
+
+        & $cliPath --config $configPath --no-apply | Out-Null
+        Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'volumes.png') | Should -BeTrue
     }
 }
 
