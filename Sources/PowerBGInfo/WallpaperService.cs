@@ -37,7 +37,9 @@ public interface IWallpaperService
 /// </summary>
 public class WallpaperService : IWallpaperService
 {
-    private readonly Monitors _monitors = new();
+    private Monitors? _monitors;
+
+    private Monitors Monitors => _monitors ??= new Monitors();
 
     /// <summary>
     /// Sets the wallpaper for a monitor with the specified position mode.
@@ -47,8 +49,8 @@ public class WallpaperService : IWallpaperService
     /// <param name="position">Wallpaper fit mode.</param>
     public void SetWallpaper(int monitorIndex, string filePath, DesktopWallpaperPosition position)
     {
-        _monitors.SetWallpaperPosition(position);
-        _monitors.SetWallpaper(monitorIndex, filePath);
+        Monitors.SetWallpaperPosition(position);
+        Monitors.SetWallpaper(monitorIndex, filePath);
     }
 
     /// <summary>
@@ -60,7 +62,7 @@ public class WallpaperService : IWallpaperService
 #endif
     public void SetLogonWallpaper(string filePath)
     {
-        _monitors.SetLogonWallpaper(filePath);
+        Monitors.SetLogonWallpaper(filePath);
     }
 
     /// <summary>
@@ -71,6 +73,6 @@ public class WallpaperService : IWallpaperService
     /// <param name="includeDefaultUserProfile">Whether to include the default user profile.</param>
     public void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile)
     {
-        _monitors.SetWallpaperForAllUsers(filePath, position, includeDefaultUserProfile);
+        Monitors.SetWallpaperForAllUsers(filePath, position, includeDefaultUserProfile);
     }
 }

@@ -13,6 +13,9 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <UseSystemDrawing>true</UseSystemDrawing>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+        <TargetFrameworks>net8.0-windows</TargetFrameworks>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DesktopManager" Version="3.6.1" />

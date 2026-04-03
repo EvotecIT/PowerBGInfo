@@ -39,7 +39,53 @@ jobs:
         run: dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
       - name: Run tests
-        run: dotnet test Sources/PowerBGInfo.Tests/PowerBGInfo.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0 --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
+        run: dotnet test Sources/PowerBGInfo.Tests/PowerBGInfo.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
+
+      - name: Export config from PowerShell
+        shell: pwsh
+        run: |
+          Import-Module .\Sources\PowerBGInfo.PowerShell\bin\${{ env.BUILD_CONFIGURATION }}\net8.0-windows\PowerBGInfo.PowerShell.dll -Force
+          $sampleImage = (Resolve-Path .\Examples\Samples\TapC-Evotec-2560x1080.jpg).Path
+          $configPath = Join-Path $PWD 'interop.bginfo.json'
+          $outputDir = Join-Path $PWD 'interop-output'
+          $config = New-BGInfoConfiguration -Target File
+          $config.FilePath = $sampleImage
+          $config.ConfigurationDirectory = $outputDir
+          $config.OutputFileName = 'interop.png'
+          $config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
+          Export-BGInfoConfiguration -InputObject $config -Path $configPath -Force
+          if (-not (Test-Path -LiteralPath $configPath)) {
+              throw "Expected exported config at $configPath"
+          }
+
+      - name: Publish CLI single-file
+        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 --self-contained false -p:PublishSingleFile=true -o artifacts/cli-singlefile
+
+      - name: Run published CLI with PowerShell-generated config
+        shell: pwsh
+        run: |
+          $configPath = Join-Path $PWD 'interop.bginfo.json'
+          $outputPath = Join-Path $PWD 'interop-output\interop.png'
+          & .\artifacts\cli-singlefile\PowerBGInfo.Cli.exe --config $configPath --no-apply
+          if (-not (Test-Path -LiteralPath $outputPath)) {
+              throw "Expected generated output at $outputPath"
+          }
+
+      - name: Publish CLI NativeAOT smoke build
+        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 -p:PublishAot=true -o artifacts/cli-aot
+
+      - name: Run NativeAOT CLI with PowerShell-generated config
+        shell: pwsh
+        run: |
+          $configPath = Join-Path $PWD 'interop.bginfo.json'
+          $outputPath = Join-Path $PWD 'interop-output\interop-aot.png'
+          $json = Get-Content -LiteralPath $configPath -Raw
+          $json = $json -replace 'interop\.png', 'interop-aot.png'
+          Set-Content -LiteralPath $configPath -Value $json -Encoding UTF8
+          & .\artifacts\cli-aot\PowerBGInfo.Cli.exe --config $configPath --no-apply
+          if (-not (Test-Path -LiteralPath $outputPath)) {
+              throw "Expected generated output at $outputPath"
+          }
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

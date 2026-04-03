@@ -218,6 +218,20 @@ CLI:
 PowerBGInfo.Cli --config $PSScriptRoot\bginfo.json
 ```
 
+Publish a single-file CLI build:
+
+```powershell
+dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 --self-contained false -p:PublishSingleFile=true
+```
+
+Publish a NativeAOT CLI build for file-generation scenarios:
+
+```powershell
+dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 -p:PublishAot=true
+```
+
+NativeAOT is currently best for `--no-apply` / `Target File` workflows with an explicit `FilePath`. Windows desktop APIs from `DesktopManager` and `System.Management` still emit AOT warnings for wallpaper and system-query paths.
+
 You can also use only builtin values
 
 ```powershell

@@ -1,4 +1,4 @@
-﻿@{
+@{
     AliasesToExport        = @()
     Author                 = 'Przemyslaw Klys'
     CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'New-BGInfoChart', 'Invoke-BGInfo', 'Export-BGInfoConfiguration', 'New-BGInfoConfiguration')

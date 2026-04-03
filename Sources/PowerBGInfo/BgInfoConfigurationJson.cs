@@ -54,8 +54,7 @@ public static class BgInfoConfigurationJson {
         var model = serializer.Deserialize<BgInfoConfigurationFile>(json);
         return model ?? new BgInfoConfigurationFile();
 #else
-        var options = CreateOptions();
-        var model = JsonSerializer.Deserialize<BgInfoConfigurationFile>(json, options);
+        var model = JsonSerializer.Deserialize(json, ReadContext.BgInfoConfigurationFile);
         return model ?? new BgInfoConfigurationFile();
 #endif
     }
@@ -65,9 +64,7 @@ public static class BgInfoConfigurationJson {
         var serializer = new JavaScriptSerializer();
         return serializer.Serialize(model);
 #else
-        var options = CreateOptions();
-        options.WriteIndented = true;
-        return JsonSerializer.Serialize(model, options);
+        return JsonSerializer.Serialize(model, WriteContext.BgInfoConfigurationFile);
 #endif
     }
 
@@ -78,6 +75,15 @@ public static class BgInfoConfigurationJson {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
     }
+
+    private static JsonSerializerOptions CreateWriteOptions() {
+        var options = CreateOptions();
+        options.WriteIndented = true;
+        return options;
+    }
+
+    private static readonly BgInfoConfigurationJsonSerializerContext ReadContext = new(CreateOptions());
+    private static readonly BgInfoConfigurationJsonSerializerContext WriteContext = new(CreateWriteOptions());
 #endif
 
     private static BgInfoConfiguration MapToConfiguration(BgInfoConfigurationFile model, string sourcePath) {
@@ -396,7 +402,7 @@ public static class BgInfoConfigurationJson {
         return Path.GetFullPath(Path.Combine(baseDirectory, safePath));
     }
 
-    private sealed class BgInfoConfigurationFile {
+    internal sealed class BgInfoConfigurationFile {
         public string? FilePath { get; set; }
         public string? OutputFileName { get; set; }
         public string? ConfigurationDirectory { get; set; }
@@ -434,7 +440,7 @@ public static class BgInfoConfigurationJson {
         public List<BgInfoChartFile>? Charts { get; set; }
     }
 
-    private sealed class BgInfoEntryFile {
+    internal sealed class BgInfoEntryFile {
         public string? Type { get; set; }
         public string? Name { get; set; }
         public string? Value { get; set; }
@@ -447,7 +453,7 @@ public static class BgInfoConfigurationJson {
         public string? ValueFontFamilyName { get; set; }
     }
 
-    private sealed class BgInfoChartFile {
+    internal sealed class BgInfoChartFile {
         public string? Id { get; set; }
         public string? Title { get; set; }
         public string? Kind { get; set; }
@@ -481,3 +487,13 @@ public static class BgInfoConfigurationJson {
         public string? MetricArgument { get; set; }
     }
 }
+
+#if !NET472
+[JsonSourceGenerationOptions(
+    PropertyNameCaseInsensitive = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    WriteIndented = true)]
+[JsonSerializable(typeof(BgInfoConfigurationJson.BgInfoConfigurationFile))]
+internal sealed partial class BgInfoConfigurationJsonSerializerContext : JsonSerializerContext {
+}
+#endif

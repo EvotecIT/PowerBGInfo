@@ -35,8 +35,27 @@ public class BgInfoGenerator
     {
         Directory.CreateDirectory(config.ConfigurationDirectory);
 
-        var monitors = new Monitors();
-        var imagePath = ResolveBaseImagePath(config, index => monitors.GetWallpaper(index));
+        Monitors? monitors = null;
+        Monitors? GetMonitors()
+        {
+            if (monitors != null)
+            {
+                return monitors;
+            }
+
+            try
+            {
+                monitors = new Monitors();
+            }
+            catch
+            {
+                monitors = null;
+            }
+
+            return monitors;
+        }
+
+        var imagePath = ResolveBaseImagePath(config, index => GetWallpaper(GetMonitors(), index));
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
@@ -48,7 +67,7 @@ public class BgInfoGenerator
 
         using var image = hasBaseImage
             ? LoadBaseImage(imagePath!, outputPath)
-            : CreateBaseImage(config, monitors, outputPath);
+            : CreateBaseImage(config, GetMonitors(), outputPath);
 
         var entryLayouts = BuildEntryLayouts(image, config);
         float highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
@@ -64,7 +83,7 @@ public class BgInfoGenerator
 
         if (config.UseScreenCoordinates)
         {
-            var (screenWidth, screenHeight) = GetMonitorSize(monitors, config.MonitorIndex);
+            var (screenWidth, screenHeight) = GetMonitorSize(GetMonitors(), config.MonitorIndex);
 
             float scaleX;
             float scaleY;
@@ -208,7 +227,7 @@ public class BgInfoGenerator
         return _imageService.Load(outputPath);
     }
 
-    private static Image CreateBaseImage(BgInfoConfiguration config, Monitors monitors, string outputPath)
+    private static Image CreateBaseImage(BgInfoConfiguration config, Monitors? monitors, string outputPath)
     {
         var (width, height) = GetMonitorSize(monitors, config.MonitorIndex);
         var background = ResolveBackgroundColor(config, monitors);
@@ -234,11 +253,42 @@ public class BgInfoGenerator
         }
     }
 
-    private static (int Width, int Height) GetMonitorSize(Monitors monitors, int monitorIndex)
+    private static string? GetWallpaper(Monitors? monitors, int monitorIndex)
     {
-        var monitor = monitors.GetMonitors(index: monitorIndex).FirstOrDefault()
-            ?? monitors.GetMonitors(primaryOnly: true).FirstOrDefault()
-            ?? monitors.GetMonitors().FirstOrDefault();
+        if (monitors == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return monitors.GetWallpaper(monitorIndex);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static (int Width, int Height) GetMonitorSize(Monitors? monitors, int monitorIndex)
+    {
+        if (monitors == null)
+        {
+            return (1920, 1080);
+        }
+
+        DesktopManager.Monitor? monitor;
+        try
+        {
+            monitor = monitors.GetMonitors(index: monitorIndex).FirstOrDefault()
+                ?? monitors.GetMonitors(primaryOnly: true).FirstOrDefault()
+                ?? monitors.GetMonitors().FirstOrDefault();
+        }
+        catch
+        {
+            return (1920, 1080);
+        }
+
         if (monitor == null)
         {
             return (1920, 1080);
@@ -248,14 +298,28 @@ public class BgInfoGenerator
         return (width, height);
     }
 
-    private static System.Drawing.Color ResolveBackgroundColor(BgInfoConfiguration config, Monitors monitors)
+    private static System.Drawing.Color ResolveBackgroundColor(BgInfoConfiguration config, Monitors? monitors)
     {
         if (config.BackgroundColor.HasValue)
         {
             return config.BackgroundColor.Value;
         }
 
-        uint rgb = monitors.GetBackgroundColor();
+        if (monitors == null)
+        {
+            return System.Drawing.Color.Black;
+        }
+
+        uint rgb;
+        try
+        {
+            rgb = monitors.GetBackgroundColor();
+        }
+        catch
+        {
+            return System.Drawing.Color.Black;
+        }
+
         byte r = (byte)(rgb & 0xFF);
         byte g = (byte)((rgb >> 8) & 0xFF);
         byte b = (byte)((rgb >> 16) & 0xFF);
