@@ -32,8 +32,12 @@ public class OnModuleImportAndRemove : IModuleAssemblyInitializer, IModuleAssemb
     /// <param name="sender"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    private static Assembly MyResolveEventHandler(object sender, ResolveEventArgs args) {
+    private static Assembly? MyResolveEventHandler(object? sender, ResolveEventArgs args) {
         var libDirectory = Path.GetDirectoryName(typeof(OnModuleImportAndRemove).Assembly.Location);
+        if (string.IsNullOrEmpty(libDirectory)) {
+            return null;
+        }
+
         var directoriesToSearch = new List<string> { libDirectory };
 
         if (Directory.Exists(libDirectory)) {

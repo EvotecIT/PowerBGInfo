@@ -69,10 +69,168 @@ New-BGInfo -MonitorIndex 0 {
     }
 } -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
 ```
-
 Here's how the wallpaper will look like:
 
 ![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
+
+## Additional options
+
+- Solid-color desktops: when no wallpaper file exists, PowerBGInfo renders a blank image using the desktop background color or `-BackgroundColor`.
+- Refresh behavior: by default the wallpaper is refreshed to avoid Windows caching issues; use `-DisableWallpaperRefresh` to keep the old behavior.
+- All users: use `-AllUsers` (requires elevation). Use `-ExcludeDefaultUserProfile` to skip the default profile.
+- Logon screen: use `-Target LogonScreen` or `-Target Both` (requires elevation).
+- Long values: use `-ValueWrapWidth` or JSON `ValueWrapWidth` to wrap value text such as long AD descriptions.
+- Stable output path: use `-OutputFileName` to control the output name and path.
+- Charts: use `New-BGInfoChart` to add sparklines or bar charts with optional history.
+
+## Deployment recipes
+
+Custom text works on both sides of the layout, so you can compute the left column yourself instead of relying only on builtin labels:
+
+```powershell
+$bgHostname = $env:COMPUTERNAME
+$bgUsername = if ($user = (Get-CimInstance Win32_ComputerSystem).UserName) {
+    $user.Split('\')[-1]
+} else {
+    'Unknown'
+}
+
+New-BGInfo -MonitorIndex 0 -Target File {
+    New-BGInfoValue -Name $bgHostname -Value $bgUsername -Color LemonChiffon -ValueColor White -FontSize 24 -FontFamilyName 'Calibri'
+    New-BGInfoValue -Name 'Support' -Value 'helpdesk@contoso.com'
+}
+```
+
+Apply the generated wallpaper for existing profiles and the default profile used by new users:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -AllUsers {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+Skip the default profile if you only want current user profiles updated:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -AllUsers -ExcludeDefaultUserProfile {
+    New-BGInfoValue -BuiltinValue HostName
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+Apply to the logon/lock screen, or to both the desktop wallpaper and logon screen in one run:
+
+```powershell
+New-BGInfo -MonitorIndex 0 -Target Both {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
+```
+
+For Remote Desktop Session Host / terminal server scenarios, run PowerBGInfo in each user session when you need per-user values such as `FullUserName`. `-AllUsers` is best for staging the same generated wallpaper to many profiles, not for rendering unique user data offline.
+
+On Windows 11 24H2, keep the default wallpaper refresh behavior enabled unless you have a specific reason to disable it. PowerBGInfo writes a temporary refresh file first to avoid Windows reusing a cached wallpaper path after relogon.
+
+## Charts (MVP)
+
+```powershell
+New-BGInfo -MonitorIndex 0 {
+    New-BGInfoValue -BuiltinValue HostName -Color White
+    New-BGInfoChart -Id "cpu" -Title "CPU" -Value 42 -Kind Sparkline -MaxPoints 60 -OffsetX 20 -OffsetY 20 -Anchor BottomLeft
+} -ConfigurationDirectory $PSScriptRoot\Output -BackgroundColor Black
+```
+
+Built-in metric sources can be used when no explicit values are provided:
+
+```powershell
+New-BGInfo -MonitorIndex 0 {
+    New-BGInfoValue -BuiltinValue HostName -Color White
+    New-BGInfoChart -Id "cpu" -Title "CPU" -Metric CpuPercent -ValueSuffix "%" -Kind Sparkline -MaxPoints 60 -OffsetX 20 -OffsetY 20 -Anchor BottomLeft
+    New-BGInfoChart -Id "disk" -Title "Disk C" -Metric DiskFreePercent -MetricArgument "C:" -ValueSuffix "%" -Kind Bar -MaxPoints 30 -OffsetX 20 -OffsetY 130 -Anchor BottomLeft
+} -ConfigurationDirectory $PSScriptRoot\Output -BackgroundColor Black
+```
+
+## JSON configuration + CLI
+
+PowerBGInfo supports JSON-driven configurations that are shared by the CLI and PowerShell.
+
+Sample file: `Examples/Configuration/PowerBGInfo.Sample.json`
+
+When hand-editing JSON on Windows, remember that backslashes inside string values must be escaped as `\\`.
+
+```json
+{
+  "ConfigurationDirectory": "Output",
+  "FilePath": "Samples\\TapC-Evotec-2560x1080.jpg",
+  "MonitorIndex": 0,
+  "Target": "Wallpaper",
+  "WallpaperFit": "Fill",
+  "Color": "#FFFFFFFF",
+  "ValueColor": "#FF00FFFF",
+  "ValueWrapWidth": 320,
+  "ChartLayout": "Stack",
+  "ChartStackAnchor": "BottomLeft",
+  "ChartStackDirection": "Vertical",
+  "ChartStackSpacing": 12,
+  "ChartStackOffsetX": 10,
+  "ChartStackOffsetY": 10,
+  "ChartStackAlignToTextBlock": true,
+  "ChartStackOutsideTextBlock": true,
+  "Entries": [
+    { "Type": "Value", "Name": "Host", "BuiltinValue": "HostName" },
+    { "Type": "Value", "Name": "User", "BuiltinValue": "FullUserName" },
+    { "Type": "Label", "Name": "Performance" }
+  ],
+  "Charts": [
+    {
+      "Id": "cpu",
+      "Title": "CPU",
+      "Kind": "Sparkline",
+      "Metric": "CpuPercent",
+      "ValueSuffix": "%",
+      "ShowGrid": true,
+      "GridLineCount": 3,
+      "MaxPoints": 60,
+      "Anchor": "BottomLeft",
+      "OffsetX": 20,
+      "OffsetY": 20
+    }
+  ]
+}
+```
+
+PowerShell (thin wrapper):
+
+```powershell
+Invoke-BGInfo -Path $PSScriptRoot\bginfo.json
+```
+
+Export from PowerShell:
+
+```powershell
+$config = New-BGInfoConfiguration -Target File
+Export-BGInfoConfiguration -InputObject $config -Path $PSScriptRoot\bginfo.json -Force
+```
+
+CLI:
+
+```powershell
+PowerBGInfo.Cli --config $PSScriptRoot\bginfo.json
+```
+
+Publish a single-file CLI build:
+
+```powershell
+dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 --self-contained false -p:PublishSingleFile=true
+```
+
+Publish a NativeAOT CLI build for file-generation scenarios:
+
+```powershell
+dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 -p:PublishAot=true
+```
+
+NativeAOT is currently best for `--no-apply` / `Target File` workflows with an explicit `FilePath`. Windows desktop APIs from `DesktopManager` and `System.Management` still emit AOT warnings for wallpaper and system-query paths.
 
 You can also use only builtin values
 
@@ -84,7 +242,7 @@ New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue CpuName -Color White
     New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
     New-BGInfoValue -BuiltinValue RAMSize -Color White
-    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([SixLabors.ImageSharp.Color]::Aquamarine)
+    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([System.Drawing.Color]::Aquamarine)
     New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
     New-BGInfoValue -BuiltinValue BiosVersion -Color White
     New-BGInfoValue -BuiltinValue BiosManufacturer -Color White

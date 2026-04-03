@@ -1,17 +1,17 @@
-﻿# to speed up development adding direct path to binaries, instead of the the Lib folder
+# to speed up development adding direct path to binaries, instead of the the Lib folder
 $Development = $true
 $DevelopmentPath = "$PSScriptRoot\Sources\PowerBGInfo.PowerShell\bin\Debug"
-$DevelopmentFolderCore = "net8.0"
+$DevelopmentFolderCore = "net8.0-windows"
 $DevelopmentFolderDefault = "net472"
 $BinaryModules = @(
     "PowerBGInfo.PowerShell.dll"
 )
 
 # Get public and private function definition files.
-$Public = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
-$Private = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
-$Classes = @( Get-ChildItem -Path $PSScriptRoot\Classes\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
-$Enums = @( Get-ChildItem -Path $PSScriptRoot\Enums\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
+$Public = @(Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
+$Private = @(Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
+$Classes = @(Get-ChildItem -Path $PSScriptRoot\Classes\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
+$Enums = @(Get-ChildItem -Path $PSScriptRoot\Enums\*.ps1 -ErrorAction SilentlyContinue -Recurse -File)
 # Get all assemblies
 $AssemblyFolders = Get-ChildItem -Path $PSScriptRoot\Lib -Directory -ErrorAction SilentlyContinue -File
 
@@ -56,7 +56,6 @@ if ($Development) {
     }
 }
 
-
 $BinaryDev = @(
     foreach ($BinaryModule in $BinaryModules) {
         if ($PSEdition -eq 'Core') {
@@ -76,10 +75,10 @@ if ($Development) {
 } else {
     $Assembly = @(
         if ($Framework -and $PSEdition -eq 'Core') {
-            Get-ChildItem -Path $PSScriptRoot\Lib\$Framework\*.dll -ErrorAction SilentlyContinue #-Recurse
+            Get-ChildItem -Path $PSScriptRoot\Lib\$Framework\*.dll -ErrorAction SilentlyContinue
         }
         if ($FrameworkNet -and $PSEdition -ne 'Core') {
-            Get-ChildItem -Path $PSScriptRoot\Lib\$FrameworkNet\*.dll -ErrorAction SilentlyContinue #-Recurse
+            Get-ChildItem -Path $PSScriptRoot\Lib\$FrameworkNet\*.dll -ErrorAction SilentlyContinue
         }
     )
 }
@@ -111,7 +110,6 @@ $FoundErrors = @(
     }
     foreach ($Import in @($Assembly)) {
         try {
-            # Write-Warning -Message $Import.FullName
             Add-Type -Path $Import.Fullname -ErrorAction Stop
         } catch [System.Reflection.ReflectionTypeLoadException] {
             Write-Warning "Processing $($Import.Name) Exception: $($_.Exception.Message)"
@@ -120,7 +118,6 @@ $FoundErrors = @(
                 Write-Warning "Processing $($Import.Name) LoaderExceptions: $($E.Message)"
             }
             $true
-            #Write-Error -Message "StackTrace: $($_.Exception.StackTrace)"
         } catch {
             Write-Warning "Processing $($Import.Name) Exception: $($_.Exception.Message)"
             $LoaderExceptions = $($_.Exception.LoaderExceptions) | Sort-Object -Unique
@@ -128,10 +125,9 @@ $FoundErrors = @(
                 Write-Warning "Processing $($Import.Name) LoaderExceptions: $($E.Message)"
             }
             $true
-            #Write-Error -Message "StackTrace: $($_.Exception.StackTrace)"
         }
     }
-    #Dot source the files
+    # Dot source the files
     foreach ($Import in @($Classes + $Enums + $Private + $Public)) {
         try {
             . $Import.Fullname

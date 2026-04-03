@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerBGInfo.PowerShell", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerBGInfo.Tests", "PowerBGInfo.Tests\PowerBGInfo.Tests.csproj", "{AC215FC4-AF60-4001-8E32-55560D9AA7E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerBGInfo.Cli", "PowerBGInfo.Cli\PowerBGInfo.Cli.csproj", "{0106FEF5-F89B-4C0C-AE9D-4A8D88E89FF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{AC215FC4-AF60-4001-8E32-55560D9AA7E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC215FC4-AF60-4001-8E32-55560D9AA7E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC215FC4-AF60-4001-8E32-55560D9AA7E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0106FEF5-F89B-4C0C-AE9D-4A8D88E89FF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0106FEF5-F89B-4C0C-AE9D-4A8D88E89FF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0106FEF5-F89B-4C0C-AE9D-4A8D88E89FF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0106FEF5-F89B-4C0C-AE9D-4A8D88E89FF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

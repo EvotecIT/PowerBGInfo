@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>net472;net8.0-windows;net9.0-windows</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <LangVersion>Latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+        <TargetFrameworks>net8.0-windows</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\\PowerBGInfo\\PowerBGInfo.csproj" />
+    </ItemGroup>
+</Project>
