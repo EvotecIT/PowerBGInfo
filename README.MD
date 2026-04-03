@@ -80,6 +80,7 @@ Here's how the wallpaper will look like:
 - Refresh behavior: by default the wallpaper is refreshed to avoid Windows caching issues; use `-DisableWallpaperRefresh` to keep the old behavior.
 - All users: use `-AllUsers` (requires elevation). Use `-ExcludeDefaultUserProfile` to skip the default profile.
 - Logon screen: use `-Target LogonScreen` or `-Target Both` (requires elevation).
+- Long values: use `-ValueWrapWidth` or JSON `ValueWrapWidth` to wrap value text such as long AD descriptions.
 - Stable output path: use `-OutputFileName` to control the output name and path.
 - Charts: use `New-BGInfoChart` to add sparklines or bar charts with optional history.
 
@@ -119,6 +120,7 @@ When hand-editing JSON on Windows, remember that backslashes inside string value
   "WallpaperFit": "Fill",
   "Color": "#FFFFFFFF",
   "ValueColor": "#FF00FFFF",
+  "ValueWrapWidth": 320,
   "ChartLayout": "Stack",
   "ChartStackAnchor": "BottomLeft",
   "ChartStackDirection": "Vertical",

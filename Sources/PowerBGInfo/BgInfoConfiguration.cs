@@ -77,6 +77,10 @@ public class BgInfoConfiguration {
     /// </summary>
     public string ValueFontFamilyName { get; set; } = "Calibri";
     /// <summary>
+    /// Gets or sets the maximum width used when wrapping value text. Set to 0 to disable wrapping.
+    /// </summary>
+    public int ValueWrapWidth { get; set; }
+    /// <summary>
     /// Gets or sets the background color to use when no wallpaper image is available.
     /// </summary>
     public Color? BackgroundColor { get; set; }

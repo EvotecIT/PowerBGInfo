@@ -18,6 +18,11 @@
         <PackageReference Include="DesktopManager" Version="3.6.1" />
         <PackageReference Include="ImagePlayground.Gdi" Version="2.0.0" />
     </ItemGroup>
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>PowerBGInfo.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
         <PackageReference Include="System.Management" Version="8.0.0" />
     </ItemGroup>

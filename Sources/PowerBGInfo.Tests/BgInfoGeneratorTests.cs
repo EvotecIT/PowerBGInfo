@@ -2,6 +2,7 @@ using DesktopManager;
 using PowerBGInfo;
 using System.Drawing;
 using System.IO;
+using GdiImage = ImagePlayground.Gdi.Image;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
@@ -136,6 +137,31 @@ public class BgInfoGeneratorTests
 
         var path = generator.Generate(config);
         Assert.True(File.Exists(path));
+    }
+
+    [Fact]
+    public void WrapTextLinesSplitsLongValueIntoMultipleLines()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        using var image = new GdiImage();
+        image.Create(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png"), 800, 600, Color.Black);
+
+        var lines = BgInfoGenerator.WrapTextLines(
+            image,
+            "This is a very long description value that should wrap across multiple lines.",
+            120,
+            16f,
+            "Calibri");
+
+        Assert.True(lines.Count > 1);
+        foreach (var line in lines)
+        {
+            Assert.True(image.GetTextSize(line, 16f, "Calibri").Width <= 120.5f);
+        }
     }
 }
 

@@ -109,6 +109,7 @@ public static class BgInfoConfigurationJson {
 
         if (model.FontSize.HasValue) configuration.FontSize = model.FontSize.Value;
         if (model.ValueFontSize.HasValue) configuration.ValueFontSize = model.ValueFontSize.Value;
+        if (model.ValueWrapWidth.HasValue) configuration.ValueWrapWidth = model.ValueWrapWidth.Value;
         if (model.SpaceBetweenLines.HasValue) configuration.SpaceBetweenLines = model.SpaceBetweenLines.Value;
         if (model.SpaceBetweenColumns.HasValue) configuration.SpaceBetweenColumns = model.SpaceBetweenColumns.Value;
         if (model.PositionX.HasValue) configuration.PositionX = model.PositionX.Value;
@@ -183,6 +184,7 @@ public static class BgInfoConfigurationJson {
             ValueColor = BgInfoColorParser.ToHex(configuration.ValueColor),
             ValueFontSize = configuration.ValueFontSize,
             ValueFontFamilyName = configuration.ValueFontFamilyName,
+            ValueWrapWidth = configuration.ValueWrapWidth,
             BackgroundColor = configuration.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(configuration.BackgroundColor.Value) : null,
             SpaceBetweenLines = configuration.SpaceBetweenLines,
             SpaceBetweenColumns = configuration.SpaceBetweenColumns,
@@ -400,6 +402,7 @@ public static class BgInfoConfigurationJson {
         public string? ValueColor { get; set; }
         public float? ValueFontSize { get; set; }
         public string? ValueFontFamilyName { get; set; }
+        public int? ValueWrapWidth { get; set; }
         public string? BackgroundColor { get; set; }
         public int? SpaceBetweenLines { get; set; }
         public int? SpaceBetweenColumns { get; set; }

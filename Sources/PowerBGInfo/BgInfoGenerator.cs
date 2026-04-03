@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using ImagePlayground.Gdi;
 using DesktopManager;
 
@@ -51,30 +52,12 @@ public class BgInfoGenerator
             ? LoadBaseImage(imagePath, outputPath)
             : CreateBaseImage(config, monitors, outputPath);
 
-        float highestWidth = 0;
-        float highestHeight = 0;
-        float highestValueWidth = 0;
-        foreach (var entry in config.Entries)
-        {
-            entry.Color ??= config.Color;
-            entry.FontSize ??= config.FontSize;
-            entry.FontFamilyName ??= config.FontFamilyName;
-            if (entry.Type != BgInfoEntryType.Label)
-            {
-                entry.ValueColor ??= entry.Color ?? config.ValueColor;
-                entry.ValueFontSize ??= entry.FontSize ?? config.ValueFontSize;
-                entry.ValueFontFamilyName ??= entry.FontFamilyName ?? config.ValueFontFamilyName;
-            }
-            var size = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!);
-            if (size.Width > highestWidth) highestWidth = size.Width;
-            if (size.Height > highestHeight) highestHeight = size.Height;
-            if (entry.Type != BgInfoEntryType.Label && entry.Value != null)
-            {
-                var valSize = image.GetTextSize(entry.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
-                if (valSize.Width > highestValueWidth) highestValueWidth = valSize.Width;
-            }
-        }
-        var totalWidth = highestWidth + config.SpaceBetweenColumns + highestValueWidth;
+        var entryLayouts = BuildEntryLayouts(image, config);
+        float highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
+        float highestValueWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.ValueWidth);
+        bool hasValueEntries = entryLayouts.Any(layout => layout.Entry.Type != BgInfoEntryType.Label);
+        var totalWidth = highestWidth + (hasValueEntries ? config.SpaceBetweenColumns + highestValueWidth : 0f);
+        var textBlockHeight = GetTextBlockHeight(config, entryLayouts);
 
         float posX;
         float posY;
@@ -111,26 +94,26 @@ public class BgInfoGenerator
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
                     break;
                 case BgInfoTextPosition.MiddleLeft:
-                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    posY = (screenHeight / 2f - textBlockHeight * scaleY / 2f) / scaleY;
                     break;
                 case BgInfoTextPosition.MiddleCenter:
                     posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
-                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    posY = (screenHeight / 2f - textBlockHeight * scaleY / 2f) / scaleY;
                     break;
                 case BgInfoTextPosition.MiddleRight:
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
-                    posY = (screenHeight / 2f - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY / 2f) / scaleY;
+                    posY = (screenHeight / 2f - textBlockHeight * scaleY / 2f) / scaleY;
                     break;
                 case BgInfoTextPosition.BottomLeft:
-                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    posY = (screenHeight - textBlockHeight * scaleY - config.SpaceY) / scaleY;
                     break;
                 case BgInfoTextPosition.BottomCenter:
                     posX = (screenWidth / 2f - totalWidth * scaleX / 2f) / scaleX;
-                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    posY = (screenHeight - textBlockHeight * scaleY - config.SpaceY) / scaleY;
                     break;
                 case BgInfoTextPosition.BottomRight:
                     posX = (screenWidth - totalWidth * scaleX - config.SpaceX) / scaleX;
-                    posY = (screenHeight - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) * scaleY - config.SpaceY) / scaleY;
+                    posY = (screenHeight - textBlockHeight * scaleY - config.SpaceY) / scaleY;
                     break;
             }
         }
@@ -147,26 +130,26 @@ public class BgInfoGenerator
                     posX = image.Width - totalWidth - config.SpaceX;
                     break;
                 case BgInfoTextPosition.MiddleLeft:
-                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    posY = (image.Height / 2f) - (textBlockHeight / 2f);
                     break;
                 case BgInfoTextPosition.MiddleCenter:
                     posX = (image.Width / 2f) - (totalWidth / 2f);
-                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    posY = (image.Height / 2f) - (textBlockHeight / 2f);
                     break;
                 case BgInfoTextPosition.MiddleRight:
                     posX = image.Width - totalWidth - config.SpaceX;
-                    posY = (image.Height / 2f) - ((config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) / 2f);
+                    posY = (image.Height / 2f) - (textBlockHeight / 2f);
                     break;
                 case BgInfoTextPosition.BottomLeft:
-                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    posY = image.Height - textBlockHeight - config.SpaceY;
                     break;
                 case BgInfoTextPosition.BottomCenter:
                     posX = (image.Width / 2f) - (totalWidth / 2f);
-                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    posY = image.Height - textBlockHeight - config.SpaceY;
                     break;
                 case BgInfoTextPosition.BottomRight:
                     posX = image.Width - totalWidth - config.SpaceX;
-                    posY = image.Height - (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceY;
+                    posY = image.Height - textBlockHeight - config.SpaceY;
                     break;
             }
         }
@@ -174,8 +157,9 @@ public class BgInfoGenerator
         textStartX = posX;
         textStartY = posY;
 
-        foreach (var entry in config.Entries)
+        foreach (var layout in entryLayouts)
         {
+            var entry = layout.Entry;
             if (entry.Type == BgInfoEntryType.Label)
             {
                 image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!);
@@ -183,14 +167,16 @@ public class BgInfoGenerator
             else
             {
                 image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!);
-                image.AddText(posX + highestWidth + config.SpaceBetweenColumns, posY, entry.Value!, entry.ValueColor!.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
+                var valueY = posY;
+                foreach (var line in layout.ValueLines)
+                {
+                    image.AddText(posX + highestWidth + config.SpaceBetweenColumns, valueY, line, entry.ValueColor!.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
+                    valueY += layout.ValueLineHeight;
+                }
             }
-            posY += highestHeight + config.SpaceBetweenLines;
+            posY += layout.RowHeight + config.SpaceBetweenLines;
         }
 
-        var textBlockHeight = config.Entries.Count == 0
-            ? 0f
-            : (config.Entries.Count * (highestHeight + config.SpaceBetweenLines)) - config.SpaceBetweenLines;
         var textBlock = new System.Drawing.RectangleF(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
 
         RenderCharts(image, config, textBlock);
@@ -480,6 +466,37 @@ public class BgInfoGenerator
         return new System.Drawing.PointF(x, y);
     }
 
+    internal static IReadOnlyList<string> WrapTextLines(Image image, string? text, float wrapWidth, float fontSize, string fontFamilyName)
+    {
+        if (image == null) throw new ArgumentNullException(nameof(image));
+
+        var normalized = NormalizeLineEndings(text);
+        if (normalized.Length == 0)
+        {
+            return new[] { string.Empty };
+        }
+
+        var paragraphs = normalized.Split('\n');
+        if (wrapWidth <= 0)
+        {
+            return paragraphs.Length == 0 ? new[] { string.Empty } : paragraphs;
+        }
+
+        var lines = new List<string>();
+        foreach (var paragraph in paragraphs)
+        {
+            if (paragraph.Length == 0)
+            {
+                lines.Add(string.Empty);
+                continue;
+            }
+
+            AddWrappedParagraph(lines, image, paragraph, wrapWidth, fontSize, fontFamilyName);
+        }
+
+        return lines.Count == 0 ? new[] { string.Empty } : lines;
+    }
+
     private static int ResolveStackDirection(BgInfoTextPosition anchor, bool vertical)
     {
         if (vertical)
@@ -639,5 +656,161 @@ public class BgInfoGenerator
         }
 
         return new System.Drawing.PointF(x, y);
+    }
+
+    private static List<EntryLayout> BuildEntryLayouts(Image image, BgInfoConfiguration config)
+    {
+        var layouts = new List<EntryLayout>();
+        foreach (var entry in config.Entries)
+        {
+            entry.Color ??= config.Color;
+            entry.FontSize ??= config.FontSize;
+            entry.FontFamilyName ??= config.FontFamilyName;
+            if (entry.Type != BgInfoEntryType.Label)
+            {
+                entry.ValueColor ??= entry.Color ?? config.ValueColor;
+                entry.ValueFontSize ??= entry.FontSize ?? config.ValueFontSize;
+                entry.ValueFontFamilyName ??= entry.FontFamilyName ?? config.ValueFontFamilyName;
+            }
+
+            var labelSize = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!);
+            var valueLines = entry.Type == BgInfoEntryType.Label
+                ? Array.Empty<string>()
+                : WrapTextLines(image, entry.Value, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).ToArray();
+            var valueLineHeight = entry.Type == BgInfoEntryType.Label
+                ? 0f
+                : GetLineHeight(image, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
+            var valueWidth = valueLines.Length == 0
+                ? 0f
+                : valueLines.Max(line => image.GetTextSize(line, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).Width);
+            var valueHeight = valueLines.Length == 0 ? 0f : valueLineHeight * valueLines.Length;
+            layouts.Add(new EntryLayout(
+                entry,
+                labelSize.Width,
+                labelSize.Height,
+                valueLines,
+                valueWidth,
+                valueLineHeight,
+                Math.Max(labelSize.Height, valueHeight)));
+        }
+
+        return layouts;
+    }
+
+    private static float GetTextBlockHeight(BgInfoConfiguration config, IReadOnlyList<EntryLayout> entryLayouts)
+    {
+        if (entryLayouts.Count == 0)
+        {
+            return 0f;
+        }
+
+        return entryLayouts.Sum(layout => layout.RowHeight) + (entryLayouts.Count - 1) * config.SpaceBetweenLines;
+    }
+
+    private static float GetLineHeight(Image image, float fontSize, string fontFamilyName)
+    {
+        return image.GetTextSize("Ag", fontSize, fontFamilyName).Height;
+    }
+
+    private static string NormalizeLineEndings(string? text)
+    {
+        return (text ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
+    }
+
+    private static void AddWrappedParagraph(List<string> lines, Image image, string paragraph, float wrapWidth, float fontSize, string fontFamilyName)
+    {
+        var words = paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 0)
+        {
+            lines.Add(string.Empty);
+            return;
+        }
+
+        var current = string.Empty;
+        foreach (var word in words)
+        {
+            var candidate = string.IsNullOrEmpty(current) ? word : current + " " + word;
+            if (image.GetTextSize(candidate, fontSize, fontFamilyName).Width <= wrapWidth)
+            {
+                current = candidate;
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+            {
+                lines.Add(current);
+            }
+
+            if (image.GetTextSize(word, fontSize, fontFamilyName).Width <= wrapWidth)
+            {
+                current = word;
+                continue;
+            }
+
+            foreach (var fragment in WrapLongWord(image, word, wrapWidth, fontSize, fontFamilyName))
+            {
+                if (image.GetTextSize(fragment, fontSize, fontFamilyName).Width <= wrapWidth)
+                {
+                    lines.Add(fragment);
+                }
+            }
+            current = string.Empty;
+        }
+
+        if (!string.IsNullOrEmpty(current))
+        {
+            lines.Add(current);
+        }
+    }
+
+    private static IEnumerable<string> WrapLongWord(Image image, string word, float wrapWidth, float fontSize, string fontFamilyName)
+    {
+        var current = string.Empty;
+        foreach (var character in word)
+        {
+            var candidate = current + character;
+            if (!string.IsNullOrEmpty(current) && image.GetTextSize(candidate, fontSize, fontFamilyName).Width > wrapWidth)
+            {
+                yield return current;
+                current = character.ToString();
+                continue;
+            }
+
+            current = candidate;
+        }
+
+        if (!string.IsNullOrEmpty(current))
+        {
+            yield return current;
+        }
+    }
+
+    private sealed class EntryLayout
+    {
+        public EntryLayout(
+            BgInfoEntry entry,
+            float labelWidth,
+            float labelHeight,
+            string[] valueLines,
+            float valueWidth,
+            float valueLineHeight,
+            float rowHeight)
+        {
+            Entry = entry;
+            LabelWidth = labelWidth;
+            LabelHeight = labelHeight;
+            ValueLines = valueLines;
+            ValueWidth = valueWidth;
+            ValueLineHeight = valueLineHeight;
+            RowHeight = rowHeight;
+        }
+
+        public BgInfoEntry Entry { get; }
+        public float LabelWidth { get; }
+        public float LabelHeight { get; }
+        public string[] ValueLines { get; }
+        public float ValueWidth { get; }
+        public float ValueLineHeight { get; }
+        public float RowHeight { get; }
     }
 }

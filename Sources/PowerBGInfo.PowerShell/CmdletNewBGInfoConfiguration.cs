@@ -48,6 +48,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
 
+    /// <para>Maximum width used when wrapping value text. Set to 0 to disable wrapping.</para>
+    [Parameter]
+    public int ValueWrapWidth { get; set; }
+
     /// <para>Vertical spacing between rows.</para>
     [Parameter]
     public int SpaceBetweenLines { get; set; } = 10;
@@ -158,6 +162,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(ValueColor))) config.ValueColor = ValueColor;
         if (IsParameterBound(nameof(ValueFontSize))) config.ValueFontSize = ValueFontSize;
         if (IsParameterBound(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
+        if (IsParameterBound(nameof(ValueWrapWidth))) config.ValueWrapWidth = ValueWrapWidth;
         if (IsParameterBound(nameof(SpaceBetweenLines))) config.SpaceBetweenLines = SpaceBetweenLines;
         if (IsParameterBound(nameof(SpaceBetweenColumns))) config.SpaceBetweenColumns = SpaceBetweenColumns;
         if (IsParameterBound(nameof(PositionX))) config.PositionX = PositionX;

@@ -23,6 +23,11 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command = Get-Command New-BGInfo
         $command.Parameters.Keys | Should -Contain 'UseScreenCoordinates'
     }
+
+    It 'supports ValueWrapWidth' {
+        $command = Get-Command New-BGInfo
+        $command.Parameters.Keys | Should -Contain 'ValueWrapWidth'
+    }
 }
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
@@ -37,11 +42,12 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
 
 Describe 'New-BGInfoConfiguration cmdlet' {
     It 'creates configuration with overrides' {
-        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock
+        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock
         $config.Target | Should -Be ([PowerBGInfo.BgInfoTarget]::File)
         $config.MonitorIndex | Should -Be 1
         $config.SpaceX | Should -Be 5
         $config.SpaceY | Should -Be 7
+        $config.ValueWrapWidth | Should -Be 240
         $config.ChartLayout | Should -Be ([PowerBGInfo.BgInfoChartLayoutMode]::Stack)
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue
