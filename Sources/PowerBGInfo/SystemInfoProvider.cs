@@ -503,7 +503,7 @@ public static class SystemInfoProvider
             return false;
         }
 
-        if (fallbackSize.HasValue && fallbackFree.HasValue) {
+        if (string.IsNullOrWhiteSpace(targetDrive) && fallbackSize.HasValue && fallbackFree.HasValue) {
             size = fallbackSize.Value;
             free = fallbackFree.Value;
             return true;

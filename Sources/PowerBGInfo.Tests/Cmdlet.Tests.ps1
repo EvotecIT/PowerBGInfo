@@ -15,6 +15,7 @@ Describe 'New-BGInfoValue cmdlet' {
         $entry = New-BGInfoValue -BuiltinValue 'HostName'
         $entry.Name | Should -Be 'HostName'
         $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.BuiltinValue | Should -Be 'HostName'
     }
 }
 
@@ -37,6 +38,17 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
         Export-BGInfoConfiguration -InputObject $config -Path $path -Force -PassThru | Should -Be $path
         Test-Path -LiteralPath $path | Should -BeTrue
         (Get-Content -LiteralPath $path -Raw).Length | Should -BeGreaterThan 0
+    }
+
+    It 'supports multiple pipeline inputs' {
+        $config1 = [PowerBGInfo.BgInfoConfiguration]::new()
+        $config2 = [PowerBGInfo.BgInfoConfiguration]::new()
+        $path = Join-Path -Path $TestDrive -ChildPath 'pipeline.json'
+
+        $result = @((@($config1, $config2) | Export-BGInfoConfiguration -Path $path -Force -PassThru))
+
+        $result.Count | Should -Be 2
+        $result | Should -Be @($path, $path)
     }
 }
 

@@ -216,7 +216,8 @@ public static class BgInfoConfigurationJson {
                 model.Entries.Add(new BgInfoEntryFile {
                     Type = entry.Type.ToString(),
                     Name = entry.Name,
-                    Value = entry.Value,
+                    Value = string.IsNullOrWhiteSpace(entry.BuiltinValue) ? entry.Value : null,
+                    BuiltinValue = entry.BuiltinValue,
                     Color = entry.Color.HasValue ? BgInfoColorParser.ToHex(entry.Color.Value) : null,
                     FontSize = entry.FontSize,
                     FontFamilyName = entry.FontFamilyName,
@@ -285,14 +286,17 @@ public static class BgInfoConfigurationJson {
         }
 
         entry.Name = model.Name ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(model.BuiltinValue)) {
+            entry.BuiltinValue = model.BuiltinValue;
+        }
+
         if (!string.IsNullOrWhiteSpace(model.BuiltinValue) && string.IsNullOrWhiteSpace(model.Value)) {
-            entry.Value = SystemInfoProvider.GetValue(model.BuiltinValue!);
             if (string.IsNullOrWhiteSpace(entry.Name)) {
                 entry.Name = model.BuiltinValue!;
             }
-        } else {
-            entry.Value = model.Value;
         }
+
+        entry.Value = model.Value;
 
         ApplyColor(model.Color, value => entry.Color = value);
         ApplyColor(model.ValueColor, value => entry.ValueColor = value);

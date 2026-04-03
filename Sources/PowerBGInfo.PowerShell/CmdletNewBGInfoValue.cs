@@ -78,6 +78,7 @@ public class CmdletNewBGInfoValue : PSCmdlet {
             Type = BgInfoEntryType.Value,
             Name = string.IsNullOrEmpty(Name) ? BuiltinValue : Name,
             Value = finalValue,
+            BuiltinValue = string.IsNullOrEmpty(BuiltinValue) ? null : BuiltinValue,
             Color = IsParameterBound(nameof(Color)) ? Color : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,

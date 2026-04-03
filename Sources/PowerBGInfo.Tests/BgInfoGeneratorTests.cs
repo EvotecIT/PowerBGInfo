@@ -202,6 +202,17 @@ public class BgInfoGeneratorTests
             Assert.True(image.GetTextSize(line, 16f, "Calibri").Width <= 120.5f);
         }
     }
+
+    [Fact]
+    public void ResolveChartPositionAppliesOffsetsForCenteredAnchors()
+    {
+        var area = new RectangleF(0, 0, 400, 200);
+
+        var point = BgInfoGenerator.ResolveChartPosition(area, 100, 50, BgInfoTextPosition.MiddleCenter, 15, 20);
+
+        Assert.Equal(165f, point.X);
+        Assert.Equal(95f, point.Y);
+    }
 }
 
 internal class FakeWallpaperService : IWallpaperService

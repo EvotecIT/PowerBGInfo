@@ -377,6 +377,9 @@ public class BgInfoGenerator
         int offsetX = config.ChartStackOffsetX;
         int offsetY = config.ChartStackOffsetY;
         float spacing = Math.Max(0, config.ChartStackSpacing);
+        bool outside = config.ChartStackAlignToTextBlock && config.ChartStackOutsideTextBlock && textBlock.Width > 0 && textBlock.Height > 0;
+        float? cursorX = null;
+        float? cursorY = null;
 
         for (int i = 0; i < config.Charts.Count; i++)
         {
@@ -389,27 +392,28 @@ public class BgInfoGenerator
 
             int width = Math.Max(1, chart.Width);
             int height = Math.Max(1, chart.Height);
-            var basePosition = config.ChartStackAlignToTextBlock && config.ChartStackOutsideTextBlock && textBlock.Width > 0 && textBlock.Height > 0
+            var basePosition = outside
                 ? ResolveChartPositionOutsideTextBlock(textBlock, width, height, config.ChartStackAnchor, offsetX, offsetY)
                 : ResolveChartPosition(area, width, height, config.ChartStackAnchor, offsetX, offsetY);
 
-            float stepX = 0;
-            float stepY = 0;
-            bool outside = config.ChartStackAlignToTextBlock && config.ChartStackOutsideTextBlock && textBlock.Width > 0 && textBlock.Height > 0;
+            float positionX = cursorX ?? basePosition.X;
+            float positionY = cursorY ?? basePosition.Y;
             if (config.ChartStackDirection == BgInfoChartStackDirection.Vertical)
             {
                 var direction = ResolveStackDirection(config.ChartStackAnchor, vertical: true);
                 if (outside) direction *= -1;
-                stepY = (height + spacing) * direction;
+                positionX = basePosition.X;
+                cursorY = positionY + (height + spacing) * direction;
             }
             else
             {
                 var direction = ResolveStackDirection(config.ChartStackAnchor, vertical: false);
                 if (outside) direction *= -1;
-                stepX = (width + spacing) * direction;
+                positionY = basePosition.Y;
+                cursorX = positionX + (width + spacing) * direction;
             }
 
-            var position = new System.Drawing.PointF(basePosition.X + stepX * i, basePosition.Y + stepY * i);
+            var position = new System.Drawing.PointF(positionX, positionY);
             using var chartImage = BgInfoChartRenderer.Render(chart, values, config);
             image.DrawImage(chartImage, position.X, position.Y);
         }
@@ -441,7 +445,7 @@ public class BgInfoGenerator
                 y = textBlock.Y - chartHeight - offsetY;
                 break;
             case BgInfoTextPosition.TopCenter:
-                x = textBlock.X + (textBlock.Width - chartWidth) / 2f;
+                x = textBlock.X + (textBlock.Width - chartWidth) / 2f + offsetX;
                 y = textBlock.Y - chartHeight - offsetY;
                 break;
             case BgInfoTextPosition.TopRight:
@@ -450,22 +454,22 @@ public class BgInfoGenerator
                 break;
             case BgInfoTextPosition.MiddleLeft:
                 x = textBlock.X - chartWidth - offsetX;
-                y = textBlock.Y + (textBlock.Height - chartHeight) / 2f;
+                y = textBlock.Y + (textBlock.Height - chartHeight) / 2f + offsetY;
                 break;
             case BgInfoTextPosition.MiddleCenter:
-                x = textBlock.X + (textBlock.Width - chartWidth) / 2f;
+                x = textBlock.X + (textBlock.Width - chartWidth) / 2f + offsetX;
                 y = textBlock.Y + textBlock.Height + offsetY;
                 break;
             case BgInfoTextPosition.MiddleRight:
                 x = textBlock.X + textBlock.Width + offsetX;
-                y = textBlock.Y + (textBlock.Height - chartHeight) / 2f;
+                y = textBlock.Y + (textBlock.Height - chartHeight) / 2f + offsetY;
                 break;
             case BgInfoTextPosition.BottomLeft:
                 x = textBlock.X + offsetX;
                 y = textBlock.Y + textBlock.Height + offsetY;
                 break;
             case BgInfoTextPosition.BottomCenter:
-                x = textBlock.X + (textBlock.Width - chartWidth) / 2f;
+                x = textBlock.X + (textBlock.Width - chartWidth) / 2f + offsetX;
                 y = textBlock.Y + textBlock.Height + offsetY;
                 break;
             case BgInfoTextPosition.BottomRight:
@@ -631,34 +635,34 @@ public class BgInfoGenerator
             (int)chartWidth, (int)chartHeight, chart.Anchor, chart.OffsetX, chart.OffsetY);
     }
 
-    private static System.Drawing.PointF ResolveChartPosition(System.Drawing.RectangleF area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
+    internal static System.Drawing.PointF ResolveChartPosition(System.Drawing.RectangleF area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
     {
         float x = area.X + offsetX;
         float y = area.Y + offsetY;
         switch (anchor)
         {
             case BgInfoTextPosition.TopCenter:
-                x = area.X + (area.Width - chartWidth) / 2f;
+                x = area.X + (area.Width - chartWidth) / 2f + offsetX;
                 break;
             case BgInfoTextPosition.TopRight:
                 x = area.X + area.Width - chartWidth - offsetX;
                 break;
             case BgInfoTextPosition.MiddleLeft:
-                y = area.Y + (area.Height - chartHeight) / 2f;
+                y = area.Y + (area.Height - chartHeight) / 2f + offsetY;
                 break;
             case BgInfoTextPosition.MiddleCenter:
-                x = area.X + (area.Width - chartWidth) / 2f;
-                y = area.Y + (area.Height - chartHeight) / 2f;
+                x = area.X + (area.Width - chartWidth) / 2f + offsetX;
+                y = area.Y + (area.Height - chartHeight) / 2f + offsetY;
                 break;
             case BgInfoTextPosition.MiddleRight:
                 x = area.X + area.Width - chartWidth - offsetX;
-                y = area.Y + (area.Height - chartHeight) / 2f;
+                y = area.Y + (area.Height - chartHeight) / 2f + offsetY;
                 break;
             case BgInfoTextPosition.BottomLeft:
                 y = area.Y + area.Height - chartHeight - offsetY;
                 break;
             case BgInfoTextPosition.BottomCenter:
-                x = area.X + (area.Width - chartWidth) / 2f;
+                x = area.X + (area.Width - chartWidth) / 2f + offsetX;
                 y = area.Y + area.Height - chartHeight - offsetY;
                 break;
             case BgInfoTextPosition.BottomRight:
@@ -689,9 +693,10 @@ public class BgInfoGenerator
             }
 
             var labelSize = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!);
+            var resolvedValue = ResolveEntryValue(entry);
             var valueLines = entry.Type == BgInfoEntryType.Label
                 ? Array.Empty<string>()
-                : WrapTextLines(image, entry.Value, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).ToArray();
+                : WrapTextLines(image, resolvedValue, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).ToArray();
             var valueLineHeight = entry.Type == BgInfoEntryType.Label
                 ? 0f
                 : GetLineHeight(image, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
@@ -710,6 +715,16 @@ public class BgInfoGenerator
         }
 
         return layouts;
+    }
+
+    private static string? ResolveEntryValue(BgInfoEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.BuiltinValue))
+        {
+            return SystemInfoProvider.GetValue(entry.BuiltinValue!);
+        }
+
+        return entry.Value;
     }
 
     private static float GetTextBlockHeight(BgInfoConfiguration config, IReadOnlyList<EntryLayout> entryLayouts)

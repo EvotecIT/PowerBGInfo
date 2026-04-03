@@ -29,6 +29,10 @@ public class BgInfoEntry {
     /// </summary>
     public string? Value { get; set; }
     /// <summary>
+    /// Gets or sets the built-in value token resolved at render time.
+    /// </summary>
+    public string? BuiltinValue { get; set; }
+    /// <summary>
     /// Gets or sets the label color.
     /// </summary>
     public Color? Color { get; set; }

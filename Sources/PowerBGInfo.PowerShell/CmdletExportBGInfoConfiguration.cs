@@ -27,7 +27,7 @@ public sealed class CmdletExportBGInfoConfiguration : PSCmdlet {
     public SwitchParameter PassThru { get; set; }
 
     /// <summary>Writes the JSON configuration file.</summary>
-    protected override void EndProcessing() {
+    protected override void ProcessRecord() {
         if (InputObject == null) {
             ThrowTerminatingError(new ErrorRecord(
                 new ArgumentNullException(nameof(InputObject)),
