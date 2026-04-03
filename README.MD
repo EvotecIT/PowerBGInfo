@@ -21,20 +21,26 @@
   <a href="https://evo.yt/discord"><img alt="Discord" src="https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat"></a>
 </p>
 
-**PowerBGInfo** is a PowerShell module that is used to generate background information for Windows machines.
-It's a replacement for [BGInfo](https://technet.microsoft.com/en-us/sysinternals/bginfo.aspx) that doesn't require installation and is much more flexible.
+**PowerBGInfo** is a Windows background generator with a shared PowerShell + CLI workflow.
+Use PowerShell to build and export configuration, then use the CLI to render and apply it repeatedly on endpoints, scheduled tasks, or deployment tooling.
 
 You can read about this project on this [blog post](https://evotec.xyz/powerbginfo-powershell-alternative-to-sysinternals-bginfo/) that tells a little backstory and shows few things.
 
 ## Installation
 
-Install from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerBGInfo) is as easy as:
+Install the PowerShell module for configuration authoring from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerBGInfo):
 
 ```powershell
 Install-Module PowerBGInfo -Force -Verbose
 ```
 
-When there's an update you can update it using same command which will install new module version.
+Build or publish the CLI from this repository when you want the fastest execution path:
+
+```powershell
+dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 --self-contained false -p:PublishSingleFile=true
+```
+
+When there's an update you can update the module using the same `Install-Module` command.
 
 ## Known Issues
 
@@ -42,9 +48,72 @@ This module will work fine for PowerShell 5.1 and PowerShell 7+.
 **Currently the module has a problem when running in VSCode PowerShell extension when on PowerShell 5.1 (other versions work fine!)**
 It works fine when running in PowerShell 5.1 console, or ISE (shrug!).
 
-## Usage
+## Recommended workflow
 
-Here's a small taste of the code:
+The best current workflow is:
+
+1. Build the JSON configuration with PowerShell.
+2. Store that JSON with your deployment or wallpaper package.
+3. Run `PowerBGInfo.Cli --config ...` for scheduled tasks, logon scripts, packaging, or RMM tools.
+
+This keeps the authoring experience flexible while making execution lighter and easier to operationalize than importing PowerShell every time.
+
+## Quick start
+
+Build the current checkout first so both the PowerShell module and CLI example use the latest source:
+
+```powershell
+dotnet build .\Sources\PowerBGInfo.sln -c Debug
+```
+
+Create a config with PowerShell:
+
+```powershell
+Import-Module .\PowerBGInfo.psd1 -Force
+
+$config = New-BGInfoConfiguration -Target File
+$config.FilePath = '..\Samples\TapC-Evotec-2560x1080.jpg'
+$config.ConfigurationDirectory = '..\Output'
+$config.OutputFileName = 'PowerBGInfo.Cli.Sample.png'
+$config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
+$config.Entries.Add((New-BGInfoValue -BuiltinValue FullUserName -Name 'User'))
+$config.Entries.Add((New-BGInfoLabel -Name 'Performance' -Color LemonChiffon -FontSize 14 -FontFamilyName 'Calibri'))
+$config.Charts.Add((New-BGInfoChart -Id 'cpu' -Title 'CPU' -Metric CpuPercent -ValueSuffix '%' -Kind Sparkline -MaxPoints 60 -Anchor BottomLeft -OffsetX 20 -OffsetY 20))
+
+Export-BGInfoConfiguration -InputObject $config -Path .\Examples\Configuration\PowerBGInfo.Generated.json -Force
+```
+
+Render it with the CLI:
+
+```powershell
+.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe --config .\Examples\Configuration\PowerBGInfo.Generated.json --no-apply
+```
+
+That JSON is portable because it keeps builtin tokens such as `HostName` instead of serializing your current machine name into the file.
+
+The repository contains the same flow as a ready-made example in `Examples\Run.BGInfo4.ps1`, and it finishes by running the CLI against the exported JSON.
+
+You can still run the same JSON through PowerShell when needed:
+
+```powershell
+Invoke-BGInfo -Path .\Examples\Configuration\PowerBGInfo.Generated.json -NoApply
+```
+
+## Validate the current checkout
+
+These are the repo-level commands that prove the PowerShell and CLI paths stay in sync:
+
+```powershell
+dotnet test .\Sources\PowerBGInfo.sln
+Invoke-Pester -Path .\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1 -Output Detailed
+pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo4.ps1
+```
+
+The last command exports JSON from PowerShell and renders it with the CLI, which is the recommended operational flow.
+
+## PowerShell inline usage
+
+You can also render everything inline from PowerShell when you're exploring or authoring a layout:
 
 ```powershell
 New-BGInfo -MonitorIndex 0 {
@@ -152,7 +221,7 @@ New-BGInfo -MonitorIndex 0 {
 
 ## JSON configuration + CLI
 
-PowerBGInfo supports JSON-driven configurations that are shared by the CLI and PowerShell.
+PowerBGInfo supports JSON-driven configurations that are shared by the CLI and PowerShell. This is the recommended way to operationalize the tool.
 
 Sample file: `Examples/Configuration/PowerBGInfo.Sample.json`
 
@@ -199,24 +268,32 @@ When hand-editing JSON on Windows, remember that backslashes inside string value
 }
 ```
 
-PowerShell (thin wrapper):
+PowerShell authoring and rendering:
 
 ```powershell
 Invoke-BGInfo -Path $PSScriptRoot\bginfo.json
 ```
 
-Export from PowerShell:
+Export JSON from PowerShell:
 
 ```powershell
 $config = New-BGInfoConfiguration -Target File
 Export-BGInfoConfiguration -InputObject $config -Path $PSScriptRoot\bginfo.json -Force
 ```
 
-CLI:
+CLI runtime:
 
 ```powershell
 PowerBGInfo.Cli --config $PSScriptRoot\bginfo.json
 ```
+
+The repository CI validates this workflow on every PR:
+
+- PowerShell 5.1 module tests
+- PowerShell 7 module tests
+- PowerShell exports JSON that the CLI consumes successfully
+- single-file CLI publish and execution
+- NativeAOT CLI smoke publish and `Target File` execution
 
 Publish a single-file CLI build:
 

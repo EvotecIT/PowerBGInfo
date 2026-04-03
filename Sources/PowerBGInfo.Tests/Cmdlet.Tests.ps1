@@ -40,6 +40,18 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
         (Get-Content -LiteralPath $path -Raw).Length | Should -BeGreaterThan 0
     }
 
+    It 'preserves builtin values in exported json' {
+        $config = New-BGInfoConfiguration -Target File
+        $config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
+        $path = Join-Path -Path $TestDrive -ChildPath 'builtin.json'
+
+        Export-BGInfoConfiguration -InputObject $config -Path $path -Force | Out-Null
+
+        $json = Get-Content -LiteralPath $path -Raw
+        $json | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
+        $json | Should -Not -Match '"Value"\s*:\s*"'
+    }
+
     It 'supports multiple pipeline inputs' {
         $config1 = [PowerBGInfo.BgInfoConfiguration]::new()
         $config2 = [PowerBGInfo.BgInfoConfiguration]::new()
@@ -88,6 +100,32 @@ Describe 'Invoke-BGInfo cmdlet' {
 
         $result = Invoke-BGInfo -Path $configPath -NoApply
         Test-Path -LiteralPath $result | Should -BeTrue
+    }
+}
+
+Describe 'CLI interoperability' {
+    It 'renders the same image from PowerShell-exported json' {
+        $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
+        $sampleImage = (Resolve-Path -Path $sampleImage).Path
+        $outputDir = Join-Path -Path $TestDrive -ChildPath 'interop'
+        $configPath = Join-Path -Path $TestDrive -ChildPath 'interop.json'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        $config = New-BGInfoConfiguration -Target File
+        $config.FilePath = $sampleImage
+        $config.ConfigurationDirectory = $outputDir
+        $config.OutputFileName = 'powershell.png'
+        $config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
+        Export-BGInfoConfiguration -InputObject $config -Path $configPath -Force | Out-Null
+
+        $psResult = Invoke-BGInfo -Path $configPath -NoApply
+        & $cliPath --config $configPath --output cli.png --no-apply | Out-Null
+        $cliResult = Join-Path -Path $outputDir -ChildPath 'cli.png'
+
+        (Get-FileHash -LiteralPath $psResult -Algorithm SHA256).Hash | Should -Be ((Get-FileHash -LiteralPath $cliResult -Algorithm SHA256).Hash)
     }
 }
 
