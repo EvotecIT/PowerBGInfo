@@ -29,6 +29,19 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command = Get-Command New-BGInfo
         $command.Parameters.Keys | Should -Contain 'ValueWrapWidth'
     }
+
+    It 'supports JsonPath export' {
+        $command = Get-Command New-BGInfo
+        $command.Parameters.Keys | Should -Contain 'JsonPath'
+        $command.Parameters.Keys | Should -Contain 'ExportOnly'
+    }
+
+    It 'supports chart stack options' {
+        $command = Get-Command New-BGInfo
+        $command.Parameters.Keys | Should -Contain 'ChartLayout'
+        $command.Parameters.Keys | Should -Contain 'ChartStackAlignToTextBlock'
+        $command.Parameters.Keys | Should -Contain 'ChartStackOutsideTextBlock'
+    }
 }
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
@@ -103,6 +116,24 @@ Describe 'Invoke-BGInfo cmdlet' {
     }
 }
 
+Describe 'New-BGInfo json export' {
+    It 'exports json from inline authoring without rendering' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'inline.json'
+
+        $result = New-BGInfo {
+            New-BGInfoValue -BuiltinValue HostName
+            New-BGInfoChart -Id 'cpu' -Title 'CPU' -Metric CpuPercent -ValueSuffix '%' -Kind Sparkline
+        } -ConfigurationDirectory $TestDrive -Target Both -JsonPath $path -ExportOnly
+
+        $result | Should -Be $path
+        Test-Path -LiteralPath $path | Should -BeTrue
+        $json = Get-Content -LiteralPath $path -Raw
+        $json | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
+        $json | Should -Match '"Metric"\s*:\s*"CpuPercent"'
+        $json | Should -Match '"Target"\s*:\s*"Both"'
+    }
+}
+
 Describe 'CLI interoperability' {
     It 'renders the same image from PowerShell-exported json' {
         $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
@@ -126,6 +157,24 @@ Describe 'CLI interoperability' {
         $cliResult = Join-Path -Path $outputDir -ChildPath 'cli.png'
 
         (Get-FileHash -LiteralPath $psResult -Algorithm SHA256).Hash | Should -Be ((Get-FileHash -LiteralPath $cliResult -Algorithm SHA256).Hash)
+    }
+
+    It 'renders from json exported by inline New-BGInfo authoring' {
+        $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
+        $sampleImage = (Resolve-Path -Path $sampleImage).Path
+        $outputDir = Join-Path -Path $TestDrive -ChildPath 'inline-cli'
+        $configPath = Join-Path -Path $TestDrive -ChildPath 'inline-cli.json'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        New-BGInfo {
+            New-BGInfoValue -BuiltinValue HostName
+        } -FilePath $sampleImage -ConfigurationDirectory $outputDir -Target File -OutputFileName 'inline.png' -JsonPath $configPath -ExportOnly | Out-Null
+
+        & $cliPath --config $configPath --no-apply | Out-Null
+        Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'inline.png') | Should -BeTrue
     }
 }
 

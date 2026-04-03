@@ -66,21 +66,23 @@ Build the current checkout first so both the PowerShell module and CLI example u
 dotnet build .\Sources\PowerBGInfo.sln -c Debug
 ```
 
-Create a config with PowerShell:
+Author the layout with the same inline `New-BGInfo` flow you already use, but add `-JsonPath` and `-ExportOnly` to save a reusable CLI config:
 
 ```powershell
 Import-Module .\PowerBGInfo.psd1 -Force
 
-$config = New-BGInfoConfiguration -Target File
-$config.FilePath = '..\Samples\TapC-Evotec-2560x1080.jpg'
-$config.ConfigurationDirectory = '..\Output'
-$config.OutputFileName = 'PowerBGInfo.Cli.Sample.png'
-$config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
-$config.Entries.Add((New-BGInfoValue -BuiltinValue FullUserName -Name 'User'))
-$config.Entries.Add((New-BGInfoLabel -Name 'Performance' -Color LemonChiffon -FontSize 14 -FontFamilyName 'Calibri'))
-$config.Charts.Add((New-BGInfoChart -Id 'cpu' -Title 'CPU' -Metric CpuPercent -ValueSuffix '%' -Kind Sparkline -MaxPoints 60 -Anchor BottomLeft -OffsetX 20 -OffsetY 20))
-
-Export-BGInfoConfiguration -InputObject $config -Path .\Examples\Configuration\PowerBGInfo.Generated.json -Force
+New-BGInfo {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue FullUserName -Name 'User'
+    New-BGInfoLabel -Name 'Performance' -Color LemonChiffon -FontSize 14 -FontFamilyName 'Calibri'
+    New-BGInfoChart -Id 'cpu' -Title 'CPU' -Metric CpuPercent -ValueSuffix '%' -Kind Sparkline -MaxPoints 60 -Anchor BottomLeft -OffsetX 20 -OffsetY 20
+} -MonitorIndex 0 `
+    -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg `
+    -ConfigurationDirectory .\Examples\Output `
+    -OutputFileName PowerBGInfo.Cli.Sample.png `
+    -Target Both `
+    -JsonPath .\Examples\Configuration\PowerBGInfo.Generated.json `
+    -ExportOnly
 ```
 
 Render it with the CLI:
@@ -111,6 +113,21 @@ pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo4.ps1
 
 The last command exports JSON from PowerShell and renders it with the CLI, which is the recommended operational flow.
 
+## What JSON preserves
+
+`-JsonPath` on `New-BGInfo` preserves the configuration and the dynamic tokens that the shared engine understands:
+
+- builtin values such as `HostName`, `FullUserName`, `OSName`
+- chart metrics such as `CpuPercent`, `MemoryPercent`, `DiskFreePercent`
+- layout, colors, fonts, spacing, target, wallpaper options, and chart settings
+
+What it does not preserve today is arbitrary PowerShell source code. For example, a `foreach ($Disk in Get-Disk) { ... }` block is executed during export, and the produced entries are written to JSON as normal values. The JSON does not currently embed executable user PowerShell.
+
+That means there are two supported patterns today:
+
+- use builtin values and chart metrics when you want the CLI to recalculate data on each run
+- use custom PowerShell to compute values once, export the resulting entries, and let the CLI render that snapshot later
+
 ## PowerShell inline usage
 
 You can also render everything inline from PowerShell when you're exploring or authoring a layout:
@@ -138,6 +155,8 @@ New-BGInfo -MonitorIndex 0 {
     }
 } -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
 ```
+
+You can export the same inline authoring flow to JSON for the CLI by adding `-JsonPath` and, when you only want the config file, `-ExportOnly`.
 Here's how the wallpaper will look like:
 
 ![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
