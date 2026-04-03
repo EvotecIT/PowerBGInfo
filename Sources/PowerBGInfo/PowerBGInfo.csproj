@@ -15,8 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\\..\\..\\DesktopManager\\Sources\\DesktopManager\\DesktopManager.csproj" />
-        <ProjectReference Include="..\\..\\..\\ImagePlayground\\Sources\\ImagePlayground.Gdi\\ImagePlayground.Gdi.csproj" />
+        <PackageReference Include="DesktopManager" Version="3.6.1" />
+        <PackageReference Include="ImagePlayground.Gdi" Version="2.0.0" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
         <PackageReference Include="System.Management" Version="8.0.0" />

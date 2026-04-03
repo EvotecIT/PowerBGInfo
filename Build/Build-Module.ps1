@@ -1,4 +1,4 @@
-﻿Import-Module 'PSPublishModule' -Force -ErrorAction Stop
+Import-Module PSPublishModule -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'PowerBGInfo' {
     # Usual defaults as per standard module
@@ -23,11 +23,8 @@ Build-Module -ModuleName 'PowerBGInfo' {
         Tags                   = @('windows', 'image', 'monitor', 'bginfo')
         # A URL to the main website for this project.
         ProjectUri             = 'https://github.com/EvotecIT/PowerBGInfo'
-
         IconUri                = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
-
         LicenseUri             = 'https://github.com/EvotecIT/PowerBGInfo/blob/master/License'
-
         DotNetFrameworkVersion = '4.7.2'
     }
     New-ConfigurationManifest @Manifest
@@ -40,22 +37,18 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     $ConfigurationFormat = [ordered] @{
         RemoveComments                              = $false
-
         PlaceOpenBraceEnable                        = $true
         PlaceOpenBraceOnSameLine                    = $true
         PlaceOpenBraceNewLineAfter                  = $true
         PlaceOpenBraceIgnoreOneLineBlock            = $true
-
         PlaceCloseBraceEnable                       = $true
         PlaceCloseBraceNewLineAfter                 = $false
         PlaceCloseBraceIgnoreOneLineBlock           = $true
         PlaceCloseBraceNoEmptyLineBefore            = $false
-
         UseConsistentIndentationEnable              = $true
         UseConsistentIndentationKind                = 'space'
         UseConsistentIndentationPipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
         UseConsistentIndentationIndentationSize     = 4
-
         UseConsistentWhitespaceEnable               = $true
         UseConsistentWhitespaceCheckInnerBrace      = $true
         UseConsistentWhitespaceCheckOpenBrace       = $true
@@ -63,12 +56,11 @@ Build-Module -ModuleName 'PowerBGInfo' {
         UseConsistentWhitespaceCheckOperator        = $true
         UseConsistentWhitespaceCheckPipe            = $true
         UseConsistentWhitespaceCheckSeparator       = $true
-
         AlignAssignmentStatementEnable              = $true
         AlignAssignmentStatementCheckHashtable      = $true
-
         UseCorrectCasingEnable                      = $true
     }
+
     # format PSD1 and PSM1 files when merging into a single file
     # enable formatting is not required as Configuration is provided
     New-ConfigurationFormat -ApplyTo 'OnMergePSM1', 'OnMergePSD1' -Sort None @ConfigurationFormat
@@ -92,7 +84,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
         ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
         NETProjectName                    = 'PowerBGInfo.PowerShell'
         NETConfiguration                  = 'Release'
-        NETFramework                      = 'net8.0', 'net472'
+        NETFramework                      = 'net8.0-windows', 'net472'
         NETHandleAssemblyWithSameName     = $true
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true
@@ -103,7 +95,6 @@ Build-Module -ModuleName 'PowerBGInfo' {
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat
-
 
     New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot\..\Artefacts\Unpacked" -ModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -RequiredModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -AddRequiredModules
     New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot\..\Artefacts\Packed" -ArtefactName '<ModuleName>.v<ModuleVersion>.zip'
