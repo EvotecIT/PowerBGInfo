@@ -6,15 +6,23 @@
         <VersionPrefix>1.0.0</VersionPrefix>
         <AssemblyName>PowerBGInfo</AssemblyName>
         <Copyright>(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.</Copyright>
-        <TargetFrameworks>net472;netstandard2.0;net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net472;net8.0-windows;net9.0-windows</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <UseSystemDrawing>true</UseSystemDrawing>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DesktopManager" Version="3.5.0" />
-        <PackageReference Include="ImagePlayground" Version="1.0.0" />
+        <ProjectReference Include="..\\..\\..\\DesktopManager\\Sources\\DesktopManager\\DesktopManager.csproj" />
+        <ProjectReference Include="..\\..\\..\\ImagePlayground\\Sources\\ImagePlayground.Gdi\\ImagePlayground.Gdi.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+        <PackageReference Include="System.Management" Version="8.0.0" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+        <Reference Include="System.Management" />
+        <Reference Include="System.Web.Extensions" />
     </ItemGroup>
 </Project>

@@ -133,7 +133,7 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: [SixLabors.ImageSharp.Color]::Black
+Default value: [System.Drawing.Color]::Black
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -167,7 +167,7 @@ Aliases:
 
 Required: False
 Position: 7
-Default value: [SixLabors.ImageSharp.Color]::Black
+Default value: [System.Drawing.Color]::Black
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

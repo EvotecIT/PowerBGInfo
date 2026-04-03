@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net472;net8.0</TargetFrameworks>
+        <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Description>PowerShell Module to analyze Domain Health</Description>
@@ -12,6 +12,7 @@
         <Company>Evotec</Company>
         <Authors>Przemyslaw Klys</Authors>
         <LangVersion>latest</LangVersion>
+        <UseSystemDrawing>true</UseSystemDrawing>
     </PropertyGroup>
 
     <ItemGroup>
@@ -50,7 +51,7 @@
     <!-- We need to remove PowerShell conflicting libraries as it will break output -->
     <Target Name="RemoveFilesAfterBuild" AfterTargets="Build">
         <Delete Files="$(OutDir)System.Management.Automation.dll" />
-        <Delete Files="$(OutDir)System.Management.dll" />
+        <Delete Files="$(OutDir)System.Management.dll" Condition="'$(TargetFramework)' == 'net472'" />
     </Target>
 
     <ItemGroup>

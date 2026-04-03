@@ -1,4 +1,4 @@
-using SixLabors.ImageSharp;
+using System.Drawing;
 
 namespace PowerBGInfo;
 

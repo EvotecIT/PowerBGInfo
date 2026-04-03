@@ -1,7 +1,5 @@
-﻿using System.Management.Automation;
-using DesktopManager;
-using ImagePlayground;
-using SixLabors.ImageSharp;
+using System.Drawing;
+using System.Management.Automation;
 using PowerBGInfo;
 
 namespace PowerBGInfo.PowerShell;
@@ -15,15 +13,15 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
 
     /// <para>Label color override.</para>
     [Parameter]
-    public Color Color { get; set; } = Color.Black;
+    public Color Color { get; set; }
 
     /// <para>Label font size override.</para>
     [Parameter]
-    public float FontSize { get; set; } = 16;
+    public float FontSize { get; set; }
 
     /// <para>Label font family override.</para>
     [Parameter]
-    public string FontFamilyName { get; set; } = "Calibri";
+    public string FontFamilyName { get; set; } = string.Empty;
 
     /// <summary>Emits a BGInfo label entry.</summary>
     protected override void EndProcessing() {
@@ -31,10 +29,15 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
         {
             Type = BgInfoEntryType.Label,
             Name = Name,
-            Color = Color,
-            FontSize = FontSize,
-            FontFamilyName = FontFamilyName
+            Color = IsParameterBound(nameof(Color)) ? Color : null,
+            FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
+            FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null
         };
         WriteObject(entry);
+    }
+
+    private bool IsParameterBound(string name)
+    {
+        return MyInvocation.BoundParameters.ContainsKey(name);
     }
 }

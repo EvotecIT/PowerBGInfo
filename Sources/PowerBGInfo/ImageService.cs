@@ -1,4 +1,4 @@
-using ImagePlayground;
+using ImagePlayground.Gdi;
 
 namespace PowerBGInfo;
 

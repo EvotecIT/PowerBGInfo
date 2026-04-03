@@ -1,0 +1,52 @@
+{
+  "ConfigurationDirectory": "Output",
+  "FilePath": "Samples\\TapC-Evotec-2560x1080.jpg",
+  "MonitorIndex": 0,
+  "Target": "Wallpaper",
+  "WallpaperFit": "Fill",
+  "Color": "#FFFFFFFF",
+  "ValueColor": "#FF00FFFF",
+  "BackgroundColor": "#FF000000",
+  "ChartLayout": "Stack",
+  "ChartStackAnchor": "BottomLeft",
+  "ChartStackDirection": "Vertical",
+  "ChartStackSpacing": 12,
+  "ChartStackOffsetX": 10,
+  "ChartStackOffsetY": 10,
+  "ChartStackAlignToTextBlock": true,
+  "ChartStackOutsideTextBlock": true,
+  "Entries": [
+    { "Type": "Value", "Name": "Host", "BuiltinValue": "HostName" },
+    { "Type": "Value", "Name": "User", "BuiltinValue": "FullUserName" },
+    { "Type": "Label", "Name": "Performance" }
+  ],
+  "Charts": [
+    {
+      "Id": "cpu",
+      "Title": "CPU",
+      "Kind": "Sparkline",
+      "Metric": "CpuPercent",
+      "ValueSuffix": "%",
+      "ShowGrid": true,
+      "GridLineCount": 3,
+      "MaxPoints": 60,
+      "Anchor": "BottomLeft",
+      "OffsetX": 20,
+      "OffsetY": 20
+    },
+    {
+      "Id": "disk",
+      "Title": "Disk C",
+      "Kind": "Bar",
+      "Metric": "DiskFreePercent",
+      "MetricArgument": "C:",
+      "ValueSuffix": "%",
+      "ShowGrid": true,
+      "GridLineCount": 3,
+      "MaxPoints": 30,
+      "Anchor": "BottomLeft",
+      "OffsetX": 20,
+      "OffsetY": 140
+    }
+  ]
+}
