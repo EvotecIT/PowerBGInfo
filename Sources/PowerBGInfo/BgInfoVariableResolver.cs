@@ -161,11 +161,15 @@ internal static partial class BgInfoVariableResolver {
     }
 
     private static string? NormalizeDriveLetter(string? drive) {
+        if (drive == null) {
+            return null;
+        }
+
         if (string.IsNullOrWhiteSpace(drive)) {
             return null;
         }
 
-        var safeDrive = drive!.Trim();
+        var safeDrive = drive.Trim();
         if (safeDrive.Length == 0) {
             return null;
         }
