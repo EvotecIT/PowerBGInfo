@@ -153,6 +153,48 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
+    public void GenerateUsesDistinctHistoryFilesForChartsWithSameTitle()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var configDir = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        var config = new BgInfoConfiguration
+        {
+            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
+            OutputFileName = "chart-history.png",
+            BackgroundColor = Color.Black,
+            ForceWallpaperRefresh = false,
+            ConfigurationDirectory = configDir
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+        config.Charts.Add(new BgInfoChart
+        {
+            Title = "CPU",
+            Kind = BgInfoChartKind.Sparkline,
+            Values = new[] { 10d, 20d },
+            MaxPoints = 5
+        });
+        config.Charts.Add(new BgInfoChart
+        {
+            Title = "CPU",
+            Kind = BgInfoChartKind.Bar,
+            Values = new[] { 30d, 40d },
+            MaxPoints = 5
+        });
+
+        generator.Generate(config);
+
+        Assert.True(File.Exists(Path.Combine(configDir, "Charts", "CPU_0.txt")));
+        Assert.True(File.Exists(Path.Combine(configDir, "Charts", "CPU_1.txt")));
+    }
+
+    [Fact]
     public void GenerateUsesFallbackMonitorSizeForScreenCoordinates()
     {
         if (!OperatingSystem.IsWindows())

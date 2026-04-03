@@ -664,12 +664,15 @@ public class BgInfoGenerator
 
     private static string GetChartHistoryKey(BgInfoChart chart, int index)
     {
-        var key = string.IsNullOrWhiteSpace(chart.Id) ? chart.Title : chart.Id;
-        if (string.IsNullOrWhiteSpace(key))
+        if (!string.IsNullOrWhiteSpace(chart.Id))
         {
-            key = $"chart_{index}";
+            return SanitizeFileName(chart.Id);
         }
-        return SanitizeFileName(key);
+
+        var key = string.IsNullOrWhiteSpace(chart.Title)
+            ? "chart"
+            : chart.Title;
+        return SanitizeFileName($"{key}_{index}");
     }
 
     private static string SanitizeFileName(string name)
