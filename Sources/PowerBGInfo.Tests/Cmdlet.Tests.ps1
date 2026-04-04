@@ -50,6 +50,7 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command = Get-Command New-BGInfo
         $command.Parameters.Keys | Should -Contain 'JsonPath'
         $command.Parameters.Keys | Should -Contain 'ExportOnly'
+        $command.Parameters.Keys | Should -Contain 'PassThru'
     }
 
     It 'supports chart stack options' {
@@ -155,6 +156,19 @@ Describe 'New-BGInfo json export' {
     }
 }
 
+Describe 'New-BGInfo passthru' {
+    It 'returns configuration objects for script-backed runners' {
+        $config = New-BGInfo {
+            New-BGInfoValue -BuiltinValue HostName
+        } -ConfigurationDirectory $TestDrive -Target File -PassThru
+
+        $config | Should -BeOfType ([PowerBGInfo.BgInfoConfiguration])
+        $config.Target | Should -Be ([PowerBGInfo.BgInfoTarget]::File)
+        $config.Entries.Count | Should -Be 1
+        $config.Entries[0].BuiltinValue | Should -Be 'HostName'
+    }
+}
+
 Describe 'CLI interoperability' {
     It 'renders the same image from PowerShell-exported json' {
         $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
@@ -219,6 +233,51 @@ Describe 'CLI interoperability' {
 
         & $cliPath --config $configPath --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'volumes.png') | Should -BeTrue
+    }
+
+    It 'renders from a PowerShell script that returns configuration objects' {
+        $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
+        $sampleImage = (Resolve-Path -Path $sampleImage).Path
+        $outputDir = Join-Path -Path $TestDrive -ChildPath 'script-cli'
+        $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script.ps1'
+        $moduleManifestPath = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\PowerBGInfo.psd1')).Path
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        @"
+Import-Module '$($moduleManifestPath.Replace("'", "''"))' -Force
+New-BGInfo {
+    New-BGInfoValue -BuiltinValue HostName
+} -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli.png' -PassThru
+"@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
+
+        & $cliPath --script $scriptPath --no-apply | Out-Null
+        Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli.png') | Should -BeTrue
+    }
+
+    It 'exports json from a PowerShell script without rendering' {
+        $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-export-script.ps1'
+        $moduleManifestPath = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\PowerBGInfo.psd1')).Path
+        $exportPath = Join-Path -Path $TestDrive -ChildPath 'script-export.json'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        @"
+Import-Module '$($moduleManifestPath.Replace("'", "''"))' -Force
+New-BGInfo {
+    New-BGInfoValue -BuiltinValue HostName
+} -ConfigurationDirectory '$($TestDrive.Replace("'", "''"))' -Target File -PassThru
+"@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
+
+        $result = & $cliPath --script $scriptPath --export-json $exportPath --export-only
+
+        $result | Should -Be $exportPath
+        Test-Path -LiteralPath $exportPath | Should -BeTrue
+        (Get-Content -LiteralPath $exportPath -Raw) | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
     }
 }
 

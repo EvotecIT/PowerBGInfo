@@ -69,4 +69,25 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("Drive {{DriveLetter}}", entry.Name);
         Assert.Equal("{{SizeRemaining}}", entry.Value);
     }
+
+    [Fact]
+    public void LoadCanResolveRelativePathsAgainstAnOverrideDirectory()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        var scriptDirectory = Path.Combine(tempDirectory, "scripts");
+        Directory.CreateDirectory(scriptDirectory);
+
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, """
+{
+  "FilePath": "..\\Samples\\wallpaper.jpg",
+  "ConfigurationDirectory": "..\\Output"
+}
+""");
+
+        var configuration = BgInfoConfigurationJson.Load(path, scriptDirectory);
+
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Samples\\wallpaper.jpg")), configuration.FilePath);
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Output")), configuration.ConfigurationDirectory);
+    }
 }

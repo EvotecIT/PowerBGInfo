@@ -11,7 +11,7 @@ namespace PowerBGInfo.PowerShell;
 /// <summary>Creates a BGInfo overlay image and optionally applies it as wallpaper.</summary>
 /// <para>Use the script block to emit label/value entries.</para>
 [Cmdlet(VerbsCommon.New, "BGInfo")]
-[OutputType(typeof(string))]
+[OutputType(typeof(string), typeof(BgInfoConfiguration))]
 public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Script block that outputs BGInfo entries.</para>
     [Parameter(Mandatory = true, Position = 0)]
@@ -153,8 +153,21 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public SwitchParameter ExportOnly { get; set; }
 
+    /// <para>Return the generated configuration object instead of rendering the image.</para>
+    [Parameter]
+    public SwitchParameter PassThru { get; set; }
+
     /// <summary>Processes the BGInfo script block and generates the image.</summary>
     protected override void ProcessRecord() {
+        if (PassThru.IsPresent && ExportOnly.IsPresent) {
+            ThrowTerminatingError(new ErrorRecord(
+                new ArgumentException("PassThru cannot be used together with ExportOnly.", nameof(PassThru)),
+                "BGInfoPassThruExportOnlyConflict",
+                ErrorCategory.InvalidArgument,
+                PassThru));
+            return;
+        }
+
         if (ExportOnly.IsPresent && string.IsNullOrWhiteSpace(JsonPath)) {
             ThrowTerminatingError(new ErrorRecord(
                 new ArgumentException("JsonPath is required when using ExportOnly.", nameof(JsonPath)),
@@ -240,6 +253,11 @@ public class CmdletNewBGInfo : PSCmdlet {
                 WriteObject(fullJsonPath);
                 return;
             }
+        }
+
+        if (PassThru.IsPresent) {
+            WriteObject(config);
+            return;
         }
 
         var path = BgInfoRunner.Run(config);

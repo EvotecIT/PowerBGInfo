@@ -20,8 +20,9 @@ public static class BgInfoConfigurationJson {
     /// Loads a BGInfo configuration from JSON.
     /// </summary>
     /// <param name="path">Path to the JSON configuration file.</param>
+    /// <param name="baseDirectoryOverride">Optional directory used to resolve relative paths instead of the JSON file location.</param>
     /// <returns>Configured BGInfo settings.</returns>
-    public static BgInfoConfiguration Load(string path) {
+    public static BgInfoConfiguration Load(string path, string? baseDirectoryOverride = null) {
         if (string.IsNullOrWhiteSpace(path)) {
             throw new ArgumentException("Configuration path is required.", nameof(path));
         }
@@ -29,7 +30,7 @@ public static class BgInfoConfigurationJson {
         var resolvedPath = Path.GetFullPath(path);
         var json = File.ReadAllText(resolvedPath);
         var model = Deserialize(json);
-        return MapToConfiguration(model, resolvedPath);
+        return MapToConfiguration(model, resolvedPath, baseDirectoryOverride);
     }
 
     /// <summary>
@@ -86,9 +87,11 @@ public static class BgInfoConfigurationJson {
     private static readonly BgInfoConfigurationJsonSerializerContext WriteContext = new(CreateWriteOptions());
 #endif
 
-    private static BgInfoConfiguration MapToConfiguration(BgInfoConfigurationFile model, string sourcePath) {
+    private static BgInfoConfiguration MapToConfiguration(BgInfoConfigurationFile model, string sourcePath, string? baseDirectoryOverride = null) {
         var configuration = new BgInfoConfiguration();
-        var baseDirectory = Path.GetDirectoryName(sourcePath) ?? string.Empty;
+        var baseDirectory = string.IsNullOrWhiteSpace(baseDirectoryOverride)
+            ? Path.GetDirectoryName(sourcePath) ?? string.Empty
+            : Path.GetFullPath(baseDirectoryOverride);
 
         var configurationDirectory = ResolvePath(model.ConfigurationDirectory, baseDirectory);
         if (string.IsNullOrWhiteSpace(configurationDirectory)) {

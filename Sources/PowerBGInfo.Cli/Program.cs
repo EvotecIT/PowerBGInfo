@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace PowerBGInfo.Cli;
 
@@ -16,11 +17,17 @@ internal static class Program {
 
         try {
             string? configPath = null;
+            string? scriptPath = null;
             string? outputFileName = null;
             string? configurationDirectory = null;
             string? targetOverride = null;
+            string? exportJsonPath = null;
+            string? powerShellPath = null;
+            string? modulePath = null;
             int? monitorIndex = null;
             bool noApply = false;
+            bool exportOnly = false;
+            string? scriptDirectory = null;
 
             for (int i = 0; i < args.Length; i++) {
                 var arg = args[i];
@@ -28,6 +35,10 @@ internal static class Program {
                     case "--config":
                     case "-c":
                         configPath = GetValue(args, ref i, "config");
+                        break;
+                    case "--script":
+                    case "-s":
+                        scriptPath = GetValue(args, ref i, "script");
                         break;
                     case "--output":
                     case "-o":
@@ -48,6 +59,18 @@ internal static class Program {
                     case "--target":
                         targetOverride = GetValue(args, ref i, "target");
                         break;
+                    case "--export-json":
+                        exportJsonPath = GetValue(args, ref i, "export-json");
+                        break;
+                    case "--export-only":
+                        exportOnly = true;
+                        break;
+                    case "--pwsh":
+                        powerShellPath = GetValue(args, ref i, "pwsh");
+                        break;
+                    case "--module":
+                        modulePath = GetValue(args, ref i, "module");
+                        break;
                     case "--no-apply":
                         noApply = true;
                         break;
@@ -56,11 +79,23 @@ internal static class Program {
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(configPath)) {
-                return Fail("Missing --config argument.");
+            if (string.IsNullOrWhiteSpace(configPath) == string.IsNullOrWhiteSpace(scriptPath)) {
+                return Fail("Specify exactly one input source: --config <file> or --script <file>.");
             }
 
-            var config = BgInfoConfigurationJson.Load(configPath!);
+            if (exportOnly && string.IsNullOrWhiteSpace(exportJsonPath)) {
+                return Fail("Missing --export-json argument for --export-only.");
+            }
+
+            BgInfoConfiguration config;
+            if (!string.IsNullOrWhiteSpace(scriptPath)) {
+                var loadResult = PowerShellConfigurationLoader.Load(scriptPath!, modulePath, powerShellPath);
+                config = loadResult.Configuration;
+                scriptDirectory = loadResult.ScriptDirectory;
+            } else {
+                config = BgInfoConfigurationJson.Load(configPath!);
+            }
+
             if (!string.IsNullOrWhiteSpace(outputFileName)) {
                 config.OutputFileName = outputFileName!;
             }
@@ -78,6 +113,24 @@ internal static class Program {
             }
             if (noApply) {
                 config.Target = BgInfoTarget.File;
+            }
+
+            if (!string.IsNullOrWhiteSpace(exportJsonPath)) {
+                var fullExportJsonPath = Path.GetFullPath(exportJsonPath!);
+                var exportDirectory = Path.GetDirectoryName(fullExportJsonPath);
+                if (!string.IsNullOrWhiteSpace(exportDirectory)) {
+                    Directory.CreateDirectory(exportDirectory);
+                }
+
+                BgInfoConfigurationJson.Save(config, fullExportJsonPath);
+                if (exportOnly) {
+                    Console.WriteLine(fullExportJsonPath);
+                    return 0;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(scriptDirectory)) {
+                ResolveScriptRelativePaths(config, scriptDirectory!);
             }
 
             var outputPath = BgInfoRunner.Run(config);
@@ -118,13 +171,29 @@ internal static class Program {
         Console.WriteLine("PowerBGInfo.Cli");
         Console.WriteLine("Usage:");
         Console.WriteLine("  PowerBGInfo.Cli --config <file> [options]");
+        Console.WriteLine("  PowerBGInfo.Cli --script <file> [options]");
         Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  -c, --config <file>       Path to JSON configuration file.");
+        Console.WriteLine("  -s, --script <file>       Path to a PowerShell authoring script.");
         Console.WriteLine("  -o, --output <file>       Override output file name.");
         Console.WriteLine("  -d, --directory <dir>     Override configuration output directory.");
         Console.WriteLine("  -m, --monitor <index>     Override monitor index.");
         Console.WriteLine("      --target <target>     Override target (Wallpaper, File, LogonScreen, Both).");
+        Console.WriteLine("      --export-json <file>  Save the loaded configuration to JSON.");
+        Console.WriteLine("      --export-only         Save JSON and skip rendering. Requires --export-json.");
+        Console.WriteLine("      --pwsh <path>         Override the PowerShell executable used for --script.");
+        Console.WriteLine("      --module <path>       Import the PowerBGInfo module before running --script.");
         Console.WriteLine("      --no-apply            Generate the image without applying wallpaper.");
+    }
+
+    private static void ResolveScriptRelativePaths(BgInfoConfiguration configuration, string scriptDirectory) {
+        if (!string.IsNullOrWhiteSpace(configuration.FilePath) && !Path.IsPathRooted(configuration.FilePath)) {
+            configuration.FilePath = Path.GetFullPath(Path.Combine(scriptDirectory, configuration.FilePath));
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuration.ConfigurationDirectory) && !Path.IsPathRooted(configuration.ConfigurationDirectory)) {
+            configuration.ConfigurationDirectory = Path.GetFullPath(Path.Combine(scriptDirectory, configuration.ConfigurationDirectory));
+        }
     }
 }

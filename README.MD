@@ -21,8 +21,8 @@
   <a href="https://evo.yt/discord"><img alt="Discord" src="https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat"></a>
 </p>
 
-**PowerBGInfo** is a Windows background generator with a shared PowerShell + CLI workflow.
-Use PowerShell to build and export configuration, then use the CLI to render and apply it repeatedly on endpoints, scheduled tasks, or deployment tooling.
+**PowerBGInfo** is a Windows background generator with a CLI-first workflow.
+Use `PowerBGInfo.Cli` to run either a portable JSON configuration or a PowerShell authoring script, then reuse the same shared renderer for wallpaper, file output, or logon screen generation.
 
 You can read about this project on this [blog post](https://evotec.xyz/powerbginfo-powershell-alternative-to-sysinternals-bginfo/) that tells a little backstory and shows few things.
 
@@ -50,50 +50,51 @@ It works fine when running in PowerShell 5.1 console, or ISE (shrug!).
 
 ## Recommended workflow
 
-The best current workflow is:
+There are now two first-class ways to run PowerBGInfo from the CLI:
 
-1. Build the JSON configuration with PowerShell.
-2. Store that JSON with your deployment or wallpaper package.
-3. Run `PowerBGInfo.Cli --config ...` for scheduled tasks, logon scripts, packaging, or RMM tools.
+1. `PowerBGInfo.Cli --script ...`
+   Best when you want full PowerShell authoring, loops, `Get-Disk`, CIM/WMI, or other custom collection logic.
+2. `PowerBGInfo.Cli --config ...`
+   Best when you want a portable artifact for packaging, scheduled tasks, RMM tools, or endpoints that should only render/apply a saved configuration.
 
-This keeps the authoring experience flexible while making execution lighter and easier to operationalize than importing PowerShell every time.
+The usual flow is:
+
+1. Author the layout in PowerShell.
+2. Run it directly with `PowerBGInfo.Cli --script ...` while iterating.
+3. Optionally export JSON from that same script with `--export-json ...` when you want a reusable JSON snapshot for later runs.
 
 ## Quick start
 
-Build the current checkout first so both the PowerShell module and CLI example use the latest source:
+Build the current checkout first so both the PowerShell module and CLI examples use the latest source:
 
 ```powershell
 dotnet build .\Sources\PowerBGInfo.sln -c Debug
 ```
 
-Author the layout with the same inline `New-BGInfo` flow you already use, but add `-JsonPath` and `-ExportOnly` to save a reusable CLI config:
+Run the script-backed CLI example directly:
 
 ```powershell
-Import-Module .\PowerBGInfo.psd1 -Force
-
-New-BGInfo {
-    New-BGInfoValue -BuiltinValue HostName
-    New-BGInfoValue -BuiltinValue FullUserName -Name 'User'
-    New-BGInfoLabel -Name 'Performance' -Color LemonChiffon -FontSize 14 -FontFamilyName 'Calibri'
-    New-BGInfoChart -Id 'cpu' -Title 'CPU' -Metric CpuPercent -ValueSuffix '%' -Kind Sparkline -MaxPoints 60 -Anchor BottomLeft -OffsetX 20 -OffsetY 20
-} -MonitorIndex 0 `
-    -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg `
-    -ConfigurationDirectory .\Examples\Output `
-    -OutputFileName PowerBGInfo.Cli.Sample.png `
-    -Target Both `
-    -JsonPath .\Examples\Configuration\PowerBGInfo.Generated.json `
-    -ExportOnly
+.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe `
+  --script .\Examples\Scripts\PowerBGInfo.Cli.Sample.ps1 `
+  --no-apply
 ```
 
-Render it with the CLI:
+Export JSON from that same script while rendering it:
 
 ```powershell
-.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe --config .\Examples\Configuration\PowerBGInfo.Generated.json --no-apply
+.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe `
+  --script .\Examples\Scripts\PowerBGInfo.Cli.Sample.ps1 `
+  --export-json .\Examples\Configuration\PowerBGInfo.Script.Generated.json `
+  --no-apply
 ```
 
-That JSON is portable because it keeps builtin tokens such as `HostName` instead of serializing your current machine name into the file.
+The repository contains the same flow as a ready-made example in `Examples\Run.BGInfo6.ps1`.
 
-The repository contains the same flow as a ready-made example in `Examples\Run.BGInfo4.ps1`, and it finishes by running the CLI against the exported JSON.
+If you want to rerun that generated JSON later without PowerShell logic:
+
+```powershell
+.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe --config .\Examples\Configuration\PowerBGInfo.Script.Generated.json --no-apply
+```
 
 You can still run the same JSON through PowerShell when needed:
 
@@ -109,9 +110,52 @@ These are the repo-level commands that prove the PowerShell and CLI paths stay i
 dotnet test .\Sources\PowerBGInfo.sln
 Invoke-Pester -Path .\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1 -Output Detailed
 pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo4.ps1
+pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo6.ps1
 ```
 
-The last command exports JSON from PowerShell and renders it with the CLI, which is the recommended operational flow.
+The last two commands validate both CLI modes:
+
+- PowerShell-authored JSON consumed by the CLI
+- PowerShell script consumed directly by the CLI
+
+## Script-backed CLI
+
+When you want the EXE to keep full PowerShell flexibility, return a configuration object from your script:
+
+```powershell
+Import-Module .\PowerBGInfo.psd1 -Force
+
+New-BGInfo {
+    New-BGInfoValue -BuiltinValue HostName
+    foreach ($Disk in Get-Disk) {
+        foreach ($Volume in ($Disk | Get-Partition | Get-Volume)) {
+            New-BGInfoValue -Name "Drive $($Volume.DriveLetter)" -Value $Volume.SizeRemaining
+        }
+    }
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg `
+  -ConfigurationDirectory .\Examples\Output `
+  -Target File `
+  -PassThru
+```
+
+Run that script through the CLI:
+
+```powershell
+PowerBGInfo.Cli --script .\bginfo.ps1 --no-apply
+```
+
+Or export a JSON snapshot from the same script:
+
+```powershell
+PowerBGInfo.Cli --script .\bginfo.ps1 --export-json .\bginfo.json --export-only
+```
+
+`--script` accepts scripts that return either:
+
+- `[PowerBGInfo.BgInfoConfiguration]` objects, typically via `New-BGInfo -PassThru`
+- a path to a JSON file, for example from existing `-JsonPath -ExportOnly` flows
+
+Use direct JSON authoring and export when you need a fully hand-portable config file with carefully controlled relative paths. `--script --export-json` is best for capturing the configuration that the EXE just executed.
 
 ## What JSON preserves
 
