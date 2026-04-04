@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Management.Automation;
 using DesktopManager;
 using PowerBGInfo;
@@ -10,10 +11,10 @@ namespace PowerBGInfo.PowerShell;
 /// <summary>Creates a BGInfo overlay image and optionally applies it as wallpaper.</summary>
 /// <para>Use the script block to emit label/value entries.</para>
 [Cmdlet(VerbsCommon.New, "BGInfo")]
-[OutputType(typeof(string))]
+[OutputType(typeof(string), typeof(BgInfoConfiguration))]
 public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Script block that outputs BGInfo entries.</para>
-    [Parameter(Mandatory = true)]
+    [Parameter(Mandatory = true, Position = 0)]
     public ScriptBlock BGInfoContent { get; set; } = null!;
 
     /// <para>Optional base wallpaper file path. When omitted, current wallpaper is used.</para>
@@ -97,6 +98,39 @@ public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Output target (Wallpaper, File, LogonScreen, or Both).</para>     
     [Parameter]
     public BgInfoTarget Target { get; set; } = BgInfoTarget.Wallpaper;
+
+    /// <para>Chart layout mode.</para>
+    [Parameter]
+    public BgInfoChartLayoutMode ChartLayout { get; set; } = BgInfoChartLayoutMode.Manual;
+
+    /// <para>Anchor used when stacking charts.</para>
+    [Parameter]
+    public BgInfoTextPosition ChartStackAnchor { get; set; } = BgInfoTextPosition.BottomLeft;
+
+    /// <para>Direction used when stacking charts.</para>
+    [Parameter]
+    public BgInfoChartStackDirection ChartStackDirection { get; set; } = BgInfoChartStackDirection.Vertical;
+
+    /// <para>Spacing between stacked charts.</para>
+    [Parameter]
+    public int ChartStackSpacing { get; set; } = 12;
+
+    /// <para>Horizontal offset for stacked charts.</para>
+    [Parameter]
+    public int ChartStackOffsetX { get; set; } = 10;
+
+    /// <para>Vertical offset for stacked charts.</para>
+    [Parameter]
+    public int ChartStackOffsetY { get; set; } = 10;
+
+    /// <para>Align stacked charts to the text block.</para>
+    [Parameter]
+    public SwitchParameter ChartStackAlignToTextBlock { get; set; }
+
+    /// <para>Place stacked charts outside the text block.</para>
+    [Parameter]
+    public SwitchParameter ChartStackOutsideTextBlock { get; set; }
+
     /// <para>Apply wallpaper for all user profiles.</para>
     [Parameter]
     public SwitchParameter AllUsers { get; set; }
@@ -111,8 +145,38 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public SwitchParameter UseScreenCoordinates { get; set; }
 
+    /// <para>Optional path where the generated configuration JSON should be saved.</para>
+    [Parameter]
+    public string JsonPath { get; set; } = string.Empty;
+
+    /// <para>Export JSON only and skip image generation/application. Requires JsonPath.</para>
+    [Parameter]
+    public SwitchParameter ExportOnly { get; set; }
+
+    /// <para>Return the generated configuration object instead of rendering the image.</para>
+    [Parameter]
+    public SwitchParameter PassThru { get; set; }
+
     /// <summary>Processes the BGInfo script block and generates the image.</summary>
     protected override void ProcessRecord() {
+        if (PassThru.IsPresent && ExportOnly.IsPresent) {
+            ThrowTerminatingError(new ErrorRecord(
+                new ArgumentException("PassThru cannot be used together with ExportOnly.", nameof(PassThru)),
+                "BGInfoPassThruExportOnlyConflict",
+                ErrorCategory.InvalidArgument,
+                PassThru));
+            return;
+        }
+
+        if (ExportOnly.IsPresent && string.IsNullOrWhiteSpace(JsonPath)) {
+            ThrowTerminatingError(new ErrorRecord(
+                new ArgumentException("JsonPath is required when using ExportOnly.", nameof(JsonPath)),
+                "BGInfoJsonPathRequired",
+                ErrorCategory.InvalidArgument,
+                JsonPath));
+            return;
+        }
+
         var config = new BgInfoConfiguration
         {
             FilePath = FilePath,
@@ -136,6 +200,14 @@ public class CmdletNewBGInfo : PSCmdlet {
             WallpaperFit = WallpaperFit,
             TextPosition = TextPosition,
             Target = Target,
+            ChartLayout = ChartLayout,
+            ChartStackAnchor = ChartStackAnchor,
+            ChartStackDirection = ChartStackDirection,
+            ChartStackSpacing = ChartStackSpacing,
+            ChartStackOffsetX = ChartStackOffsetX,
+            ChartStackOffsetY = ChartStackOffsetY,
+            ChartStackAlignToTextBlock = ChartStackAlignToTextBlock.IsPresent,
+            ChartStackOutsideTextBlock = ChartStackOutsideTextBlock.IsPresent,
             UseScreenCoordinates = UseScreenCoordinates.IsPresent,
             ForceWallpaperRefresh = !DisableWallpaperRefresh.IsPresent,
             ApplyToAllUsers = AllUsers.IsPresent,
@@ -151,6 +223,12 @@ public class CmdletNewBGInfo : PSCmdlet {
                 continue;
             }
 
+            if (item?.BaseObject is BgInfoVariable variable)
+            {
+                config.Variables.Add(variable);
+                continue;
+            }
+
             if (item?.BaseObject is BgInfoChart chart)
             {
                 config.Charts.Add(chart);
@@ -161,6 +239,25 @@ public class CmdletNewBGInfo : PSCmdlet {
             {
                 config.Entries.Add(legacyEntry);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(JsonPath)) {
+            var fullJsonPath = SessionState.Path.GetUnresolvedProviderPathFromPSPath(JsonPath);
+            var directory = Path.GetDirectoryName(fullJsonPath);
+            if (!string.IsNullOrWhiteSpace(directory)) {
+                Directory.CreateDirectory(directory);
+            }
+            BgInfoConfigurationJson.Save(config, fullJsonPath);
+
+            if (ExportOnly.IsPresent) {
+                WriteObject(fullJsonPath);
+                return;
+            }
+        }
+
+        if (PassThru.IsPresent) {
+            WriteObject(config);
+            return;
         }
 
         var path = BgInfoRunner.Run(config);

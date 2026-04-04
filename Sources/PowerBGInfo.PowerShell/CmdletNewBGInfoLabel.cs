@@ -11,6 +11,10 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
     [Parameter(Mandatory = true)]
     public string Name { get; set; } = string.Empty;
 
+    /// <para>Variable name used to expand this label multiple times.</para>
+    [Parameter]
+    public string ForEach { get; set; } = string.Empty;
+
     /// <para>Label color override.</para>
     [Parameter]
     public Color Color { get; set; }
@@ -29,6 +33,7 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
         {
             Type = BgInfoEntryType.Label,
             Name = Name,
+            ForEach = string.IsNullOrWhiteSpace(ForEach) ? null : ForEach,
             Color = IsParameterBound(nameof(Color)) ? Color : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null

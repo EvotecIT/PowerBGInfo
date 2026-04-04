@@ -71,6 +71,30 @@ jobs:
               throw "Expected generated output at $outputPath"
           }
 
+      - name: Run published CLI with PowerShell script
+        shell: pwsh
+        run: |
+          $sampleImage = (Resolve-Path .\Examples\Samples\TapC-Evotec-2560x1080.jpg).Path
+          $scriptPath = Join-Path $PWD 'interop.bginfo.ps1'
+          $scriptOutputDir = Join-Path $PWD 'interop-script-output'
+          $scriptJsonPath = Join-Path $PWD 'interop-script.bginfo.json'
+          $modulePath = Join-Path $PWD 'Sources\PowerBGInfo.PowerShell\bin\${{ env.BUILD_CONFIGURATION }}\net8.0-windows\PowerBGInfo.PowerShell.dll'
+          @"
+          New-BGInfo {
+              New-BGInfoValue -BuiltinValue HostName
+          } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($scriptOutputDir.Replace("'", "''"))' -Target File -OutputFileName 'interop-script.png' -PassThru
+          "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
+
+          & .\artifacts\cli-singlefile\PowerBGInfo.Cli.exe --script $scriptPath --module $modulePath --export-json $scriptJsonPath --no-apply
+
+          $outputPath = Join-Path $scriptOutputDir 'interop-script.png'
+          if (-not (Test-Path -LiteralPath $outputPath)) {
+              throw "Expected generated output at $outputPath"
+          }
+          if (-not (Test-Path -LiteralPath $scriptJsonPath)) {
+              throw "Expected generated JSON at $scriptJsonPath"
+          }
+
       - name: Publish CLI NativeAOT smoke build
         run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 -p:PublishAot=true -o artifacts/cli-aot
 

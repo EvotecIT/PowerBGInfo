@@ -69,7 +69,8 @@ public class BgInfoGenerator
             ? LoadBaseImage(imagePath!, outputPath)
             : CreateBaseImage(config, GetMonitors(), outputPath);
 
-        var entryLayouts = BuildEntryLayouts(image, config);
+        var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
+        var entryLayouts = BuildEntryLayouts(image, config, expandedEntries);
         float highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
         float highestValueWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.ValueWidth);
         bool hasValueEntries = entryLayouts.Any(layout => layout.Entry.Type != BgInfoEntryType.Label);
@@ -744,10 +745,10 @@ public class BgInfoGenerator
         return new System.Drawing.PointF(x, y);
     }
 
-    private static List<EntryLayout> BuildEntryLayouts(Image image, BgInfoConfiguration config)
+    private static List<EntryLayout> BuildEntryLayouts(Image image, BgInfoConfiguration config, IReadOnlyList<BgInfoEntry> entries)
     {
         var layouts = new List<EntryLayout>();
-        foreach (var entry in config.Entries)
+        foreach (var entry in entries)
         {
             entry.Color ??= config.Color;
             entry.FontSize ??= config.FontSize;

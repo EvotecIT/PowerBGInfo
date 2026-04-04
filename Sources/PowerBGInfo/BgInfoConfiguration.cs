@@ -141,6 +141,10 @@ public class BgInfoConfiguration {
     /// </summary>
     public bool UseScreenCoordinates { get; set; }
     /// <summary>
+    /// Gets the collection of variables available to loop/template entries.
+    /// </summary>
+    public List<BgInfoVariable> Variables { get; } = new();
+    /// <summary>
     /// Gets the collection of BGInfo entries to render.
     /// </summary>
     public List<BgInfoEntry> Entries { get; } = new();

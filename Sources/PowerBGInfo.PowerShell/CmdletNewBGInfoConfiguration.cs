@@ -144,6 +144,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public BgInfoEntry[] Entries { get; set; } = System.Array.Empty<BgInfoEntry>();
 
+    /// <para>Variables to include in the configuration.</para>
+    [Parameter]
+    public BgInfoVariable[] Variables { get; set; } = System.Array.Empty<BgInfoVariable>();
+
     /// <para>Charts to include in the configuration.</para>
     [Parameter]
     public BgInfoChart[] Charts { get; set; } = System.Array.Empty<BgInfoChart>();
@@ -188,6 +192,9 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
 
         if (IsParameterBound(nameof(Entries)) && Entries.Length > 0) {
             config.Entries.AddRange(Entries);
+        }
+        if (IsParameterBound(nameof(Variables)) && Variables.Length > 0) {
+            config.Variables.AddRange(Variables);
         }
         if (IsParameterBound(nameof(Charts)) && Charts.Length > 0) {
             config.Charts.AddRange(Charts);

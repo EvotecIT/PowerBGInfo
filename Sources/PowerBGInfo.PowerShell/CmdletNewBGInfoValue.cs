@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Management.Automation;
 using PowerBGInfo;
@@ -11,10 +12,12 @@ public class CmdletNewBGInfoValue : PSCmdlet {
     /// <para>Label text to render.</para>
     [Parameter(ParameterSetName = "Values", Mandatory = true)]
     [Parameter(ParameterSetName = "Builtin")]
+    [Parameter(ParameterSetName = "Template", Mandatory = true)]
     public string Name { get; set; } = string.Empty;
 
     /// <para>Explicit value to render.</para>
     [Parameter(ParameterSetName = "Values", Mandatory = true)]
+    [Parameter(ParameterSetName = "Template", Mandatory = true)]
     public string Value { get; set; } = string.Empty;
 
     /// <para>Built-in token to resolve to a value.</para>
@@ -70,15 +73,21 @@ public class CmdletNewBGInfoValue : PSCmdlet {
     [Parameter]
     public string ValueFontFamilyName { get; set; } = string.Empty;
 
+    /// <para>Variable name used to expand this entry multiple times.</para>
+    [Parameter(ParameterSetName = "Template", Mandatory = true)]
+    public string ForEach { get; set; } = string.Empty;
+
     /// <summary>Emits a BGInfo value entry.</summary>
     protected override void EndProcessing() {
         string finalValue = string.IsNullOrEmpty(BuiltinValue) ? Value : SystemInfoProvider.GetValue(BuiltinValue);
+        bool isTemplate = string.Equals(ParameterSetName, "Template", StringComparison.OrdinalIgnoreCase);
         var entry = new BgInfoEntry
         {
             Type = BgInfoEntryType.Value,
             Name = string.IsNullOrEmpty(Name) ? BuiltinValue : Name,
-            Value = finalValue,
-            BuiltinValue = string.IsNullOrEmpty(BuiltinValue) ? null : BuiltinValue,
+            Value = isTemplate ? Value : finalValue,
+            BuiltinValue = isTemplate ? null : string.IsNullOrEmpty(BuiltinValue) ? null : BuiltinValue,
+            ForEach = isTemplate ? ForEach : null,
             Color = IsParameterBound(nameof(Color)) ? Color : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,

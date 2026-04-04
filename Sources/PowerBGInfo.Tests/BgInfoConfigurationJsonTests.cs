@@ -35,4 +35,59 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("HostName", entry.BuiltinValue);
         Assert.Null(entry.Value);
     }
+
+    [Fact]
+    public void SaveAndLoadPreservesVariablesAndLoopEntries()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        configuration.Variables.Add(new BgInfoVariable {
+            Name = "Volumes",
+            Provider = BgInfoVariableProvider.Volumes
+        });
+        configuration.Entries.Add(new BgInfoEntry {
+            Type = BgInfoEntryType.Value,
+            ForEach = "Volumes",
+            Name = "Drive {{DriveLetter}}",
+            Value = "{{SizeRemaining}}"
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var variable = Assert.Single(roundTripped.Variables);
+        Assert.Equal("Volumes", variable.Name);
+        Assert.Equal(BgInfoVariableProvider.Volumes, variable.Provider);
+
+        var entry = Assert.Single(roundTripped.Entries);
+        Assert.Equal("Volumes", entry.ForEach);
+        Assert.Equal("Drive {{DriveLetter}}", entry.Name);
+        Assert.Equal("{{SizeRemaining}}", entry.Value);
+    }
+
+    [Fact]
+    public void LoadCanResolveRelativePathsAgainstAnOverrideDirectory()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        var scriptDirectory = Path.Combine(tempDirectory, "scripts");
+        Directory.CreateDirectory(scriptDirectory);
+
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, """
+{
+  "FilePath": "..\\Samples\\wallpaper.jpg",
+  "ConfigurationDirectory": "..\\Output"
+}
+""");
+
+        var configuration = BgInfoConfigurationJson.Load(path, scriptDirectory);
+
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Samples\\wallpaper.jpg")), configuration.FilePath);
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Output")), configuration.ConfigurationDirectory);
+    }
 }

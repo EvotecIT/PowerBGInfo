@@ -1,0 +1,63 @@
+{
+  "FilePath": "..\\Samples\\TapC-Evotec-2560x1080.jpg",
+  "OutputFileName": "PowerBGInfo.Volumes.Sample.png",
+  "ConfigurationDirectory": "..\\Output",
+  "FontFamilyName": "Calibri",
+  "Color": "#FF000000",
+  "FontSize": 16,
+  "ValueColor": "#FF000000",
+  "ValueFontSize": 16,
+  "ValueFontFamilyName": "Calibri",
+  "ValueWrapWidth": 0,
+  "SpaceBetweenLines": 10,
+  "SpaceBetweenColumns": 50,
+  "PositionX": 10,
+  "PositionY": 10,
+  "MonitorIndex": 0,
+  "SpaceX": 10,
+  "SpaceY": 10,
+  "WallpaperFit": "Center",
+  "TextPosition": "MiddleCenter",
+  "Target": "File",
+  "ForceWallpaperRefresh": true,
+  "ApplyToAllUsers": false,
+  "IncludeDefaultUserProfile": true,
+  "UseScreenCoordinates": false,
+  "ChartLayout": "Manual",
+  "ChartStackAnchor": "BottomLeft",
+  "ChartStackDirection": "Vertical",
+  "ChartStackSpacing": 12,
+  "ChartStackOffsetX": 10,
+  "ChartStackOffsetY": 10,
+  "ChartStackAlignToTextBlock": false,
+  "ChartStackOutsideTextBlock": false,
+  "Variables": [
+    {
+      "Name": "Volumes",
+      "Provider": "Volumes"
+    }
+  ],
+  "Entries": [
+    {
+      "Type": "Value",
+      "Name": "HostName",
+      "BuiltinValue": "HostName",
+      "Color": "#FFFF0000",
+      "FontSize": 20,
+      "FontFamilyName": "Calibri"
+    },
+    {
+      "Type": "Label",
+      "Name": "Volumes",
+      "Color": "#FFFFFACD",
+      "FontSize": 16,
+      "FontFamilyName": "Calibri"
+    },
+    {
+      "Type": "Value",
+      "Name": "Drive {{DriveLetter}}",
+      "Value": "{{SizeRemaining}} free ({{FreePercent}}%)",
+      "ForEach": "Volumes"
+    }
+  ]
+}
