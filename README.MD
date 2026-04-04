@@ -118,6 +118,39 @@ The last two commands validate both CLI modes:
 - PowerShell-authored JSON consumed by the CLI
 - PowerShell script consumed directly by the CLI
 
+For a fuller release-proof pass, use the reusable validation script:
+
+```powershell
+pwsh -NoLogo -NoProfile -File .\Build\Validate-PowerBGInfo.ps1 -Configuration Release
+```
+
+That script verifies:
+
+- solution build and .NET tests
+- PowerShell/Pester coverage
+- CLI `--script` output
+- CLI `--config` output from exported JSON
+- `Invoke-BGInfo` output from the same JSON
+- published single-file CLI output parity
+- NativeAOT CLI smoke output for `Target File` / `--no-apply`
+
+Use `-KeepArtifacts` if you want the rendered files and published executables left on disk for inspection.
+
+## Manual Validation
+
+These scenarios still deserve a real machine check because they change Windows state, may need elevation, or depend on shell behavior:
+
+1. Current-user wallpaper apply:
+   Run `New-BGInfo` or `PowerBGInfo.Cli --config ...` without `--no-apply` and confirm the wallpaper changes immediately.
+2. All users:
+   Run elevated with `-AllUsers`, then confirm both an existing secondary profile and a newly created profile receive the staged wallpaper.
+3. Logon screen:
+   Run elevated with `-Target LogonScreen` or `-Target Both`, lock/sign out, and confirm the generated image is used.
+4. Windows 11 24H2 refresh:
+   Run wallpaper apply, sign out/sign back in, and confirm the refresh workaround still prevents Windows from reusing the previous cached wallpaper.
+5. Terminal server / RDS:
+   Validate in a real user session that per-user values such as `FullUserName` still resolve correctly when run inside the session.
+
 ## Script-backed CLI
 
 When you want the EXE to keep full PowerShell flexibility, return a configuration object from your script:
@@ -396,6 +429,7 @@ dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f ne
 ```
 
 NativeAOT is currently best for `--no-apply` / `Target File` workflows with an explicit `FilePath`. Windows desktop APIs from `DesktopManager` and `System.Management` still emit AOT warnings for wallpaper and system-query paths.
+Treat NativeAOT as a file-generation smoke path, not yet as a strict pixel-for-pixel parity target for every machine/runtime combination.
 
 You can also use only builtin values
 
