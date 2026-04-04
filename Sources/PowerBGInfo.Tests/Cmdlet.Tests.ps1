@@ -279,6 +279,30 @@ New-BGInfo {
         Test-Path -LiteralPath $exportPath | Should -BeTrue
         (Get-Content -LiteralPath $exportPath -Raw) | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
     }
+
+    It 'renders from a PowerShell script using --module without importing the manifest' {
+        $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'
+        $sampleImage = (Resolve-Path -Path $sampleImage).Path
+        $outputDir = Join-Path -Path $TestDrive -ChildPath 'script-cli-module'
+        $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script-module.ps1'
+        $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Debug\net8.0-windows\PowerBGInfo.PowerShell.dll'
+        if (-not (Test-Path -LiteralPath $modulePath)) {
+            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Release\net8.0-windows\PowerBGInfo.PowerShell.dll'
+        }
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        if (-not (Test-Path -LiteralPath $cliPath)) {
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+        }
+
+        @"
+New-BGInfo {
+    New-BGInfoValue -BuiltinValue HostName
+} -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli-module.png' -PassThru
+"@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
+
+        & $cliPath --script $scriptPath --module $modulePath --no-apply | Out-Null
+        Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli-module.png') | Should -BeTrue
+    }
 }
 
 Describe 'New-BGInfo legacy output' {

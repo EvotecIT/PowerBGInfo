@@ -144,6 +144,12 @@ Run that script through the CLI:
 PowerBGInfo.Cli --script .\bginfo.ps1 --no-apply
 ```
 
+When the script does not import `PowerBGInfo` itself, you can point the CLI at a built module directly:
+
+```powershell
+PowerBGInfo.Cli --script .\bginfo.ps1 --module .\PowerBGInfo.PowerShell.dll --no-apply
+```
+
 Or export a JSON snapshot from the same script:
 
 ```powershell
