@@ -4,7 +4,7 @@ description: "Curated examples for PowerBGInfo."
 layout: docs
 ---
 
-These examples are maintained with the PowerBGInfo repository and selected for the website because they show safe, reviewable usage patterns.
+These PowerBGInfo examples focus on repeatable desktop background layouts rather than the full raw example set.
 
 ## Featured examples
 

@@ -4,7 +4,7 @@ description: "Install PowerBGInfo from the package source used by this project."
 layout: docs
 ---
 
-Use this page when you need the shortest setup path before trying the curated examples.
+Install PowerBGInfo before trying the curated desktop background examples.
 
 ## PowerShell Gallery
 
