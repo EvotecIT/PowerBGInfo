@@ -1,4 +1,5 @@
 using DesktopManager;
+using Microsoft.Win32;
 
 #if NET5_0_OR_GREATER
 using System.Runtime.Versioning;
@@ -62,7 +63,11 @@ public class WallpaperService : IWallpaperService
 #endif
     public void SetLogonWallpaper(string filePath)
     {
-        Monitors.SetLogonWallpaper(filePath);
+        try {
+            Monitors.SetLogonWallpaper(filePath);
+        } catch (InvalidOperationException ex) when (IsWinRtMissing(ex)) {
+            SetLogonWallpaperFallback(filePath);
+        }
     }
 
     /// <summary>
@@ -74,5 +79,23 @@ public class WallpaperService : IWallpaperService
     public void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile)
     {
         Monitors.SetWallpaperForAllUsers(filePath, position, includeDefaultUserProfile);
+    }
+
+    private static bool IsWinRtMissing(InvalidOperationException ex)
+    {
+        return ex.Message.Contains("LockScreen type not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("StorageFile type not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("GetFileFromPathAsync method not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("SetImageFileAsync method not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("AsTask method not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("GetImageStream method not found", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("AsStreamForRead method not found", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void SetLogonWallpaperFallback(string filePath)
+    {
+        using RegistryKey? key = Registry.LocalMachine.CreateSubKey(
+            @"SOFTWARE\Policies\Microsoft\Windows\Personalization");
+        key?.SetValue("LockScreenImage", filePath, RegistryValueKind.String);
     }
 }
