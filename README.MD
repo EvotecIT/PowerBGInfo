@@ -342,6 +342,10 @@ If you want the chart ink to melt into the wallpaper, omit `-BackgroundColor` on
 
 ![PowerBGInfo transparent ChartForgeX overlay](Examples/Output/PowerBGInfo.ChartForgeX.Transparent.jpg)
 
+For an operational wallpaper, keep the chart set small and tied to data people actually need while looking at the desktop. `Examples\Scripts\PowerBGInfo.OperationalCharts.ps1` combines rolling CPU/memory metrics, system-drive capacity, uptime, and a small service-health pictorial:
+
+![PowerBGInfo operational ChartForgeX overlay](Examples/Output/PowerBGInfo.OperationalCharts.jpg)
+
 ```powershell
 New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue HostName -Color White
@@ -386,6 +390,8 @@ Use history for rolling metrics and use static values for status snapshots:
 | Compliance, deployment, backup status | `ProgressBar` | Use `-Maximum 100`, `-NoProgressHandles`, and `-ShowDataLabels`. |
 | Running/stopped counts | `Pictorial` | Use `-PictorialSymbol Person` or `Circle` with a small palette. |
 | One current KPI | `Gauge`, `Circle`, `RadialBar` | Use `-Minimum` and `-Maximum` for stable scaling. |
+
+Keep PowerBGInfo chart layouts purposeful: a trend, one or two current KPIs, and one status snapshot are usually easier to read on a wallpaper than every available chart kind.
 
 ```powershell
 New-BGInfo -MonitorIndex 0 {
