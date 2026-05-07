@@ -1,4 +1,5 @@
 using System.IO;
+using System.Drawing;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
@@ -89,5 +90,56 @@ public class BgInfoConfigurationJsonTests
 
         Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Samples\\wallpaper.jpg")), configuration.FilePath);
         Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Output")), configuration.ConfigurationDirectory);
+    }
+
+    [Fact]
+    public void SaveAndLoadPreservesChartForgeXChartOptions() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        configuration.Charts.Add(new BgInfoChart {
+            Id = "usage",
+            Title = "Usage",
+            Kind = BgInfoChartKind.Donut,
+            Values = new[] { 72d, 28d },
+            Labels = new[] { "Used", "Free" },
+            Palette = new[] { Color.Red, Color.Green },
+            ShowLegend = true,
+            ShowPointLegend = true,
+            LegendPosition = BgInfoChartLegendPosition.Right,
+            ShowDataLabels = true,
+            Minimum = 0,
+            Maximum = 100,
+            DonutInnerRadiusRatio = 0.64,
+            DonutCenterValue = "72%",
+            DonutCenterLabel = "Used",
+            ProgressBarThicknessRatio = 0.4,
+            PictorialSymbol = BgInfoChartPictorialSymbol.Person,
+            PictorialColumns = 8
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var chart = Assert.Single(roundTripped.Charts);
+        Assert.Equal(BgInfoChartKind.Donut, chart.Kind);
+        Assert.Equal(new[] { "Used", "Free" }, chart.Labels);
+        Assert.Equal(2, chart.Palette.Count);
+        Assert.True(chart.ShowLegend);
+        Assert.True(chart.ShowPointLegend);
+        Assert.Equal(BgInfoChartLegendPosition.Right, chart.LegendPosition);
+        Assert.True(chart.ShowDataLabels);
+        Assert.Equal(0, chart.Minimum);
+        Assert.Equal(100, chart.Maximum);
+        Assert.Equal(0.64, chart.DonutInnerRadiusRatio);
+        Assert.Equal("72%", chart.DonutCenterValue);
+        Assert.Equal("Used", chart.DonutCenterLabel);
+        Assert.Equal(0.4, chart.ProgressBarThicknessRatio);
+        Assert.Equal(BgInfoChartPictorialSymbol.Person, chart.PictorialSymbol);
+        Assert.Equal(8, chart.PictorialColumns);
     }
 }

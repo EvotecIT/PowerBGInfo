@@ -13,6 +13,10 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <UseSystemDrawing>true</UseSystemDrawing>
     </PropertyGroup>
+    <PropertyGroup>
+        <ChartForgeXProjectPath Condition="'$(ChartForgeXProjectPath)' == '' and Exists('..\..\..\ChartForgeX-overlay-raster\ChartForgeX\ChartForgeX.csproj')">..\..\..\ChartForgeX-overlay-raster\ChartForgeX\ChartForgeX.csproj</ChartForgeXProjectPath>
+        <ChartForgeXProjectPath Condition="'$(ChartForgeXProjectPath)' == '' and Exists('..\..\..\ChartForgeX\ChartForgeX\ChartForgeX.csproj')">..\..\..\ChartForgeX\ChartForgeX\ChartForgeX.csproj</ChartForgeXProjectPath>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
     </PropertyGroup>
@@ -20,6 +24,12 @@
     <ItemGroup>
         <PackageReference Include="DesktopManager" Version="3.6.1" />
         <PackageReference Include="ImagePlayground.Gdi" Version="2.0.0" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(ChartForgeXProjectPath)' != ''">
+        <ProjectReference Include="$(ChartForgeXProjectPath)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(ChartForgeXProjectPath)' == ''">
+        <PackageReference Include="ChartForgeX" Version="0.1.0" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

@@ -51,7 +51,7 @@ public class CmdletNewBGInfoValue : PSCmdlet {
 
     /// <para>Label color override.</para>
     [Parameter]
-    public Color Color { get; set; }
+    public object? Color { get; set; }
 
     /// <para>Label font size override.</para>
     [Parameter]
@@ -63,7 +63,7 @@ public class CmdletNewBGInfoValue : PSCmdlet {
 
     /// <para>Value color override.</para>
     [Parameter]
-    public Color ValueColor { get; set; }
+    public object? ValueColor { get; set; }
 
     /// <para>Value font size override.</para>
     [Parameter]
@@ -88,10 +88,10 @@ public class CmdletNewBGInfoValue : PSCmdlet {
             Value = isTemplate ? Value : finalValue,
             BuiltinValue = isTemplate ? null : string.IsNullOrEmpty(BuiltinValue) ? null : BuiltinValue,
             ForEach = isTemplate ? ForEach : null,
-            Color = IsParameterBound(nameof(Color)) ? Color : null,
+            Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,
-            ValueColor = IsParameterBound(nameof(ValueColor)) ? ValueColor : null,
+            ValueColor = IsParameterBound(nameof(ValueColor)) ? PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)) : null,
             ValueFontSize = IsParameterBound(nameof(ValueFontSize)) ? ValueFontSize : null,
             ValueFontFamilyName = IsParameterBound(nameof(ValueFontFamilyName)) ? ValueFontFamilyName : null
         };

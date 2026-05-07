@@ -34,10 +34,10 @@ public class CmdletNewBGInfo : PSCmdlet {
 
     /// <para>Default label color.</para>
     [Parameter]
-    public Color Color { get; set; } = Color.Black;
+    public object Color { get; set; } = System.Drawing.Color.Black;
     /// <para>Background color to use when no wallpaper image is available.</para>
     [Parameter]
-    public Color? BackgroundColor { get; set; }
+    public object? BackgroundColor { get; set; }
 
     /// <para>Default label font size.</para>
     [Parameter]
@@ -45,7 +45,7 @@ public class CmdletNewBGInfo : PSCmdlet {
 
     /// <para>Default value color.</para>
     [Parameter]
-    public Color ValueColor { get; set; } = Color.Black;
+    public object ValueColor { get; set; } = System.Drawing.Color.Black;
 
     /// <para>Default value font size.</para>
     [Parameter]
@@ -183,10 +183,10 @@ public class CmdletNewBGInfo : PSCmdlet {
             OutputFileName = OutputFileName,
             ConfigurationDirectory = ConfigurationDirectory,
             FontFamilyName = FontFamilyName,
-            Color = Color,
-            BackgroundColor = BackgroundColor,
+            Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color)),
+            BackgroundColor = PowerShellColorConverter.ConvertOptional(BackgroundColor, nameof(BackgroundColor)),
             FontSize = FontSize,
-            ValueColor = ValueColor,
+            ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)),
             ValueFontFamilyName = ValueFontFamilyName,
             ValueFontSize = ValueFontSize,
             ValueWrapWidth = ValueWrapWidth,
@@ -421,27 +421,6 @@ public class CmdletNewBGInfo : PSCmdlet {
             return null;
         }
 
-        if (value is Color color)
-        {
-            return color;
-        }
-
-        if (value is int argb)
-        {
-            return Color.FromArgb(argb);
-        }
-
-        if (value is uint argbUnsigned)
-        {
-            return Color.FromArgb(unchecked((int)argbUnsigned));
-        }
-
-        var text = value as string ?? Convert.ToString(value, CultureInfo.InvariantCulture);
-        if (!string.IsNullOrWhiteSpace(text) && BgInfoColorParser.TryParse(text, out var parsed))
-        {
-            return parsed;
-        }
-
-        return null;
+        return PowerShellColorConverter.ConvertOptional(value, "Color");
     }
 }

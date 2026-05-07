@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 #if NET472
 using System.Web.Script.Serialization;
@@ -273,12 +274,14 @@ public static class BgInfoConfigurationJson {
                     PositionX = chart.PositionX,
                     PositionY = chart.PositionY,
                     Values = chart.Values is null ? null : new List<double>(chart.Values).ToArray(),
+                    Labels = chart.Labels is null ? null : new List<string>(chart.Labels).ToArray(),
                     MaxPoints = chart.MaxPoints,
                     UseHistory = chart.UseHistory,
                     AppendValues = chart.AppendValues,
                     BackgroundColor = chart.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(chart.BackgroundColor.Value) : null,
                     LineColor = chart.LineColor.HasValue ? BgInfoColorParser.ToHex(chart.LineColor.Value) : null,
                     FillColor = chart.FillColor.HasValue ? BgInfoColorParser.ToHex(chart.FillColor.Value) : null,
+                    Palette = chart.Palette is null ? null : chart.Palette.Select(BgInfoColorParser.ToHex).ToArray(),
                     TextColor = chart.TextColor.HasValue ? BgInfoColorParser.ToHex(chart.TextColor.Value) : null,
                     FontFamilyName = chart.FontFamilyName,
                     TitleFontSize = chart.TitleFontSize,
@@ -291,6 +294,23 @@ public static class BgInfoConfigurationJson {
                     ShowGrid = chart.ShowGrid,
                     GridColor = chart.GridColor.HasValue ? BgInfoColorParser.ToHex(chart.GridColor.Value) : null,
                     GridLineCount = chart.GridLineCount,
+                    ShowLegend = chart.ShowLegend,
+                    ShowPointLegend = chart.ShowPointLegend,
+                    LegendPosition = chart.LegendPosition.ToString(),
+                    ShowDataLabels = chart.ShowDataLabels,
+                    Minimum = chart.Minimum,
+                    Maximum = chart.Maximum,
+                    ShowDonutCenterLabel = chart.ShowDonutCenterLabel,
+                    DonutInnerRadiusRatio = chart.DonutInnerRadiusRatio,
+                    DonutCenterValue = chart.DonutCenterValue,
+                    DonutCenterLabel = chart.DonutCenterLabel,
+                    ShowRadialBarCenterLabel = chart.ShowRadialBarCenterLabel,
+                    ShowCircleStatusLabel = chart.ShowCircleStatusLabel,
+                    ShowProgressValues = chart.ShowProgressValues,
+                    ShowProgressHandles = chart.ShowProgressHandles,
+                    ProgressBarThicknessRatio = chart.ProgressBarThicknessRatio,
+                    PictorialSymbol = chart.PictorialSymbol.ToString(),
+                    PictorialColumns = chart.PictorialColumns,
                     Metric = chart.Metric.ToString(),
                     MetricArgument = chart.MetricArgument
                 });
@@ -391,6 +411,7 @@ public static class BgInfoConfigurationJson {
         }
 
         if (model.Values != null) chart.Values = model.Values;
+        if (model.Labels != null) chart.Labels = model.Labels;
         if (model.MaxPoints.HasValue) chart.MaxPoints = model.MaxPoints.Value;
         if (model.UseHistory.HasValue) chart.UseHistory = model.UseHistory.Value;
         if (model.AppendValues.HasValue) chart.AppendValues = model.AppendValues.Value;
@@ -398,6 +419,16 @@ public static class BgInfoConfigurationJson {
         ApplyColor(model.BackgroundColor, value => chart.BackgroundColor = value);
         ApplyColor(model.LineColor, value => chart.LineColor = value);
         ApplyColor(model.FillColor, value => chart.FillColor = value);
+        if (model.Palette != null) {
+            var colors = new List<System.Drawing.Color>();
+            foreach (var item in model.Palette) {
+                if (BgInfoColorParser.TryParse(item, out var color)) {
+                    colors.Add(color);
+                }
+            }
+
+            chart.Palette = colors;
+        }
         ApplyColor(model.TextColor, value => chart.TextColor = value);
 
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) chart.FontFamilyName = model.FontFamilyName;
@@ -413,6 +444,29 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.GridColor)) {
             ApplyColor(model.GridColor, value => chart.GridColor = value);
         }
+        if (model.ShowLegend.HasValue) chart.ShowLegend = model.ShowLegend.Value;
+        if (model.ShowPointLegend.HasValue) chart.ShowPointLegend = model.ShowPointLegend.Value;
+        if (!string.IsNullOrWhiteSpace(model.LegendPosition) &&
+            Enum.TryParse(model.LegendPosition, true, out BgInfoChartLegendPosition legendPosition)) {
+            chart.LegendPosition = legendPosition;
+        }
+        if (model.ShowDataLabels.HasValue) chart.ShowDataLabels = model.ShowDataLabels.Value;
+        if (model.Minimum.HasValue) chart.Minimum = model.Minimum.Value;
+        if (model.Maximum.HasValue) chart.Maximum = model.Maximum.Value;
+        if (model.ShowDonutCenterLabel.HasValue) chart.ShowDonutCenterLabel = model.ShowDonutCenterLabel.Value;
+        if (model.DonutInnerRadiusRatio.HasValue) chart.DonutInnerRadiusRatio = model.DonutInnerRadiusRatio.Value;
+        if (!string.IsNullOrWhiteSpace(model.DonutCenterValue)) chart.DonutCenterValue = model.DonutCenterValue;
+        if (!string.IsNullOrWhiteSpace(model.DonutCenterLabel)) chart.DonutCenterLabel = model.DonutCenterLabel;
+        if (model.ShowRadialBarCenterLabel.HasValue) chart.ShowRadialBarCenterLabel = model.ShowRadialBarCenterLabel.Value;
+        if (model.ShowCircleStatusLabel.HasValue) chart.ShowCircleStatusLabel = model.ShowCircleStatusLabel.Value;
+        if (model.ShowProgressValues.HasValue) chart.ShowProgressValues = model.ShowProgressValues.Value;
+        if (model.ShowProgressHandles.HasValue) chart.ShowProgressHandles = model.ShowProgressHandles.Value;
+        if (model.ProgressBarThicknessRatio.HasValue) chart.ProgressBarThicknessRatio = model.ProgressBarThicknessRatio.Value;
+        if (!string.IsNullOrWhiteSpace(model.PictorialSymbol) &&
+            Enum.TryParse(model.PictorialSymbol, true, out BgInfoChartPictorialSymbol pictorialSymbol)) {
+            chart.PictorialSymbol = pictorialSymbol;
+        }
+        if (model.PictorialColumns.HasValue) chart.PictorialColumns = model.PictorialColumns.Value;
         if (!string.IsNullOrWhiteSpace(model.MetricArgument)) chart.MetricArgument = model.MetricArgument;
 
         return chart;
@@ -516,12 +570,14 @@ public static class BgInfoConfigurationJson {
         public float? PositionX { get; set; }
         public float? PositionY { get; set; }
         public double[]? Values { get; set; }
+        public string[]? Labels { get; set; }
         public int? MaxPoints { get; set; }
         public bool? UseHistory { get; set; }
         public bool? AppendValues { get; set; }
         public string? BackgroundColor { get; set; }
         public string? LineColor { get; set; }
         public string? FillColor { get; set; }
+        public string[]? Palette { get; set; }
         public string? TextColor { get; set; }
         public string? FontFamilyName { get; set; }
         public float? TitleFontSize { get; set; }
@@ -534,6 +590,23 @@ public static class BgInfoConfigurationJson {
         public bool? ShowGrid { get; set; }
         public string? GridColor { get; set; }
         public int? GridLineCount { get; set; }
+        public bool? ShowLegend { get; set; }
+        public bool? ShowPointLegend { get; set; }
+        public string? LegendPosition { get; set; }
+        public bool? ShowDataLabels { get; set; }
+        public double? Minimum { get; set; }
+        public double? Maximum { get; set; }
+        public bool? ShowDonutCenterLabel { get; set; }
+        public double? DonutInnerRadiusRatio { get; set; }
+        public string? DonutCenterValue { get; set; }
+        public string? DonutCenterLabel { get; set; }
+        public bool? ShowRadialBarCenterLabel { get; set; }
+        public bool? ShowCircleStatusLabel { get; set; }
+        public bool? ShowProgressValues { get; set; }
+        public bool? ShowProgressHandles { get; set; }
+        public double? ProgressBarThicknessRatio { get; set; }
+        public string? PictorialSymbol { get; set; }
+        public int? PictorialColumns { get; set; }
         public string? Metric { get; set; }
         public string? MetricArgument { get; set; }
     }
