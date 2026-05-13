@@ -69,8 +69,17 @@ internal static class BgInfoChartRenderer {
         var accent = ToChartColor(chart.LineColor ?? config.ValueColor);
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
-            .WithOverlay()
             .WithTheme(CreateOverlayTheme(chart, config, accent))
+            .WithTransparentBackground()
+            .WithHeader(false)
+            .WithLegend(false)
+            .WithAxes(false)
+            .WithXAxisVisible(false)
+            .WithYAxisVisible(false)
+            .WithAxisLines(false)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithPadding(8, 8, 8, 8)
             .WithPngSupersampling(2)
             .WithValueFormatter(value => FormatValue(value, chart));
 

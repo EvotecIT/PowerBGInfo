@@ -13,10 +13,6 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <UseSystemDrawing>true</UseSystemDrawing>
     </PropertyGroup>
-    <PropertyGroup>
-        <ChartForgeXProjectPath Condition="'$(ChartForgeXProjectPath)' == '' and Exists('..\..\..\ChartForgeX-overlay-raster\ChartForgeX\ChartForgeX.csproj')">..\..\..\ChartForgeX-overlay-raster\ChartForgeX\ChartForgeX.csproj</ChartForgeXProjectPath>
-        <ChartForgeXProjectPath Condition="'$(ChartForgeXProjectPath)' == '' and Exists('..\..\..\ChartForgeX\ChartForgeX\ChartForgeX.csproj')">..\..\..\ChartForgeX\ChartForgeX\ChartForgeX.csproj</ChartForgeXProjectPath>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
     </PropertyGroup>
