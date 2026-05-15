@@ -358,6 +358,23 @@ PowerBGInfo backgrounds are most useful when they answer a question at a glance,
 
 Use the smallest set of visuals that changes a decision. Three to five blocks is usually enough on a 1080p wallpaper. Put stable identity and ownership text away from busy wallpaper areas, keep live charts near one edge, use translucent panels when readability matters, and use transparent chart ink only when the wallpaper underneath stays calm enough for labels and grid lines.
 
+`Examples\Scripts\PowerBGInfo.WallpaperPatterns.ps1` generates a small pattern gallery that can be copied and adjusted for different environments:
+
+| Pattern | Start from this when | Output |
+| --- | --- | --- |
+| Lab or demo VM | The machine needs to explain its scenario, domain, owner, reset window, and lab readiness. | `Examples\Output\PowerBGInfo.Pattern.Lab.jpg` |
+| Shared admin workstation | The wallpaper must make privileged context, tenant, support route, and usage warning obvious. | `Examples\Output\PowerBGInfo.Pattern.AdminWorkstation.jpg` |
+| Build or test host | The useful signal is build role, last result, queue pressure, disk pressure, and pass target. | `Examples\Output\PowerBGInfo.Pattern.BuildAgent.jpg` |
+| Training or kiosk station | The user needs exercise phase, help URL, hint, reset guidance, and checkpoint progress. | `Examples\Output\PowerBGInfo.Pattern.TrainingKiosk.jpg` |
+
+![PowerBGInfo lab wallpaper pattern](Examples/Output/PowerBGInfo.Pattern.Lab.jpg)
+
+![PowerBGInfo shared admin workstation pattern](Examples/Output/PowerBGInfo.Pattern.AdminWorkstation.jpg)
+
+![PowerBGInfo build agent wallpaper pattern](Examples/Output/PowerBGInfo.Pattern.BuildAgent.jpg)
+
+![PowerBGInfo training kiosk wallpaper pattern](Examples/Output/PowerBGInfo.Pattern.TrainingKiosk.jpg)
+
 ```powershell
 New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue HostName -Color White
