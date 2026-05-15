@@ -152,6 +152,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public BgInfoChart[] Charts { get; set; } = System.Array.Empty<BgInfoChart>();
 
+    /// <para>Topology diagrams to include in the configuration.</para>
+    [Parameter]
+    public BgInfoTopology[] Topologies { get; set; } = System.Array.Empty<BgInfoTopology>();
+
     /// <summary>Creates the configuration object.</summary>
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
@@ -198,6 +202,9 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         }
         if (IsParameterBound(nameof(Charts)) && Charts.Length > 0) {
             config.Charts.AddRange(Charts);
+        }
+        if (IsParameterBound(nameof(Topologies)) && Topologies.Length > 0) {
+            config.Topologies.AddRange(Topologies);
         }
 
         WriteObject(config);

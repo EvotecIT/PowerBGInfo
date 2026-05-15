@@ -198,6 +198,7 @@ public class BgInfoGenerator
         var textBlock = new System.Drawing.RectangleF(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
 
         RenderCharts(image, config, textBlock);
+        RenderTopologies(image, config);
 
         _imageService.Save(image, outputPath);
 
@@ -428,6 +429,27 @@ public class BgInfoGenerator
             using var chartImage = BgInfoChartRenderer.Render(chart, values, config);
             var position = ResolveChartPosition(image, chart);
             image.DrawImage(chartImage, position.X, position.Y);
+        }
+    }
+
+    private static void RenderTopologies(Image image, BgInfoConfiguration config)
+    {
+        if (config.Topologies.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < config.Topologies.Count; i++)
+        {
+            var topology = config.Topologies[i];
+            if (topology.Nodes.Count == 0)
+            {
+                continue;
+            }
+
+            using var topologyImage = BgInfoTopologyRenderer.Render(topology, config);
+            var position = ResolveTopologyPosition(image, topology);
+            image.DrawImage(topologyImage, position.X, position.Y);
         }
     }
 
@@ -701,6 +723,17 @@ public class BgInfoGenerator
         float chartHeight = Math.Max(1, chart.Height);
         return ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
             (int)chartWidth, (int)chartHeight, chart.Anchor, chart.OffsetX, chart.OffsetY);
+    }
+
+    private static System.Drawing.PointF ResolveTopologyPosition(Image image, BgInfoTopology topology)
+    {
+        if (topology.PositionX.HasValue && topology.PositionY.HasValue)
+        {
+            return new System.Drawing.PointF(topology.PositionX.Value, topology.PositionY.Value);
+        }
+
+        return ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+            Math.Max(1, topology.Width), Math.Max(1, topology.Height), topology.Anchor, topology.OffsetX, topology.OffsetY);
     }
 
     internal static System.Drawing.PointF ResolveChartPosition(System.Drawing.RectangleF area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)

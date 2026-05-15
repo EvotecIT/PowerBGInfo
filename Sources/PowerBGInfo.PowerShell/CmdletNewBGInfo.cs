@@ -235,6 +235,12 @@ public class CmdletNewBGInfo : PSCmdlet {
                 continue;
             }
 
+            if (item?.BaseObject is BgInfoTopology topology)
+            {
+                config.Topologies.Add(topology);
+                continue;
+            }
+
             if (item != null && TryConvertLegacyEntry(item, out var legacyEntry))
             {
                 config.Entries.Add(legacyEntry);
