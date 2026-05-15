@@ -21,6 +21,8 @@ public enum BgInfoChartKind {
     Circle,
     /// <summary>Renders values as radial progress rings.</summary>
     RadialBar,
+    /// <summary>Renders value, target, and qualitative ranges.</summary>
+    Bullet,
     /// <summary>Renders values as a pie chart.</summary>
     Pie,
     /// <summary>Renders values as a donut chart.</summary>
@@ -121,6 +123,10 @@ public sealed class BgInfoChart {
     public IReadOnlyList<double> Values { get; set; } = Array.Empty<double>();
     /// <summary>Optional labels used by point-based chart kinds.</summary>
     public IReadOnlyList<string> Labels { get; set; } = Array.Empty<string>();
+    /// <summary>Optional target value used by bullet charts.</summary>
+    public double? Target { get; set; }
+    /// <summary>Optional qualitative range ends used by bullet charts.</summary>
+    public IReadOnlyList<double> RangeEnds { get; set; } = Array.Empty<double>();
     /// <summary>Metric source used when no explicit values are provided.</summary>
     public BgInfoChartMetric Metric { get; set; } = BgInfoChartMetric.None;
     /// <summary>Optional argument for the metric source (for example drive letter).</summary>

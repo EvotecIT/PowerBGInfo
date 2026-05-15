@@ -16,7 +16,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
-    /// <para>Chart kind to render, such as Sparkline, Line, Area, Bar, HorizontalBar, Gauge, Circle, RadialBar, Pie, Donut, ProgressBar, or Pictorial.</para>
+    /// <para>Chart kind to render, such as Sparkline, Line, Area, Bar, HorizontalBar, Gauge, Circle, RadialBar, Bullet, Pie, Donut, ProgressBar, or Pictorial.</para>
     [Parameter]
     public BgInfoChartKind Kind { get; set; } = BgInfoChartKind.Sparkline;
 
@@ -31,6 +31,14 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     /// <para>Optional labels used by point-based charts.</para>
     [Parameter]
     public string[] Labels { get; set; } = Array.Empty<string>();
+
+    /// <para>Target value used by bullet charts.</para>
+    [Parameter]
+    public double Target { get; set; }
+
+    /// <para>Qualitative range ends used by bullet charts.</para>
+    [Parameter]
+    public double[] RangeEnds { get; set; } = Array.Empty<double>();
 
     /// <para>Built-in metric source used when no explicit values are provided.</para>
     [Parameter]
@@ -290,6 +298,12 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(Maximum))) {
             chart.Maximum = Maximum;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(Target))) {
+            chart.Target = Target;
+        }
+        if (RangeEnds != null && RangeEnds.Length > 0) {
+            chart.RangeEnds = RangeEnds;
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(DonutInnerRadiusRatio))) {
             chart.DonutInnerRadiusRatio = DonutInnerRadiusRatio;

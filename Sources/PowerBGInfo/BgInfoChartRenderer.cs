@@ -111,6 +111,9 @@ internal static class BgInfoChartRenderer {
             case BgInfoChartKind.RadialBar:
                 plot.AddRadialBar(chart.Title, BuildPercentPoints(values), accent);
                 break;
+            case BgInfoChartKind.Bullet:
+                AddBulletRows(plot, chart, values, accent);
+                break;
             case BgInfoChartKind.Pie:
                 plot.WithXLabels(BuildLabels(chart, values.Count)).AddPie(chart.Title, BuildIndexedPoints(values));
                 ApplyPointColors(plot, chart);
@@ -187,6 +190,18 @@ internal static class BgInfoChartRenderer {
     private static void AddCircle(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
         var latest = values[values.Count - 1];
         plot.AddCircle(chart.Title, latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100), accent);
+    }
+
+    private static void AddBulletRows(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
+        var maximum = ResolveMaximum(chart, values, 100);
+        var minimum = chart.Minimum ?? 0;
+        var target = chart.Target ?? maximum;
+        var ranges = chart.RangeEnds.Count > 0 ? chart.RangeEnds : null;
+
+        for (var i = 0; i < values.Count; i++) {
+            plot.AddBullet(LabelAt(chart, i), values[i], target, minimum, maximum, ranges, ColorAt(chart, i) ?? accent);
+            plot.Series[plot.Series.Count - 1].WithDataLabels(chart.ShowDataLabels);
+        }
     }
 
     private static ChartPoint[] BuildIndexedPoints(IReadOnlyList<double> values) {

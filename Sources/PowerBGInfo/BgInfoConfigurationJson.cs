@@ -275,6 +275,8 @@ public static class BgInfoConfigurationJson {
                     PositionY = chart.PositionY,
                     Values = chart.Values is null ? null : new List<double>(chart.Values).ToArray(),
                     Labels = chart.Labels is null ? null : new List<string>(chart.Labels).ToArray(),
+                    Target = chart.Target,
+                    RangeEnds = chart.RangeEnds is null ? null : new List<double>(chart.RangeEnds).ToArray(),
                     MaxPoints = chart.MaxPoints,
                     UseHistory = chart.UseHistory,
                     AppendValues = chart.AppendValues,
@@ -412,6 +414,8 @@ public static class BgInfoConfigurationJson {
 
         if (model.Values != null) chart.Values = model.Values;
         if (model.Labels != null) chart.Labels = model.Labels;
+        if (model.Target.HasValue) chart.Target = model.Target.Value;
+        if (model.RangeEnds != null) chart.RangeEnds = model.RangeEnds;
         if (model.MaxPoints.HasValue) chart.MaxPoints = model.MaxPoints.Value;
         if (model.UseHistory.HasValue) chart.UseHistory = model.UseHistory.Value;
         if (model.AppendValues.HasValue) chart.AppendValues = model.AppendValues.Value;
@@ -571,6 +575,8 @@ public static class BgInfoConfigurationJson {
         public float? PositionY { get; set; }
         public double[]? Values { get; set; }
         public string[]? Labels { get; set; }
+        public double? Target { get; set; }
+        public double[]? RangeEnds { get; set; }
         public int? MaxPoints { get; set; }
         public bool? UseHistory { get; set; }
         public bool? AppendValues { get; set; }

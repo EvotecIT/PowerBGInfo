@@ -114,6 +114,8 @@ public class BgInfoConfigurationJsonTests
             ShowDataLabels = true,
             Minimum = 0,
             Maximum = 100,
+            Target = 95,
+            RangeEnds = new[] { 70d, 85d },
             DonutInnerRadiusRatio = 0.64,
             DonutCenterValue = "72%",
             DonutCenterLabel = "Used",
@@ -135,6 +137,8 @@ public class BgInfoConfigurationJsonTests
         Assert.True(chart.ShowDataLabels);
         Assert.Equal(0, chart.Minimum);
         Assert.Equal(100, chart.Maximum);
+        Assert.Equal(95, chart.Target);
+        Assert.Equal(new[] { 70d, 85d }, chart.RangeEnds);
         Assert.Equal(0.64, chart.DonutInnerRadiusRatio);
         Assert.Equal("72%", chart.DonutCenterValue);
         Assert.Equal("Used", chart.DonutCenterLabel);
