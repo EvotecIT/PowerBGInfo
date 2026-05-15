@@ -346,6 +346,18 @@ For an operational wallpaper, keep the chart set small and tied to data people a
 
 ![PowerBGInfo operational ChartForgeX overlay](Examples/Output/PowerBGInfo.OperationalCharts.jpg)
 
+PowerBGInfo backgrounds are most useful when they answer a question at a glance, not when they try to become a full dashboard. A lab, classroom, demo VM, kiosk, jump host, build machine, or shared admin workstation may care more about identity, purpose, topology, maintenance windows, credentials guidance, service ownership, or exercise state than CPU load. Pick the visual surface from the job the wallpaper has to do:
+
+| Wallpaper purpose | Useful content | Visual style |
+| --- | --- | --- |
+| Lab or demo VM | Lab name, scenario, domain, role, owner, expiration, reset hints | Text values plus one or two status visuals. |
+| Shared admin workstation | Environment, tenant/customer, support contact, privileged-session warning | High-contrast identity block with restrained status indicators. |
+| Build or test host | Agent role, queue state, last build, disk pressure, service state | Short trend, target/status chart, compact service count. |
+| Training room or kiosk | Exercise phase, machine number, credentials hint, help URL | Clear text blocks with minimal decorative charts. |
+| Operations desktop | Health trend, capacity, compliance target, stopped services | One trend, one target/KPI, one status summary. |
+
+Use the smallest set of visuals that changes a decision. Three to five blocks is usually enough on a 1080p wallpaper. Put stable identity and ownership text away from busy wallpaper areas, keep live charts near one edge, use translucent panels when readability matters, and use transparent chart ink only when the wallpaper underneath stays calm enough for labels and grid lines.
+
 ```powershell
 New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue HostName -Color White
@@ -391,6 +403,7 @@ Use history for rolling metrics and use static values for status snapshots:
 | Deployment or backup status | `ProgressBar` | Use `-Maximum 100`, `-NoProgressHandles`, and `-ShowDataLabels`. |
 | Running/stopped counts | `Pictorial` | Use `-PictorialSymbol Person` or `Circle` with a small palette. |
 | One current KPI | `Gauge`, `Circle`, `RadialBar` | Use `-Minimum` and `-Maximum` for stable scaling. |
+| Lab, demo, or ownership context | `New-BGInfoValue` | Prefer readable text over charts when the data is categorical or rarely changes. |
 
 Keep PowerBGInfo chart layouts purposeful: a trend, one or two current KPIs, and one status snapshot are usually easier to read on a wallpaper than every available chart kind.
 
