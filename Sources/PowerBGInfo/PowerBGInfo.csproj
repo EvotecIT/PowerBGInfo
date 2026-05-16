@@ -21,6 +21,12 @@
         <PackageReference Include="DesktopManager" Version="3.6.1" />
         <PackageReference Include="ImagePlayground.Gdi" Version="2.0.0" />
     </ItemGroup>
+    <ItemGroup Condition="'$(ChartForgeXProjectPath)' != ''">
+        <ProjectReference Include="$(ChartForgeXProjectPath)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(ChartForgeXProjectPath)' == ''">
+        <PackageReference Include="ChartForgeX" Version="0.1.1" />
+    </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>PowerBGInfo.Tests</_Parameter1>

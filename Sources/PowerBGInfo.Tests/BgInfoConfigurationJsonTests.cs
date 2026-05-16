@@ -1,4 +1,6 @@
 using System.IO;
+using System.Drawing;
+using ChartForgeX.Topology;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
@@ -89,5 +91,140 @@ public class BgInfoConfigurationJsonTests
 
         Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Samples\\wallpaper.jpg")), configuration.FilePath);
         Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Output")), configuration.ConfigurationDirectory);
+    }
+
+    [Fact]
+    public void SaveAndLoadPreservesChartForgeXChartOptions() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        configuration.Charts.Add(new BgInfoChart {
+            Id = "usage",
+            Title = "Usage",
+            Kind = BgInfoChartKind.Donut,
+            Values = new[] { 72d, 28d },
+            Labels = new[] { "Used", "Free" },
+            Palette = new[] { Color.Red, Color.Green },
+            ShowLegend = true,
+            ShowPointLegend = true,
+            LegendPosition = BgInfoChartLegendPosition.Right,
+            ShowDataLabels = true,
+            Minimum = 0,
+            Maximum = 100,
+            Target = 95,
+            RangeEnds = new[] { 70d, 85d },
+            DonutInnerRadiusRatio = 0.64,
+            DonutCenterValue = "72%",
+            DonutCenterLabel = "Used",
+            ProgressBarThicknessRatio = 0.4,
+            PictorialSymbol = BgInfoChartPictorialSymbol.Person,
+            PictorialColumns = 8
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var chart = Assert.Single(roundTripped.Charts);
+        Assert.Equal(BgInfoChartKind.Donut, chart.Kind);
+        Assert.Equal(new[] { "Used", "Free" }, chart.Labels);
+        Assert.Equal(2, chart.Palette.Count);
+        Assert.True(chart.ShowLegend);
+        Assert.True(chart.ShowPointLegend);
+        Assert.Equal(BgInfoChartLegendPosition.Right, chart.LegendPosition);
+        Assert.True(chart.ShowDataLabels);
+        Assert.Equal(0, chart.Minimum);
+        Assert.Equal(100, chart.Maximum);
+        Assert.Equal(95, chart.Target);
+        Assert.Equal(new[] { 70d, 85d }, chart.RangeEnds);
+        Assert.Equal(0.64, chart.DonutInnerRadiusRatio);
+        Assert.Equal("72%", chart.DonutCenterValue);
+        Assert.Equal("Used", chart.DonutCenterLabel);
+        Assert.Equal(0.4, chart.ProgressBarThicknessRatio);
+        Assert.Equal(BgInfoChartPictorialSymbol.Person, chart.PictorialSymbol);
+        Assert.Equal(8, chart.PictorialColumns);
+    }
+
+    [Fact]
+    public void SaveAndLoadPreservesTopologyOptions() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        var topology = new BgInfoTopology {
+            Title = "Lab topology",
+            Subtitle = "Gateway, API, SQL",
+            Width = 560,
+            Height = 310,
+            Anchor = BgInfoTextPosition.BottomRight,
+            OffsetX = 34,
+            OffsetY = 42,
+            Layout = TopologyLayoutMode.Layered,
+            Direction = TopologyLayoutDirection.LeftToRight,
+            NodeDisplayMode = TopologyNodeDisplayMode.CompactCard,
+            Theme = "Dark",
+            Transparent = true,
+            ShowLegend = true
+        };
+        topology.Groups.Add(new TopologyGroup {
+            Id = "lab",
+            Label = "Lab Site",
+            Status = TopologyHealthStatus.Healthy,
+            Symbol = "region"
+        });
+        topology.Nodes.Add(new TopologyNode {
+            Id = "gateway",
+            Label = "Gateway",
+            Kind = TopologyNodeKind.Network,
+            Status = TopologyHealthStatus.Healthy,
+            GroupId = "lab",
+            Symbol = "GW"
+        });
+        topology.Nodes.Add(new TopologyNode {
+            Id = "api",
+            Label = "API",
+            Kind = TopologyNodeKind.Service,
+            Status = TopologyHealthStatus.Warning,
+            GroupId = "lab",
+            Symbol = "API"
+        });
+        topology.Edges.Add(new TopologyEdge {
+            Id = "gateway-api",
+            SourceNodeId = "gateway",
+            TargetNodeId = "api",
+            Label = "HTTPS",
+            Kind = TopologyEdgeKind.Connectivity,
+            Status = TopologyHealthStatus.Healthy,
+            Direction = TopologyDirection.Forward
+        });
+        configuration.Topologies.Add(topology);
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var loaded = Assert.Single(roundTripped.Topologies);
+        Assert.Equal("Lab topology", loaded.Title);
+        Assert.Equal("Gateway, API, SQL", loaded.Subtitle);
+        Assert.Equal(560, loaded.Width);
+        Assert.Equal(310, loaded.Height);
+        Assert.Equal(BgInfoTextPosition.BottomRight, loaded.Anchor);
+        Assert.Equal(34, loaded.OffsetX);
+        Assert.Equal(42, loaded.OffsetY);
+        Assert.Equal(TopologyLayoutMode.Layered, loaded.Layout);
+        Assert.Equal(TopologyLayoutDirection.LeftToRight, loaded.Direction);
+        Assert.Equal(TopologyNodeDisplayMode.CompactCard, loaded.NodeDisplayMode);
+        Assert.True(loaded.Transparent);
+        Assert.True(loaded.ShowLegend);
+        Assert.Single(loaded.Groups);
+        Assert.Equal(2, loaded.Nodes.Count);
+        Assert.Single(loaded.Edges);
+        Assert.Equal("gateway-api", loaded.Edges[0].Id);
+        Assert.Equal(TopologyEdgeKind.Connectivity, loaded.Edges[0].Kind);
     }
 }

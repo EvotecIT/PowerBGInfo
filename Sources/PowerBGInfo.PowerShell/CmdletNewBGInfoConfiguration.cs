@@ -26,11 +26,11 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
 
     /// <para>Default label color.</para>
     [Parameter]
-    public Color Color { get; set; }
+    public object? Color { get; set; }
 
     /// <para>Background color to use when no wallpaper image is available.</para>
     [Parameter]
-    public Color? BackgroundColor { get; set; }
+    public object? BackgroundColor { get; set; }
 
     /// <para>Default label font size.</para>
     [Parameter]
@@ -38,7 +38,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
 
     /// <para>Default value color.</para>
     [Parameter]
-    public Color ValueColor { get; set; }
+    public object? ValueColor { get; set; }
 
     /// <para>Default value font size.</para>
     [Parameter]
@@ -152,6 +152,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public BgInfoChart[] Charts { get; set; } = System.Array.Empty<BgInfoChart>();
 
+    /// <para>Topology diagrams to include in the configuration.</para>
+    [Parameter]
+    public BgInfoTopology[] Topologies { get; set; } = System.Array.Empty<BgInfoTopology>();
+
     /// <summary>Creates the configuration object.</summary>
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
@@ -160,10 +164,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(OutputFileName))) config.OutputFileName = OutputFileName;
         if (IsParameterBound(nameof(ConfigurationDirectory))) config.ConfigurationDirectory = ConfigurationDirectory;
         if (IsParameterBound(nameof(FontFamilyName))) config.FontFamilyName = FontFamilyName;
-        if (IsParameterBound(nameof(Color))) config.Color = Color;
-        if (IsParameterBound(nameof(BackgroundColor))) config.BackgroundColor = BackgroundColor;
+        if (IsParameterBound(nameof(Color))) config.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
+        if (IsParameterBound(nameof(BackgroundColor))) config.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));
         if (IsParameterBound(nameof(FontSize))) config.FontSize = FontSize;
-        if (IsParameterBound(nameof(ValueColor))) config.ValueColor = ValueColor;
+        if (IsParameterBound(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
         if (IsParameterBound(nameof(ValueFontSize))) config.ValueFontSize = ValueFontSize;
         if (IsParameterBound(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
         if (IsParameterBound(nameof(ValueWrapWidth))) config.ValueWrapWidth = ValueWrapWidth;
@@ -198,6 +202,9 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         }
         if (IsParameterBound(nameof(Charts)) && Charts.Length > 0) {
             config.Charts.AddRange(Charts);
+        }
+        if (IsParameterBound(nameof(Topologies)) && Topologies.Length > 0) {
+            config.Topologies.AddRange(Topologies);
         }
 
         WriteObject(config);

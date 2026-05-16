@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ImagePlayground.Gdi;
 using GdiImage = ImagePlayground.Gdi.Image;
 
@@ -12,17 +17,17 @@ internal static class BgInfoChartRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
 
-        int width = Math.Max(1, chart.Width);
-        int height = Math.Max(1, chart.Height);
+        var width = Math.Max(1, chart.Width);
+        var height = Math.Max(1, chart.Height);
         var image = new GdiImage();
         var background = chart.BackgroundColor ?? Color.Transparent;
         image.Create(string.Empty, width, height, background);
 
-        int padding = Math.Max(0, chart.Padding);
-        float plotLeft = padding;
-        float plotTop = padding;
-        float plotWidth = Math.Max(1, width - padding * 2);
-        float plotHeight = Math.Max(1, height - padding * 2);
+        var padding = Math.Max(0, chart.Padding);
+        var plotLeft = (float)padding;
+        var plotTop = (float)padding;
+        var plotWidth = Math.Max(1f, width - padding * 2f);
+        var plotHeight = Math.Max(1f, height - padding * 2f);
 
         var title = chart.Title ?? string.Empty;
         var showValue = chart.ShowLatestValue && values.Count > 0;
@@ -44,8 +49,9 @@ internal static class BgInfoChartRenderer {
             if (!string.IsNullOrWhiteSpace(title)) {
                 image.AddText(padding, padding, title, titleColor, chart.TitleFontSize ?? config.FontSize, fontFamily);
             }
+
             if (!string.IsNullOrWhiteSpace(latestValueText)) {
-                float valueX = Math.Max(padding, width - padding - valueSize.Width);
+                var valueX = Math.Max(padding, width - padding - valueSize.Width);
                 image.AddText(valueX, padding, latestValueText, valueColor, chart.ValueFontSize ?? config.ValueFontSize, fontFamily);
             }
         }
@@ -54,107 +60,269 @@ internal static class BgInfoChartRenderer {
             return image;
         }
 
-        if (chart.ShowGrid && chart.GridLineCount > 0) {
-            RenderGrid(image, chart, config, plotLeft, plotTop, plotWidth, plotHeight);
-        }
-
-        switch (chart.Kind) {
-            case BgInfoChartKind.Bar:
-                RenderBars(image, chart, values, plotLeft, plotTop, plotWidth, plotHeight, config);
-                break;
-            default:
-                RenderSparkline(image, chart, values, plotLeft, plotTop, plotWidth, plotHeight, config);
-                break;
-        }
-
+        var plot = BuildChartForgeXChart(chart, values, config, (int)Math.Round(plotWidth), (int)Math.Round(plotHeight));
+        DrawPng(image, plot.ToPng(), plotLeft, plotTop, plotWidth, plotHeight);
         return image;
     }
 
-    private static void RenderGrid(GdiImage image, BgInfoChart chart, BgInfoConfiguration config, float left, float top, float width, float height) {
-        int lines = Math.Max(1, chart.GridLineCount);
-        var baseColor = chart.GridColor ?? chart.TextColor ?? config.ValueColor;
-        var gridColor = Color.FromArgb(90, baseColor.R, baseColor.G, baseColor.B);
-        image.WithGraphics(graphics => {
-            using var pen = new Pen(gridColor, 1f);
-            float step = height / (lines + 1);
-            for (int i = 1; i <= lines; i++) {
-                float y = top + step * i;
-                graphics.DrawLine(pen, left, y, left + width, y);
-            }
-        });
+    private static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
+        var accent = ToChartColor(chart.LineColor ?? config.ValueColor);
+        var plot = Chart.Create()
+            .WithSize(Math.Max(1, width), Math.Max(1, height))
+            .WithTheme(CreateOverlayTheme(chart, config, accent))
+            .WithTransparentBackground()
+            .WithHeader(false)
+            .WithLegend(false)
+            .WithAxes(false)
+            .WithXAxisVisible(false)
+            .WithYAxisVisible(false)
+            .WithAxisLines(false)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithPadding(8, 8, 8, 8)
+            .WithPngSupersampling(2)
+            .WithValueFormatter(value => FormatValue(value, chart));
+
+        if (chart.ShowGrid && chart.GridLineCount > 0) {
+            plot.WithGrid();
+        }
+
+        ApplyChartOptions(plot, chart);
+
+        switch (chart.Kind) {
+            case BgInfoChartKind.Bar:
+                plot.AddBar(chart.Title, BuildIndexedPoints(values), accent);
+                break;
+            case BgInfoChartKind.HorizontalBar:
+                plot.AddHorizontalBar(chart.Title, BuildIndexedPoints(values), accent);
+                break;
+            case BgInfoChartKind.Line:
+                plot.AddLine(chart.Title, BuildIndexedPoints(values), accent);
+                break;
+            case BgInfoChartKind.Area:
+                plot.AddSmoothArea(chart.Title, BuildIndexedPoints(values), ToChartColor(chart.FillColor ?? chart.LineColor ?? config.ValueColor));
+                break;
+            case BgInfoChartKind.Gauge:
+                AddGauge(plot, chart, values, accent);
+                break;
+            case BgInfoChartKind.Circle:
+                AddCircle(plot, chart, values, accent);
+                break;
+            case BgInfoChartKind.RadialBar:
+                plot.AddRadialBar(chart.Title, BuildPercentPoints(values), accent);
+                break;
+            case BgInfoChartKind.Bullet:
+                AddBulletRows(plot, chart, values, accent);
+                break;
+            case BgInfoChartKind.Pie:
+                plot.WithXLabels(BuildLabels(chart, values.Count)).AddPie(chart.Title, BuildIndexedPoints(values));
+                ApplyPointColors(plot, chart);
+                break;
+            case BgInfoChartKind.Donut:
+                plot.WithXLabels(BuildLabels(chart, values.Count)).AddDonut(chart.Title, BuildIndexedPoints(values));
+                ApplyPointColors(plot, chart);
+                break;
+            case BgInfoChartKind.ProgressBar:
+                plot.AddProgressBars(chart.Title, BuildProgressItems(chart, values), ResolveMaximum(chart, values, 100), accent);
+                break;
+            case BgInfoChartKind.Pictorial:
+                plot.AddPictorial(chart.Title, BuildPictorialItems(chart, values), ResolvePictorialShape(chart.PictorialSymbol), accent);
+                break;
+            default:
+                plot.AddSmoothLine(chart.Title, BuildIndexedPoints(values), accent);
+                break;
+        }
+
+        return plot;
     }
 
-    private static void RenderSparkline(GdiImage image, BgInfoChart chart, IReadOnlyList<double> values, float left, float top, float width, float height, BgInfoConfiguration config) {
-        if (values.Count == 0) {
+    private static void ApplyChartOptions(Chart plot, BgInfoChart chart) {
+        plot.WithLegend(chart.ShowLegend)
+            .WithPointLegend(chart.ShowPointLegend)
+            .WithLegendPosition(ResolveLegendPosition(chart.LegendPosition))
+            .WithDataLabels(chart.ShowDataLabels)
+            .WithDonutCenterLabel(chart.ShowDonutCenterLabel)
+            .WithRadialBarCenterLabel(chart.ShowRadialBarCenterLabel)
+            .WithCircleStatusLabel(chart.ShowCircleStatusLabel)
+            .WithProgressValues(chart.ShowProgressValues)
+            .WithProgressHandles(chart.ShowProgressHandles)
+            .WithPictorialShape(ResolvePictorialShape(chart.PictorialSymbol));
+
+        if (chart.Palette.Count > 0) {
+            plot.WithPalette(chart.Palette.Select(ToChartColor).ToArray());
+        }
+        if (chart.DonutInnerRadiusRatio.HasValue) {
+            plot.WithDonutInnerRadiusRatio(chart.DonutInnerRadiusRatio.Value);
+        }
+        if (!string.IsNullOrWhiteSpace(chart.DonutCenterValue) || !string.IsNullOrWhiteSpace(chart.DonutCenterLabel)) {
+            plot.WithDonutCenterText(chart.DonutCenterValue, chart.DonutCenterLabel);
+        }
+        if (chart.ProgressBarThicknessRatio.HasValue) {
+            plot.WithProgressBarThickness(chart.ProgressBarThicknessRatio.Value);
+        }
+        if (chart.Maximum.HasValue) {
+            plot.WithProgressMaximum(chart.Maximum.Value);
+            plot.WithPictorialMaximum(chart.Maximum.Value);
+        }
+        if (chart.PictorialColumns.HasValue) {
+            plot.WithPictorialColumns(chart.PictorialColumns.Value);
+        }
+    }
+
+    private static ChartTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config, ChartColor accent) {
+        var text = ToChartColor(chart.TextColor ?? config.Color);
+        var grid = ToChartColor(chart.GridColor ?? chart.TextColor ?? config.ValueColor);
+        return ChartTheme.Minimal()
+            .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent)
+            .WithTextColors(text, text)
+            .WithGuideColors(WithAlpha(grid, 90), WithAlpha(grid, 120))
+            .WithPalette(accent, WithAlpha(accent, 190), ToChartColor(config.Color), ToChartColor(config.ValueColor))
+            .WithTypography(18, 11, 10, 9, 9, 9)
+            .WithStrokeWidth(2.2)
+            .WithMarkerRadius(2.4);
+    }
+
+    private static void AddGauge(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
+        var latest = values[values.Count - 1];
+        plot.AddGauge(chart.Title, latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100), accent);
+    }
+
+    private static void AddCircle(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
+        var latest = values[values.Count - 1];
+        plot.AddCircle(chart.Title, latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100), accent);
+    }
+
+    private static void AddBulletRows(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
+        var maximum = ResolveMaximum(chart, values, 100);
+        var minimum = chart.Minimum ?? 0;
+        var target = chart.Target ?? maximum;
+        var ranges = chart.RangeEnds.Count > 0 ? chart.RangeEnds : null;
+
+        for (var i = 0; i < values.Count; i++) {
+            plot.AddBullet(LabelAt(chart, i), values[i], target, minimum, maximum, ranges, ColorAt(chart, i) ?? accent);
+            plot.Series[plot.Series.Count - 1].WithDataLabels(chart.ShowDataLabels);
+        }
+    }
+
+    private static ChartPoint[] BuildIndexedPoints(IReadOnlyList<double> values) {
+        var points = new ChartPoint[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            points[i] = new ChartPoint(i + 1, values[i]);
+        }
+
+        return points;
+    }
+
+    private static ChartPoint[] BuildPercentPoints(IReadOnlyList<double> values) {
+        var points = new ChartPoint[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            points[i] = new ChartPoint(i + 1, Clamp(values[i], 0, 100));
+        }
+
+        return points;
+    }
+
+    private static string[] BuildLabels(BgInfoChart chart, int count) {
+        var labels = new string[count];
+        for (var i = 0; i < count; i++) {
+            labels[i] = i < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[i])
+                ? chart.Labels[i]
+                : (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        return labels;
+    }
+
+    private static ChartProgressItem[] BuildProgressItems(BgInfoChart chart, IReadOnlyList<double> values) {
+        var items = new ChartProgressItem[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            items[i] = new ChartProgressItem(LabelAt(chart, i), values[i], ColorAt(chart, i));
+        }
+
+        return items;
+    }
+
+    private static ChartPictorialItem[] BuildPictorialItems(BgInfoChart chart, IReadOnlyList<double> values) {
+        var items = new ChartPictorialItem[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            items[i] = new ChartPictorialItem(LabelAt(chart, i), Math.Max(0, values[i]), ColorAt(chart, i));
+        }
+
+        return items;
+    }
+
+    private static string LabelAt(BgInfoChart chart, int index) =>
+        index < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[index])
+            ? chart.Labels[index]
+            : (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private static ChartColor? ColorAt(BgInfoChart chart, int index) =>
+        index < chart.Palette.Count ? ToChartColor(chart.Palette[index]) : null;
+
+    private static void ApplyPointColors(Chart plot, BgInfoChart chart) {
+        if (plot.Series.Count == 0 || chart.Palette.Count == 0) {
             return;
         }
 
-        double min = values.Min();
-        double max = values.Max();
-        double range = max - min;
-        if (Math.Abs(range) < double.Epsilon) {
-            range = 1;
-            min -= 0.5;
-            max += 0.5;
+        for (var i = 0; i < chart.Palette.Count; i++) {
+            plot.Series[0].WithPointColor(i, ToChartColor(chart.Palette[i]));
+        }
+    }
+
+    private static double ResolveMaximum(BgInfoChart chart, IReadOnlyList<double> values, double fallback) {
+        if (chart.Maximum.HasValue) {
+            return chart.Maximum.Value;
         }
 
-        var points = new PointF[values.Count];
-        float step = values.Count > 1 ? width / (values.Count - 1) : 0f;
-        for (int i = 0; i < values.Count; i++) {
-            double normalized = (values[i] - min) / range;
-            float x = left + step * i;
-            float y = top + (float)((1 - normalized) * height);
-            points[i] = new PointF(x, y);
+        var maxValue = fallback;
+        for (var i = 0; i < values.Count; i++) {
+            maxValue = Math.Max(maxValue, Math.Ceiling(values[i] / 10d) * 10d);
         }
 
-        var lineColor = chart.LineColor ?? config.ValueColor;
+        return maxValue <= 0 ? fallback : maxValue;
+    }
+
+    private static ChartLegendPosition ResolveLegendPosition(BgInfoChartLegendPosition position) {
+        switch (position) {
+            case BgInfoChartLegendPosition.Top:
+                return ChartLegendPosition.Top;
+            case BgInfoChartLegendPosition.Left:
+                return ChartLegendPosition.Left;
+            case BgInfoChartLegendPosition.Right:
+                return ChartLegendPosition.Right;
+            default:
+                return ChartLegendPosition.Bottom;
+        }
+    }
+
+    private static ChartPictorialShape ResolvePictorialShape(BgInfoChartPictorialSymbol shape) {
+        switch (shape) {
+            case BgInfoChartPictorialSymbol.Square:
+                return ChartPictorialShape.Square;
+            case BgInfoChartPictorialSymbol.Diamond:
+                return ChartPictorialShape.Diamond;
+            case BgInfoChartPictorialSymbol.Triangle:
+                return ChartPictorialShape.Triangle;
+            case BgInfoChartPictorialSymbol.Star:
+                return ChartPictorialShape.Star;
+            case BgInfoChartPictorialSymbol.Person:
+                return ChartPictorialShape.Person;
+            default:
+                return ChartPictorialShape.Circle;
+        }
+    }
+
+    private static void DrawPng(GdiImage image, byte[] png, float x, float y, float width, float height) {
         image.WithGraphics(graphics => {
-            if (chart.FillColor.HasValue && points.Length > 1) {
-                using var brush = new SolidBrush(chart.FillColor.Value);
-                var poly = new List<PointF>(points.Length + 2) {
-                    new PointF(points[0].X, top + height)
-                };
-                poly.AddRange(points);
-                poly.Add(new PointF(points[points.Length - 1].X, top + height));
-                graphics.FillPolygon(brush, poly.ToArray());
-            }
-            using var pen = new Pen(lineColor, 2f);
-            if (points.Length == 1) {
-                graphics.DrawLine(pen, left, points[0].Y, left + width, points[0].Y);
-                using var dotBrush = new SolidBrush(lineColor);
-                graphics.FillEllipse(dotBrush, points[0].X - 3, points[0].Y - 3, 6, 6);
-            } else {
-                graphics.DrawLines(pen, points);
-            }
+            using var stream = new MemoryStream(png);
+            using var bitmap = new Bitmap(stream);
+            graphics.DrawImage(bitmap, x, y, width, height);
         });
     }
 
-    private static void RenderBars(GdiImage image, BgInfoChart chart, IReadOnlyList<double> values, float left, float top, float width, float height, BgInfoConfiguration config) {
-        if (values.Count == 0) {
-            return;
-        }
+    private static ChartColor ToChartColor(Color color) => ChartColor.FromRgba(color.R, color.G, color.B, color.A);
 
-        double max = values.Max();
-        if (max <= 0) {
-            max = 1;
-        }
-
-        float gap = Clamp(chart.BarGap, 0f, 0.9f);
-        float groupWidth = width / values.Count;
-        float barWidth = Math.Max(1f, groupWidth * (1 - gap));
-        var barColor = chart.LineColor ?? config.ValueColor;
-
-        image.WithGraphics(graphics => {
-            using var brush = new SolidBrush(barColor);
-            for (int i = 0; i < values.Count; i++) {
-                double value = Math.Max(0, values[i]);
-                float barHeight = (float)(value / max * height);
-                float x = left + i * groupWidth + (groupWidth - barWidth) / 2f;
-                float y = top + height - barHeight;
-                graphics.FillRectangle(brush, x, y, barWidth, barHeight);
-            }
-        });
-    }
+    private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 
     private static string FormatValue(double value, BgInfoChart chart) {
         var format = string.IsNullOrWhiteSpace(chart.ValueFormat) ? "0.##" : chart.ValueFormat;
@@ -162,7 +330,7 @@ internal static class BgInfoChartRenderer {
         return string.IsNullOrWhiteSpace(chart.ValueSuffix) ? text : text + chart.ValueSuffix;
     }
 
-    private static float Clamp(float value, float min, float max) {
+    private static double Clamp(double value, double min, double max) {
         if (value < min) return min;
         if (value > max) return max;
         return value;
