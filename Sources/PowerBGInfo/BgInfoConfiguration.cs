@@ -152,4 +152,8 @@ public class BgInfoConfiguration {
     /// Gets the collection of charts to render.
     /// </summary>
     public List<BgInfoChart> Charts { get; } = new();
+    /// <summary>
+    /// Gets the collection of topology diagrams to render.
+    /// </summary>
+    public List<BgInfoTopology> Topologies { get; } = new();
 }

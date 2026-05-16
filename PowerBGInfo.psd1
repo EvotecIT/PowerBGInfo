@@ -1,7 +1,7 @@
 @{
     AliasesToExport        = @()
     Author                 = 'Przemyslaw Klys'
-    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'New-BGInfoVariable', 'New-BGInfoChart', 'Invoke-BGInfo', 'Export-BGInfoConfiguration', 'New-BGInfoConfiguration')
+    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'New-BGInfoVariable', 'New-BGInfoChart', 'New-BGInfoTopology', 'New-BGInfoTopologyEdge', 'New-BGInfoTopologyGroup', 'New-BGInfoTopologyNode', 'Invoke-BGInfo', 'Export-BGInfoConfiguration', 'New-BGInfoConfiguration')
     CompanyName            = 'Evotec'
     CompatiblePSEditions   = @('Desktop', 'Core')
     Copyright              = '(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.'
@@ -16,7 +16,7 @@
             IconUri    = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
             LicenseUri = 'https://github.com/EvotecIT/PowerBGInfo/blob/master/License'
             ProjectUri = 'https://github.com/EvotecIT/PowerBGInfo'
-            Tags       = @('windows', 'image', 'monitor', 'bginfo')
+            Tags       = @('windows', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
         }
     }
     RootModule             = 'PowerBGInfo.psm1'
