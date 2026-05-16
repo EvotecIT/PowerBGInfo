@@ -20,7 +20,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
         # Description of the functionality provided by this module
         Description            = 'PowerBGInfo is a module that allows you to create background images with information about your environment.'
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags                   = @('windows', 'image', 'monitor', 'bginfo')
+        Tags                   = @('windows', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
         # A URL to the main website for this project.
         ProjectUri             = 'https://github.com/EvotecIT/PowerBGInfo'
         IconUri                = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
@@ -86,11 +86,12 @@ Build-Module -ModuleName 'PowerBGInfo' {
         NETConfiguration                  = 'Release'
         NETFramework                      = 'net8.0-windows', 'net472'
         NETHandleAssemblyWithSameName     = $true
+        NETAssemblyLoadContext            = $true
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true
         DotSourceClasses                  = $true
         DeleteTargetModuleBeforeBuild     = $true
-        NETBinaryModuleDocumenation       = $true
+        NETBinaryModuleDocumentation      = $true
         RefreshPSD1Only                   = $true
     }
 
