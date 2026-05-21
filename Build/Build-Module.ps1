@@ -1,6 +1,26 @@
 Import-Module PSPublishModule -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'PowerBGInfo' {
+    function ConvertTo-BuildBoolean {
+        param(
+            [string] $Value,
+            [bool] $Default
+        )
+
+        if ([string]::IsNullOrWhiteSpace($Value)) {
+            return $Default
+        }
+
+        switch ($Value.Trim().ToLowerInvariant()) {
+            { $_ -in '1', 'true', 'yes', 'on' } { return $true }
+            { $_ -in '0', 'false', 'no', 'off' } { return $false }
+            default { throw "Unsupported boolean value '$Value'. Use true/false, 1/0, yes/no, or on/off." }
+        }
+    }
+
+    $certificateThumbprint = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+    $signModule = -not (ConvertTo-BuildBoolean -Value $Env:CI -Default:$false)
+
     # Usual defaults as per standard module
     $Manifest = [ordered] @{
         # Minimum version of the Windows PowerShell engine required by this module
@@ -76,23 +96,43 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $true
+        SignModule                        = $signModule
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
-        CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+        CertificateThumbprint             = $certificateThumbprint
         ResolveBinaryConflicts            = $true
         ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
         NETProjectName                    = 'PowerBGInfo.PowerShell'
+        NETProjectPath                    = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\Sources\PowerBGInfo.PowerShell\PowerBGInfo.PowerShell.csproj')).Path
         NETConfiguration                  = 'Release'
         NETFramework                      = 'net8.0-windows', 'net472'
         NETHandleAssemblyWithSameName     = $true
         NETAssemblyLoadContext            = $true
+        NETAssemblyTypeAcceleratorMode    = 'AllowList'
+        NETAssemblyTypeAccelerators       = @(
+            'PowerBGInfo.BgInfoConfiguration'
+            'PowerBGInfo.BgInfoConfigurationJson'
+            'PowerBGInfo.BgInfoEntry'
+            'PowerBGInfo.BgInfoEntryType'
+            'PowerBGInfo.BgInfoVariable'
+            'PowerBGInfo.BgInfoVariableProvider'
+            'PowerBGInfo.BgInfoChart'
+            'PowerBGInfo.BgInfoChartKind'
+            'PowerBGInfo.BgInfoChartLegendPosition'
+            'PowerBGInfo.BgInfoChartMetric'
+            'PowerBGInfo.BgInfoChartPictorialSymbol'
+            'PowerBGInfo.BgInfoChartLayoutMode'
+            'PowerBGInfo.BgInfoChartStackDirection'
+            'PowerBGInfo.BgInfoTarget'
+            'PowerBGInfo.BgInfoTextPosition'
+            'PowerBGInfo.BgInfoTopology'
+        )
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true
         DotSourceClasses                  = $true
         DeleteTargetModuleBeforeBuild     = $true
         NETBinaryModuleDocumentation      = $true
-        RefreshPSD1Only                   = $true
+        RefreshPSD1Only                   = ConvertTo-BuildBoolean -Value $Env:RefreshPSD1Only -Default:$true
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat

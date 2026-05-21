@@ -28,7 +28,7 @@ jobs:
       - name: Setup PowerShell modules
         shell: pwsh
         run: |
-          Install-Module PSPublishModule -Force -Scope CurrentUser -AllowClobber
+          Install-Module PSPublishModule -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
 
       - name: Refresh module manifest
         shell: pwsh
@@ -116,3 +116,52 @@ jobs:
       - name: Run PowerShell tests
         shell: pwsh
         run: ./PowerBGInfo.Tests.ps1
+
+  test-windows-packaged-alc:
+    needs: refresh-psd1
+    name: 'Windows Packaged ALC'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: psd1
+          path: .
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            ${{ env.DOTNET_VERSION }}
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+          Install-Module -Name PSPublishModule -Repository PSGallery -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
+          Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
+          Install-Module -Name PSWriteColor -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
+
+      - name: Build packaged module
+        shell: pwsh
+        env:
+          RefreshPSD1Only: 'false'
+        run: ./Build/Build-Module.ps1
+        timeout-minutes: 15
+
+      - name: Run packaged ALC smoke test
+        shell: pwsh
+        env:
+          PowerBGInfoPackagedAlcRequired: 'true'
+        run: |
+          Import-Module Pester -Force
+          $config = [PesterConfiguration]::Default
+          $config.Run.Path = 'Tests/AssemblyLoadContext.Conflict.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+        timeout-minutes: 5
