@@ -74,12 +74,13 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     #New-ConfigurationImportModule -ImportSelf
 
+    $signModule = $Env:COMPUTERNAME -eq 'EVOMAGIC'
+
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $true
+        SignModule                        = $signModule
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
-        CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
         ResolveBinaryConflicts            = $true
         ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
         NETProjectName                    = 'PowerBGInfo.PowerShell'
@@ -113,6 +114,10 @@ Build-Module -ModuleName 'PowerBGInfo' {
         DeleteTargetModuleBeforeBuild     = $true
         NETBinaryModuleDocumentation      = $true
         RefreshPSD1Only                   = if ([string]::IsNullOrWhiteSpace($Env:RefreshPSD1Only)) { $true } else { [bool]::Parse($Env:RefreshPSD1Only) }
+    }
+
+    if ($signModule) {
+        $newConfigurationBuildSplat.CertificateThumbprint = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat
