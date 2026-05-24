@@ -208,6 +208,15 @@ public static class BgInfoConfigurationJson {
             }
         }
 
+        if (model.Images != null) {
+            foreach (var imageModel in model.Images) {
+                var image = MapImage(imageModel, baseDirectory);
+                if (image != null) {
+                    configuration.Images.Add(image);
+                }
+            }
+        }
+
         return configuration;
     }
 
@@ -402,6 +411,23 @@ public static class BgInfoConfigurationJson {
                     TechBackdrop = visual.TechBackdrop,
                     Tiles = visual.Tiles.Select(MapVisualCanvasTileFile).ToList(),
                     Features = visual.Features.Select(MapVisualCanvasFeatureFile).ToList()
+                });
+            }
+        }
+
+        if (configuration.Images.Count > 0) {
+            model.Images = new List<BgInfoImageFile>();
+            foreach (var image in configuration.Images) {
+                model.Images.Add(new BgInfoImageFile {
+                    Path = image.Path,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Anchor = image.Anchor.ToString(),
+                    OffsetX = image.OffsetX,
+                    OffsetY = image.OffsetY,
+                    PositionX = image.PositionX,
+                    PositionY = image.PositionY,
+                    Opacity = image.Opacity
                 });
             }
         }
@@ -864,6 +890,28 @@ public static class BgInfoConfigurationJson {
         Label = feature.Label
     };
 
+    private static BgInfoImage? MapImage(BgInfoImageFile model, string baseDirectory) {
+        if (model == null) {
+            return null;
+        }
+
+        var image = new BgInfoImage {
+            Path = ResolvePath(model.Path, baseDirectory)
+        };
+        if (model.Width.HasValue) image.Width = model.Width.Value;
+        if (model.Height.HasValue) image.Height = model.Height.Value;
+        if (!string.IsNullOrWhiteSpace(model.Anchor) &&
+            Enum.TryParse(model.Anchor, true, out BgInfoTextPosition anchor)) {
+            image.Anchor = anchor;
+        }
+        if (model.OffsetX.HasValue) image.OffsetX = model.OffsetX.Value;
+        if (model.OffsetY.HasValue) image.OffsetY = model.OffsetY.Value;
+        if (model.PositionX.HasValue) image.PositionX = model.PositionX.Value;
+        if (model.PositionY.HasValue) image.PositionY = model.PositionY.Value;
+        if (model.Opacity.HasValue) image.Opacity = model.Opacity.Value;
+        return image;
+    }
+
     private static void ApplyColor(string? text, Action<System.Drawing.Color> setter) {
         if (string.IsNullOrWhiteSpace(text)) {
             return;
@@ -930,6 +978,7 @@ public static class BgInfoConfigurationJson {
         public List<BgInfoChartFile>? Charts { get; set; }
         public List<BgInfoTopologyFile>? Topologies { get; set; }
         public List<BgInfoVisualCanvasFile>? VisualCanvases { get; set; }
+        public List<BgInfoImageFile>? Images { get; set; }
     }
 
     internal sealed class BgInfoVariableFile {
@@ -1117,6 +1166,18 @@ public static class BgInfoConfigurationJson {
     internal sealed class BgInfoVisualCanvasFeatureFile {
         public string? Icon { get; set; }
         public string? Label { get; set; }
+    }
+
+    internal sealed class BgInfoImageFile {
+        public string? Path { get; set; }
+        public int? Width { get; set; }
+        public int? Height { get; set; }
+        public string? Anchor { get; set; }
+        public int? OffsetX { get; set; }
+        public int? OffsetY { get; set; }
+        public int? PositionX { get; set; }
+        public int? PositionY { get; set; }
+        public double? Opacity { get; set; }
     }
 }
 

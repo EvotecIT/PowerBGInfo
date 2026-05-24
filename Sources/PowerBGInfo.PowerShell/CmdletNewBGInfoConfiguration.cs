@@ -156,6 +156,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public BgInfoTopology[] Topologies { get; set; } = System.Array.Empty<BgInfoTopology>();
 
+    /// <para>Image overlays to include in the configuration.</para>
+    [Parameter]
+    public BgInfoImage[] Images { get; set; } = System.Array.Empty<BgInfoImage>();
+
     /// <summary>Creates the configuration object.</summary>
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
@@ -205,6 +209,9 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         }
         if (IsParameterBound(nameof(Topologies)) && Topologies.Length > 0) {
             config.Topologies.AddRange(Topologies);
+        }
+        if (IsParameterBound(nameof(Images)) && Images.Length > 0) {
+            config.Images.AddRange(Images);
         }
 
         WriteObject(config);

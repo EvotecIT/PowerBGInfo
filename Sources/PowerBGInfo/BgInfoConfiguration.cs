@@ -160,4 +160,8 @@ public class BgInfoConfiguration {
     /// Gets the collection of ChartForgeX visual canvases to render.
     /// </summary>
     public List<BgInfoVisualCanvas> VisualCanvases { get; } = new();
+    /// <summary>
+    /// Gets the collection of image overlays to render.
+    /// </summary>
+    public List<BgInfoImage> Images { get; } = new();
 }

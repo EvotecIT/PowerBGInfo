@@ -69,6 +69,7 @@ Describe 'New-BGInfo cmdlet parameters' {
         Get-Command New-BGInfoVisualCanvas | Should -Not -BeNullOrEmpty
         Get-Command New-BGInfoVisualCanvasTile | Should -Not -BeNullOrEmpty
         Get-Command New-BGInfoVisualCanvasFeature | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoImage | Should -Not -BeNullOrEmpty
     }
 
     It 'supports visual canvas theme parameters' {
@@ -96,6 +97,23 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Outline)
         $visual.Tiles[0].IconKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileIconKind]::Computer)
         $visual.Features.Count | Should -Be 1
+    }
+}
+
+Describe 'New-BGInfoImage cmdlet' {
+    It 'creates an image overlay model' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        $image = New-BGInfoImage -Path $path -Width 180 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.85
+
+        $image | Should -BeOfType ([PowerBGInfo.BgInfoImage])
+        $image.Path | Should -Be (Resolve-Path -LiteralPath $path).Path
+        $image.Width | Should -Be 180
+        $image.Anchor | Should -Be ([PowerBGInfo.BgInfoTextPosition]::BottomRight)
+        $image.OffsetX | Should -Be 72
+        $image.OffsetY | Should -Be 54
+        $image.Opacity | Should -Be 0.85
     }
 }
 

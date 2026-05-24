@@ -1,7 +1,7 @@
 ﻿@{
     AliasesToExport        = @()
     Author                 = 'Przemyslaw Klys'
-    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'New-BGInfoVariable', 'New-BGInfoChart', 'New-BGInfoTopology', 'New-BGInfoTopologyEdge', 'New-BGInfoTopologyGroup', 'New-BGInfoTopologyNode', 'New-BGInfoVisualCanvas', 'New-BGInfoVisualCanvasTile', 'New-BGInfoVisualCanvasFeature', 'Invoke-BGInfo', 'Export-BGInfoConfiguration', 'New-BGInfoConfiguration')
+    CmdletsToExport        = @('New-BGInfo', 'New-BGInfoLabel', 'New-BGInfoValue', 'New-BGInfoVariable', 'New-BGInfoChart', 'New-BGInfoTopology', 'New-BGInfoTopologyEdge', 'New-BGInfoTopologyGroup', 'New-BGInfoTopologyNode', 'New-BGInfoVisualCanvas', 'New-BGInfoVisualCanvasTile', 'New-BGInfoVisualCanvasFeature', 'New-BGInfoImage', 'Invoke-BGInfo', 'Export-BGInfoConfiguration', 'New-BGInfoConfiguration')
     CompanyName            = 'Evotec'
     CompatiblePSEditions   = @('Desktop', 'Core')
     Copyright              = '(c) 2011 - 2026 Przemyslaw Klys @ Evotec. All rights reserved.'

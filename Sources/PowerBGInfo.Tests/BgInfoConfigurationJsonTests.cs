@@ -320,4 +320,36 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("PS", feature.Icon);
         Assert.Equal("LIGHTWEIGHT", feature.Label);
     }
+
+    [Fact]
+    public void SaveAndLoadPreservesImageOverlays() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        configuration.Images.Add(new BgInfoImage {
+            Path = @"Images\PowerBGInfo.png",
+            Width = 180,
+            Height = 64,
+            Anchor = BgInfoTextPosition.BottomRight,
+            OffsetX = 72,
+            OffsetY = 54,
+            Opacity = 0.85
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var image = Assert.Single(roundTripped.Images);
+        Assert.EndsWith(Path.Combine("Images", "PowerBGInfo.png"), image.Path);
+        Assert.Equal(180, image.Width);
+        Assert.Equal(64, image.Height);
+        Assert.Equal(BgInfoTextPosition.BottomRight, image.Anchor);
+        Assert.Equal(72, image.OffsetX);
+        Assert.Equal(54, image.OffsetY);
+        Assert.Equal(0.85, image.Opacity);
+    }
 }

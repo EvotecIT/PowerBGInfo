@@ -247,6 +247,12 @@ public class CmdletNewBGInfo : PSCmdlet {
                 continue;
             }
 
+            if (item?.BaseObject is BgInfoImage image)
+            {
+                config.Images.Add(image);
+                continue;
+            }
+
             if (item != null && TryConvertLegacyEntry(item, out var legacyEntry))
             {
                 config.Entries.Add(legacyEntry);

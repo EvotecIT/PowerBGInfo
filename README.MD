@@ -314,7 +314,7 @@ New-BGInfo -Target File {
 } -FilePath $PSScriptRoot\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory $PSScriptRoot\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.jpg' -WallpaperFit Fill
 ```
 
-`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. Tile `-SurfaceStyle` supports `Glass` and `Outline`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
+`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. `Examples\Scripts\PowerBGInfo.VisualCanvas.MiniCharts.ps1` combines the same visual canvas with small purpose-matched charts and a bottom-right logo image. Tile `-SurfaceStyle` supports `Glass` and `Outline`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
 
 The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Those colors are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code.
 
@@ -368,6 +368,21 @@ $tiles = @(
 New-BGInfo -Target File {
     New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Raised glass desktop sections over an existing wallpaper' -Tile $tiles @palette
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.RaisedSections.jpg' -WallpaperFit Fill
+```
+
+Mini charts can sit in the clear space below the hero while the logo stays anchored in the bottom-right corner. Each chart and image has its own anchor and offsets, so the layout can be moved away from taskbars, rails, or customer branding:
+
+```powershell
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Mini charts stay below the hero and away from the side rails' -Tile $tiles @palette
+
+    New-BGInfoChart -Title 'CPU burst' -Kind Area -Values 18,26,22,37,48,43,51 -Width 260 -Height 112 -Anchor BottomCenter -OffsetX -450 -OffsetY 210 -LineColor '#38BDF8' -FillColor '#38BDF8' -BackgroundColor '#A6081224' -NoHistory
+    New-BGInfoChart -Title 'Memory load' -Kind RadialBar -Values 41 -Width 230 -Height 112 -Anchor BottomCenter -OffsetX -150 -OffsetY 210 -LineColor '#60A5FA' -BackgroundColor '#A6081224' -Maximum 100 -NoHistory
+    New-BGInfoChart -Title 'Disk free' -Kind ProgressBar -Values 62 -Labels 'C:' -Width 260 -Height 112 -Anchor BottomCenter -OffsetX 145 -OffsetY 210 -LineColor '#34D399' -BackgroundColor '#A6081224' -Maximum 100 -NoHistory
+    New-BGInfoChart -Title 'Patch target' -Kind Bullet -Values 89 -Target 95 -RangeEnds 70,85 -Width 280 -Height 112 -Anchor BottomCenter -OffsetX 455 -OffsetY 210 -LineColor '#FBBF24' -BackgroundColor '#A6081224' -Maximum 100 -NoHistory
+
+    New-BGInfoImage -Path .\Examples\Samples\LogoEvotec.png -Width 210 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.92
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.MiniCharts.jpg' -WallpaperFit Fill
 ```
 
 ## Topology diagrams
