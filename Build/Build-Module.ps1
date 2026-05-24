@@ -1,26 +1,6 @@
 Import-Module PSPublishModule -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'PowerBGInfo' {
-    function ConvertTo-BuildBoolean {
-        param(
-            [string] $Value,
-            [bool] $Default
-        )
-
-        if ([string]::IsNullOrWhiteSpace($Value)) {
-            return $Default
-        }
-
-        switch ($Value.Trim().ToLowerInvariant()) {
-            { $_ -in '1', 'true', 'yes', 'on' } { return $true }
-            { $_ -in '0', 'false', 'no', 'off' } { return $false }
-            default { throw "Unsupported boolean value '$Value'. Use true/false, 1/0, yes/no, or on/off." }
-        }
-    }
-
-    $certificateThumbprint = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
-    $signModule = -not (ConvertTo-BuildBoolean -Value $Env:CI -Default:$false)
-
     # Usual defaults as per standard module
     $Manifest = [ordered] @{
         # Minimum version of the Windows PowerShell engine required by this module
@@ -96,10 +76,10 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $signModule
+        SignModule                        = $true
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
-        CertificateThumbprint             = $certificateThumbprint
+        CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
         ResolveBinaryConflicts            = $true
         ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
         NETProjectName                    = 'PowerBGInfo.PowerShell'
@@ -132,7 +112,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
         DotSourceClasses                  = $true
         DeleteTargetModuleBeforeBuild     = $true
         NETBinaryModuleDocumentation      = $true
-        RefreshPSD1Only                   = ConvertTo-BuildBoolean -Value $Env:RefreshPSD1Only -Default:$true
+        RefreshPSD1Only                   = $true
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat

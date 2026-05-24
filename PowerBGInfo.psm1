@@ -1,4 +1,4 @@
-# to speed up development adding direct path to binaries, instead of the the Lib folder
+﻿# to speed up development adding direct path to binaries, instead of the the Lib folder
 $Development = $true
 $DevelopmentPath = "$PSScriptRoot\Sources\PowerBGInfo.PowerShell\bin\Debug"
 $DevelopmentFolderCore = "net8.0-windows"
