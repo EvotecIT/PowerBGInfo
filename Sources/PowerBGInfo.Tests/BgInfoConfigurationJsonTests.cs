@@ -227,4 +227,97 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("gateway-api", loaded.Edges[0].Id);
         Assert.Equal(TopologyEdgeKind.Connectivity, loaded.Edges[0].Kind);
     }
+
+    [Fact]
+    public void SaveAndLoadPreservesVisualCanvasOptions() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory
+        };
+        var visual = new BgInfoVisualCanvas {
+            Title = "PowerBGInfo",
+            Subtitle = "Desktop background insights",
+            Width = 1200,
+            Height = 630,
+            PositionX = 12,
+            PositionY = 34,
+            BackgroundTop = Color.FromArgb(255, 2, 7, 19),
+            BackgroundBottom = Color.FromArgb(255, 7, 26, 53),
+            Accent = Color.DeepSkyBlue,
+            SecondaryAccent = Color.Cyan,
+            TitleColor = Color.White,
+            TitleAccentColor = Color.DeepSkyBlue,
+            SubtitleColor = Color.LightSteelBlue,
+            TileGlassTop = Color.FromArgb(230, 10, 20, 30),
+            TileGlassBottom = Color.FromArgb(220, 5, 10, 15),
+            TileLabelColor = Color.LightBlue,
+            TileValueColor = Color.WhiteSmoke,
+            TileDetailColor = Color.SlateGray,
+            TileProgressTrackColor = Color.DarkSlateBlue,
+            HeroBadgeTop = Color.Navy,
+            HeroBadgeBottom = Color.Black,
+            HeroBadgeTextColor = Color.AliceBlue,
+            TechBackdrop = false
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Left,
+            Icon = "PC",
+            Label = "HOSTNAME",
+            Value = "{{HostName}}",
+            Detail = "{{OSName}}",
+            Accent = Color.DodgerBlue,
+            Progress = 0.42,
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Outline,
+            IconKind = BgInfoVisualCanvasTileIconKind.Computer
+        });
+        visual.Features.Add(new BgInfoVisualCanvasFeature {
+            Icon = "PS",
+            Label = "LIGHTWEIGHT"
+        });
+        configuration.VisualCanvases.Add(visual);
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var loaded = Assert.Single(roundTripped.VisualCanvases);
+        Assert.Equal("PowerBGInfo", loaded.Title);
+        Assert.Equal("Desktop background insights", loaded.Subtitle);
+        Assert.Equal(1200, loaded.Width);
+        Assert.Equal(630, loaded.Height);
+        Assert.Equal(12, loaded.PositionX);
+        Assert.Equal(34, loaded.PositionY);
+        Assert.Equal(Color.DeepSkyBlue.ToArgb(), loaded.Accent.ToArgb());
+        Assert.Equal(Color.Cyan.ToArgb(), loaded.SecondaryAccent!.Value.ToArgb());
+        Assert.Equal(Color.White.ToArgb(), loaded.TitleColor!.Value.ToArgb());
+        Assert.Equal(Color.DeepSkyBlue.ToArgb(), loaded.TitleAccentColor!.Value.ToArgb());
+        Assert.Equal(Color.LightSteelBlue.ToArgb(), loaded.SubtitleColor!.Value.ToArgb());
+        Assert.Equal(Color.FromArgb(230, 10, 20, 30).ToArgb(), loaded.TileGlassTop!.Value.ToArgb());
+        Assert.Equal(Color.FromArgb(220, 5, 10, 15).ToArgb(), loaded.TileGlassBottom!.Value.ToArgb());
+        Assert.Equal(Color.LightBlue.ToArgb(), loaded.TileLabelColor!.Value.ToArgb());
+        Assert.Equal(Color.WhiteSmoke.ToArgb(), loaded.TileValueColor!.Value.ToArgb());
+        Assert.Equal(Color.SlateGray.ToArgb(), loaded.TileDetailColor!.Value.ToArgb());
+        Assert.Equal(Color.DarkSlateBlue.ToArgb(), loaded.TileProgressTrackColor!.Value.ToArgb());
+        Assert.Equal(Color.Navy.ToArgb(), loaded.HeroBadgeTop!.Value.ToArgb());
+        Assert.Equal(Color.Black.ToArgb(), loaded.HeroBadgeBottom!.Value.ToArgb());
+        Assert.Equal(Color.AliceBlue.ToArgb(), loaded.HeroBadgeTextColor!.Value.ToArgb());
+        Assert.False(loaded.TechBackdrop);
+
+        var tile = Assert.Single(loaded.Tiles);
+        Assert.Equal(BgInfoVisualCanvasSide.Left, tile.Side);
+        Assert.Equal("PC", tile.Icon);
+        Assert.Equal("HOSTNAME", tile.Label);
+        Assert.Equal("{{HostName}}", tile.Value);
+        Assert.Equal("{{OSName}}", tile.Detail);
+        Assert.Equal(Color.DodgerBlue.ToArgb(), tile.Accent!.Value.ToArgb());
+        Assert.Equal(0.42, tile.Progress);
+        Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Outline, tile.SurfaceStyle);
+        Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
+
+        var feature = Assert.Single(loaded.Features);
+        Assert.Equal("PS", feature.Icon);
+        Assert.Equal("LIGHTWEIGHT", feature.Label);
+    }
 }

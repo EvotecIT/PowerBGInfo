@@ -199,6 +199,7 @@ public class BgInfoGenerator
 
         RenderCharts(image, config, textBlock);
         RenderTopologies(image, config);
+        RenderVisualCanvases(image, config);
 
         _imageService.Save(image, outputPath);
 
@@ -450,6 +451,21 @@ public class BgInfoGenerator
             using var topologyImage = BgInfoTopologyRenderer.Render(topology, config);
             var position = ResolveTopologyPosition(image, topology);
             image.DrawImage(topologyImage, position.X, position.Y);
+        }
+    }
+
+    private static void RenderVisualCanvases(Image image, BgInfoConfiguration config)
+    {
+        if (config.VisualCanvases.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < config.VisualCanvases.Count; i++)
+        {
+            var visual = config.VisualCanvases[i];
+            using var visualImage = BgInfoVisualCanvasRenderer.Render(visual, config, image.Width, image.Height);
+            image.DrawImage(visualImage, visual.PositionX, visual.PositionY);
         }
     }
 

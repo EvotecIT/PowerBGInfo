@@ -64,6 +64,39 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command = Get-Command New-BGInfoVariable
         $command.Parameters.Keys | Should -Contain 'Provider'
     }
+
+    It 'exports visual canvas helper cmdlets' {
+        Get-Command New-BGInfoVisualCanvas | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoVisualCanvasTile | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoVisualCanvasFeature | Should -Not -BeNullOrEmpty
+    }
+
+    It 'supports visual canvas theme parameters' {
+        $command = Get-Command New-BGInfoVisualCanvas
+        $command.Parameters.Keys | Should -Contain 'TitleColor'
+        $command.Parameters.Keys | Should -Contain 'TileValueColor'
+        $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
+    }
+}
+
+Describe 'New-BGInfoVisualCanvas cmdlets' {
+    It 'creates a visual canvas model' {
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Outline -IconKind Computer
+        $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
+
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -Tile $tile -Feature $feature
+
+        $visual | Should -BeOfType ([PowerBGInfo.BgInfoVisualCanvas])
+        $visual.Title | Should -Be 'PowerBGInfo'
+        $visual.TitleColor | Should -Not -BeNullOrEmpty
+        $visual.TileValueColor | Should -Not -BeNullOrEmpty
+        $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
+        $visual.Tiles.Count | Should -Be 1
+        $visual.Tiles[0].Value | Should -Be '{{HostName}}'
+        $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Outline)
+        $visual.Tiles[0].IconKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileIconKind]::Computer)
+        $visual.Features.Count | Should -Be 1
+    }
 }
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
@@ -153,6 +186,19 @@ Describe 'New-BGInfo json export' {
         $json | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
         $json | Should -Match '"Metric"\s*:\s*"CpuPercent"'
         $json | Should -Match '"Target"\s*:\s*"Both"'
+    }
+
+    It 'exports visual canvases from inline authoring' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'visual-canvas.json'
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}'
+
+        New-BGInfo {
+            New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Tile $tile
+        } -ConfigurationDirectory $TestDrive -Target File -JsonPath $path -ExportOnly | Out-Null
+
+        $json = Get-Content -LiteralPath $path -Raw
+        $json | Should -Match '"VisualCanvases"'
+        $json | Should -Match '"Value"\s*:\s*"\{\{HostName\}\}"'
     }
 }
 
