@@ -314,7 +314,7 @@ New-BGInfo -Target File {
 } -FilePath $PSScriptRoot\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory $PSScriptRoot\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.jpg' -WallpaperFit Fill
 ```
 
-`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. Tile `-SurfaceStyle` supports `Glass` and `Outline`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
+`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. Tile `-SurfaceStyle` supports `Glass` and `Outline`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
 
 The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Those colors are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code.
 
@@ -345,6 +345,29 @@ $tiles = @(
 New-BGInfo -Target File {
     New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Desktop background insights for Windows and PowerShell' -Tile $tiles @palette
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.OutlineIcons.jpg' -WallpaperFit Fill
+```
+
+For a heavier raised glass look, use a more opaque top/bottom tile palette, built-in icons, and progress values:
+
+```powershell
+$palette = @{
+    Accent                 = '#38BDF8'
+    SecondaryAccent        = '#60A5FA'
+    TileGlassTop           = '#F3132444'
+    TileGlassBottom        = '#D9040A18'
+    TileProgressTrackColor = '#F0263A5E'
+}
+
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Glass -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Storage -SurfaceStyle Glass -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Glass -Label CPU -Value '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -Progress 0.28
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Glass -Label RAM -Value '{{RAMSize}}' -Progress 0.41
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Raised glass desktop sections over an existing wallpaper' -Tile $tiles @palette
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.RaisedSections.jpg' -WallpaperFit Fill
 ```
 
 ## Topology diagrams
