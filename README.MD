@@ -1,6 +1,6 @@
 ﻿<p align="center">
-  <a href="https://dev.azure.com/evotecpl/PowerBGInfo/_build/results?buildId=latest"><img src="https://img.shields.io/azure-devops/build/evotecpl/39c74615-8f34-4af0-a835-68dc33f9214f/14?label=Azure%20Pipelines&style=flat-square"></a>
   <a href="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-dotnet.yml"><img src="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-dotnet.yml/badge.svg?branch=v2-speedygonzales&style=flat-square"></a>
+  <a href="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-powershell.yml"><img src="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-powershell.yml/badge.svg?branch=v2-speedygonzales&style=flat-square"></a>
   <a href="https://codecov.io/gh/EvotecIT/PowerBGInfo"><img src="https://codecov.io/gh/EvotecIT/PowerBGInfo/branch/v2-speedygonzales/graph/badge.svg?style=flat-square"></a>
   <a href="https://www.powershellgallery.com/packages/PowerBGInfo"><img src="https://img.shields.io/powershellgallery/v/PowerBGInfo.svg?style=flat-square"></a>
   <a href="https://www.powershellgallery.com/packages/PowerBGInfo"><img src="https://img.shields.io/powershellgallery/v/PowerBGInfo.svg?label=powershell%20gallery%20preview&colorB=yellow&style=flat-square&include_prereleases"></a>
@@ -21,214 +21,120 @@
   <a href="https://evo.yt/discord"><img alt="Discord" src="https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat"></a>
 </p>
 
-**PowerBGInfo** is a Windows background generator with a CLI-first workflow.
-Use `PowerBGInfo.Cli` to run either a portable JSON configuration or a PowerShell authoring script, then reuse the same shared renderer for wallpaper, file output, or logon screen generation.
+**PowerBGInfo** creates Windows desktop and logon-screen backgrounds from PowerShell.
+Use it to put machine identity, support details, user/session context, operational status, charts, and small topology diagrams directly on the wallpaper.
 
 You can read about this project on this [blog post](https://evotec.xyz/powerbginfo-powershell-alternative-to-sysinternals-bginfo/) that tells a little backstory and shows few things.
 
+## What it can do
+
+- Generate a wallpaper from a normal PowerShell script.
+- Use built-in values such as host name, user name, OS details, CPU, RAM, BIOS, and disk information.
+- Add custom values from your own PowerShell, CIM/WMI, registry, AD, APIs, or RMM data.
+- Place information in corners, center positions, or explicit screen coordinates.
+- Wrap long values such as AD computer descriptions with `-ValueWrapWidth`.
+- Apply output to the current user, all users, the logon/lock screen, or just write a file.
+- Handle solid-color desktops when Windows has no wallpaper file.
+- Add transparent ChartForgeX charts and topology diagrams on top of real wallpapers.
+- Export JSON configurations when you need a portable deployment artifact.
+
 ## Installation
 
-Install the PowerShell module for configuration authoring from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerBGInfo):
+Install from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerBGInfo):
 
 ```powershell
 Install-Module PowerBGInfo -Force -Verbose
 ```
 
-Build or publish the CLI from this repository when you want the fastest execution path:
-
-```powershell
-dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f net8.0-windows -r win-x64 --self-contained false -p:PublishSingleFile=true
-```
-
-When there's an update you can update the module using the same `Install-Module` command.
-
-## Known Issues
-
-This module will work fine for PowerShell 5.1 and PowerShell 7+.
-**Currently the module has a problem when running in VSCode PowerShell extension when on PowerShell 5.1 (other versions work fine!)**
-It works fine when running in PowerShell 5.1 console, or ISE (shrug!).
-
-## Recommended workflow
-
-There are now two first-class ways to run PowerBGInfo from the CLI:
-
-1. `PowerBGInfo.Cli --script ...`
-   Best when you want full PowerShell authoring, loops, `Get-Disk`, CIM/WMI, or other custom collection logic.
-2. `PowerBGInfo.Cli --config ...`
-   Best when you want a portable artifact for packaging, scheduled tasks, RMM tools, or endpoints that should only render/apply a saved configuration.
-
-The usual flow is:
-
-1. Author the layout in PowerShell.
-2. Run it directly with `PowerBGInfo.Cli --script ...` while iterating.
-3. Optionally export JSON from that same script with `--export-json ...` when you want a reusable JSON snapshot for later runs.
+PowerBGInfo no longer requires separate PowerShell module installs for helper modules such as `DesktopManager` or `ImagePlayground`.
+When there's an update, use the same `Install-Module` command again.
 
 ## Quick start
 
-Build the current checkout first so both the PowerShell module and CLI examples use the latest source:
+Create a simple generated wallpaper:
 
 ```powershell
-dotnet build .\Sources\PowerBGInfo.sln -c Debug
+New-BGInfo -MonitorIndex 0 {
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 24
+    New-BGInfoValue -BuiltinValue FullUserName -Name 'User'
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+    New-BGInfoValue -BuiltinValue CpuName -Name 'CPU'
+    New-BGInfoValue -BuiltinValue RAMSize -Name 'Memory'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo' -WallpaperFit Fill
 ```
 
-Run the script-backed CLI example directly:
+Generate an image file without changing the current wallpaper:
 
 ```powershell
-.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe `
-  --script .\Examples\Scripts\PowerBGInfo.Cli.Sample.ps1 `
-  --no-apply
+New-BGInfo -MonitorIndex 0 -Target File {
+    New-BGInfoValue -Name 'Machine' -Value $env:COMPUTERNAME
+    New-BGInfoValue -Name 'Support' -Value 'helpdesk@contoso.com'
+} -ConfigurationDirectory 'C:\Temp\PowerBGInfo' -OutputFileName 'Preview.png' -BackgroundColor Black
 ```
 
-Export JSON from that same script while rendering it:
+Wrap long values:
 
 ```powershell
-.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe `
-  --script .\Examples\Scripts\PowerBGInfo.Cli.Sample.ps1 `
-  --export-json .\Examples\Configuration\PowerBGInfo.Script.Generated.json `
-  --no-apply
+$description = 'Long computer description from AD, inventory, RMM, CMDB, or any other source.'
+
+New-BGInfo -MonitorIndex 0 -ValueWrapWidth 420 {
+    New-BGInfoValue -Name 'Description' -Value $description -Color White -ValueColor LightGray
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo'
 ```
 
-The repository contains the same flow as a ready-made example in `Examples\Run.BGInfo6.ps1`.
-
-If you want to rerun that generated JSON later without PowerShell logic:
+Apply the same generated wallpaper for existing users and the default profile used by new users:
 
 ```powershell
-.\Sources\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe --config .\Examples\Configuration\PowerBGInfo.Script.Generated.json --no-apply
-```
-
-You can still run the same JSON through PowerShell when needed:
-
-```powershell
-Invoke-BGInfo -Path .\Examples\Configuration\PowerBGInfo.Generated.json -NoApply
-```
-
-## Validate the current checkout
-
-These are the repo-level commands that prove the PowerShell and CLI paths stay in sync:
-
-```powershell
-dotnet test .\Sources\PowerBGInfo.sln
-Invoke-Pester -Path .\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1 -Output Detailed
-pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo4.ps1
-pwsh -NoLogo -NoProfile -File .\Examples\Run.BGInfo6.ps1
-```
-
-The last two commands validate both CLI modes:
-
-- PowerShell-authored JSON consumed by the CLI
-- PowerShell script consumed directly by the CLI
-
-For a fuller release-proof pass, use the reusable validation script:
-
-```powershell
-pwsh -NoLogo -NoProfile -File .\Build\Validate-PowerBGInfo.ps1 -Configuration Release
-```
-
-That script verifies:
-
-- solution build and .NET tests
-- PowerShell/Pester coverage
-- CLI `--script` output
-- CLI `--config` output from exported JSON
-- `Invoke-BGInfo` output from the same JSON
-- published single-file CLI output parity
-- NativeAOT CLI smoke output for `Target File` / `--no-apply`
-
-Use `-KeepArtifacts` if you want the rendered files and published executables left on disk for inspection.
-
-## Manual Validation
-
-These scenarios still deserve a real machine check because they change Windows state, may need elevation, or depend on shell behavior:
-
-1. Current-user wallpaper apply:
-   Run `New-BGInfo` or `PowerBGInfo.Cli --config ...` without `--no-apply` and confirm the wallpaper changes immediately.
-2. All users:
-   Run elevated with `-AllUsers`, then confirm both an existing secondary profile and a newly created profile receive the staged wallpaper.
-3. Logon screen:
-   Run elevated with `-Target LogonScreen` or `-Target Both`, lock/sign out, and confirm the generated image is used.
-4. Windows 11 24H2 refresh:
-   Run wallpaper apply, sign out/sign back in, and confirm the refresh workaround still prevents Windows from reusing the previous cached wallpaper.
-5. Terminal server / RDS:
-   Validate in a real user session that per-user values such as `FullUserName` still resolve correctly when run inside the session.
-
-## Script-backed CLI
-
-When you want the EXE to keep full PowerShell flexibility, return a configuration object from your script:
-
-```powershell
-Import-Module .\PowerBGInfo.psd1 -Force
-
-New-BGInfo {
+New-BGInfo -MonitorIndex 0 -AllUsers {
     New-BGInfoValue -BuiltinValue HostName
-    foreach ($Disk in Get-Disk) {
-        foreach ($Volume in ($Disk | Get-Partition | Get-Volume)) {
-            New-BGInfoValue -Name "Drive $($Volume.DriveLetter)" -Value $Volume.SizeRemaining
-        }
-    }
-} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg `
-  -ConfigurationDirectory .\Examples\Output `
-  -Target File `
-  -PassThru
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo' -WallpaperFit Fill
 ```
 
-Run that script through the CLI:
+Apply to both the desktop wallpaper and the Windows logon/lock screen:
 
 ```powershell
-PowerBGInfo.Cli --script .\bginfo.ps1 --no-apply
+New-BGInfo -MonitorIndex 0 -Target Both {
+    New-BGInfoValue -BuiltinValue HostName
+    New-BGInfoValue -BuiltinValue OSName -Name 'OS'
+} -ConfigurationDirectory 'C:\ProgramData\PowerBGInfo' -WallpaperFit Fill
 ```
 
-When the script does not import `PowerBGInfo` itself, you can point the CLI at a built module directly:
+`-AllUsers`, `-Target LogonScreen`, and `-Target Both` need elevation because they write system-level wallpaper settings.
 
-```powershell
-PowerBGInfo.Cli --script .\bginfo.ps1 --module .\PowerBGInfo.PowerShell.dll --no-apply
-```
+## Example outputs
 
-Or export a JSON snapshot from the same script:
+![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
 
-```powershell
-PowerBGInfo.Cli --script .\bginfo.ps1 --export-json .\bginfo.json --export-only
-```
+![PowerBGInfo ChartForgeX showcase](Examples/Output/PowerBGInfo.ChartForgeX.Showcase.jpg)
 
-`--script` accepts scripts that return either:
+![PowerBGInfo lab wallpaper pattern](Examples/Output/PowerBGInfo.Pattern.Lab.jpg)
 
-- `[PowerBGInfo.BgInfoConfiguration]` objects, typically via `New-BGInfo -PassThru`
-- a path to a JSON file, for example from existing `-JsonPath -ExportOnly` flows
+## Common scenarios
 
-Use direct JSON authoring and export when you need a fully hand-portable config file with carefully controlled relative paths. `--script --export-json` is best for capturing the configuration that the EXE just executed.
+| Scenario | PowerBGInfo feature |
+| --- | --- |
+| Lab or demo VM identity | Built-in values, custom values, positioned text |
+| Shared admin workstation | Support details, tenant/customer context, warning text |
+| Build or test host | Charts for CPU, memory, disk, service status, and targets |
+| Training room or kiosk | Exercise phase, machine number, URLs, reset hints |
+| Terminal server / RDS | Per-session script runs for user-specific values |
+| Fleet deployment | `-AllUsers`, JSON export, scheduled task/RMM execution |
+| Logon screen branding | `-Target LogonScreen` or `-Target Both` |
 
-## What JSON preserves
+## Operational notes
 
-`-JsonPath` on `New-BGInfo` preserves the configuration and the dynamic tokens that the shared engine understands:
+- Solid-color desktops: when no wallpaper file exists, PowerBGInfo renders a blank image using the desktop background color or `-BackgroundColor`.
+- Refresh behavior: by default the wallpaper is refreshed to avoid Windows caching issues; use `-DisableWallpaperRefresh` only when you need the old behavior.
+- All users: use `-AllUsers` elevated. Use `-ExcludeDefaultUserProfile` to skip the default profile.
+- Logon screen: use `-Target LogonScreen` or `-Target Both` elevated.
+- Terminal server / RDS: run PowerBGInfo in each user session when you need per-user values such as `FullUserName`.
+- File output: use `-Target File` and `-OutputFileName` when you want a preview or an image for another deployment system.
 
-- builtin values such as `HostName`, `FullUserName`, `OSName`
-- chart metrics such as `CpuPercent`, `MemoryPercent`, `DiskFreePercent`
-- native variables/providers such as `Volumes`
-- loop/template entries via `-ForEach`
-- layout, colors, fonts, spacing, target, wallpaper options, and chart settings
+## Known issues
 
-What it does not preserve today is arbitrary PowerShell source code. For example, a `foreach ($Disk in Get-Disk) { ... }` block is executed during export, and the produced entries are written to JSON as normal values. The JSON does not currently embed executable user PowerShell.
-
-That means there are two supported patterns today:
-
-- use builtin values and chart metrics when you want the CLI to recalculate data on each run
-- use custom PowerShell to compute values once, export the resulting entries, and let the CLI render that snapshot later
-
-There is now a third middle-ground pattern for reusable native loops:
-
-- define a provider-backed variable in PowerShell
-- reference it with `-ForEach`
-- let the CLI expand it at runtime without PowerShell
-
-Example:
-
-```powershell
-New-BGInfo {
-    New-BGInfoVariable -Name Volumes -Provider Volumes
-    New-BGInfoValue -ForEach Volumes -Name 'Drive {{DriveLetter}}' -Value '{{SizeRemaining}} free ({{FreePercent}}%)'
-} -ConfigurationDirectory .\Output -Target File -JsonPath .\bginfo-volumes.json -ExportOnly
-```
-
-That exports JSON the CLI can execute directly. See `Examples\Run.BGInfo5.ps1` and `Examples\Configuration\PowerBGInfo.Volumes.json`.
+PowerBGInfo works in Windows PowerShell 5.1 and PowerShell 7+.
+There is a known problem when running the module in the VS Code PowerShell extension on Windows PowerShell 5.1. The same module works in the regular Windows PowerShell 5.1 console, Windows PowerShell ISE, and PowerShell 7+.
 
 ## PowerShell inline usage
 
@@ -236,19 +142,19 @@ You can also render everything inline from PowerShell when you're exploring or a
 
 ```powershell
 New-BGInfo -MonitorIndex 0 {
-    # Lets add computer name, but lets use builtin values for that
+    # Add computer name from a built-in value.
     New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
-    # Lets add user name, but lets use builtin values for that
+    # Add current user from a built-in value.
     New-BGInfoValue -BuiltinValue FullUserName -Name "FullUserName" -Color White
     New-BGInfoValue -BuiltinValue CpuName
     New-BGInfoValue -BuiltinValue CpuLogicalCores
     New-BGInfoValue -BuiltinValue RAMSize
     New-BGInfoValue -BuiltinValue RAMSpeed
 
-    # Lets add Label, but without any values, kind of like section starting
+    # Add a section label without a value.
     New-BGInfoLabel -Name "Drives" -Color LemonChiffon -FontSize 16 -FontFamilyName 'Calibri'
 
-    # Lets get all drives and their labels
+    # Add drive details from regular PowerShell data.
     foreach ($Disk in (Get-Disk)) {
         $Volumes = $Disk | Get-Partition | Get-Volume
         foreach ($V in $Volumes) {
@@ -258,20 +164,18 @@ New-BGInfo -MonitorIndex 0 {
 } -FilePath $PSScriptRoot\Samples\PrzemyslawKlysAndKulkozaurr.jpg -ConfigurationDirectory $PSScriptRoot\Output -PositionX 100 -PositionY 100 -WallpaperFit Center
 ```
 
-You can export the same inline authoring flow to JSON for the CLI by adding `-JsonPath` and, when you only want the config file, `-ExportOnly`.
-Here's how the wallpaper will look like:
+You can export the same inline authoring flow to JSON by adding `-JsonPath` and, when you only want the config file, `-ExportOnly`.
+Example output:
 
 ![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
 
-## Additional options
+## More layout and output options
 
-- Solid-color desktops: when no wallpaper file exists, PowerBGInfo renders a blank image using the desktop background color or `-BackgroundColor`.
-- Refresh behavior: by default the wallpaper is refreshed to avoid Windows caching issues; use `-DisableWallpaperRefresh` to keep the old behavior.
-- All users: use `-AllUsers` (requires elevation). Use `-ExcludeDefaultUserProfile` to skip the default profile.
-- Logon screen: use `-Target LogonScreen` or `-Target Both` (requires elevation).
-- Long values: use `-ValueWrapWidth` or JSON `ValueWrapWidth` to wrap value text such as long AD descriptions.
-- Stable output path: use `-OutputFileName` to control the output name and path.
-- Charts and topology diagrams: use `New-BGInfoChart` and `New-BGInfoTopology` to add ChartForgeX-backed transparent overlays with optional chart history.
+- `-TextPosition`, `-PositionX`, `-PositionY`, `-SpaceX`, and `-SpaceY` control where the text block is placed.
+- `-UseScreenCoordinates` makes placement calculations match the monitor coordinate space.
+- `-OutputFileName` controls the generated image name and path.
+- `-JsonPath` and `-ExportOnly` save reusable configuration without applying the wallpaper.
+- `New-BGInfoChart` and `New-BGInfoTopology` add ChartForgeX-backed transparent overlays with optional chart history.
 
 ## Deployment recipes
 
@@ -451,17 +355,42 @@ New-BGInfo -MonitorIndex 0 {
 } -ConfigurationDirectory $PSScriptRoot\Output -BackgroundColor Black
 ```
 
-The same showcase can be generated from JSON and the CLI:
+The same showcase can be generated from JSON:
 
 ```powershell
-.\Sources\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe `
-    --config .\Examples\Configuration\PowerBGInfo.ChartForgeX.Showcase.json `
-    --no-apply
+Invoke-BGInfo -Path .\Examples\Configuration\PowerBGInfo.ChartForgeX.Showcase.json -NoApply
 ```
 
-## JSON configuration + CLI
+## Built-in values
 
-PowerBGInfo supports JSON-driven configurations that are shared by the CLI and PowerShell. This is the recommended way to operationalize the tool.
+You can build useful wallpapers with only built-in values:
+
+```powershell
+New-BGInfo -MonitorIndex 0 {
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
+    New-BGInfoValue -BuiltinValue FullUserName -Color White
+    New-BGInfoValue -BuiltinValue CpuName -Color White
+    New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
+    New-BGInfoValue -BuiltinValue RAMSize -Color White
+    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([System.Drawing.Color]::Aquamarine)
+    New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
+    New-BGInfoValue -BuiltinValue BiosVersion -Color White
+    New-BGInfoValue -BuiltinValue BiosManufacturer -Color White
+    New-BGInfoValue -BuiltinValue BiosReleaseDate -Color White
+    New-BGInfoValue -BuiltinValue OSName -Color White -Name "Operating System"
+    New-BGInfoValue -BuiltinValue OSVersion -Color White
+    New-BGInfoValue -BuiltinValue OSArchitecture -Color White
+    New-BGInfoValue -BuiltinValue OSBuild -Color White
+    New-BGInfoValue -BuiltinValue OSInstallDate -Color White
+    New-BGInfoValue -BuiltinValue OSLastBootUpTime -Color White
+} -FilePath "C:\Support\GitHub\PowerBGInfo\Examples\Samples\TapN-Evotec-1600x900.jpg" -ConfigurationDirectory $PSScriptRoot\Output -PositionX 75 -PositionY 75 -WallpaperFit Fit
+```
+
+![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/TapN-Evotec-1600x900.jpg)
+
+## Portable JSON and CLI
+
+PowerBGInfo supports JSON-driven configurations that are shared by PowerShell and the optional CLI. Most users can stay in PowerShell; JSON is useful when you want a portable file for scheduled tasks, RMM tools, or endpoints that should only render/apply a saved configuration.
 
 Sample file: `Examples/Configuration/PowerBGInfo.Sample.json`
 
@@ -523,19 +452,21 @@ $config = New-BGInfoConfiguration -Target File
 Export-BGInfoConfiguration -InputObject $config -Path $PSScriptRoot\bginfo.json -Force
 ```
 
-CLI runtime:
+`-JsonPath` on `New-BGInfo` preserves the configuration and the dynamic tokens that the shared engine understands:
+
+- builtin values such as `HostName`, `FullUserName`, `OSName`
+- chart metrics such as `CpuPercent`, `MemoryPercent`, `DiskFreePercent`
+- native variables/providers such as `Volumes`
+- loop/template entries via `-ForEach`
+- layout, colors, fonts, spacing, target, wallpaper options, and chart settings
+
+It does not preserve arbitrary PowerShell source code. For example, a `foreach ($Disk in Get-Disk) { ... }` block is executed during export, and the produced entries are written to JSON as normal values.
+
+Optional CLI runtime:
 
 ```powershell
 PowerBGInfo.Cli --config $PSScriptRoot\bginfo.json
 ```
-
-The repository CI validates this workflow on every PR:
-
-- PowerShell 5.1 module tests
-- PowerShell 7 module tests
-- PowerShell exports JSON that the CLI consumes successfully
-- single-file CLI publish and execution
-- NativeAOT CLI smoke publish and `Target File` execution
 
 Publish a single-file CLI build:
 
@@ -552,31 +483,19 @@ dotnet publish .\Sources\PowerBGInfo.Cli\PowerBGInfo.Cli.csproj -c Release -f ne
 NativeAOT is currently best for `--no-apply` / `Target File` workflows with an explicit `FilePath`. Windows desktop APIs from `DesktopManager` and `System.Management` still emit AOT warnings for wallpaper and system-query paths.
 Treat NativeAOT as a file-generation smoke path, not yet as a strict pixel-for-pixel parity target for every machine/runtime combination.
 
-You can also use only builtin values
+## Development and validation
+
+Build and test the current checkout:
 
 ```powershell
-New-BGInfo -MonitorIndex 0 {
-    # Lets add computer name, but lets use builtin values for that
-    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
-    New-BGInfoValue -BuiltinValue FullUserName -Color White
-    New-BGInfoValue -BuiltinValue CpuName -Color White
-    New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
-    New-BGInfoValue -BuiltinValue RAMSize -Color White
-    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([System.Drawing.Color]::Aquamarine)
-    New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
-    New-BGInfoValue -BuiltinValue BiosVersion -Color White
-    New-BGInfoValue -BuiltinValue BiosManufacturer -Color White
-    New-BGInfoValue -BuiltinValue BiosReleaseDate -Color White
-    New-BGInfoValue -BuiltinValue OSName -Color White -Name "Operating System"
-    New-BGInfoValue -BuiltinValue OSVersion -Color White
-    New-BGInfoValue -BuiltinValue OSArchitecture -Color White
-    New-BGInfoValue -BuiltinValue OSBuild -Color White
-    New-BGInfoValue -BuiltinValue OSInstallDate -Color White
-    New-BGInfoValue -BuiltinValue OSLastBootUpTime -Color White
-
-} -FilePath "C:\Support\GitHub\PowerBGInfo\Examples\Samples\TapN-Evotec-1600x900.jpg" -ConfigurationDirectory $PSScriptRoot\Output -PositionX 75 -PositionY 75 -WallpaperFit Fit
+dotnet test .\Sources\PowerBGInfo.sln
+Invoke-Pester -Path .\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1 -Output Detailed
 ```
 
-Here's the output from command above
+For a fuller release-proof pass, use the reusable validation script:
 
-![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/TapN-Evotec-1600x900.jpg)
+```powershell
+pwsh -NoLogo -NoProfile -File .\Build\Validate-PowerBGInfo.ps1 -Configuration Release
+```
+
+That script verifies the solution build, .NET tests, PowerShell/Pester tests, JSON rendering, optional CLI rendering, single-file publish, and NativeAOT file-output smoke path. Use `-KeepArtifacts` if you want the rendered files and published executables left on disk for inspection.
