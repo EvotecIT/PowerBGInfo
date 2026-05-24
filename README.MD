@@ -370,17 +370,17 @@ New-BGInfo -Target File {
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.RaisedSections.jpg' -WallpaperFit Fill
 ```
 
-Mini charts can live inside the same sections as their values, while the logo stays anchored in the bottom-right corner. Each tile chooses its own mini-chart kind and values; the image has its own anchor and offsets so it can be moved away from taskbars, rails, or customer branding:
+Mini charts can live inside the same sections as their values, while the logo stays anchored in the bottom-right corner. Make the large value, progress rail, and mini chart describe the same question: CPU load uses a recent load trend, memory use uses usage bars, disk capacity uses a free-space trend, and patching uses compliance history. Each tile chooses its own mini-chart kind and values; the image has its own anchor and offsets so it can be moved away from taskbars, rails, or customer branding:
 
 ```powershell
 $tiles = @(
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Glass -Label CPU -Value '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -Progress 0.28 -MiniChartKind Area -MiniChartValues 18,26,22,37,48,43,51 -MiniChartMaximum 100
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Glass -Label RAM -Value '{{RAMSize}}' -Progress 0.41 -MiniChartKind Bars -MiniChartValues 36,39,41,42,44,43,41 -MiniChartMaximum 100
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Glass -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62 -MiniChartKind Sparkline -MiniChartValues 66,65,64,64,63,62,62 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Glass -Label 'CPU LOAD' -Value '33% active' -Detail '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -Progress 0.33 -MiniChartKind Area -MiniChartValues 18,26,22,37,48,43,51,35,29,41,33 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Glass -Label 'MEMORY USE' -Value '13.2 GB used' -Detail '32 GB installed' -Progress 0.41 -MiniChartKind Bars -MiniChartValues 36,39,41,42,44,43,41 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Glass -Label 'SYSTEM DRIVE' -Value '62% free' -Detail 'C: 238 GB available' -Progress 0.62 -MiniChartKind Sparkline -MiniChartValues 66,65,64,64,63,62,62 -MiniChartMaximum 100
 )
 
 New-BGInfo -Target File {
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Mini charts live inside the matching sections' -Tile $tiles @palette
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Each section pairs the current value with a matching recent trend' -Tile $tiles @palette
     New-BGInfoImage -Path .\Examples\Samples\LogoEvotec.png -Width 210 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.92
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.MiniCharts.jpg' -WallpaperFit Fill
 ```
