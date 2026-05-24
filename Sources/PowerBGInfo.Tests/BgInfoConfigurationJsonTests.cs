@@ -270,7 +270,7 @@ public class BgInfoConfigurationJsonTests
             Detail = "{{OSName}}",
             Accent = Color.DodgerBlue,
             Progress = 0.42,
-            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Outline,
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised,
             IconKind = BgInfoVisualCanvasTileIconKind.Computer,
             MiniChartKind = BgInfoVisualCanvasTileMiniChartKind.Area,
             MiniChartValues = new[] { 18d, 26d, 22d, 37d },
@@ -316,7 +316,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("{{OSName}}", tile.Detail);
         Assert.Equal(Color.DodgerBlue.ToArgb(), tile.Accent!.Value.ToArgb());
         Assert.Equal(0.42, tile.Progress);
-        Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Outline, tile.SurfaceStyle);
+        Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Raised, tile.SurfaceStyle);
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
         Assert.Equal(BgInfoVisualCanvasTileMiniChartKind.Area, tile.MiniChartKind);
         Assert.Equal(new[] { 18d, 26d, 22d, 37d }, tile.MiniChartValues);

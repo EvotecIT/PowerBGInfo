@@ -22,7 +22,9 @@ public enum BgInfoVisualCanvasTileSurfaceStyle {
     /// <summary>Translucent filled panel.</summary>
     Glass,
     /// <summary>Border-only panel without a background fill.</summary>
-    Outline
+    Outline,
+    /// <summary>Raised panel with stronger depth and edge highlights.</summary>
+    Raised
 }
 
 /// <summary>Built-in visual canvas tile icon.</summary>

@@ -155,8 +155,13 @@ internal static class BgInfoVisualCanvasRenderer {
         if (color.HasValue) setter(ToChartColor(color.Value));
     }
 
-    private static VisualCanvasInfoTileSurfaceStyle MapSurfaceStyle(BgInfoVisualCanvasTileSurfaceStyle style) =>
-        style == BgInfoVisualCanvasTileSurfaceStyle.Outline ? VisualCanvasInfoTileSurfaceStyle.Outline : VisualCanvasInfoTileSurfaceStyle.Glass;
+    private static VisualCanvasInfoTileSurfaceStyle MapSurfaceStyle(BgInfoVisualCanvasTileSurfaceStyle style) {
+        switch (style) {
+            case BgInfoVisualCanvasTileSurfaceStyle.Outline: return VisualCanvasInfoTileSurfaceStyle.Outline;
+            case BgInfoVisualCanvasTileSurfaceStyle.Raised: return VisualCanvasInfoTileSurfaceStyle.Raised;
+            default: return VisualCanvasInfoTileSurfaceStyle.Glass;
+        }
+    }
 
     private static VisualCanvasInfoTileMiniChartKind MapMiniChartKind(BgInfoVisualCanvasTileMiniChartKind kind) {
         switch (kind) {
