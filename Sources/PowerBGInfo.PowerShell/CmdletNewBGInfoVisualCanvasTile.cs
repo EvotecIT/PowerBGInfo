@@ -1,3 +1,4 @@
+using System;
 using System.Management.Automation;
 using PowerBGInfo;
 
@@ -43,6 +44,18 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasTileIconKind IconKind { get; set; }
 
+    /// <para>Compact chart kind rendered inside the tile.</para>
+    [Parameter]
+    public BgInfoVisualCanvasTileMiniChartKind MiniChartKind { get; set; }
+
+    /// <para>Compact chart values rendered inside the tile.</para>
+    [Parameter]
+    public double[] MiniChartValues { get; set; } = Array.Empty<double>();
+
+    /// <para>Optional compact chart maximum.</para>
+    [Parameter]
+    public double? MiniChartMaximum { get; set; }
+
     /// <summary>Emits a visual canvas tile definition.</summary>
     protected override void EndProcessing() {
         WriteObject(new BgInfoVisualCanvasTile {
@@ -54,7 +67,10 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             Accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent)),
             Progress = Progress,
             SurfaceStyle = SurfaceStyle,
-            IconKind = IconKind
+            IconKind = IconKind,
+            MiniChartKind = MiniChartKind,
+            MiniChartValues = MiniChartValues ?? Array.Empty<double>(),
+            MiniChartMaximum = MiniChartMaximum
         });
     }
 }

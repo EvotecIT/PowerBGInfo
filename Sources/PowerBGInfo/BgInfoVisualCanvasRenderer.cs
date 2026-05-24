@@ -103,7 +103,10 @@ internal static class BgInfoVisualCanvasRenderer {
                 tile.Accent.HasValue ? ToChartColor(tile.Accent.Value) : (ChartColor?)null,
                 tile.Progress,
                 MapSurfaceStyle(tile.SurfaceStyle),
-                MapIconKind(tile.IconKind));
+                MapIconKind(tile.IconKind),
+                MapMiniChartKind(tile.MiniChartKind),
+                tile.MiniChartValues,
+                tile.MiniChartMaximum);
             index++;
         }
     }
@@ -154,6 +157,15 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static VisualCanvasInfoTileSurfaceStyle MapSurfaceStyle(BgInfoVisualCanvasTileSurfaceStyle style) =>
         style == BgInfoVisualCanvasTileSurfaceStyle.Outline ? VisualCanvasInfoTileSurfaceStyle.Outline : VisualCanvasInfoTileSurfaceStyle.Glass;
+
+    private static VisualCanvasInfoTileMiniChartKind MapMiniChartKind(BgInfoVisualCanvasTileMiniChartKind kind) {
+        switch (kind) {
+            case BgInfoVisualCanvasTileMiniChartKind.Sparkline: return VisualCanvasInfoTileMiniChartKind.Sparkline;
+            case BgInfoVisualCanvasTileMiniChartKind.Area: return VisualCanvasInfoTileMiniChartKind.Area;
+            case BgInfoVisualCanvasTileMiniChartKind.Bars: return VisualCanvasInfoTileMiniChartKind.Bars;
+            default: return VisualCanvasInfoTileMiniChartKind.None;
+        }
+    }
 
     private static VisualCanvasInfoTileIconKind MapIconKind(BgInfoVisualCanvasTileIconKind kind) {
         switch (kind) {

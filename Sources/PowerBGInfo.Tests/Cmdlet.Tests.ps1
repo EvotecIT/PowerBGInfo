@@ -77,12 +77,13 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TitleColor'
         $command.Parameters.Keys | Should -Contain 'TileValueColor'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
+        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'MiniChartKind'
     }
 }
 
 Describe 'New-BGInfoVisualCanvas cmdlets' {
     It 'creates a visual canvas model' {
-        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Outline -IconKind Computer
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Outline -IconKind Computer -MiniChartKind Sparkline -MiniChartValues 18,26,22 -MiniChartMaximum 100
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
         $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -Tile $tile -Feature $feature
@@ -96,6 +97,9 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
         $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Outline)
         $visual.Tiles[0].IconKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileIconKind]::Computer)
+        $visual.Tiles[0].MiniChartKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileMiniChartKind]::Sparkline)
+        $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
+        $visual.Tiles[0].MiniChartMaximum | Should -Be 100
         $visual.Features.Count | Should -Be 1
     }
 }

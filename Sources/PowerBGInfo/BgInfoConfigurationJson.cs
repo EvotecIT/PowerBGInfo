@@ -863,8 +863,14 @@ public static class BgInfoConfigurationJson {
             Enum.TryParse(model.IconKind, true, out BgInfoVisualCanvasTileIconKind iconKind)) {
             tile.IconKind = iconKind;
         }
+        if (!string.IsNullOrWhiteSpace(model.MiniChartKind) &&
+            Enum.TryParse(model.MiniChartKind, true, out BgInfoVisualCanvasTileMiniChartKind miniChartKind)) {
+            tile.MiniChartKind = miniChartKind;
+        }
         ApplyColor(model.Accent, value => tile.Accent = value);
         if (model.Progress.HasValue) tile.Progress = model.Progress.Value;
+        if (model.MiniChartValues != null) tile.MiniChartValues = model.MiniChartValues;
+        if (model.MiniChartMaximum.HasValue) tile.MiniChartMaximum = model.MiniChartMaximum.Value;
         return tile;
     }
 
@@ -882,7 +888,10 @@ public static class BgInfoConfigurationJson {
         Accent = tile.Accent.HasValue ? BgInfoColorParser.ToHex(tile.Accent.Value) : null,
         Progress = tile.Progress,
         SurfaceStyle = tile.SurfaceStyle.ToString(),
-        IconKind = tile.IconKind.ToString()
+        IconKind = tile.IconKind.ToString(),
+        MiniChartKind = tile.MiniChartKind.ToString(),
+        MiniChartValues = tile.MiniChartValues is null ? null : new List<double>(tile.MiniChartValues).ToArray(),
+        MiniChartMaximum = tile.MiniChartMaximum
     };
 
     private static BgInfoVisualCanvasFeatureFile MapVisualCanvasFeatureFile(BgInfoVisualCanvasFeature feature) => new() {
@@ -1161,6 +1170,9 @@ public static class BgInfoConfigurationJson {
         public double? Progress { get; set; }
         public string? SurfaceStyle { get; set; }
         public string? IconKind { get; set; }
+        public string? MiniChartKind { get; set; }
+        public double[]? MiniChartValues { get; set; }
+        public double? MiniChartMaximum { get; set; }
     }
 
     internal sealed class BgInfoVisualCanvasFeatureFile {

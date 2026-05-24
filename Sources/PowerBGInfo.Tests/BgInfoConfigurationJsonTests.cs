@@ -271,7 +271,10 @@ public class BgInfoConfigurationJsonTests
             Accent = Color.DodgerBlue,
             Progress = 0.42,
             SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Outline,
-            IconKind = BgInfoVisualCanvasTileIconKind.Computer
+            IconKind = BgInfoVisualCanvasTileIconKind.Computer,
+            MiniChartKind = BgInfoVisualCanvasTileMiniChartKind.Area,
+            MiniChartValues = new[] { 18d, 26d, 22d, 37d },
+            MiniChartMaximum = 100
         });
         visual.Features.Add(new BgInfoVisualCanvasFeature {
             Icon = "PS",
@@ -315,6 +318,9 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(0.42, tile.Progress);
         Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Outline, tile.SurfaceStyle);
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
+        Assert.Equal(BgInfoVisualCanvasTileMiniChartKind.Area, tile.MiniChartKind);
+        Assert.Equal(new[] { 18d, 26d, 22d, 37d }, tile.MiniChartValues);
+        Assert.Equal(100, tile.MiniChartMaximum);
 
         var feature = Assert.Single(loaded.Features);
         Assert.Equal("PS", feature.Icon);

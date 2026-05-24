@@ -51,6 +51,18 @@ public enum BgInfoVisualCanvasTileIconKind {
     Shield
 }
 
+/// <summary>Compact chart treatment for visual canvas tiles.</summary>
+public enum BgInfoVisualCanvasTileMiniChartKind {
+    /// <summary>Render no mini chart.</summary>
+    None,
+    /// <summary>Render a compact sparkline inside the tile.</summary>
+    Sparkline,
+    /// <summary>Render a compact area sparkline inside the tile.</summary>
+    Area,
+    /// <summary>Render compact bars inside the tile.</summary>
+    Bars
+}
+
 /// <summary>Defines a reusable ChartForgeX visual canvas overlay.</summary>
 public sealed class BgInfoVisualCanvas {
     /// <summary>Template used to build the canvas.</summary>
@@ -129,6 +141,12 @@ public sealed class BgInfoVisualCanvasTile {
     public BgInfoVisualCanvasTileSurfaceStyle SurfaceStyle { get; set; }
     /// <summary>Tile icon kind.</summary>
     public BgInfoVisualCanvasTileIconKind IconKind { get; set; }
+    /// <summary>Compact tile chart kind.</summary>
+    public BgInfoVisualCanvasTileMiniChartKind MiniChartKind { get; set; }
+    /// <summary>Compact tile chart values.</summary>
+    public IReadOnlyList<double> MiniChartValues { get; set; } = System.Array.Empty<double>();
+    /// <summary>Optional compact tile chart maximum.</summary>
+    public double? MiniChartMaximum { get; set; }
 }
 
 /// <summary>Defines one visual canvas feature-strip item.</summary>
