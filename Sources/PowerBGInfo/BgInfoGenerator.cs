@@ -782,13 +782,9 @@ public class BgInfoGenerator
 
     private static System.Drawing.PointF ResolveImagePosition(Image image, BgInfoImage overlay, int width, int height)
     {
-        if (overlay.PositionX.HasValue && overlay.PositionY.HasValue)
-        {
-            return new System.Drawing.PointF(overlay.PositionX.Value, overlay.PositionY.Value);
-        }
-
-        return ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+        var anchored = ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
             width, height, overlay.Anchor, overlay.OffsetX, overlay.OffsetY);
+        return new System.Drawing.PointF(overlay.PositionX ?? anchored.X, overlay.PositionY ?? anchored.Y);
     }
 
     private static (int Width, int Height) ResolveImageSize(BgInfoImage overlay, int sourceWidth, int sourceHeight)

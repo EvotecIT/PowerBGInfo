@@ -328,6 +328,44 @@ public class BgInfoConfigurationJsonTests
     }
 
     [Fact]
+    public void LoadSkipsNullVisualCanvasChildren() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        File.WriteAllText(path, """
+{
+  "VisualCanvases": [
+    {
+      "Tiles": [
+        null,
+        {
+          "Side": "Left",
+          "Icon": "PC",
+          "Label": "HOSTNAME",
+          "Value": "{{HostName}}"
+        }
+      ],
+      "Features": [
+        null,
+        {
+          "Icon": "PS",
+          "Label": "LIGHTWEIGHT"
+        }
+      ]
+    }
+  ]
+}
+""");
+
+        var configuration = BgInfoConfigurationJson.Load(path);
+
+        var visual = Assert.Single(configuration.VisualCanvases);
+        Assert.Single(visual.Tiles);
+        Assert.Single(visual.Features);
+    }
+
+    [Fact]
     public void SaveAndLoadPreservesImageOverlays() {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
@@ -345,6 +383,7 @@ public class BgInfoConfigurationJsonTests
             OffsetY = 54,
             Opacity = 0.85
         });
+        configuration.Images.Add(null!);
 
         BgInfoConfigurationJson.Save(configuration, path);
 
@@ -357,5 +396,24 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(72, image.OffsetX);
         Assert.Equal(54, image.OffsetY);
         Assert.Equal(0.85, image.Opacity);
+    }
+
+    [Fact]
+    public void LoadRejectsInvalidImageOpacity() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, """
+{
+  "Images": [
+    {
+      "Path": "logo.png",
+      "Opacity": 1.2
+    }
+  ]
+}
+""");
+
+        Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
     }
 }

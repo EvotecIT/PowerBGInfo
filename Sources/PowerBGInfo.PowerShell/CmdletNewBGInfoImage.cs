@@ -53,7 +53,7 @@ public sealed class CmdletNewBGInfoImage : PSCmdlet {
             ThrowTerminatingError(new ErrorRecord(new ArgumentOutOfRangeException(nameof(Height), Height, "Height cannot be negative."), "BGInfoImageInvalidHeight", ErrorCategory.InvalidArgument, Height));
             return;
         }
-        if (Opacity < 0d || Opacity > 1d) {
+        if (double.IsNaN(Opacity) || double.IsInfinity(Opacity) || Opacity < 0d || Opacity > 1d) {
             ThrowTerminatingError(new ErrorRecord(new ArgumentOutOfRangeException(nameof(Opacity), Opacity, "Opacity must be between 0 and 1."), "BGInfoImageInvalidOpacity", ErrorCategory.InvalidArgument, Opacity));
             return;
         }
@@ -68,9 +68,10 @@ public sealed class CmdletNewBGInfoImage : PSCmdlet {
             Opacity = Opacity
         };
 
-        if (MyInvocation.BoundParameters.ContainsKey(nameof(PositionX)) &&
-            MyInvocation.BoundParameters.ContainsKey(nameof(PositionY))) {
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(PositionX))) {
             image.PositionX = PositionX;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(PositionY))) {
             image.PositionY = PositionY;
         }
 

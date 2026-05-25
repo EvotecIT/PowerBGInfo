@@ -13,8 +13,8 @@ namespace PowerBGInfo;
 internal static class BgInfoVisualCanvasRenderer {
     public static GdiImage Render(BgInfoVisualCanvas visual, BgInfoConfiguration config, int targetWidth, int targetHeight) {
         if (visual == null) throw new ArgumentNullException(nameof(visual));
-        var width = visual.Width > 0 ? visual.Width : Math.Max(1, targetWidth - visual.PositionX);
-        var height = visual.Height > 0 ? visual.Height : Math.Max(1, targetHeight - visual.PositionY);
+        var width = visual.Width > 0 ? visual.Width : Math.Max(1, targetWidth);
+        var height = visual.Height > 0 ? visual.Height : Math.Max(1, targetHeight);
         var chartCanvas = BuildCanvas(visual, width, height);
         var image = new GdiImage();
         image.Create(string.Empty, width, height, Color.Transparent);
@@ -60,30 +60,36 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static void BuildPowerBgInfoOverlay(VisualCanvas canvas, BgInfoVisualCanvas visual, int width, int height) {
         var accent = ToChartColor(visual.Accent);
-        var marginX = Clamp(width * 0.045, 72, 132);
-        var tileWidth = Clamp(width * 0.18, 380, 470);
-        var tileHeight = Clamp(height * 0.092, 92, 106);
-        var tileGap = Clamp(height * 0.018, 16, 24);
-        var railY = Clamp(height * 0.16, 92, 190);
+        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
+        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
+        var tileWidth = Math.Min(Clamp(width * 0.18, Math.Min(180, railBudget), Math.Min(470, railBudget)), railBudget);
+        var tileHeight = Clamp(height * 0.092, Math.Min(56, height * 0.18), Math.Min(106, height * 0.22));
+        var tileGap = Clamp(height * 0.018, Math.Min(8, height * 0.02), Math.Min(24, height * 0.04));
+        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
         AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Left, marginX, railY, tileWidth, tileHeight, tileGap);
         AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Right, width - marginX - tileWidth, railY, tileWidth, tileHeight, tileGap);
 
         var centerLeft = marginX + tileWidth + 48;
         var centerRight = width - marginX - tileWidth - 48;
-        var centerWidth = Math.Max(360, centerRight - centerLeft);
-        var badgeWidth = Clamp(width * 0.065, 104, 144);
-        var badgeHeight = Clamp(height * 0.085, 76, 100);
-        var badgeY = Clamp(height * 0.23, 156, 260);
-        var titleFont = Clamp(width * 0.042, 62, 96);
-        var titleY = Clamp(height * 0.39, 300, 450);
-        var subtitleFont = Clamp(width * 0.014, 20, 30);
+        var centerWidth = Math.Max(1, centerRight - centerLeft);
+        var badgeWidth = Math.Min(centerWidth, Clamp(width * 0.065, Math.Min(64, centerWidth), Math.Min(144, centerWidth)));
+        var badgeHeight = Clamp(height * 0.085, Math.Min(42, height * 0.16), Math.Min(100, height * 0.22));
+        var badgeY = Clamp(height * 0.23, Math.Min(24, height * 0.08), Math.Max(24, height - badgeHeight - 24));
+        var titleFont = Clamp(width * 0.042, Math.Min(28, height * 0.09), Math.Min(96, height * 0.16));
+        var subtitleFont = Clamp(width * 0.014, Math.Min(12, height * 0.035), Math.Min(30, height * 0.07));
+        var subtitleGap = Clamp(height * 0.035, 8, 32);
+        var titleTopMin = badgeY + badgeHeight + Math.Min(12, height * 0.025);
+        var titleTopMax = Math.Max(titleTopMin, height - titleFont - subtitleFont - subtitleGap - Math.Min(24, height * 0.06));
+        var titleY = Clamp(height * 0.39, titleTopMin, titleTopMax);
         canvas
             .AddHeroBadge(centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, ">_", accent)
             .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
-            .AddText(centerLeft, titleY + titleFont + 32, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
+            .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
         if (visual.Features.Count > 0) {
-            var stripWidth = Clamp(centerWidth * 0.72, 520, 760);
-            canvas.AddFeatureStrip(centerLeft + (centerWidth - stripWidth) / 2, height - Clamp(height * 0.18, 132, 190), stripWidth, 64, BuildFeatureItems(visual.Features));
+            var stripHeight = Clamp(height * 0.075, Math.Min(36, height * 0.1), Math.Min(64, height * 0.14));
+            var stripWidth = Clamp(centerWidth * 0.72, Math.Min(120, centerWidth), Math.Min(760, centerWidth));
+            var stripY = Math.Max(0, height - Clamp(height * 0.18, stripHeight + 8, Math.Min(190, height * 0.28)));
+            canvas.AddFeatureStrip(centerLeft + (centerWidth - stripWidth) / 2, stripY, stripWidth, stripHeight, BuildFeatureItems(visual.Features));
         }
     }
 
@@ -188,7 +194,10 @@ internal static class BgInfoVisualCanvasRenderer {
         }
     }
 
-    private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
+    private static double Clamp(double value, double min, double max) {
+        if (max < min) max = min;
+        return Math.Max(min, Math.Min(max, value));
+    }
 
     private static void DrawPng(GdiImage image, byte[] png, float x, float y, float width, float height) {
         image.WithGraphics(graphics => {

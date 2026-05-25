@@ -119,6 +119,27 @@ Describe 'New-BGInfoImage cmdlet' {
         $image.OffsetY | Should -Be 54
         $image.Opacity | Should -Be 0.85
     }
+
+    It 'rejects non-finite opacity' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        { New-BGInfoImage -Path $path -Opacity ([double]::NaN) } | Should -Throw
+        { New-BGInfoImage -Path $path -Opacity ([double]::PositiveInfinity) } | Should -Throw
+    }
+
+    It 'honors single-axis absolute positions' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        $xOnly = New-BGInfoImage -Path $path -PositionX 123
+        $yOnly = New-BGInfoImage -Path $path -PositionY 456
+
+        $xOnly.PositionX | Should -Be 123
+        $xOnly.PositionY | Should -BeNullOrEmpty
+        $yOnly.PositionX | Should -BeNullOrEmpty
+        $yOnly.PositionY | Should -Be 456
+    }
 }
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
@@ -165,6 +186,15 @@ Describe 'New-BGInfoConfiguration cmdlet' {
         $config.ChartLayout | Should -Be ([PowerBGInfo.BgInfoChartLayoutMode]::Stack)
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue
+    }
+
+    It 'accepts visual canvas overlays directly' {
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo
+
+        $config = New-BGInfoConfiguration -Target File -VisualCanvas $visual
+
+        $config.VisualCanvases.Count | Should -Be 1
+        $config.VisualCanvases[0].Title | Should -Be 'PowerBGInfo'
     }
 }
 

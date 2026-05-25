@@ -383,6 +383,9 @@ public static class BgInfoConfigurationJson {
         if (configuration.VisualCanvases.Count > 0) {
             model.VisualCanvases = new List<BgInfoVisualCanvasFile>();
             foreach (var visual in configuration.VisualCanvases) {
+                if (visual == null) {
+                    continue;
+                }
                 model.VisualCanvases.Add(new BgInfoVisualCanvasFile {
                     Template = visual.Template.ToString(),
                     Title = visual.Title,
@@ -409,8 +412,8 @@ public static class BgInfoConfigurationJson {
                     HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
                     Transparent = visual.Transparent,
                     TechBackdrop = visual.TechBackdrop,
-                    Tiles = visual.Tiles.Select(MapVisualCanvasTileFile).ToList(),
-                    Features = visual.Features.Select(MapVisualCanvasFeatureFile).ToList()
+                    Tiles = visual.Tiles.Where(tile => tile != null).Select(MapVisualCanvasTileFile).ToList(),
+                    Features = visual.Features.Where(feature => feature != null).Select(MapVisualCanvasFeatureFile).ToList()
                 });
             }
         }
@@ -418,6 +421,9 @@ public static class BgInfoConfigurationJson {
         if (configuration.Images.Count > 0) {
             model.Images = new List<BgInfoImageFile>();
             foreach (var image in configuration.Images) {
+                if (image == null) {
+                    continue;
+                }
                 model.Images.Add(new BgInfoImageFile {
                     Path = image.Path,
                     Width = image.Width,
@@ -427,7 +433,7 @@ public static class BgInfoConfigurationJson {
                     OffsetY = image.OffsetY,
                     PositionX = image.PositionX,
                     PositionY = image.PositionY,
-                    Opacity = image.Opacity
+                    Opacity = ValidateImageOpacity(image.Opacity)
                 });
             }
         }
@@ -832,12 +838,12 @@ public static class BgInfoConfigurationJson {
 
         if (model.Tiles != null) {
             foreach (var item in model.Tiles) {
-                visual.Tiles.Add(MapVisualCanvasTile(item));
+                if (item != null) visual.Tiles.Add(MapVisualCanvasTile(item));
             }
         }
         if (model.Features != null) {
             foreach (var item in model.Features) {
-                visual.Features.Add(MapVisualCanvasFeature(item));
+                if (item != null) visual.Features.Add(MapVisualCanvasFeature(item));
             }
         }
 
@@ -917,8 +923,16 @@ public static class BgInfoConfigurationJson {
         if (model.OffsetY.HasValue) image.OffsetY = model.OffsetY.Value;
         if (model.PositionX.HasValue) image.PositionX = model.PositionX.Value;
         if (model.PositionY.HasValue) image.PositionY = model.PositionY.Value;
-        if (model.Opacity.HasValue) image.Opacity = model.Opacity.Value;
+        if (model.Opacity.HasValue) image.Opacity = ValidateImageOpacity(model.Opacity.Value);
         return image;
+    }
+
+    private static double ValidateImageOpacity(double opacity) {
+        if (double.IsNaN(opacity) || double.IsInfinity(opacity) || opacity < 0d || opacity > 1d) {
+            throw new InvalidDataException("Image opacity must be a finite value between 0 and 1.");
+        }
+
+        return opacity;
     }
 
     private static void ApplyColor(string? text, Action<System.Drawing.Color> setter) {
