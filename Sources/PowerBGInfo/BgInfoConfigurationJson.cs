@@ -199,6 +199,24 @@ public static class BgInfoConfigurationJson {
             }
         }
 
+        if (model.VisualCanvases != null) {
+            foreach (var visualModel in model.VisualCanvases) {
+                var visual = MapVisualCanvas(visualModel);
+                if (visual != null) {
+                    configuration.VisualCanvases.Add(visual);
+                }
+            }
+        }
+
+        if (model.Images != null) {
+            foreach (var imageModel in model.Images) {
+                var image = MapImage(imageModel, baseDirectory);
+                if (image != null) {
+                    configuration.Images.Add(image);
+                }
+            }
+        }
+
         return configuration;
     }
 
@@ -358,6 +376,64 @@ public static class BgInfoConfigurationJson {
                     Groups = topology.Groups.Select(MapGroupFile).ToList(),
                     Nodes = topology.Nodes.Select(MapNodeFile).ToList(),
                     Edges = topology.Edges.Select(MapEdgeFile).ToList()
+                });
+            }
+        }
+
+        if (configuration.VisualCanvases.Count > 0) {
+            model.VisualCanvases = new List<BgInfoVisualCanvasFile>();
+            foreach (var visual in configuration.VisualCanvases) {
+                if (visual == null) {
+                    continue;
+                }
+                model.VisualCanvases.Add(new BgInfoVisualCanvasFile {
+                    Template = visual.Template.ToString(),
+                    Title = visual.Title,
+                    Subtitle = visual.Subtitle,
+                    Width = visual.Width,
+                    Height = visual.Height,
+                    PositionX = visual.PositionX,
+                    PositionY = visual.PositionY,
+                    BackgroundTop = BgInfoColorParser.ToHex(visual.BackgroundTop),
+                    BackgroundBottom = BgInfoColorParser.ToHex(visual.BackgroundBottom),
+                    Accent = BgInfoColorParser.ToHex(visual.Accent),
+                    SecondaryAccent = visual.SecondaryAccent.HasValue ? BgInfoColorParser.ToHex(visual.SecondaryAccent.Value) : null,
+                    TitleColor = visual.TitleColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleColor.Value) : null,
+                    TitleAccentColor = visual.TitleAccentColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleAccentColor.Value) : null,
+                    SubtitleColor = visual.SubtitleColor.HasValue ? BgInfoColorParser.ToHex(visual.SubtitleColor.Value) : null,
+                    TileGlassTop = visual.TileGlassTop.HasValue ? BgInfoColorParser.ToHex(visual.TileGlassTop.Value) : null,
+                    TileGlassBottom = visual.TileGlassBottom.HasValue ? BgInfoColorParser.ToHex(visual.TileGlassBottom.Value) : null,
+                    TileLabelColor = visual.TileLabelColor.HasValue ? BgInfoColorParser.ToHex(visual.TileLabelColor.Value) : null,
+                    TileValueColor = visual.TileValueColor.HasValue ? BgInfoColorParser.ToHex(visual.TileValueColor.Value) : null,
+                    TileDetailColor = visual.TileDetailColor.HasValue ? BgInfoColorParser.ToHex(visual.TileDetailColor.Value) : null,
+                    TileProgressTrackColor = visual.TileProgressTrackColor.HasValue ? BgInfoColorParser.ToHex(visual.TileProgressTrackColor.Value) : null,
+                    HeroBadgeTop = visual.HeroBadgeTop.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTop.Value) : null,
+                    HeroBadgeBottom = visual.HeroBadgeBottom.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeBottom.Value) : null,
+                    HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
+                    Transparent = visual.Transparent,
+                    TechBackdrop = visual.TechBackdrop,
+                    Tiles = visual.Tiles.Where(tile => tile != null).Select(MapVisualCanvasTileFile).ToList(),
+                    Features = visual.Features.Where(feature => feature != null).Select(MapVisualCanvasFeatureFile).ToList()
+                });
+            }
+        }
+
+        if (configuration.Images.Count > 0) {
+            model.Images = new List<BgInfoImageFile>();
+            foreach (var image in configuration.Images) {
+                if (image == null) {
+                    continue;
+                }
+                model.Images.Add(new BgInfoImageFile {
+                    Path = image.Path,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Anchor = image.Anchor.ToString(),
+                    OffsetX = image.OffsetX,
+                    OffsetY = image.OffsetY,
+                    PositionX = image.PositionX,
+                    PositionY = image.PositionY,
+                    Opacity = ValidateImageOpacity(image.Opacity)
                 });
             }
         }
@@ -723,6 +799,142 @@ public static class BgInfoConfigurationJson {
         Muted = edge.IsMuted
     };
 
+    private static BgInfoVisualCanvas? MapVisualCanvas(BgInfoVisualCanvasFile model) {
+        if (model == null) {
+            return null;
+        }
+
+        var visual = new BgInfoVisualCanvas {
+            Title = model.Title ?? "PowerBGInfo",
+            Subtitle = model.Subtitle ?? "Desktop background insights for Windows and PowerShell"
+        };
+
+        if (!string.IsNullOrWhiteSpace(model.Template) &&
+            Enum.TryParse(model.Template, true, out BgInfoVisualCanvasTemplate template)) {
+            visual.Template = template;
+        }
+        if (model.Width.HasValue) visual.Width = model.Width.Value;
+        if (model.Height.HasValue) visual.Height = model.Height.Value;
+        if (model.PositionX.HasValue) visual.PositionX = model.PositionX.Value;
+        if (model.PositionY.HasValue) visual.PositionY = model.PositionY.Value;
+        if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
+        if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
+        ApplyColor(model.BackgroundTop, value => visual.BackgroundTop = value);
+        ApplyColor(model.BackgroundBottom, value => visual.BackgroundBottom = value);
+        ApplyColor(model.Accent, value => visual.Accent = value);
+        ApplyColor(model.SecondaryAccent, value => visual.SecondaryAccent = value);
+        ApplyColor(model.TitleColor, value => visual.TitleColor = value);
+        ApplyColor(model.TitleAccentColor, value => visual.TitleAccentColor = value);
+        ApplyColor(model.SubtitleColor, value => visual.SubtitleColor = value);
+        ApplyColor(model.TileGlassTop, value => visual.TileGlassTop = value);
+        ApplyColor(model.TileGlassBottom, value => visual.TileGlassBottom = value);
+        ApplyColor(model.TileLabelColor, value => visual.TileLabelColor = value);
+        ApplyColor(model.TileValueColor, value => visual.TileValueColor = value);
+        ApplyColor(model.TileDetailColor, value => visual.TileDetailColor = value);
+        ApplyColor(model.TileProgressTrackColor, value => visual.TileProgressTrackColor = value);
+        ApplyColor(model.HeroBadgeTop, value => visual.HeroBadgeTop = value);
+        ApplyColor(model.HeroBadgeBottom, value => visual.HeroBadgeBottom = value);
+        ApplyColor(model.HeroBadgeTextColor, value => visual.HeroBadgeTextColor = value);
+
+        if (model.Tiles != null) {
+            foreach (var item in model.Tiles) {
+                if (item != null) visual.Tiles.Add(MapVisualCanvasTile(item));
+            }
+        }
+        if (model.Features != null) {
+            foreach (var item in model.Features) {
+                if (item != null) visual.Features.Add(MapVisualCanvasFeature(item));
+            }
+        }
+
+        return visual;
+    }
+
+    private static BgInfoVisualCanvasTile MapVisualCanvasTile(BgInfoVisualCanvasTileFile model) {
+        var tile = new BgInfoVisualCanvasTile {
+            Icon = model.Icon ?? string.Empty,
+            Label = model.Label ?? string.Empty,
+            Value = model.Value ?? string.Empty,
+            Detail = model.Detail ?? string.Empty
+        };
+        if (!string.IsNullOrWhiteSpace(model.Side) &&
+            Enum.TryParse(model.Side, true, out BgInfoVisualCanvasSide side)) {
+            tile.Side = side;
+        }
+        if (!string.IsNullOrWhiteSpace(model.SurfaceStyle) &&
+            Enum.TryParse(model.SurfaceStyle, true, out BgInfoVisualCanvasTileSurfaceStyle surfaceStyle)) {
+            tile.SurfaceStyle = surfaceStyle;
+        }
+        if (!string.IsNullOrWhiteSpace(model.IconKind) &&
+            Enum.TryParse(model.IconKind, true, out BgInfoVisualCanvasTileIconKind iconKind)) {
+            tile.IconKind = iconKind;
+        }
+        if (!string.IsNullOrWhiteSpace(model.MiniChartKind) &&
+            Enum.TryParse(model.MiniChartKind, true, out BgInfoVisualCanvasTileMiniChartKind miniChartKind)) {
+            tile.MiniChartKind = miniChartKind;
+        }
+        ApplyColor(model.Accent, value => tile.Accent = value);
+        if (model.Progress.HasValue) tile.Progress = model.Progress.Value;
+        if (model.MiniChartValues != null) tile.MiniChartValues = model.MiniChartValues;
+        if (model.MiniChartMaximum.HasValue) tile.MiniChartMaximum = model.MiniChartMaximum.Value;
+        return tile;
+    }
+
+    private static BgInfoVisualCanvasFeature MapVisualCanvasFeature(BgInfoVisualCanvasFeatureFile model) => new() {
+        Icon = model.Icon ?? string.Empty,
+        Label = model.Label ?? string.Empty
+    };
+
+    private static BgInfoVisualCanvasTileFile MapVisualCanvasTileFile(BgInfoVisualCanvasTile tile) => new() {
+        Side = tile.Side.ToString(),
+        Icon = tile.Icon,
+        Label = tile.Label,
+        Value = tile.Value,
+        Detail = tile.Detail,
+        Accent = tile.Accent.HasValue ? BgInfoColorParser.ToHex(tile.Accent.Value) : null,
+        Progress = tile.Progress,
+        SurfaceStyle = tile.SurfaceStyle.ToString(),
+        IconKind = tile.IconKind.ToString(),
+        MiniChartKind = tile.MiniChartKind.ToString(),
+        MiniChartValues = tile.MiniChartValues is null ? null : new List<double>(tile.MiniChartValues).ToArray(),
+        MiniChartMaximum = tile.MiniChartMaximum
+    };
+
+    private static BgInfoVisualCanvasFeatureFile MapVisualCanvasFeatureFile(BgInfoVisualCanvasFeature feature) => new() {
+        Icon = feature.Icon,
+        Label = feature.Label
+    };
+
+    private static BgInfoImage? MapImage(BgInfoImageFile model, string baseDirectory) {
+        if (model == null) {
+            return null;
+        }
+
+        var image = new BgInfoImage {
+            Path = ResolvePath(model.Path, baseDirectory)
+        };
+        if (model.Width.HasValue) image.Width = model.Width.Value;
+        if (model.Height.HasValue) image.Height = model.Height.Value;
+        if (!string.IsNullOrWhiteSpace(model.Anchor) &&
+            Enum.TryParse(model.Anchor, true, out BgInfoTextPosition anchor)) {
+            image.Anchor = anchor;
+        }
+        if (model.OffsetX.HasValue) image.OffsetX = model.OffsetX.Value;
+        if (model.OffsetY.HasValue) image.OffsetY = model.OffsetY.Value;
+        if (model.PositionX.HasValue) image.PositionX = model.PositionX.Value;
+        if (model.PositionY.HasValue) image.PositionY = model.PositionY.Value;
+        if (model.Opacity.HasValue) image.Opacity = ValidateImageOpacity(model.Opacity.Value);
+        return image;
+    }
+
+    private static double ValidateImageOpacity(double opacity) {
+        if (double.IsNaN(opacity) || double.IsInfinity(opacity) || opacity < 0d || opacity > 1d) {
+            throw new InvalidDataException("Image opacity must be a finite value between 0 and 1.");
+        }
+
+        return opacity;
+    }
+
     private static void ApplyColor(string? text, Action<System.Drawing.Color> setter) {
         if (string.IsNullOrWhiteSpace(text)) {
             return;
@@ -788,6 +1000,8 @@ public static class BgInfoConfigurationJson {
         public List<BgInfoEntryFile>? Entries { get; set; }
         public List<BgInfoChartFile>? Charts { get; set; }
         public List<BgInfoTopologyFile>? Topologies { get; set; }
+        public List<BgInfoVisualCanvasFile>? VisualCanvases { get; set; }
+        public List<BgInfoImageFile>? Images { get; set; }
     }
 
     internal sealed class BgInfoVariableFile {
@@ -928,6 +1142,68 @@ public static class BgInfoConfigurationJson {
         public string? Routing { get; set; }
         public string? Color { get; set; }
         public bool? Muted { get; set; }
+    }
+
+    internal sealed class BgInfoVisualCanvasFile {
+        public string? Template { get; set; }
+        public string? Title { get; set; }
+        public string? Subtitle { get; set; }
+        public int? Width { get; set; }
+        public int? Height { get; set; }
+        public int? PositionX { get; set; }
+        public int? PositionY { get; set; }
+        public string? BackgroundTop { get; set; }
+        public string? BackgroundBottom { get; set; }
+        public string? Accent { get; set; }
+        public string? SecondaryAccent { get; set; }
+        public string? TitleColor { get; set; }
+        public string? TitleAccentColor { get; set; }
+        public string? SubtitleColor { get; set; }
+        public string? TileGlassTop { get; set; }
+        public string? TileGlassBottom { get; set; }
+        public string? TileLabelColor { get; set; }
+        public string? TileValueColor { get; set; }
+        public string? TileDetailColor { get; set; }
+        public string? TileProgressTrackColor { get; set; }
+        public string? HeroBadgeTop { get; set; }
+        public string? HeroBadgeBottom { get; set; }
+        public string? HeroBadgeTextColor { get; set; }
+        public bool? Transparent { get; set; }
+        public bool? TechBackdrop { get; set; }
+        public List<BgInfoVisualCanvasTileFile>? Tiles { get; set; }
+        public List<BgInfoVisualCanvasFeatureFile>? Features { get; set; }
+    }
+
+    internal sealed class BgInfoVisualCanvasTileFile {
+        public string? Side { get; set; }
+        public string? Icon { get; set; }
+        public string? Label { get; set; }
+        public string? Value { get; set; }
+        public string? Detail { get; set; }
+        public string? Accent { get; set; }
+        public double? Progress { get; set; }
+        public string? SurfaceStyle { get; set; }
+        public string? IconKind { get; set; }
+        public string? MiniChartKind { get; set; }
+        public double[]? MiniChartValues { get; set; }
+        public double? MiniChartMaximum { get; set; }
+    }
+
+    internal sealed class BgInfoVisualCanvasFeatureFile {
+        public string? Icon { get; set; }
+        public string? Label { get; set; }
+    }
+
+    internal sealed class BgInfoImageFile {
+        public string? Path { get; set; }
+        public int? Width { get; set; }
+        public int? Height { get; set; }
+        public string? Anchor { get; set; }
+        public int? OffsetX { get; set; }
+        public int? OffsetY { get; set; }
+        public int? PositionX { get; set; }
+        public int? PositionY { get; set; }
+        public double? Opacity { get; set; }
     }
 }
 

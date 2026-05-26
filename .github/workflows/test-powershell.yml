@@ -16,6 +16,7 @@ on:
 env:
   DOTNET_VERSION: '8.x'
   BUILD_CONFIGURATION: 'Debug'
+  ChartForgeXProjectPath: '${{ github.workspace }}\external\ChartForgeX\ChartForgeX\ChartForgeX.csproj'
 
 jobs:
   refresh-psd1:
@@ -24,6 +25,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Checkout ChartForgeX dependency
+        uses: actions/checkout@v4
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: main
+          path: external/ChartForgeX
 
       - name: Setup PowerShell modules
         shell: pwsh
@@ -51,6 +59,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout ChartForgeX dependency
+        uses: actions/checkout@v4
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: main
+          path: external/ChartForgeX
+
       - name: Download manifest
         uses: actions/download-artifact@v4
         with:
@@ -73,8 +88,8 @@ jobs:
 
       - name: Build .NET solution
         run: |
-          dotnet restore Sources/PowerBGInfo.sln
-          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+          dotnet restore Sources/PowerBGInfo.sln -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
+          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
 
       - name: Run PowerShell tests
         shell: powershell
@@ -88,6 +103,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout ChartForgeX dependency
+        uses: actions/checkout@v4
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: main
+          path: external/ChartForgeX
+
       - name: Download manifest
         uses: actions/download-artifact@v4
         with:
@@ -110,8 +132,8 @@ jobs:
 
       - name: Build .NET solution
         run: |
-          dotnet restore Sources/PowerBGInfo.sln
-          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+          dotnet restore Sources/PowerBGInfo.sln -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
+          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
 
       - name: Run PowerShell tests
         shell: pwsh
@@ -124,6 +146,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Checkout ChartForgeX dependency
+        uses: actions/checkout@v4
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: main
+          path: external/ChartForgeX
 
       - name: Download manifest
         uses: actions/download-artifact@v4

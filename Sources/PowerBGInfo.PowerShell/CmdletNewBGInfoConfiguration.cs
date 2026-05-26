@@ -156,6 +156,15 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public BgInfoTopology[] Topologies { get; set; } = System.Array.Empty<BgInfoTopology>();
 
+    /// <para>Image overlays to include in the configuration.</para>
+    [Parameter]
+    public BgInfoImage[] Images { get; set; } = System.Array.Empty<BgInfoImage>();
+
+    /// <para>Visual canvas overlays to include in the configuration.</para>
+    [Parameter]
+    [Alias("VisualCanvas")]
+    public BgInfoVisualCanvas[] VisualCanvases { get; set; } = System.Array.Empty<BgInfoVisualCanvas>();
+
     /// <summary>Creates the configuration object.</summary>
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
@@ -205,6 +214,12 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         }
         if (IsParameterBound(nameof(Topologies)) && Topologies.Length > 0) {
             config.Topologies.AddRange(Topologies);
+        }
+        if (IsParameterBound(nameof(Images)) && Images.Length > 0) {
+            foreach (var image in Images) if (image != null) config.Images.Add(image);
+        }
+        if (IsParameterBound(nameof(VisualCanvases)) && VisualCanvases.Length > 0) {
+            foreach (var visual in VisualCanvases) if (visual != null) config.VisualCanvases.Add(visual);
         }
 
         WriteObject(config);

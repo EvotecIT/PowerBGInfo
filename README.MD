@@ -298,6 +298,93 @@ New-BGInfo -MonitorIndex 0 {
 
 Charts are rendered by ChartForgeX into transparent overlays before PowerBGInfo composites them into the wallpaper. Supported kinds are `Sparkline`, `Line`, `Area`, `Bar`, `HorizontalBar`, `Gauge`, `Circle`, `RadialBar`, `Bullet`, `Pie`, `Donut`, `ProgressBar`, and `Pictorial`.
 
+## Visual canvases
+
+PowerBGInfo can also use ChartForgeX visual canvases for desktop hero overlays: large centered type, side information rails, a central badge, and a feature strip rendered as one reusable transparent HUD layer over the selected wallpaper. The PowerBGInfo surface stays thin; `New-BGInfoVisualCanvas`, `New-BGInfoVisualCanvasTile`, and `New-BGInfoVisualCanvasFeature` only describe the wallpaper-specific data and placement. Use `-Opaque` only when you want a self-contained social-card style background.
+
+```powershell
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Side Left -Icon OS -Label 'OPERATING SYSTEM' -Value '{{OSName}}' -Detail '{{OSVersion}}'
+    New-BGInfoVisualCanvasTile -Side Right -Icon USER -IconKind User -SurfaceStyle Outline -Label USER -Value '{{UserName}}'
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Desktop background insights for Windows and PowerShell' -Tile $tiles
+} -FilePath $PSScriptRoot\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory $PSScriptRoot\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.jpg' -WallpaperFit Fill
+```
+
+`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. `Examples\Scripts\PowerBGInfo.VisualCanvas.Raised3D.ps1` uses the reusable `Raised` surface style on a black operational background. `Examples\Scripts\PowerBGInfo.VisualCanvas.MiniCharts.ps1` combines the same visual canvas with purpose-matched mini charts inside the CPU, RAM, disk, and patching sections plus a bottom-right logo image. Tile `-SurfaceStyle` supports `Glass`, `Outline`, and `Raised`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
+
+The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Those colors are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code.
+
+To generate a border-only icon overlay like the examples, start with explicit tile style, icon kind, and palette values:
+
+```powershell
+$palette = @{
+    Accent           = '#2F80FF'
+    SecondaryAccent  = '#22A7FF'
+    TitleColor       = '#F8FAFC'
+    TitleAccentColor = '#2F80FF'
+    SubtitleColor    = '#D8E3F4'
+    TileLabelColor   = '#C4D4EC'
+    TileValueColor   = '#F8FAFC'
+    TileDetailColor  = '#A8BAD4'
+}
+
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Outline -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Outline -Label 'IP ADDRESS' -Value '{{IPv4Address}}'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind OperatingSystem -SurfaceStyle Outline -Label 'OPERATING SYSTEM' -Value '{{OSName}}' -Detail '{{OSVersion}}'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Outline -Label CPU -Value '{{CpuCores}} cores / {{CpuLogicalCores}} threads'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Outline -Label RAM -Value '{{RAMSize}}'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind User -SurfaceStyle Outline -Label USER -Value '{{UserName}}'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Domain -SurfaceStyle Outline -Label DOMAIN -Value '{{UserDNSDomain}}'
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Desktop background insights for Windows and PowerShell' -Tile $tiles @palette
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.OutlineIcons.jpg' -WallpaperFit Fill
+```
+
+For a heavier raised look on a black background, use the `Raised` surface style, a more opaque top/bottom tile palette, built-in icons, and `-Opaque -NoTechBackdrop`:
+
+```powershell
+$palette = @{
+    Accent                 = '#38BDF8'
+    SecondaryAccent        = '#60A5FA'
+    TileGlassTop           = '#F3132444'
+    TileGlassBottom        = '#D9040A18'
+    TileProgressTrackColor = '#F0263A5E'
+}
+
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Storage -SurfaceStyle Raised -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label CPU -Value '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -Progress 0.28
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label RAM -Value '{{RAMSize}}' -Progress 0.41
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Raised sections on black background' -Opaque -NoTechBackdrop -Tile $tiles @palette
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.Raised3D.jpg' -WallpaperFit Fill
+```
+
+Mini charts can live inside the same sections as their values, while the logo stays anchored in the bottom-right corner. For at-a-glance wallpaper tiles, avoid mixing a progress rail and a mini chart unless they are clearly different signals. The example below uses the large value for the current state and the mini chart for recent history of that same signal: CPU load uses a recent load trend, memory use uses usage bars, disk capacity uses a free-space trend, and patching uses compliance history. Each tile chooses its own mini-chart kind and values; the image has its own anchor and offsets so it can be moved away from taskbars, rails, or customer branding:
+
+```powershell
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Glass -Label 'CPU LOAD' -Value '33% active' -Detail '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -MiniChartKind Area -MiniChartValues 18,26,22,37,48,43,51,35,29,41,33 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Glass -Label 'MEMORY USE' -Value '13.2 GB used' -Detail '32 GB installed' -MiniChartKind Bars -MiniChartValues 36,39,41,42,44,43,41 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Glass -Label 'SYSTEM DRIVE' -Value '62% free' -Detail 'C: 238 GB available' -MiniChartKind Sparkline -MiniChartValues 66,65,64,64,63,62,62 -MiniChartMaximum 100
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Each section pairs the current value with a matching recent trend' -Tile $tiles @palette
+    New-BGInfoImage -Path .\Examples\Samples\LogoEvotec.png -Width 210 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.92
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.MiniCharts.jpg' -WallpaperFit Fill
+```
+
 ## Topology diagrams
 
 PowerBGInfo can also place ChartForgeX topology diagrams on the wallpaper. This is useful for lab machines, admin jump boxes, training kiosks, build agents, and shared operational desktops where a compact service or network map is more useful than another metric chart.

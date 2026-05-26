@@ -16,6 +16,7 @@ on:
 env:
   DOTNET_VERSION: '8.x'
   BUILD_CONFIGURATION: 'Release'
+  ChartForgeXProjectPath: '${{ github.workspace }}\external\ChartForgeX\ChartForgeX\ChartForgeX.csproj'
 
 jobs:
   test-windows:
@@ -25,6 +26,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout ChartForgeX dependency
+        uses: actions/checkout@v4
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: main
+          path: external/ChartForgeX
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -33,13 +41,13 @@ jobs:
             ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore Sources/PowerBGInfo.sln
+        run: dotnet restore Sources/PowerBGInfo.sln -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
 
       - name: Build solution
-        run: dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+        run: dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
 
       - name: Run tests
-        run: dotnet test Sources/PowerBGInfo.Tests/PowerBGInfo.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
+        run: dotnet test Sources/PowerBGInfo.Tests/PowerBGInfo.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage" -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
 
       - name: Export config from PowerShell
         shell: pwsh
@@ -59,7 +67,7 @@ jobs:
           }
 
       - name: Publish CLI single-file
-        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 --self-contained false -p:PublishSingleFile=true -o artifacts/cli-singlefile
+        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 --self-contained false -p:PublishSingleFile=true -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath" -o artifacts/cli-singlefile
 
       - name: Run published CLI with PowerShell-generated config
         shell: pwsh
@@ -96,7 +104,7 @@ jobs:
           }
 
       - name: Publish CLI NativeAOT smoke build
-        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 -p:PublishAot=true -o artifacts/cli-aot
+        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 -p:PublishAot=true -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath" -o artifacts/cli-aot
 
       - name: Run NativeAOT CLI with PowerShell-generated config
         shell: pwsh

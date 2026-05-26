@@ -64,6 +64,82 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command = Get-Command New-BGInfoVariable
         $command.Parameters.Keys | Should -Contain 'Provider'
     }
+
+    It 'exports visual canvas helper cmdlets' {
+        Get-Command New-BGInfoVisualCanvas | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoVisualCanvasTile | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoVisualCanvasFeature | Should -Not -BeNullOrEmpty
+        Get-Command New-BGInfoImage | Should -Not -BeNullOrEmpty
+    }
+
+    It 'supports visual canvas theme parameters' {
+        $command = Get-Command New-BGInfoVisualCanvas
+        $command.Parameters.Keys | Should -Contain 'TitleColor'
+        $command.Parameters.Keys | Should -Contain 'TileValueColor'
+        $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
+        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'MiniChartKind'
+    }
+}
+
+Describe 'New-BGInfoVisualCanvas cmdlets' {
+    It 'creates a visual canvas model' {
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -MiniChartValues 18,26,22 -MiniChartMaximum 100
+        $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
+
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -Tile $tile -Feature $feature
+
+        $visual | Should -BeOfType ([PowerBGInfo.BgInfoVisualCanvas])
+        $visual.Title | Should -Be 'PowerBGInfo'
+        $visual.TitleColor | Should -Not -BeNullOrEmpty
+        $visual.TileValueColor | Should -Not -BeNullOrEmpty
+        $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
+        $visual.Tiles.Count | Should -Be 1
+        $visual.Tiles[0].Value | Should -Be '{{HostName}}'
+        $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Raised)
+        $visual.Tiles[0].IconKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileIconKind]::Computer)
+        $visual.Tiles[0].MiniChartKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileMiniChartKind]::Sparkline)
+        $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
+        $visual.Tiles[0].MiniChartMaximum | Should -Be 100
+        $visual.Features.Count | Should -Be 1
+    }
+}
+
+Describe 'New-BGInfoImage cmdlet' {
+    It 'creates an image overlay model' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        $image = New-BGInfoImage -Path $path -Width 180 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.85
+
+        $image | Should -BeOfType ([PowerBGInfo.BgInfoImage])
+        $image.Path | Should -Be (Resolve-Path -LiteralPath $path).Path
+        $image.Width | Should -Be 180
+        $image.Anchor | Should -Be ([PowerBGInfo.BgInfoTextPosition]::BottomRight)
+        $image.OffsetX | Should -Be 72
+        $image.OffsetY | Should -Be 54
+        $image.Opacity | Should -Be 0.85
+    }
+
+    It 'rejects non-finite opacity' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        { New-BGInfoImage -Path $path -Opacity ([double]::NaN) } | Should -Throw
+        { New-BGInfoImage -Path $path -Opacity ([double]::PositiveInfinity) } | Should -Throw
+    }
+
+    It 'honors single-axis absolute positions' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        $xOnly = New-BGInfoImage -Path $path -PositionX 123
+        $yOnly = New-BGInfoImage -Path $path -PositionY 456
+
+        $xOnly.PositionX | Should -Be 123
+        $xOnly.PositionY | Should -BeNullOrEmpty
+        $yOnly.PositionX | Should -BeNullOrEmpty
+        $yOnly.PositionY | Should -Be 456
+    }
 }
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
@@ -111,6 +187,15 @@ Describe 'New-BGInfoConfiguration cmdlet' {
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue
     }
+
+    It 'accepts visual canvas overlays directly' {
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo
+
+        $config = New-BGInfoConfiguration -Target File -VisualCanvas $visual
+
+        $config.VisualCanvases.Count | Should -Be 1
+        $config.VisualCanvases[0].Title | Should -Be 'PowerBGInfo'
+    }
 }
 
 Describe 'Invoke-BGInfo cmdlet' {
@@ -153,6 +238,19 @@ Describe 'New-BGInfo json export' {
         $json | Should -Match '"BuiltinValue"\s*:\s*"HostName"'
         $json | Should -Match '"Metric"\s*:\s*"CpuPercent"'
         $json | Should -Match '"Target"\s*:\s*"Both"'
+    }
+
+    It 'exports visual canvases from inline authoring' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'visual-canvas.json'
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}'
+
+        New-BGInfo {
+            New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Tile $tile
+        } -ConfigurationDirectory $TestDrive -Target File -JsonPath $path -ExportOnly | Out-Null
+
+        $json = Get-Content -LiteralPath $path -Raw
+        $json | Should -Match '"VisualCanvases"'
+        $json | Should -Match '"Value"\s*:\s*"\{\{HostName\}\}"'
     }
 }
 

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using ImagePlayground.Gdi;
 using DesktopManager;
 
@@ -199,6 +200,8 @@ public class BgInfoGenerator
 
         RenderCharts(image, config, textBlock);
         RenderTopologies(image, config);
+        RenderVisualCanvases(image, config);
+        RenderImages(image, config);
 
         _imageService.Save(image, outputPath);
 
@@ -450,6 +453,47 @@ public class BgInfoGenerator
             using var topologyImage = BgInfoTopologyRenderer.Render(topology, config);
             var position = ResolveTopologyPosition(image, topology);
             image.DrawImage(topologyImage, position.X, position.Y);
+        }
+    }
+
+    private static void RenderVisualCanvases(Image image, BgInfoConfiguration config)
+    {
+        if (config.VisualCanvases.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < config.VisualCanvases.Count; i++)
+        {
+            var visual = config.VisualCanvases[i];
+            using var visualImage = BgInfoVisualCanvasRenderer.Render(visual, config, image.Width, image.Height);
+            image.DrawImage(visualImage, visual.PositionX, visual.PositionY);
+        }
+    }
+
+    private static void RenderImages(Image image, BgInfoConfiguration config)
+    {
+        if (config.Images.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var overlay in config.Images)
+        {
+            if (overlay == null || string.IsNullOrWhiteSpace(overlay.Path))
+            {
+                continue;
+            }
+            if (!File.Exists(overlay.Path))
+            {
+                throw new FileNotFoundException("BGInfo image overlay file was not found.", overlay.Path);
+            }
+
+            using var stream = File.OpenRead(overlay.Path);
+            using var bitmap = System.Drawing.Image.FromStream(stream);
+            var (width, height) = ResolveImageSize(overlay, bitmap.Width, bitmap.Height);
+            var position = ResolveImagePosition(image, overlay, width, height);
+            DrawBitmap(image, bitmap, position.X, position.Y, width, height, overlay.Opacity);
         }
     }
 
@@ -736,6 +780,33 @@ public class BgInfoGenerator
             Math.Max(1, topology.Width), Math.Max(1, topology.Height), topology.Anchor, topology.OffsetX, topology.OffsetY);
     }
 
+    private static System.Drawing.PointF ResolveImagePosition(Image image, BgInfoImage overlay, int width, int height)
+    {
+        var anchored = ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+            width, height, overlay.Anchor, overlay.OffsetX, overlay.OffsetY);
+        return new System.Drawing.PointF(overlay.PositionX ?? anchored.X, overlay.PositionY ?? anchored.Y);
+    }
+
+    private static (int Width, int Height) ResolveImageSize(BgInfoImage overlay, int sourceWidth, int sourceHeight)
+    {
+        var width = overlay.Width;
+        var height = overlay.Height;
+        if (width <= 0 && height <= 0)
+        {
+            return (Math.Max(1, sourceWidth), Math.Max(1, sourceHeight));
+        }
+        if (width > 0 && height <= 0)
+        {
+            height = (int)Math.Round(sourceHeight * (width / (double)Math.Max(1, sourceWidth)));
+        }
+        if (height > 0 && width <= 0)
+        {
+            width = (int)Math.Round(sourceWidth * (height / (double)Math.Max(1, sourceHeight)));
+        }
+
+        return (Math.Max(1, width), Math.Max(1, height));
+    }
+
     internal static System.Drawing.PointF ResolveChartPosition(System.Drawing.RectangleF area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
     {
         float x = area.X + offsetX;
@@ -776,6 +847,25 @@ public class BgInfoGenerator
         }
 
         return new System.Drawing.PointF(x, y);
+    }
+
+    private static void DrawBitmap(Image image, System.Drawing.Image bitmap, float x, float y, int width, int height, double opacity)
+    {
+        image.WithGraphics(graphics => {
+            var destination = new System.Drawing.RectangleF(x, y, width, height);
+            if (opacity >= 0.999d)
+            {
+                graphics.DrawImage(bitmap, destination);
+                return;
+            }
+
+            using var attributes = new ImageAttributes();
+            var matrix = new ColorMatrix {
+                Matrix33 = (float)Math.Max(0d, Math.Min(1d, opacity))
+            };
+            attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+            graphics.DrawImage(bitmap, System.Drawing.Rectangle.Round(destination), 0, 0, bitmap.Width, bitmap.Height, System.Drawing.GraphicsUnit.Pixel, attributes);
+        });
     }
 
     private static List<EntryLayout> BuildEntryLayouts(Image image, BgInfoConfiguration config, IReadOnlyList<BgInfoEntry> entries)
