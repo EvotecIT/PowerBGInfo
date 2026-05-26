@@ -26,11 +26,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Checkout ChartForgeX visual canvas dependency
+      - name: Checkout ChartForgeX dependency
         uses: actions/checkout@v4
         with:
           repository: EvotecIT/ChartForgeX
-          ref: codex/visual-canvas
+          ref: main
           path: external/ChartForgeX
 
       - name: Setup .NET
