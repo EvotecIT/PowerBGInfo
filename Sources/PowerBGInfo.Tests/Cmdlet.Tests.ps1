@@ -147,6 +147,14 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.Tiles[0].MiniChartMaximum | Should -Be 100
         $visual.Features.Count | Should -Be 1
     }
+
+    It 'keeps template feature placement when only the strip size changes' {
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -FeatureWidth 610 -FeatureHeight 52
+
+        $visual.FeatureAnchor | Should -BeNullOrEmpty
+        $visual.FeatureWidth | Should -Be 610
+        $visual.FeatureHeight | Should -Be 52
+    }
 }
 
 Describe 'New-BGInfoImage cmdlet' {

@@ -179,7 +179,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             HeroBadgeTop = PowerShellColorConverter.ConvertOptional(HeroBadgeTop, nameof(HeroBadgeTop)),
             HeroBadgeBottom = PowerShellColorConverter.ConvertOptional(HeroBadgeBottom, nameof(HeroBadgeBottom)),
             HeroBadgeTextColor = PowerShellColorConverter.ConvertOptional(HeroBadgeTextColor, nameof(HeroBadgeTextColor)),
-            FeatureAnchor = IsFeaturePlacementBound() ? FeatureAnchor : null,
+            FeatureAnchor = MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ? FeatureAnchor : null,
             FeatureWidth = FeatureWidth,
             FeatureHeight = FeatureHeight,
             FeatureOffsetX = FeatureOffsetX,
@@ -192,10 +192,4 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         WriteObject(visual);
     }
 
-    private bool IsFeaturePlacementBound() =>
-        MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ||
-        MyInvocation.BoundParameters.ContainsKey(nameof(FeatureWidth)) ||
-        MyInvocation.BoundParameters.ContainsKey(nameof(FeatureHeight)) ||
-        MyInvocation.BoundParameters.ContainsKey(nameof(FeatureOffsetX)) ||
-        MyInvocation.BoundParameters.ContainsKey(nameof(FeatureOffsetY));
 }

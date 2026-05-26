@@ -57,7 +57,7 @@ internal static class BgInfoVisualCanvasRenderer {
             var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
             var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
             if (visual.FeatureAnchor.HasValue) {
-                canvas.AddFeatureStrip(ToPlacement(visual.FeatureAnchor.Value, visual.FeatureOffsetX * scaleX, visual.FeatureOffsetY * scaleY), stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+                canvas.AddFeatureStrip(ToPlacement(visual.FeatureAnchor.Value, visual.FeatureOffsetX, visual.FeatureOffsetY), stripWidth, stripHeight, BuildFeatureItems(visual.Features));
             } else {
                 canvas.AddFeatureStrip(290 * scaleX, 522 * scaleY, stripWidth, stripHeight, BuildFeatureItems(visual.Features));
             }
