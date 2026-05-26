@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Management.Automation;
 using PowerBGInfo;
 
@@ -17,7 +16,7 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
 
     /// <para>Label color override.</para>
     [Parameter]
-    public Color Color { get; set; }
+    public object? Color { get; set; }
 
     /// <para>Label font size override.</para>
     [Parameter]
@@ -34,7 +33,7 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
             Type = BgInfoEntryType.Label,
             Name = Name,
             ForEach = string.IsNullOrWhiteSpace(ForEach) ? null : ForEach,
-            Color = IsParameterBound(nameof(Color)) ? Color : null,
+            Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null
         };

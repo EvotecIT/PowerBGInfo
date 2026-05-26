@@ -3,9 +3,9 @@
   "OutputFileName": "PowerBGInfo.Volumes.Sample.png",
   "ConfigurationDirectory": "..\\Output",
   "FontFamilyName": "Calibri",
-  "Color": "#FF000000",
+  "Color": "#000000FF",
   "FontSize": 16,
-  "ValueColor": "#FF000000",
+  "ValueColor": "#000000FF",
   "ValueFontSize": 16,
   "ValueFontFamilyName": "Calibri",
   "ValueWrapWidth": 0,
@@ -42,14 +42,14 @@
       "Type": "Value",
       "Name": "HostName",
       "BuiltinValue": "HostName",
-      "Color": "#FFFF0000",
+      "Color": "#FF0000FF",
       "FontSize": 20,
       "FontFamilyName": "Calibri"
     },
     {
       "Type": "Label",
       "Name": "Volumes",
-      "Color": "#FFFFFACD",
+      "Color": "#FFFACDFF",
       "FontSize": 16,
       "FontFamilyName": "Calibri"
     },

@@ -9,7 +9,7 @@ New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue CpuName -Color White
     New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
     New-BGInfoValue -BuiltinValue RAMSize -Color White
-    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([System.Drawing.Color]::Aquamarine)
+    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor (Aquamarine)
     New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
     New-BGInfoValue -BuiltinValue BiosVersion -Color White
     New-BGInfoValue -BuiltinValue BiosManufacturer -Color White

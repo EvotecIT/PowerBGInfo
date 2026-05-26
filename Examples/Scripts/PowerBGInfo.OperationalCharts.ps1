@@ -30,8 +30,8 @@ $serviceCount = if ($services.Count -gt 0) { $services.Count } else { 1 }
 $stoppedServices = [Math]::Max(0, $serviceCount - $runningServices)
 
 $white = 'White'
-$muted = '#E6D2DCE8'
-$panel = '#AC0A101C'
+$muted = '#D2DCE8E6'
+$panel = '#0A101CAC'
 $cyan = '#2DD4BF'
 $blue = '#60A5FA'
 $green = '#34D399'

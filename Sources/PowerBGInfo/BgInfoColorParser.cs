@@ -1,6 +1,6 @@
 using System;
 using System.Drawing;
-using System.Globalization;
+using ChartForgeX.Primitives;
 
 namespace PowerBGInfo;
 
@@ -21,14 +21,8 @@ public static class BgInfoColorParser {
         }
 
         var trimmed = text.Trim();
-        if (TryParseHexColor(trimmed, out color)) {
-            return true;
-        }
-
-        var named = Color.FromName(trimmed);
-        if (named.IsKnownColor || named.IsNamedColor || named.A != 0 ||
-            trimmed.Equals("Transparent", StringComparison.OrdinalIgnoreCase)) {
-            color = named;
+        if (ChartColor.TryParse(trimmed, out var chartColor)) {
+            color = Color.FromArgb(chartColor.A, chartColor.R, chartColor.G, chartColor.B);
             return true;
         }
 
@@ -36,47 +30,11 @@ public static class BgInfoColorParser {
     }
 
     /// <summary>
-    /// Formats a color as #AARRGGBB.
+    /// Formats a color as #RRGGBBAA.
     /// </summary>
     /// <param name="color">Color value.</param>
     /// <returns>Formatted color string.</returns>
     public static string ToHex(Color color) {
-        return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
-    }
-
-    private static bool TryParseHexColor(string text, out Color color) {
-        color = default;
-        var trimmed = text.Trim();
-        var hasPrefix = trimmed.StartsWith("#", StringComparison.Ordinal);
-        if (hasPrefix) {
-            trimmed = trimmed.Substring(1);
-        }
-
-        if (trimmed.Length != 6 && trimmed.Length != 8) {
-            return false;
-        }
-
-        if (!byte.TryParse(trimmed.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first) ||
-            !byte.TryParse(trimmed.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var second) ||
-            !byte.TryParse(trimmed.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var third)) {
-            return false;
-        }
-
-        if (trimmed.Length == 6) {
-            color = Color.FromArgb(255, first, second, third);
-            return true;
-        }
-
-        if (!byte.TryParse(trimmed.Substring(6, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var fourth)) {
-            return false;
-        }
-
-        if (hasPrefix) {
-            color = Color.FromArgb(first, second, third, fourth);
-            return true;
-        }
-
-        color = Color.FromArgb(fourth, first, second, third);
-        return true;
+        return ChartColor.FromRgba(color.R, color.G, color.B, color.A).ToHexRgba();
     }
 }

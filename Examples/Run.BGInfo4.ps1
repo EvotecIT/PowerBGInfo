@@ -16,9 +16,9 @@ if (-not (Test-Path -LiteralPath $cliPath)) {
 }
 $configPath = Join-Path -Path $scriptRoot -ChildPath 'Configuration\PowerBGInfo.Generated.json'
 
-$textColor = [System.Drawing.Color]::White
-$valueColor = [System.Drawing.Color]::Aqua
-$chartBackground = [System.Drawing.Color]::FromArgb(160, 0, 0, 0)
+$textColor = White
+$valueColor = Aqua
+$chartBackground = '#000000A0'
 
 New-BGInfo {
     New-BGInfoValue -BuiltinValue HostName
