@@ -27,6 +27,7 @@ internal static class Program {
             int? monitorIndex = null;
             bool noApply = false;
             bool exportOnly = false;
+            bool disableWallpaperSlideshow = false;
             string? scriptDirectory = null;
 
             for (int i = 0; i < args.Length; i++) {
@@ -74,6 +75,9 @@ internal static class Program {
                     case "--no-apply":
                         noApply = true;
                         break;
+                    case "--disable-wallpaper-slideshow":
+                        disableWallpaperSlideshow = true;
+                        break;
                     default:
                         return Fail($"Unknown argument: {arg}");
                 }
@@ -113,6 +117,9 @@ internal static class Program {
             }
             if (noApply) {
                 config.Target = BgInfoTarget.File;
+            }
+            if (disableWallpaperSlideshow) {
+                config.PreserveWallpaperSlideshow = false;
             }
 
             if (!string.IsNullOrWhiteSpace(exportJsonPath)) {
@@ -185,6 +192,8 @@ internal static class Program {
         Console.WriteLine("      --pwsh <path>         Override the PowerShell executable used for --script.");
         Console.WriteLine("      --module <path>       Import the PowerBGInfo module before running --script.");
         Console.WriteLine("      --no-apply            Generate the image without applying wallpaper.");
+        Console.WriteLine("      --disable-wallpaper-slideshow");
+        Console.WriteLine("                            Generate one static wallpaper even if Windows slideshow is active.");
     }
 
     private static void ResolveScriptRelativePaths(BgInfoConfiguration configuration, string scriptDirectory) {

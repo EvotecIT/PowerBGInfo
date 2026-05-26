@@ -141,6 +141,10 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public SwitchParameter DisableWallpaperRefresh { get; set; }
 
+    /// <para>Disable automatic preservation of the current Windows wallpaper slideshow.</para>
+    [Parameter]
+    public SwitchParameter DisableWallpaperSlideshow { get; set; }
+
     /// <para>Use screen coordinates for placement calculations.</para>
     [Parameter]
     public SwitchParameter UseScreenCoordinates { get; set; }
@@ -210,6 +214,7 @@ public class CmdletNewBGInfo : PSCmdlet {
             ChartStackOutsideTextBlock = ChartStackOutsideTextBlock.IsPresent,
             UseScreenCoordinates = UseScreenCoordinates.IsPresent,
             ForceWallpaperRefresh = !DisableWallpaperRefresh.IsPresent,
+            PreserveWallpaperSlideshow = !DisableWallpaperSlideshow.IsPresent,
             ApplyToAllUsers = AllUsers.IsPresent,
             IncludeDefaultUserProfile = !ExcludeDefaultUserProfile.IsPresent
         };

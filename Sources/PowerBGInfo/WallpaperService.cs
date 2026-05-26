@@ -31,6 +31,19 @@ public interface IWallpaperService
     /// <param name="position">Wallpaper fit mode.</param>
     /// <param name="includeDefaultUserProfile">Whether to include the default user profile.</param>
     void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile);
+    /// <summary>
+    /// Gets the current desktop wallpaper slideshow configuration.
+    /// </summary>
+    /// <returns>Current slideshow state, options, tick interval, and source image paths.</returns>
+    DesktopWallpaperSlideshow GetWallpaperSlideshow();
+    /// <summary>
+    /// Starts a wallpaper slideshow with generated images while preserving slideshow options.
+    /// </summary>
+    /// <param name="filePaths">Generated slideshow image paths.</param>
+    /// <param name="position">Wallpaper fit mode.</param>
+    /// <param name="options">Slideshow options to apply.</param>
+    /// <param name="slideshowTick">Slideshow interval in milliseconds.</param>
+    void StartWallpaperSlideshow(IEnumerable<string> filePaths, DesktopWallpaperPosition position, DesktopSlideshowOptions options, uint slideshowTick);
 }
 
 /// <summary>
@@ -79,6 +92,28 @@ public class WallpaperService : IWallpaperService
     public void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile)
     {
         Monitors.SetWallpaperForAllUsers(filePath, position, includeDefaultUserProfile);
+    }
+
+    /// <summary>
+    /// Gets the current desktop wallpaper slideshow configuration.
+    /// </summary>
+    /// <returns>Current slideshow state, options, tick interval, and source image paths.</returns>
+    public DesktopWallpaperSlideshow GetWallpaperSlideshow()
+    {
+        return Monitors.GetWallpaperSlideshow();
+    }
+
+    /// <summary>
+    /// Starts a wallpaper slideshow with generated images while preserving slideshow options.
+    /// </summary>
+    /// <param name="filePaths">Generated slideshow image paths.</param>
+    /// <param name="position">Wallpaper fit mode.</param>
+    /// <param name="options">Slideshow options to apply.</param>
+    /// <param name="slideshowTick">Slideshow interval in milliseconds.</param>
+    public void StartWallpaperSlideshow(IEnumerable<string> filePaths, DesktopWallpaperPosition position, DesktopSlideshowOptions options, uint slideshowTick)
+    {
+        Monitors.SetWallpaperPosition(position);
+        Monitors.StartWallpaperSlideshow(filePaths, options, slideshowTick);
     }
 
     private static bool IsWinRtMissing(InvalidOperationException ex)

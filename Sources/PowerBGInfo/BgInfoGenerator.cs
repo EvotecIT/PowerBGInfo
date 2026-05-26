@@ -56,6 +56,11 @@ public class BgInfoGenerator
             return monitors;
         }
 
+        if (TryGenerateWallpaperSlideshow(config, out var slideshowOutputPath))
+        {
+            return slideshowOutputPath;
+        }
+
         var imagePath = ResolveBaseImagePath(config, index => GetWallpaper(GetMonitors(), index));
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
@@ -223,6 +228,119 @@ public class BgInfoGenerator
         return outputPath;
     }
 
+    private bool TryGenerateWallpaperSlideshow(BgInfoConfiguration config, out string outputPath)
+    {
+        outputPath = string.Empty;
+        if (!ShouldPreserveWallpaperSlideshow(config))
+        {
+            return false;
+        }
+
+        DesktopWallpaperSlideshow slideshow;
+        try
+        {
+            slideshow = _wallpaperService.GetWallpaperSlideshow();
+        }
+        catch
+        {
+            return false;
+        }
+
+        var sourcePaths = slideshow.ImagePaths
+            .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (sourcePaths.Length == 0)
+        {
+            return false;
+        }
+
+        var generatedPaths = new List<string>(sourcePaths.Length);
+        for (int i = 0; i < sourcePaths.Length; i++)
+        {
+            var itemConfig = CloneForSlideshowItem(config, sourcePaths[i], BuildSlideshowOutputPath(config, sourcePaths[i], i));
+            generatedPaths.Add(Generate(itemConfig));
+        }
+
+        if (generatedPaths.Count == 0)
+        {
+            return false;
+        }
+
+        outputPath = generatedPaths[0];
+        if (config.Target.HasFlag(BgInfoTarget.Wallpaper))
+        {
+            if (config.ApplyToAllUsers)
+            {
+                _wallpaperService.SetWallpaperForAllUsers(outputPath, config.WallpaperFit, config.IncludeDefaultUserProfile);
+            }
+
+            _wallpaperService.StartWallpaperSlideshow(generatedPaths, config.WallpaperFit, slideshow.Options, slideshow.SlideshowTick);
+        }
+
+        if (config.Target.HasFlag(BgInfoTarget.LogonScreen))
+        {
+            _wallpaperService.SetLogonWallpaper(outputPath);
+        }
+
+        return true;
+    }
+
+    private static bool ShouldPreserveWallpaperSlideshow(BgInfoConfiguration config)
+    {
+        return config.PreserveWallpaperSlideshow
+            && config.Target.HasFlag(BgInfoTarget.Wallpaper)
+            && string.IsNullOrWhiteSpace(config.FilePath);
+    }
+
+    private static BgInfoConfiguration CloneForSlideshowItem(BgInfoConfiguration source, string filePath, string outputPath)
+    {
+        var clone = new BgInfoConfiguration {
+            ChartLayout = source.ChartLayout,
+            ChartStackAnchor = source.ChartStackAnchor,
+            ChartStackDirection = source.ChartStackDirection,
+            ChartStackSpacing = source.ChartStackSpacing,
+            ChartStackOffsetX = source.ChartStackOffsetX,
+            ChartStackOffsetY = source.ChartStackOffsetY,
+            ChartStackAlignToTextBlock = source.ChartStackAlignToTextBlock,
+            ChartStackOutsideTextBlock = source.ChartStackOutsideTextBlock,
+            FilePath = filePath,
+            OutputFileName = outputPath,
+            ConfigurationDirectory = source.ConfigurationDirectory,
+            FontFamilyName = source.FontFamilyName,
+            Color = source.Color,
+            FontSize = source.FontSize,
+            ValueColor = source.ValueColor,
+            ValueFontSize = source.ValueFontSize,
+            ValueFontFamilyName = source.ValueFontFamilyName,
+            ValueWrapWidth = source.ValueWrapWidth,
+            BackgroundColor = source.BackgroundColor,
+            SpaceBetweenLines = source.SpaceBetweenLines,
+            SpaceBetweenColumns = source.SpaceBetweenColumns,
+            PositionX = source.PositionX,
+            PositionY = source.PositionY,
+            MonitorIndex = source.MonitorIndex,
+            SpaceX = source.SpaceX,
+            SpaceY = source.SpaceY,
+            WallpaperFit = source.WallpaperFit,
+            TextPosition = source.TextPosition,
+            Target = BgInfoTarget.File,
+            ForceWallpaperRefresh = false,
+            PreserveWallpaperSlideshow = false,
+            ApplyToAllUsers = false,
+            IncludeDefaultUserProfile = source.IncludeDefaultUserProfile,
+            UseScreenCoordinates = source.UseScreenCoordinates
+        };
+
+        clone.Variables.AddRange(source.Variables);
+        clone.Entries.AddRange(source.Entries);
+        clone.Charts.AddRange(source.Charts);
+        clone.Topologies.AddRange(source.Topologies);
+        clone.VisualCanvases.AddRange(source.VisualCanvases);
+        clone.Images.AddRange(source.Images);
+        return clone;
+    }
+
     private Image LoadBaseImage(string imagePath, string outputPath)
     {
         if (!PathsEqual(imagePath, outputPath))
@@ -347,6 +465,44 @@ public class BgInfoGenerator
         }
 
         return Path.Combine(config.ConfigurationDirectory, "PowerBgInfo.png");
+    }
+
+    private static string BuildSlideshowOutputPath(BgInfoConfiguration config, string sourcePath, int index)
+    {
+        var sourceExtension = Path.GetExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(sourceExtension))
+        {
+            sourceExtension = ".png";
+        }
+
+        if (!string.IsNullOrWhiteSpace(config.OutputFileName))
+        {
+            var configuredPath = Path.IsPathRooted(config.OutputFileName)
+                ? config.OutputFileName
+                : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            var directory = Path.GetDirectoryName(configuredPath) ?? config.ConfigurationDirectory;
+            var name = Path.GetFileNameWithoutExtension(configuredPath);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "PowerBgInfo";
+            }
+
+            var extension = Path.GetExtension(configuredPath);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                extension = sourceExtension;
+            }
+
+            return Path.Combine(directory, $"{name}_{index + 1:D3}{extension}");
+        }
+
+        var sourceName = Path.GetFileNameWithoutExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            sourceName = "PowerBgInfo";
+        }
+
+        return Path.Combine(config.ConfigurationDirectory, $"{sourceName}_PowerBgInfo_{index + 1:D3}{sourceExtension}");
     }
 
     private void ApplyWallpaper(BgInfoConfiguration config, string outputPath)

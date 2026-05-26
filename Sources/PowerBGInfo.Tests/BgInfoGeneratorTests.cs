@@ -90,6 +90,85 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
+    public void GeneratePreservesWallpaperSlideshowWhenNoFilePathIsConfigured()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourceOne = Path.Combine(tempDirectory, "slide-one.jpg");
+        var sourceTwo = Path.Combine(tempDirectory, "slide-two.jpg");
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceOne);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceTwo);
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { sourceOne, sourceTwo },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow,
+                Options = DesktopSlideshowOptions.ShuffleImages,
+                SlideshowTick = 600000
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "generated.png",
+            ConfigurationDirectory = tempDirectory,
+            WallpaperFit = DesktopWallpaperPosition.Fill
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.Equal(1, wallpaperService.SlideshowCalls);
+        Assert.Equal(0, wallpaperService.Calls);
+        Assert.Equal(DesktopWallpaperPosition.Fill, wallpaperService.SlideshowPosition);
+        Assert.Equal(DesktopSlideshowOptions.ShuffleImages, wallpaperService.SlideshowOptions);
+        Assert.Equal(600000u, wallpaperService.SlideshowTick);
+        Assert.Equal(2, wallpaperService.SlideshowPaths.Count);
+        Assert.All(wallpaperService.SlideshowPaths, generated => Assert.True(File.Exists(generated)));
+        Assert.EndsWith("generated_001.png", wallpaperService.SlideshowPaths[0]);
+        Assert.EndsWith("generated_002.png", wallpaperService.SlideshowPaths[1]);
+    }
+
+    [Fact]
+    public void GenerateUsesStaticWallpaperWhenFilePathIsConfigured()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg") },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow,
+                Options = DesktopSlideshowOptions.ShuffleImages,
+                SlideshowTick = 600000
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"),
+            ConfigurationDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName()),
+            ForceWallpaperRefresh = false
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        generator.Generate(config);
+
+        Assert.Equal(1, wallpaperService.Calls);
+        Assert.Equal(0, wallpaperService.SlideshowCalls);
+    }
+
+    [Fact]
     public void GenerateCallsLogonWallpaperWhenRequested()
     {
         if (!OperatingSystem.IsWindows())
@@ -262,6 +341,13 @@ internal class FakeWallpaperService : IWallpaperService
     public int Calls { get; private set; }
     public int LogonCalls { get; private set; }
     public int AllUsersCalls { get; private set; }
+    public int SlideshowCalls { get; private set; }
+    public DesktopWallpaperSlideshow Slideshow { get; set; } = new();
+    public List<string> SlideshowPaths { get; } = new();
+    public DesktopWallpaperPosition SlideshowPosition { get; private set; }
+    public DesktopSlideshowOptions SlideshowOptions { get; private set; }
+    public uint SlideshowTick { get; private set; }
+
     public void SetWallpaper(int monitorIndex, string filePath, DesktopManager.DesktopWallpaperPosition position)
     {
         Calls++;
@@ -275,5 +361,20 @@ internal class FakeWallpaperService : IWallpaperService
     public void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile)
     {
         AllUsersCalls++;
+    }
+
+    public DesktopWallpaperSlideshow GetWallpaperSlideshow()
+    {
+        return Slideshow;
+    }
+
+    public void StartWallpaperSlideshow(IEnumerable<string> filePaths, DesktopWallpaperPosition position, DesktopSlideshowOptions options, uint slideshowTick)
+    {
+        SlideshowCalls++;
+        SlideshowPaths.Clear();
+        SlideshowPaths.AddRange(filePaths);
+        SlideshowPosition = position;
+        SlideshowOptions = options;
+        SlideshowTick = slideshowTick;
     }
 }

@@ -17,7 +17,7 @@ New-BGInfo [-BGInfoContent] <ScriptBlock> [[-FilePath] <String>] [-Configuration
  [[-FontFamilyName] <String>] [[-Color] <Color>] [[-FontSize] <Int32>] [[-ValueColor] <Color>]
  [[-ValueFontSize] <Single>] [[-ValueFontFamilyName] <String>] [[-SpaceBetweenLines] <Int32>]
  [[-SpaceBetweenColumns] <Int32>] [[-PositionX] <Int32>] [[-PositionY] <Int32>] [[-MonitorIndex] <Int32>]
- [[-WallpaperFit] <String>] [<CommonParameters>]
+ [[-WallpaperFit] <String>] [-DisableWallpaperSlideshow] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -75,6 +75,7 @@ Accept wildcard characters: False
 ### -FilePath
 Path to the image that will be used as a background.
 If not provided current Desktop Background will be used.
+When omitted and the current desktop uses a Windows wallpaper slideshow, PowerBGInfo preserves that slideshow by rendering one generated image per slideshow source.
 
 ```yaml
 Type: String
@@ -294,6 +295,22 @@ Aliases:
 Required: False
 Position: 15
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisableWallpaperSlideshow
+Forces one static generated wallpaper even when the current Windows desktop wallpaper is a slideshow.
+By default, when `-FilePath` is not provided, PowerBGInfo renders every slideshow source image and reapplies the slideshow with the same DesktopManager options and interval.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

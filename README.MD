@@ -34,6 +34,7 @@ You can read about this project on this [blog post](https://evotec.xyz/powerbgin
 - Place information in corners, center positions, or explicit screen coordinates.
 - Wrap long values such as AD computer descriptions with `-ValueWrapWidth`.
 - Apply output to the current user, all users, the logon/lock screen, or just write a file.
+- Preserve the current Windows wallpaper slideshow by rendering one BGInfo image per slideshow source.
 - Handle solid-color desktops when Windows has no wallpaper file.
 - Add transparent ChartForgeX charts and topology diagrams on top of real wallpapers.
 - Export JSON configurations when you need a portable deployment artifact.
@@ -125,6 +126,7 @@ New-BGInfo -MonitorIndex 0 -Target Both {
 ## Operational notes
 
 - Solid-color desktops: when no wallpaper file exists, PowerBGInfo renders a blank image using the desktop background color or `-BackgroundColor`.
+- Wallpaper slideshows: when no explicit `-FilePath` is provided and Windows has a wallpaper slideshow configured, PowerBGInfo renders every slideshow source image into the configuration directory and restarts the slideshow with the generated images while preserving DesktopManager slideshow options and interval. Use `-DisableWallpaperSlideshow` when you want one static generated wallpaper instead.
 - Refresh behavior: by default the wallpaper is refreshed to avoid Windows caching issues; use `-DisableWallpaperRefresh` only when you need the old behavior.
 - All users: use `-AllUsers` elevated. Use `-ExcludeDefaultUserProfile` to skip the default profile.
 - Logon screen: use `-Target LogonScreen` or `-Target Both` elevated.
@@ -174,6 +176,7 @@ Example output:
 - `-TextPosition`, `-PositionX`, `-PositionY`, `-SpaceX`, and `-SpaceY` control where the text block is placed.
 - `-UseScreenCoordinates` makes placement calculations match the monitor coordinate space.
 - `-OutputFileName` controls the generated image name and path.
+- `-DisableWallpaperSlideshow` forces static wallpaper output instead of preserving the active Windows slideshow.
 - `-JsonPath` and `-ExportOnly` save reusable configuration without applying the wallpaper.
 - `New-BGInfoChart` and `New-BGInfoTopology` add ChartForgeX-backed transparent overlays with optional chart history.
 
@@ -492,6 +495,7 @@ When hand-editing JSON on Windows, remember that backslashes inside string value
   "MonitorIndex": 0,
   "Target": "Wallpaper",
   "WallpaperFit": "Fill",
+  "PreserveWallpaperSlideshow": true,
   "Color": "#FFFFFFFF",
   "ValueColor": "#00FFFFFF",
   "ValueWrapWidth": 320,

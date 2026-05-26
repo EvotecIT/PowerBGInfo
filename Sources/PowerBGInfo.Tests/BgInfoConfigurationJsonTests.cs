@@ -94,6 +94,40 @@ public class BgInfoConfigurationJsonTests
     }
 
     [Fact]
+    public void SaveAndLoadPreservesWallpaperSlideshowPreference()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory,
+            PreserveWallpaperSlideshow = false
+        };
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var json = File.ReadAllText(path);
+        Assert.Contains("\"PreserveWallpaperSlideshow\"", json);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        Assert.False(roundTripped.PreserveWallpaperSlideshow);
+    }
+
+    [Fact]
+    public void LoadUsesWallpaperSlideshowPreservationByDefault()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, "{}");
+
+        var configuration = BgInfoConfigurationJson.Load(path);
+
+        Assert.True(configuration.PreserveWallpaperSlideshow);
+    }
+
+    [Fact]
     public void SaveAndLoadPreservesChartForgeXChartOptions() {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
