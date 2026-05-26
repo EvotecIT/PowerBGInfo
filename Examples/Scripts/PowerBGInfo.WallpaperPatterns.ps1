@@ -15,8 +15,8 @@ if ($LASTEXITCODE -ne 0) {
 Import-Module -Name $modulePath -Force
 
 $white = 'White'
-$muted = '#E6D2DCE8'
-$panel = '#AC0A101C'
+$muted = '#D2DCE8E6'
+$panel = '#0A101CAC'
 $cyan = '#2DD4BF'
 $blue = '#60A5FA'
 $green = '#34D399'

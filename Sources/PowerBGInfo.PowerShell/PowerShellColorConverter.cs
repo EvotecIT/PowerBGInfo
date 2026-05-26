@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.Management.Automation;
+using ChartForgeX.Primitives;
 using PowerBGInfo;
 
 namespace PowerBGInfo.PowerShell;
@@ -13,7 +13,7 @@ internal static class PowerShellColorConverter {
     public static Color ConvertRequired(object? value, string parameterName) {
         var color = ConvertOptional(value, parameterName);
         if (!color.HasValue) {
-            throw new ArgumentException("Color must be a System.Drawing.Color, known color name, #RRGGBB, #AARRGGBB, RGB integer, or ARGB integer.", parameterName);
+            throw new ArgumentException("Color must be a ChartForgeX color name, token, or hex string (#RGB, #RGBA, #RRGGBB, or #RRGGBBAA).", parameterName);
         }
 
         return color.Value;
@@ -25,24 +25,15 @@ internal static class PowerShellColorConverter {
             return null;
         }
 
-        if (value is Color color) {
-            return color;
+        if (value is ChartColor chartColor) {
+            return Color.FromArgb(chartColor.A, chartColor.R, chartColor.G, chartColor.B);
         }
 
-        if (value is int argb) {
-            return Color.FromArgb(argb);
-        }
-
-        if (value is uint argbUnsigned) {
-            return Color.FromArgb(unchecked((int)argbUnsigned));
-        }
-
-        var text = value as string ?? System.Convert.ToString(value, CultureInfo.InvariantCulture);
-        if (!string.IsNullOrWhiteSpace(text) && BgInfoColorParser.TryParse(text, out var parsed)) {
+        if (value is string text && BgInfoColorParser.TryParse(text, out var parsed)) {
             return parsed;
         }
 
-        throw new ArgumentException("Color must be a System.Drawing.Color, known color name, #RRGGBB, #AARRGGBB, RGB integer, or ARGB integer.", parameterName);
+        throw new ArgumentException("Color must be a ChartForgeX color name, token, or hex string (#RGB, #RGBA, #RRGGBB, or #RRGGBBAA).", parameterName);
     }
 
     public static IReadOnlyList<Color> ConvertPalette(object[]? values, string parameterName) {
@@ -62,7 +53,7 @@ internal static class PowerShellColorConverter {
 
     private static IEnumerable<object?> Expand(object? value) {
         value = Unwrap(value);
-        if (value == null || value is string || value is Color) {
+        if (value == null || value is string || value is ChartColor) {
             yield return value;
             yield break;
         }

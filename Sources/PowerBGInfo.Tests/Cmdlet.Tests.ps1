@@ -27,6 +27,47 @@ Describe 'New-BGInfoValue cmdlet' {
     }
 }
 
+Describe 'New-BGInfoLabel cmdlet' {
+    It 'accepts bare RGB hex color strings' {
+        $entry = New-BGInfoLabel -Name 'Test' -Color 'ffffff'
+
+        $entry.Color.A | Should -Be 255
+        $entry.Color.R | Should -Be 255
+        $entry.Color.G | Should -Be 255
+        $entry.Color.B | Should -Be 255
+    }
+
+    It 'accepts ChartForgeX color tokens' {
+        $entry = New-BGInfoLabel -Name 'Test' -Color 'Emerald400'
+
+        $entry.Color.A | Should -Be 255
+        $entry.Color.R | Should -Be 52
+        $entry.Color.G | Should -Be 211
+        $entry.Color.B | Should -Be 153
+    }
+
+    It 'accepts ChartForgeX named colors' {
+        $entry = New-BGInfoLabel -Name 'Test' -Color 'White'
+
+        $entry.Color.A | Should -Be 255
+        $entry.Color.R | Should -Be 255
+        $entry.Color.G | Should -Be 255
+        $entry.Color.B | Should -Be 255
+    }
+
+    It 'rejects unknown color names' {
+        { New-BGInfoLabel -Name 'Test' -Color 'definitely-not-a-color' -ErrorAction Stop } | Should -Throw
+    }
+
+    It 'rejects System.Drawing.Color values' {
+        { New-BGInfoLabel -Name 'Test' -Color ([System.Drawing.Color]::White) -ErrorAction Stop } | Should -Throw
+    }
+
+    It 'rejects packed integer colors' {
+        { New-BGInfoLabel -Name 'Test' -Color 0xFFFFFFFF -ErrorAction Stop } | Should -Throw
+    }
+}
+
 Describe 'New-BGInfoVariable cmdlet' {
     It 'creates provider-backed variables' {
         $variable = New-BGInfoVariable -Name Volumes -Provider Volumes

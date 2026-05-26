@@ -34,7 +34,7 @@ public class CmdletNewBGInfo : PSCmdlet {
 
     /// <para>Default label color.</para>
     [Parameter]
-    public object Color { get; set; } = System.Drawing.Color.Black;
+    public object Color { get; set; } = "Black";
     /// <para>Background color to use when no wallpaper image is available.</para>
     [Parameter]
     public object? BackgroundColor { get; set; }
@@ -45,7 +45,7 @@ public class CmdletNewBGInfo : PSCmdlet {
 
     /// <para>Default value color.</para>
     [Parameter]
-    public object ValueColor { get; set; } = System.Drawing.Color.Black;
+    public object ValueColor { get; set; } = "Black";
 
     /// <para>Default value font size.</para>
     [Parameter]

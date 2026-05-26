@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <a href="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-dotnet.yml"><img src="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-dotnet.yml/badge.svg?branch=v2-speedygonzales&style=flat-square"></a>
   <a href="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-powershell.yml"><img src="https://github.com/EvotecIT/PowerBGInfo/actions/workflows/test-powershell.yml/badge.svg?branch=v2-speedygonzales&style=flat-square"></a>
   <a href="https://codecov.io/gh/EvotecIT/PowerBGInfo"><img src="https://codecov.io/gh/EvotecIT/PowerBGInfo/branch/v2-speedygonzales/graph/badge.svg?style=flat-square"></a>
@@ -282,7 +282,7 @@ Use the smallest set of visuals that changes a decision. Three to five blocks is
 ```powershell
 New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue HostName -Color White
-    New-BGInfoChart -Id "cpu" -Title "CPU" -Value 42 -Kind Sparkline -LineColor '#2DD4BF' -TextColor White -GridColor '#E6D2DCE8' -ShowGrid -MaxPoints 60 -OffsetX 20 -OffsetY 20 -Anchor BottomLeft
+    New-BGInfoChart -Id "cpu" -Title "CPU" -Value 42 -Kind Sparkline -LineColor '#2DD4BF' -TextColor White -GridColor '#D2DCE8E6' -ShowGrid -MaxPoints 60 -OffsetX 20 -OffsetY 20 -Anchor BottomLeft
 } -ConfigurationDirectory $PSScriptRoot\Output -BackgroundColor Black
 ```
 
@@ -406,10 +406,10 @@ Topology overlays default to a transparent canvas so they sit on top of the sele
 
 Point-based charts can use `-Labels`, `-Palette`, `-ShowLegend`, `-ShowPointLegend`, `-LegendPosition`, and `-ShowDataLabels`. Gauge-like charts can use `-Minimum` and `-Maximum`; bullet charts add `-Target` and `-RangeEnds`; donut/progress/pictorial charts expose focused options such as `-DonutInnerRadiusRatio`, `-DonutCenterValue`, `-NoProgressHandles`, `-PictorialSymbol`, and `-PictorialColumns`.
 
-PowerShell chart color parameters accept `System.Drawing.Color`, known color names, `#RRGGBB`, and `#AARRGGBB` strings, so examples can stay dependency-light and copy/paste friendly.
+PowerShell color parameters accept ChartForgeX color names, design tokens such as `Emerald400`, and hex strings such as `#RGB`, `#RGBA`, `#RRGGBB`, and `#RRGGBBAA`, so examples can stay dependency-light and copy/paste friendly.
 
 ```powershell
-$panel = '#AC0A101C'
+$panel = '#0A101CAC'
 $green = '#34D399'
 $red = '#F87171'
 
@@ -459,7 +459,7 @@ New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue CpuName -Color White
     New-BGInfoValue -BuiltinValue CpuLogicalCores -Color White -ValueColor Red
     New-BGInfoValue -BuiltinValue RAMSize -Color White
-    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor ([System.Drawing.Color]::Aquamarine)
+    New-BGInfoValue -BuiltinValue RAMSpeed -Color White -ValueColor Aquamarine
     New-BGInfoValue -BuiltinValue RAMPartNumber -Color White
     New-BGInfoValue -BuiltinValue BiosVersion -Color White
     New-BGInfoValue -BuiltinValue BiosManufacturer -Color White
@@ -493,7 +493,7 @@ When hand-editing JSON on Windows, remember that backslashes inside string value
   "Target": "Wallpaper",
   "WallpaperFit": "Fill",
   "Color": "#FFFFFFFF",
-  "ValueColor": "#FF00FFFF",
+  "ValueColor": "#00FFFFFF",
   "ValueWrapWidth": 320,
   "ChartLayout": "Stack",
   "ChartStackAnchor": "BottomLeft",
