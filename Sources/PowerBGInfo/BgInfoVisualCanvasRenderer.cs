@@ -59,7 +59,8 @@ internal static class BgInfoVisualCanvasRenderer {
             if (visual.FeatureAnchor.HasValue) {
                 canvas.AddFeatureStrip(ToPlacement(visual.FeatureAnchor.Value, visual.FeatureOffsetX, visual.FeatureOffsetY), stripWidth, stripHeight, BuildFeatureItems(visual.Features));
             } else {
-                canvas.AddFeatureStrip(290 * scaleX, 522 * scaleY, stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+                var bounds = ResolveDefaultOpaqueFeatureStripBounds(visual, width, height, scaleX, scaleY);
+                canvas.AddFeatureStrip(bounds.X, bounds.Y, bounds.Width, bounds.Height, BuildFeatureItems(visual.Features));
             }
         }
     }
@@ -209,6 +210,14 @@ internal static class BgInfoVisualCanvasRenderer {
     private static double ResolveFeatureWidth(BgInfoVisualCanvas visual, double defaultWidth) => visual.FeatureWidth > 0 ? visual.FeatureWidth : defaultWidth;
 
     private static double ResolveFeatureHeight(BgInfoVisualCanvas visual, double defaultHeight) => visual.FeatureHeight > 0 ? visual.FeatureHeight : defaultHeight;
+
+    internal static (double X, double Y, double Width, double Height) ResolveDefaultOpaqueFeatureStripBounds(BgInfoVisualCanvas visual, int width, int height, double scaleX, double scaleY) {
+        var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
+        var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
+        var x = Math.Max(0, (width - stripWidth) / 2);
+        var y = Math.Max(0, height - stripHeight - 46 * scaleY);
+        return (x, y, stripWidth, stripHeight);
+    }
 
     private static VisualCanvasPlacement ToPlacement(BgInfoTextPosition anchor, double offsetX, double offsetY) {
         switch (anchor) {
