@@ -137,6 +137,125 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
+    public void GeneratePreservesWallpaperSlideshowFromDirectorySources()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        var sourceDirectory = Path.Combine(tempDirectory, "slides");
+        Directory.CreateDirectory(sourceDirectory);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), Path.Combine(sourceDirectory, "slide-one.jpg"));
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), Path.Combine(sourceDirectory, "slide-two.png"));
+        File.WriteAllText(Path.Combine(sourceDirectory, "notes.txt"), "not an image");
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { sourceDirectory },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "directory-slides.png",
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        generator.Generate(config);
+
+        Assert.Equal(1, wallpaperService.SlideshowCalls);
+        Assert.Equal(2, wallpaperService.SlideshowPaths.Count);
+        Assert.All(wallpaperService.SlideshowPaths, generated => Assert.True(File.Exists(generated)));
+    }
+
+    [Fact]
+    public void GenerateDoesNotPreserveWallpaperSlideshowWhenItIsNotRunning()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var source = Path.Combine(tempDirectory, "slide-one.jpg");
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), source);
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { source },
+                State = DesktopSlideshowState.Enabled
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "static-fallback.png",
+            ConfigurationDirectory = tempDirectory,
+            BackgroundColor = Color.Black,
+            ForceWallpaperRefresh = false
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.Equal(0, wallpaperService.SlideshowCalls);
+    }
+
+    [Fact]
+    public void GeneratePreservesWallpaperSlideshowWithoutDuplicatingChartHistory()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourceOne = Path.Combine(tempDirectory, "slide-one.jpg");
+        var sourceTwo = Path.Combine(tempDirectory, "slide-two.jpg");
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceOne);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceTwo);
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { sourceOne, sourceTwo },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "chart-slideshow.png",
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+        config.Charts.Add(new BgInfoChart
+        {
+            Id = "cpu",
+            Title = "CPU",
+            Kind = BgInfoChartKind.Sparkline,
+            Values = new[] { 10d },
+            MaxPoints = 10
+        });
+
+        generator.Generate(config);
+
+        var historyPath = Path.Combine(tempDirectory, "Charts", "cpu.txt");
+        Assert.True(File.Exists(historyPath));
+        Assert.Single(File.ReadAllLines(historyPath));
+        Assert.Equal(2, wallpaperService.SlideshowPaths.Count);
+    }
+
+    [Fact]
     public void GenerateUsesStaticWallpaperWhenFilePathIsConfigured()
     {
         if (!OperatingSystem.IsWindows())

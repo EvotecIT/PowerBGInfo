@@ -195,14 +195,14 @@ $ErrorActionPreference = 'Stop'
 if ($ModulePath) {
     Import-Module -Name $ModulePath -Force
 } elseif (-not (Get-Module -Name PowerBGInfo)) {
-    $scriptImportsModule = $false
+    $scriptImportsPowerBGInfo = $false
     try {
         $scriptText = Get-Content -LiteralPath $ScriptPath -Raw -ErrorAction Stop
-        $scriptImportsModule = $scriptText -match '(?im)^\s*Import-Module\b'
+        $scriptImportsPowerBGInfo = $scriptText -match '(?im)^\s*Import-Module\b[^\r\n]*(PowerBGInfo|PowerBGInfo\.psd1|PowerBGInfo\.psm1|PowerBGInfo\.PowerShell\.dll)\b'
     } catch {
     }
 
-    if (-not $scriptImportsModule) {
+    if (-not $scriptImportsPowerBGInfo) {
         try {
             Import-Module -Name PowerBGInfo -Force -ErrorAction Stop
         } catch {
