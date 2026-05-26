@@ -130,6 +130,7 @@ public static class BgInfoConfigurationJson {
         if (model.SpaceY.HasValue) configuration.SpaceY = model.SpaceY.Value;
         if (model.UseScreenCoordinates.HasValue) configuration.UseScreenCoordinates = model.UseScreenCoordinates.Value;
         if (model.ForceWallpaperRefresh.HasValue) configuration.ForceWallpaperRefresh = model.ForceWallpaperRefresh.Value;
+        if (model.PreserveWallpaperSlideshow.HasValue) configuration.PreserveWallpaperSlideshow = model.PreserveWallpaperSlideshow.Value;
         if (model.ApplyToAllUsers.HasValue) configuration.ApplyToAllUsers = model.ApplyToAllUsers.Value;
         if (model.IncludeDefaultUserProfile.HasValue) configuration.IncludeDefaultUserProfile = model.IncludeDefaultUserProfile.Value;
 
@@ -244,6 +245,7 @@ public static class BgInfoConfigurationJson {
             TextPosition = configuration.TextPosition.ToString(),
             Target = configuration.Target.ToString(),
             ForceWallpaperRefresh = configuration.ForceWallpaperRefresh,
+            PreserveWallpaperSlideshow = configuration.PreserveWallpaperSlideshow,
             ApplyToAllUsers = configuration.ApplyToAllUsers,
             IncludeDefaultUserProfile = configuration.IncludeDefaultUserProfile,
             UseScreenCoordinates = configuration.UseScreenCoordinates,
@@ -998,6 +1000,7 @@ public static class BgInfoConfigurationJson {
         public string? TextPosition { get; set; }
         public string? Target { get; set; }
         public bool? ForceWallpaperRefresh { get; set; }
+        public bool? PreserveWallpaperSlideshow { get; set; }
         public bool? ApplyToAllUsers { get; set; }
         public bool? IncludeDefaultUserProfile { get; set; }
         public bool? UseScreenCoordinates { get; set; }

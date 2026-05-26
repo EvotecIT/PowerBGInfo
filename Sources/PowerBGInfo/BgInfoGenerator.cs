@@ -15,6 +15,20 @@ public class BgInfoGenerator
 {
     private readonly ImageService _imageService;
     private readonly IWallpaperService _wallpaperService;
+    private static readonly HashSet<string> SlideshowImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".bmp",
+        ".dib",
+        ".gif",
+        ".jfif",
+        ".jpe",
+        ".jpeg",
+        ".jpg",
+        ".png",
+        ".tif",
+        ".tiff",
+        ".wdp"
+    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BgInfoGenerator"/> class.
@@ -56,7 +70,17 @@ public class BgInfoGenerator
             return monitors;
         }
 
-        var imagePath = ResolveBaseImagePath(config, index => GetWallpaper(GetMonitors(), index));
+        if (TryGenerateWallpaperSlideshow(config, out var slideshowOutputPath))
+        {
+            return slideshowOutputPath;
+        }
+
+        return GenerateImage(config, index => GetWallpaper(GetMonitors(), index), GetMonitors, applyTargets: true);
+    }
+
+    private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<Monitors?> getMonitors, bool applyTargets)
+    {
+        var imagePath = ResolveBaseImagePath(config, getWallpaperPath);
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
@@ -68,7 +92,7 @@ public class BgInfoGenerator
 
         using var image = hasBaseImage
             ? LoadBaseImage(imagePath!, outputPath)
-            : CreateBaseImage(config, GetMonitors(), outputPath);
+            : CreateBaseImage(config, getMonitors(), outputPath);
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
         var entryLayouts = BuildEntryLayouts(image, config, expandedEntries);
@@ -85,7 +109,7 @@ public class BgInfoGenerator
 
         if (config.UseScreenCoordinates)
         {
-            var (screenWidth, screenHeight) = GetMonitorSize(GetMonitors(), config.MonitorIndex);
+            var (screenWidth, screenHeight) = GetMonitorSize(getMonitors(), config.MonitorIndex);
 
             float scaleX;
             float scaleY;
@@ -205,7 +229,7 @@ public class BgInfoGenerator
 
         _imageService.Save(image, outputPath);
 
-        if (config.Target.HasFlag(BgInfoTarget.Wallpaper))
+        if (applyTargets && config.Target.HasFlag(BgInfoTarget.Wallpaper))
         {
             if (config.ApplyToAllUsers)
             {
@@ -215,12 +239,255 @@ public class BgInfoGenerator
             ApplyWallpaper(config, outputPath);
         }
 
-        if (config.Target.HasFlag(BgInfoTarget.LogonScreen))
+        if (applyTargets && config.Target.HasFlag(BgInfoTarget.LogonScreen))
         {
             _wallpaperService.SetLogonWallpaper(outputPath);
         }
 
         return outputPath;
+    }
+
+    private bool TryGenerateWallpaperSlideshow(BgInfoConfiguration config, out string outputPath)
+    {
+        outputPath = string.Empty;
+        if (!ShouldPreserveWallpaperSlideshow(config))
+        {
+            return false;
+        }
+
+        DesktopWallpaperSlideshow slideshow;
+        try
+        {
+            slideshow = _wallpaperService.GetWallpaperSlideshow();
+        }
+        catch
+        {
+            return false;
+        }
+
+        if (!slideshow.IsRunning || slideshow.IsDisabledByRemoteSession)
+        {
+            return false;
+        }
+
+        var sourcePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths);
+        if (sourcePaths.Length == 0)
+        {
+            return false;
+        }
+
+        var generatedPaths = new List<string>(sourcePaths.Length);
+        var slideshowCharts = BuildSlideshowCharts(config);
+        for (int i = 0; i < sourcePaths.Length; i++)
+        {
+            var itemConfig = CloneForSlideshowItem(config, sourcePaths[i], BuildSlideshowOutputPath(config, sourcePaths[i], i), slideshowCharts);
+            generatedPaths.Add(GenerateImage(itemConfig, _ => null, () => null, applyTargets: false));
+        }
+
+        if (generatedPaths.Count == 0)
+        {
+            return false;
+        }
+
+        outputPath = generatedPaths[0];
+        if (config.Target.HasFlag(BgInfoTarget.Wallpaper))
+        {
+            if (config.ApplyToAllUsers)
+            {
+                _wallpaperService.SetWallpaperForAllUsers(outputPath, config.WallpaperFit, config.IncludeDefaultUserProfile);
+            }
+
+            _wallpaperService.StartWallpaperSlideshow(generatedPaths, config.WallpaperFit, slideshow.Options, slideshow.SlideshowTick);
+        }
+
+        if (config.Target.HasFlag(BgInfoTarget.LogonScreen))
+        {
+            _wallpaperService.SetLogonWallpaper(outputPath);
+        }
+
+        return true;
+    }
+
+    private static bool ShouldPreserveWallpaperSlideshow(BgInfoConfiguration config)
+    {
+        return config.PreserveWallpaperSlideshow
+            && config.Target.HasFlag(BgInfoTarget.Wallpaper)
+            && string.IsNullOrWhiteSpace(config.FilePath);
+    }
+
+    private static string[] ResolveSlideshowSourcePaths(IEnumerable<string> paths)
+    {
+        var sourcePaths = new List<string>();
+        foreach (var path in paths ?? Array.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                continue;
+            }
+
+            if (File.Exists(path))
+            {
+                if (IsSupportedSlideshowImage(path))
+                {
+                    sourcePaths.Add(path);
+                }
+                continue;
+            }
+
+            if (Directory.Exists(path))
+            {
+                sourcePaths.AddRange(EnumerateSlideshowImages(path));
+            }
+        }
+
+        return sourcePaths
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IEnumerable<string> EnumerateSlideshowImages(string directory)
+    {
+        try
+        {
+            return Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+                .Where(IsSupportedSlideshowImage)
+                .ToArray();
+        }
+        catch
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    private static bool IsSupportedSlideshowImage(string path)
+    {
+        return SlideshowImageExtensions.Contains(Path.GetExtension(path));
+    }
+
+    private static IReadOnlyList<BgInfoChart> BuildSlideshowCharts(BgInfoConfiguration source)
+    {
+        if (source.Charts.Count == 0)
+        {
+            return Array.Empty<BgInfoChart>();
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var charts = new List<BgInfoChart>(source.Charts.Count);
+        for (int i = 0; i < source.Charts.Count; i++)
+        {
+            var sourceChart = source.Charts[i];
+            var values = ResolveChartValues(source, sourceChart, now, i);
+            charts.Add(CloneChartForSlideshow(sourceChart, values));
+        }
+
+        return charts;
+    }
+
+    private static BgInfoChart CloneChartForSlideshow(BgInfoChart source, IReadOnlyList<double> values)
+    {
+        return new BgInfoChart
+        {
+            Id = source.Id,
+            Title = source.Title,
+            Kind = source.Kind,
+            Width = source.Width,
+            Height = source.Height,
+            Anchor = source.Anchor,
+            OffsetX = source.OffsetX,
+            OffsetY = source.OffsetY,
+            PositionX = source.PositionX,
+            PositionY = source.PositionY,
+            Values = values.ToArray(),
+            Labels = source.Labels.ToArray(),
+            Target = source.Target,
+            RangeEnds = source.RangeEnds.ToArray(),
+            Metric = BgInfoChartMetric.None,
+            MetricArgument = source.MetricArgument,
+            MaxPoints = source.MaxPoints,
+            UseHistory = false,
+            AppendValues = false,
+            BackgroundColor = source.BackgroundColor,
+            LineColor = source.LineColor,
+            FillColor = source.FillColor,
+            Palette = source.Palette.ToArray(),
+            TextColor = source.TextColor,
+            FontFamilyName = source.FontFamilyName,
+            TitleFontSize = source.TitleFontSize,
+            ValueFontSize = source.ValueFontSize,
+            ShowLatestValue = source.ShowLatestValue,
+            ValueFormat = source.ValueFormat,
+            ValueSuffix = source.ValueSuffix,
+            BarGap = source.BarGap,
+            Padding = source.Padding,
+            ShowGrid = source.ShowGrid,
+            GridColor = source.GridColor,
+            GridLineCount = source.GridLineCount,
+            ShowLegend = source.ShowLegend,
+            ShowPointLegend = source.ShowPointLegend,
+            LegendPosition = source.LegendPosition,
+            ShowDataLabels = source.ShowDataLabels,
+            Minimum = source.Minimum,
+            Maximum = source.Maximum,
+            ShowDonutCenterLabel = source.ShowDonutCenterLabel,
+            DonutInnerRadiusRatio = source.DonutInnerRadiusRatio,
+            DonutCenterValue = source.DonutCenterValue,
+            DonutCenterLabel = source.DonutCenterLabel,
+            ShowRadialBarCenterLabel = source.ShowRadialBarCenterLabel,
+            ShowCircleStatusLabel = source.ShowCircleStatusLabel,
+            ShowProgressValues = source.ShowProgressValues,
+            ShowProgressHandles = source.ShowProgressHandles,
+            ProgressBarThicknessRatio = source.ProgressBarThicknessRatio,
+            PictorialSymbol = source.PictorialSymbol,
+            PictorialColumns = source.PictorialColumns
+        };
+    }
+
+    private static BgInfoConfiguration CloneForSlideshowItem(BgInfoConfiguration source, string filePath, string outputPath, IReadOnlyList<BgInfoChart> charts)
+    {
+        var clone = new BgInfoConfiguration {
+            ChartLayout = source.ChartLayout,
+            ChartStackAnchor = source.ChartStackAnchor,
+            ChartStackDirection = source.ChartStackDirection,
+            ChartStackSpacing = source.ChartStackSpacing,
+            ChartStackOffsetX = source.ChartStackOffsetX,
+            ChartStackOffsetY = source.ChartStackOffsetY,
+            ChartStackAlignToTextBlock = source.ChartStackAlignToTextBlock,
+            ChartStackOutsideTextBlock = source.ChartStackOutsideTextBlock,
+            FilePath = filePath,
+            OutputFileName = outputPath,
+            ConfigurationDirectory = source.ConfigurationDirectory,
+            FontFamilyName = source.FontFamilyName,
+            Color = source.Color,
+            FontSize = source.FontSize,
+            ValueColor = source.ValueColor,
+            ValueFontSize = source.ValueFontSize,
+            ValueFontFamilyName = source.ValueFontFamilyName,
+            ValueWrapWidth = source.ValueWrapWidth,
+            BackgroundColor = source.BackgroundColor,
+            SpaceBetweenLines = source.SpaceBetweenLines,
+            SpaceBetweenColumns = source.SpaceBetweenColumns,
+            PositionX = source.PositionX,
+            PositionY = source.PositionY,
+            MonitorIndex = source.MonitorIndex,
+            SpaceX = source.SpaceX,
+            SpaceY = source.SpaceY,
+            WallpaperFit = source.WallpaperFit,
+            TextPosition = source.TextPosition,
+            Target = BgInfoTarget.File,
+            ForceWallpaperRefresh = false,
+            PreserveWallpaperSlideshow = false,
+            ApplyToAllUsers = false,
+            IncludeDefaultUserProfile = source.IncludeDefaultUserProfile,
+            UseScreenCoordinates = source.UseScreenCoordinates
+        };
+
+        clone.Variables.AddRange(source.Variables);
+        clone.Entries.AddRange(source.Entries);
+        clone.Charts.AddRange(charts);
+        clone.Topologies.AddRange(source.Topologies);
+        clone.VisualCanvases.AddRange(source.VisualCanvases);
+        clone.Images.AddRange(source.Images);
+        return clone;
     }
 
     private Image LoadBaseImage(string imagePath, string outputPath)
@@ -347,6 +614,44 @@ public class BgInfoGenerator
         }
 
         return Path.Combine(config.ConfigurationDirectory, "PowerBgInfo.png");
+    }
+
+    private static string BuildSlideshowOutputPath(BgInfoConfiguration config, string sourcePath, int index)
+    {
+        var sourceExtension = Path.GetExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(sourceExtension))
+        {
+            sourceExtension = ".png";
+        }
+
+        if (!string.IsNullOrWhiteSpace(config.OutputFileName))
+        {
+            var configuredPath = Path.IsPathRooted(config.OutputFileName)
+                ? config.OutputFileName
+                : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            var directory = Path.GetDirectoryName(configuredPath) ?? config.ConfigurationDirectory;
+            var name = Path.GetFileNameWithoutExtension(configuredPath);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "PowerBgInfo";
+            }
+
+            var extension = Path.GetExtension(configuredPath);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                extension = sourceExtension;
+            }
+
+            return Path.Combine(directory, $"{name}_{index + 1:D3}{extension}");
+        }
+
+        var sourceName = Path.GetFileNameWithoutExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            sourceName = "PowerBgInfo";
+        }
+
+        return Path.Combine(config.ConfigurationDirectory, $"{sourceName}_PowerBgInfo_{index + 1:D3}{sourceExtension}");
     }
 
     private void ApplyWallpaper(BgInfoConfiguration config, string outputPath)

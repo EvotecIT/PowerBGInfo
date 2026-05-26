@@ -136,6 +136,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public SwitchParameter DisableWallpaperRefresh { get; set; }
 
+    /// <para>Disable automatic preservation of the current Windows wallpaper slideshow.</para>
+    [Parameter]
+    public SwitchParameter DisableWallpaperSlideshow { get; set; }
+
     /// <para>Use screen coordinates for layout positioning.</para>
     [Parameter]
     public SwitchParameter UseScreenCoordinates { get; set; }
@@ -199,6 +203,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(ChartStackAlignToTextBlock))) config.ChartStackAlignToTextBlock = ChartStackAlignToTextBlock.IsPresent;
         if (IsParameterBound(nameof(ChartStackOutsideTextBlock))) config.ChartStackOutsideTextBlock = ChartStackOutsideTextBlock.IsPresent;
         if (IsParameterBound(nameof(DisableWallpaperRefresh))) config.ForceWallpaperRefresh = !DisableWallpaperRefresh.IsPresent;
+        if (IsParameterBound(nameof(DisableWallpaperSlideshow))) config.PreserveWallpaperSlideshow = !DisableWallpaperSlideshow.IsPresent;
         if (IsParameterBound(nameof(AllUsers))) config.ApplyToAllUsers = AllUsers.IsPresent;
         if (IsParameterBound(nameof(ExcludeDefaultUserProfile))) config.IncludeDefaultUserProfile = !ExcludeDefaultUserProfile.IsPresent;
         if (IsParameterBound(nameof(UseScreenCoordinates))) config.UseScreenCoordinates = UseScreenCoordinates.IsPresent;

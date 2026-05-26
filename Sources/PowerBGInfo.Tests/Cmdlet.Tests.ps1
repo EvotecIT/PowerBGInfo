@@ -101,6 +101,11 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'ChartStackOutsideTextBlock'
     }
 
+    It 'supports disabling wallpaper slideshow preservation' {
+        $command = Get-Command New-BGInfo
+        $command.Parameters.Keys | Should -Contain 'DisableWallpaperSlideshow'
+    }
+
     It 'supports recipe variables through inline content' {
         $command = Get-Command New-BGInfoVariable
         $command.Parameters.Keys | Should -Contain 'Provider'
@@ -230,7 +235,7 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
 
 Describe 'New-BGInfoConfiguration cmdlet' {
     It 'creates configuration with overrides' {
-        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock
+        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock -DisableWallpaperSlideshow
         $config.Target | Should -Be ([PowerBGInfo.BgInfoTarget]::File)
         $config.MonitorIndex | Should -Be 1
         $config.SpaceX | Should -Be 5
@@ -239,6 +244,7 @@ Describe 'New-BGInfoConfiguration cmdlet' {
         $config.ChartLayout | Should -Be ([PowerBGInfo.BgInfoChartLayoutMode]::Stack)
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue
+        $config.PreserveWallpaperSlideshow | Should -BeFalse
     }
 
     It 'accepts visual canvas overlays directly' {

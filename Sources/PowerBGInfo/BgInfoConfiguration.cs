@@ -129,6 +129,10 @@ public class BgInfoConfiguration {
     /// </summary>
     public bool ForceWallpaperRefresh { get; set; } = true;
     /// <summary>
+    /// Gets or sets a value indicating whether Windows wallpaper slideshows are preserved when no explicit base image is configured.
+    /// </summary>
+    public bool PreserveWallpaperSlideshow { get; set; } = true;
+    /// <summary>
     /// Gets or sets a value indicating whether to apply the wallpaper to all user profiles.
     /// </summary>
     public bool ApplyToAllUsers { get; set; }

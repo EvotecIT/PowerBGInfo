@@ -194,10 +194,19 @@ $ErrorActionPreference = 'Stop'
 
 if ($ModulePath) {
     Import-Module -Name $ModulePath -Force
-} elseif (-not (Get-Command -Name New-BGInfo -ErrorAction SilentlyContinue)) {
+} elseif (-not (Get-Module -Name PowerBGInfo)) {
+    $scriptImportsPowerBGInfo = $false
     try {
-        Import-Module -Name PowerBGInfo -Force -ErrorAction Stop
+        $scriptText = Get-Content -LiteralPath $ScriptPath -Raw -ErrorAction Stop
+        $scriptImportsPowerBGInfo = $scriptText -match '(?im)^\s*Import-Module\b[^\r\n]*(PowerBGInfo|PowerBGInfo\.psd1|PowerBGInfo\.psm1|PowerBGInfo\.PowerShell\.dll)\b'
     } catch {
+    }
+
+    if (-not $scriptImportsPowerBGInfo) {
+        try {
+            Import-Module -Name PowerBGInfo -Force -ErrorAction Stop
+        } catch {
+        }
     }
 }
 
@@ -213,9 +222,19 @@ try {
     Pop-Location
 }
 
-$config = @($results | Where-Object { $_ -is [PowerBGInfo.BgInfoConfiguration] } | Select-Object -Last 1)
+$config = @($results | Where-Object {
+    $candidate = $_.PSObject.BaseObject
+    $candidate -ne $null -and $candidate.GetType().FullName -eq 'PowerBGInfo.BgInfoConfiguration'
+} | Select-Object -Last 1)
 if ($config.Count -gt 0) {
-    [PowerBGInfo.BgInfoConfigurationJson]::Save($config[0], $OutputPath)
+    $configuration = $config[0].PSObject.BaseObject
+    $configurationType = $configuration.GetType()
+    $jsonType = $configurationType.Assembly.GetType('PowerBGInfo.BgInfoConfigurationJson', $true)
+    $saveMethod = $jsonType.GetMethod('Save', [type[]] @($configurationType, [string]))
+    if ($null -eq $saveMethod) {
+        throw "Unable to find PowerBGInfo.BgInfoConfigurationJson.Save."
+    }
+    $saveMethod.Invoke($null, @($configuration, $OutputPath)) | Out-Null
     Write-Output $OutputPath
     return
 }
