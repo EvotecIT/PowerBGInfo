@@ -54,7 +54,14 @@ internal static class BgInfoVisualCanvasRenderer {
             .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
             .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
         if (visual.Features.Count > 0) {
-            canvas.AddFeatureStrip(290 * scaleX, 522 * scaleY, 620 * scaleX, 62 * scaleY, BuildFeatureItems(visual.Features));
+            var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
+            var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
+            if (visual.FeatureAnchor.HasValue) {
+                canvas.AddFeatureStrip(ToPlacement(visual.FeatureAnchor.Value, visual.FeatureOffsetX, visual.FeatureOffsetY), stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+            } else {
+                var bounds = ResolveDefaultOpaqueFeatureStripBounds(visual, width, height, scaleX, scaleY);
+                canvas.AddFeatureStrip(bounds.X, bounds.Y, bounds.Width, bounds.Height, BuildFeatureItems(visual.Features));
+            }
         }
     }
 
@@ -88,8 +95,14 @@ internal static class BgInfoVisualCanvasRenderer {
         if (visual.Features.Count > 0) {
             var stripHeight = Clamp(height * 0.075, Math.Min(36, height * 0.1), Math.Min(64, height * 0.14));
             var stripWidth = Clamp(centerWidth * 0.72, Math.Min(120, centerWidth), Math.Min(760, centerWidth));
-            var stripY = Math.Max(0, height - Clamp(height * 0.18, stripHeight + 8, Math.Min(190, height * 0.28)));
-            canvas.AddFeatureStrip(centerLeft + (centerWidth - stripWidth) / 2, stripY, stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+            stripWidth = ResolveFeatureWidth(visual, stripWidth);
+            stripHeight = ResolveFeatureHeight(visual, stripHeight);
+            if (visual.FeatureAnchor.HasValue) {
+                canvas.AddFeatureStrip(ToPlacement(visual.FeatureAnchor.Value, visual.FeatureOffsetX, visual.FeatureOffsetY), stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+            } else {
+                var stripY = Math.Max(0, height - Clamp(height * 0.18, stripHeight + 8, Math.Min(190, height * 0.28)));
+                canvas.AddFeatureStrip(centerLeft + (centerWidth - stripWidth) / 2, stripY, stripWidth, stripHeight, BuildFeatureItems(visual.Features));
+            }
         }
     }
 
@@ -191,6 +204,32 @@ internal static class BgInfoVisualCanvasRenderer {
             case BgInfoVisualCanvasTileIconKind.Storage: return VisualCanvasInfoTileIconKind.Storage;
             case BgInfoVisualCanvasTileIconKind.Shield: return VisualCanvasInfoTileIconKind.Shield;
             default: return VisualCanvasInfoTileIconKind.Text;
+        }
+    }
+
+    private static double ResolveFeatureWidth(BgInfoVisualCanvas visual, double defaultWidth) => visual.FeatureWidth > 0 ? visual.FeatureWidth : defaultWidth;
+
+    private static double ResolveFeatureHeight(BgInfoVisualCanvas visual, double defaultHeight) => visual.FeatureHeight > 0 ? visual.FeatureHeight : defaultHeight;
+
+    internal static (double X, double Y, double Width, double Height) ResolveDefaultOpaqueFeatureStripBounds(BgInfoVisualCanvas visual, int width, int height, double scaleX, double scaleY) {
+        var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
+        var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
+        var x = Math.Max(0, (width - stripWidth) / 2);
+        var y = Math.Max(0, height - stripHeight - 46 * scaleY);
+        return (x, y, stripWidth, stripHeight);
+    }
+
+    private static VisualCanvasPlacement ToPlacement(BgInfoTextPosition anchor, double offsetX, double offsetY) {
+        switch (anchor) {
+            case BgInfoTextPosition.TopCenter: return VisualCanvasPlacement.At(VisualCanvasAnchor.TopCenter, offsetX, offsetY);
+            case BgInfoTextPosition.TopRight: return VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, offsetX, offsetY);
+            case BgInfoTextPosition.MiddleLeft: return VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleLeft, offsetX, offsetY);
+            case BgInfoTextPosition.MiddleCenter: return VisualCanvasPlacement.At(VisualCanvasAnchor.Center, offsetX, offsetY);
+            case BgInfoTextPosition.MiddleRight: return VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleRight, offsetX, offsetY);
+            case BgInfoTextPosition.BottomLeft: return VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, offsetX, offsetY);
+            case BgInfoTextPosition.BottomCenter: return VisualCanvasPlacement.At(VisualCanvasAnchor.BottomCenter, offsetX, offsetY);
+            case BgInfoTextPosition.BottomRight: return VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, offsetX, offsetY);
+            default: return VisualCanvasPlacement.At(VisualCanvasAnchor.TopLeft, offsetX, offsetY);
         }
     }
 

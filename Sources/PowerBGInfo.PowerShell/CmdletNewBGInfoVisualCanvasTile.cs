@@ -5,6 +5,17 @@ using PowerBGInfo;
 namespace PowerBGInfo.PowerShell;
 
 /// <summary>Creates a BGInfo visual canvas tile definition.</summary>
+/// <para>Tiles are the readable side-rail information boxes used by New-BGInfoVisualCanvas.</para>
+/// <example>
+/// <code>
+/// New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop' -Accent '#0F766EFF'
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31 -MiniChartMaximum 100
+/// </code>
+/// </example>
 [Cmdlet(VerbsCommon.New, "BGInfoVisualCanvasTile")]
 [OutputType(typeof(BgInfoVisualCanvasTile))]
 public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {

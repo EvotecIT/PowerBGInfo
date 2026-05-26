@@ -4,6 +4,24 @@ using PowerBGInfo;
 namespace PowerBGInfo.PowerShell;
 
 /// <summary>Creates a BGInfo visual canvas definition backed by ChartForgeX.</summary>
+/// <para>Visual canvases render a reusable HUD-style overlay with a central title, side information boxes, and an optional feature strip.</para>
+/// <example>
+/// <code>
+/// $tiles = @(
+///     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
+///     New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31 -MiniChartMaximum 100
+/// )
+///
+/// New-BGInfo -Target File {
+///     New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -Tile $tiles -TileGlassTop '#FFF7EDD9' -TileGlassBottom '#DBEAFECC' -TileValueColor '#0F172AFF'
+/// } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Feature $features -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120
+/// </code>
+/// </example>
 [Cmdlet(VerbsCommon.New, "BGInfoVisualCanvas")]
 [OutputType(typeof(BgInfoVisualCanvas))]
 public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
@@ -99,6 +117,26 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public object? HeroBadgeTextColor { get; set; }
 
+    /// <para>Optional feature-strip anchor. When omitted, the template keeps its default centered strip placement.</para>
+    [Parameter]
+    public BgInfoTextPosition FeatureAnchor { get; set; } = BgInfoTextPosition.BottomCenter;
+
+    /// <para>Optional feature-strip width in pixels. Zero uses the template default width.</para>
+    [Parameter]
+    public int FeatureWidth { get; set; }
+
+    /// <para>Optional feature-strip height in pixels. Zero uses the template default height.</para>
+    [Parameter]
+    public int FeatureHeight { get; set; }
+
+    /// <para>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</para>
+    [Parameter]
+    public int FeatureOffsetX { get; set; }
+
+    /// <para>Vertical feature-strip offset. For bottom anchors, positive values inset from the bottom edge.</para>
+    [Parameter]
+    public int FeatureOffsetY { get; set; }
+
     /// <para>Disable the built-in technology backdrop.</para>
     [Parameter]
     public SwitchParameter NoTechBackdrop { get; set; }
@@ -141,6 +179,11 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             HeroBadgeTop = PowerShellColorConverter.ConvertOptional(HeroBadgeTop, nameof(HeroBadgeTop)),
             HeroBadgeBottom = PowerShellColorConverter.ConvertOptional(HeroBadgeBottom, nameof(HeroBadgeBottom)),
             HeroBadgeTextColor = PowerShellColorConverter.ConvertOptional(HeroBadgeTextColor, nameof(HeroBadgeTextColor)),
+            FeatureAnchor = MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ? FeatureAnchor : null,
+            FeatureWidth = FeatureWidth,
+            FeatureHeight = FeatureHeight,
+            FeatureOffsetX = FeatureOffsetX,
+            FeatureOffsetY = FeatureOffsetY,
             Transparent = !Opaque.IsPresent,
             TechBackdrop = !NoTechBackdrop.IsPresent
         };
@@ -148,4 +191,5 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         foreach (var feature in Feature ?? Array.Empty<BgInfoVisualCanvasFeature>()) if (feature != null) visual.Features.Add(feature);
         WriteObject(visual);
     }
+
 }

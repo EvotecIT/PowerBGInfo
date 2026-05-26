@@ -108,6 +108,8 @@ New-BGInfo -MonitorIndex 0 -Target Both {
 
 ![PowerBGInfo ChartForgeX showcase](Examples/Output/PowerBGInfo.ChartForgeX.Showcase.jpg)
 
+![PowerBGInfo high-contrast visual canvas](Examples/Output/PowerBGInfo.VisualCanvas.ContrastBox.jpg)
+
 ![PowerBGInfo lab wallpaper pattern](Examples/Output/PowerBGInfo.Pattern.Lab.jpg)
 
 ## Common scenarios
@@ -175,7 +177,7 @@ Example output:
 - `-UseScreenCoordinates` makes placement calculations match the monitor coordinate space.
 - `-OutputFileName` controls the generated image name and path.
 - `-JsonPath` and `-ExportOnly` save reusable configuration without applying the wallpaper.
-- `New-BGInfoChart` and `New-BGInfoTopology` add ChartForgeX-backed transparent overlays with optional chart history.
+- `New-BGInfoChart`, `New-BGInfoTopology`, and `New-BGInfoVisualCanvas` add ChartForgeX-backed transparent overlays with optional chart history and reusable visual canvas boxes.
 
 ## Deployment recipes
 
@@ -314,9 +316,47 @@ New-BGInfo -Target File {
 } -FilePath $PSScriptRoot\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory $PSScriptRoot\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.jpg' -WallpaperFit Fill
 ```
 
-`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. `Examples\Scripts\PowerBGInfo.VisualCanvas.Raised3D.ps1` uses the reusable `Raised` surface style on a black operational background. `Examples\Scripts\PowerBGInfo.VisualCanvas.MiniCharts.ps1` combines the same visual canvas with purpose-matched mini charts inside the CPU, RAM, disk, and patching sections plus a bottom-right logo image. Tile `-SurfaceStyle` supports `Glass`, `Outline`, and `Raised`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
+`Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.ContrastBox.ps1` shows light high-contrast boxes over a dark wallpaper, moves the feature strip to the bottom-right so it does not cover the Evotec logo, and exports the same layout to `Examples\Configuration\PowerBGInfo.VisualCanvas.ContrastBox.json`. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. `Examples\Scripts\PowerBGInfo.VisualCanvas.Raised3D.ps1` uses the reusable `Raised` surface style on a black operational background. `Examples\Scripts\PowerBGInfo.VisualCanvas.MiniCharts.ps1` combines the same visual canvas with purpose-matched mini charts inside the CPU, RAM, disk, and patching sections plus a bottom-right logo image. Tile `-SurfaceStyle` supports `Glass`, `Outline`, and `Raised`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
 
 The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Those colors are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code.
+
+For a high-contrast color box treatment, use a light translucent tile fill, dark tile text, the `Raised` surface style, and per-tile accents:
+
+![PowerBGInfo high-contrast visual canvas](Examples/Output/PowerBGInfo.VisualCanvas.ContrastBox.jpg)
+
+```powershell
+$palette = @{
+    Accent                 = '#0F766EFF'
+    SecondaryAccent        = '#F97316FF'
+    TitleColor             = '#F8FAFCFF'
+    TitleAccentColor       = '#5EEAD4FF'
+    SubtitleColor          = '#E2E8F0FF'
+    TileLabelColor         = '#475569FF'
+    TileValueColor         = '#0F172AFF'
+    TileDetailColor        = '#334155FF'
+    TileGlassTop           = '#FFF7EDD9'
+    TileGlassBottom        = '#DBEAFECC'
+    TileProgressTrackColor = '#94A3B8A6'
+    HeroBadgeTop           = '#0F766EFF'
+    HeroBadgeBottom        = '#134E4AFF'
+    HeroBadgeTextColor     = '#FFF7EDFF'
+}
+
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop' -Accent '#0F766EFF'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}' -Detail 'primary adapter' -Accent '#2563EBFF'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Shield -SurfaceStyle Raised -Label 'PATCH STATUS' -Value '94% compliant' -Progress 0.94 -Accent '#16A34AFF'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31,42,38,34,31 -MiniChartMaximum 100 -Accent '#F97316FF'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label 'MEMORY USE' -Value '11.8 GB used' -MiniChartKind Bars -MiniChartValues 36,38,42,41,45,43,39 -MiniChartMaximum 100 -Accent '#DB2777FF'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Raised -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62 -Accent '#0EA5E9FF'
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes over a real wallpaper' -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -Tile $tiles @palette
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill
+```
+
+Use `-FeatureAnchor BottomRight` with `-FeatureWidth`, `-FeatureOffsetX`, and `-FeatureOffsetY` when the bottom feature strip needs to move away from the centered Evotec logo or another wallpaper element.
 
 To generate a border-only icon overlay like the examples, start with explicit tile style, icon kind, and palette values:
 

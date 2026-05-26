@@ -113,6 +113,16 @@ public sealed class BgInfoVisualCanvas {
     public Color? HeroBadgeBottom { get; set; }
     /// <summary>Hero badge symbol color.</summary>
     public Color? HeroBadgeTextColor { get; set; }
+    /// <summary>Optional feature-strip anchor. Null uses the template's default centered placement.</summary>
+    public BgInfoTextPosition? FeatureAnchor { get; set; }
+    /// <summary>Optional feature-strip width in pixels. Zero uses the template default width.</summary>
+    public int FeatureWidth { get; set; }
+    /// <summary>Optional feature-strip height in pixels. Zero uses the template default height.</summary>
+    public int FeatureHeight { get; set; }
+    /// <summary>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</summary>
+    public int FeatureOffsetX { get; set; }
+    /// <summary>Vertical feature-strip offset. For bottom anchors, positive values inset from the bottom edge.</summary>
+    public int FeatureOffsetY { get; set; }
     /// <summary>Render only floating HUD layers without a full canvas background.</summary>
     public bool Transparent { get; set; } = true;
     /// <summary>Render ChartForgeX's built-in technology backdrop when the canvas is not transparent.</summary>

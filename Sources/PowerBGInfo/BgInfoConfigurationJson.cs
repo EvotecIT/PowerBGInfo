@@ -410,6 +410,11 @@ public static class BgInfoConfigurationJson {
                     HeroBadgeTop = visual.HeroBadgeTop.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTop.Value) : null,
                     HeroBadgeBottom = visual.HeroBadgeBottom.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeBottom.Value) : null,
                     HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
+                    FeatureAnchor = visual.FeatureAnchor?.ToString(),
+                    FeatureWidth = visual.FeatureWidth == 0 ? null : visual.FeatureWidth,
+                    FeatureHeight = visual.FeatureHeight == 0 ? null : visual.FeatureHeight,
+                    FeatureOffsetX = visual.FeatureOffsetX == 0 ? null : visual.FeatureOffsetX,
+                    FeatureOffsetY = visual.FeatureOffsetY == 0 ? null : visual.FeatureOffsetY,
                     Transparent = visual.Transparent,
                     TechBackdrop = visual.TechBackdrop,
                     Tiles = visual.Tiles.Where(tile => tile != null).Select(MapVisualCanvasTileFile).ToList(),
@@ -819,6 +824,14 @@ public static class BgInfoConfigurationJson {
         if (model.PositionY.HasValue) visual.PositionY = model.PositionY.Value;
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
         if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
+        if (!string.IsNullOrWhiteSpace(model.FeatureAnchor) &&
+            Enum.TryParse(model.FeatureAnchor, true, out BgInfoTextPosition featureAnchor)) {
+            visual.FeatureAnchor = featureAnchor;
+        }
+        if (model.FeatureWidth.HasValue) visual.FeatureWidth = model.FeatureWidth.Value;
+        if (model.FeatureHeight.HasValue) visual.FeatureHeight = model.FeatureHeight.Value;
+        if (model.FeatureOffsetX.HasValue) visual.FeatureOffsetX = model.FeatureOffsetX.Value;
+        if (model.FeatureOffsetY.HasValue) visual.FeatureOffsetY = model.FeatureOffsetY.Value;
         ApplyColor(model.BackgroundTop, value => visual.BackgroundTop = value);
         ApplyColor(model.BackgroundBottom, value => visual.BackgroundBottom = value);
         ApplyColor(model.Accent, value => visual.Accent = value);
@@ -1168,6 +1181,11 @@ public static class BgInfoConfigurationJson {
         public string? HeroBadgeTop { get; set; }
         public string? HeroBadgeBottom { get; set; }
         public string? HeroBadgeTextColor { get; set; }
+        public string? FeatureAnchor { get; set; }
+        public int? FeatureWidth { get; set; }
+        public int? FeatureHeight { get; set; }
+        public int? FeatureOffsetX { get; set; }
+        public int? FeatureOffsetY { get; set; }
         public bool? Transparent { get; set; }
         public bool? TechBackdrop { get; set; }
         public List<BgInfoVisualCanvasTileFile>? Tiles { get; set; }
