@@ -107,6 +107,14 @@ Build-Module -ModuleName 'PowerBGInfo' {
             'PowerBGInfo.BgInfoTarget'
             'PowerBGInfo.BgInfoTextPosition'
             'PowerBGInfo.BgInfoTopology'
+            'PowerBGInfo.BgInfoVisualCanvas'
+            'PowerBGInfo.BgInfoVisualCanvasTemplate'
+            'PowerBGInfo.BgInfoVisualCanvasSide'
+            'PowerBGInfo.BgInfoVisualCanvasTile'
+            'PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle'
+            'PowerBGInfo.BgInfoVisualCanvasTileIconKind'
+            'PowerBGInfo.BgInfoVisualCanvasTileMiniChartKind'
+            'PowerBGInfo.BgInfoVisualCanvasFeature'
         )
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true

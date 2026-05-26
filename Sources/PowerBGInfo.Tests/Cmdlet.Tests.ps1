@@ -127,13 +127,17 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -MiniChartValues 18,26,22 -MiniChartMaximum 100
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
-        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -Tile $tile -Feature $feature
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -Tile $tile -Feature $feature
 
         $visual | Should -BeOfType ([PowerBGInfo.BgInfoVisualCanvas])
         $visual.Title | Should -Be 'PowerBGInfo'
         $visual.TitleColor | Should -Not -BeNullOrEmpty
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
+        $visual.FeatureAnchor | Should -Be ([PowerBGInfo.BgInfoTextPosition]::BottomRight)
+        $visual.FeatureWidth | Should -Be 610
+        $visual.FeatureOffsetX | Should -Be 165
+        $visual.FeatureOffsetY | Should -Be 120
         $visual.Tiles.Count | Should -Be 1
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
         $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Raised)

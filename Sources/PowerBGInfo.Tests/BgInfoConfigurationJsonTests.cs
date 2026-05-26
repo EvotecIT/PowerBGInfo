@@ -260,6 +260,11 @@ public class BgInfoConfigurationJsonTests
             HeroBadgeTop = Color.Navy,
             HeroBadgeBottom = Color.Black,
             HeroBadgeTextColor = Color.AliceBlue,
+            FeatureAnchor = BgInfoTextPosition.BottomRight,
+            FeatureWidth = 610,
+            FeatureHeight = 52,
+            FeatureOffsetX = 165,
+            FeatureOffsetY = 120,
             TechBackdrop = false
         };
         visual.Tiles.Add(new BgInfoVisualCanvasTile {
@@ -306,6 +311,11 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(Color.Navy.ToArgb(), loaded.HeroBadgeTop!.Value.ToArgb());
         Assert.Equal(Color.Black.ToArgb(), loaded.HeroBadgeBottom!.Value.ToArgb());
         Assert.Equal(Color.AliceBlue.ToArgb(), loaded.HeroBadgeTextColor!.Value.ToArgb());
+        Assert.Equal(BgInfoTextPosition.BottomRight, loaded.FeatureAnchor);
+        Assert.Equal(610, loaded.FeatureWidth);
+        Assert.Equal(52, loaded.FeatureHeight);
+        Assert.Equal(165, loaded.FeatureOffsetX);
+        Assert.Equal(120, loaded.FeatureOffsetY);
         Assert.False(loaded.TechBackdrop);
 
         var tile = Assert.Single(loaded.Tiles);
