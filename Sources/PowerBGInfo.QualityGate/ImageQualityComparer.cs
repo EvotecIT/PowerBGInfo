@@ -1,0 +1,135 @@
+using ChartForgeX;
+using ChartForgeX.Raster;
+
+namespace PowerBGInfo.QualityGate;
+
+public static class ImageQualityComparer {
+    private static readonly string[] SupportedExtensions = { ".png", ".jpg", ".jpeg", ".bmp", ".ppm", ".pnm", ".tif", ".tiff" };
+
+    public static ImageComparisonReport Compare(ImageComparisonOptions options) {
+        ValidateOptions(options);
+        Directory.CreateDirectory(options.OutputDirectory);
+        var diffDirectory = Path.Combine(options.OutputDirectory, "diffs");
+        Directory.CreateDirectory(diffDirectory);
+
+        var report = new ImageComparisonReport {
+            BaselineDirectory = Path.GetFullPath(options.BaselineDirectory),
+            CandidateDirectory = Path.GetFullPath(options.CandidateDirectory),
+            OutputDirectory = Path.GetFullPath(options.OutputDirectory),
+            MeanThreshold = options.MeanThreshold,
+            RmseThreshold = options.RmseThreshold,
+            MaxChannelThreshold = options.MaxChannelThreshold,
+            ChangedPixelPercentThreshold = options.ChangedPixelPercentThreshold
+        };
+
+        foreach (var baselinePath in EnumerateImages(options.BaselineDirectory, options.Recursive)) {
+            var relativePath = Path.GetRelativePath(options.BaselineDirectory, baselinePath);
+            var candidatePath = Path.Combine(options.CandidateDirectory, relativePath);
+            var diffPath = Path.Combine(diffDirectory, Path.ChangeExtension(relativePath, ".diff.png"));
+            var result = CompareOne(relativePath, baselinePath, candidatePath, diffPath, options);
+            report.Results.Add(result);
+        }
+
+        report.Compared = report.Results.Count(r => !r.MissingCandidate);
+        report.Missing = report.Results.Count(r => r.MissingCandidate);
+        report.Passed = report.Results.Count(r => r.Passed);
+        report.Failed = report.Results.Count(r => !r.Passed);
+        return report;
+    }
+
+    private static ImageComparisonResult CompareOne(string relativePath, string baselinePath, string candidatePath, string diffPath, ImageComparisonOptions options) {
+        var result = new ImageComparisonResult {
+            RelativePath = NormalizePath(relativePath),
+            BaselinePath = Path.GetFullPath(baselinePath),
+            CandidatePath = Path.GetFullPath(candidatePath),
+            DiffPath = Path.GetFullPath(diffPath)
+        };
+
+        if (!File.Exists(candidatePath)) {
+            result.MissingCandidate = true;
+            result.Passed = !options.FailOnMissing;
+            result.Message = "Candidate image is missing.";
+            return result;
+        }
+
+        var baseline = RasterImageDecoder.Read(baselinePath);
+        var candidate = RasterImageDecoder.Read(candidatePath);
+        result.BaselineWidth = baseline.Width;
+        result.BaselineHeight = baseline.Height;
+        result.CandidateWidth = candidate.Width;
+        result.CandidateHeight = candidate.Height;
+        result.DimensionsMatch = baseline.Width == candidate.Width && baseline.Height == candidate.Height;
+
+        if (!result.DimensionsMatch) {
+            result.Passed = false;
+            result.Message = $"Dimensions differ: baseline {baseline.Width}x{baseline.Height}, candidate {candidate.Width}x{candidate.Height}.";
+            return result;
+        }
+
+        ComputeMetrics(baseline, candidate, result, diffPath, options.DiffScale);
+        var failed = result.MeanAbsoluteChannelError > options.MeanThreshold ||
+            result.RmseChannelError > options.RmseThreshold ||
+            result.MaxChannelError > options.MaxChannelThreshold ||
+            result.ChangedPixelPercent > options.ChangedPixelPercentThreshold;
+        result.Passed = !failed;
+        result.Message = failed ? "Image difference exceeds quality thresholds." : "Image difference is within quality thresholds.";
+        return result;
+    }
+
+    private static void ComputeMetrics(RgbaImage baseline, RgbaImage candidate, ImageComparisonResult result, string diffPath, int diffScale) {
+        var totalAbs = 0d;
+        var totalSquared = 0d;
+        var max = 0;
+        var changedPixels = 0;
+        var diffPixels = new byte[baseline.Width * baseline.Height * 4];
+        var channelCount = baseline.Width * baseline.Height * 4d;
+
+        for (var i = 0; i < baseline.Pixels.Length; i += 4) {
+            var pixelMax = 0;
+            for (var c = 0; c < 4; c++) {
+                var delta = Math.Abs(baseline.Pixels[i + c] - candidate.Pixels[i + c]);
+                totalAbs += delta;
+                totalSquared += delta * delta;
+                if (delta > max) max = delta;
+                if (delta > pixelMax) pixelMax = delta;
+            }
+
+            if (pixelMax > 0) changedPixels++;
+            var heat = ClampByte(pixelMax * Math.Max(1, diffScale));
+            diffPixels[i] = heat;
+            diffPixels[i + 1] = (byte)(heat == 0 ? 0 : Math.Max(0, 96 - heat / 3));
+            diffPixels[i + 2] = (byte)(heat == 0 ? 0 : Math.Max(0, 255 - heat));
+            diffPixels[i + 3] = 255;
+        }
+
+        result.MeanAbsoluteChannelError = totalAbs / channelCount;
+        result.RmseChannelError = Math.Sqrt(totalSquared / channelCount);
+        result.MaxChannelError = max;
+        result.ChangedPixelPercent = changedPixels * 100d / (baseline.Width * baseline.Height);
+        Directory.CreateDirectory(Path.GetDirectoryName(diffPath) ?? ".");
+        File.WriteAllBytes(diffPath, new RgbaImage(baseline.Width, baseline.Height, diffPixels).ToPng());
+    }
+
+    private static IEnumerable<string> EnumerateImages(string directory, bool recursive) {
+        var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+        return Directory.EnumerateFiles(directory, "*.*", option)
+            .Where(path => SupportedExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static void ValidateOptions(ImageComparisonOptions options) {
+        if (string.IsNullOrWhiteSpace(options.BaselineDirectory)) throw new ArgumentException("Baseline directory is required.");
+        if (string.IsNullOrWhiteSpace(options.CandidateDirectory)) throw new ArgumentException("Candidate directory is required.");
+        if (string.IsNullOrWhiteSpace(options.OutputDirectory)) throw new ArgumentException("Output directory is required.");
+        if (!Directory.Exists(options.BaselineDirectory)) throw new DirectoryNotFoundException("Baseline directory was not found: " + options.BaselineDirectory);
+        if (!Directory.Exists(options.CandidateDirectory)) throw new DirectoryNotFoundException("Candidate directory was not found: " + options.CandidateDirectory);
+        if (options.MeanThreshold < 0) throw new ArgumentOutOfRangeException(nameof(options.MeanThreshold));
+        if (options.RmseThreshold < 0) throw new ArgumentOutOfRangeException(nameof(options.RmseThreshold));
+        if (options.MaxChannelThreshold < 0 || options.MaxChannelThreshold > 255) throw new ArgumentOutOfRangeException(nameof(options.MaxChannelThreshold));
+        if (options.ChangedPixelPercentThreshold < 0 || options.ChangedPixelPercentThreshold > 100) throw new ArgumentOutOfRangeException(nameof(options.ChangedPixelPercentThreshold));
+    }
+
+    private static string NormalizePath(string path) => path.Replace('\\', '/');
+
+    private static byte ClampByte(int value) => (byte)Math.Max(0, Math.Min(255, value));
+}
