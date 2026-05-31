@@ -37,9 +37,10 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Default
+            Register-PSRepository -Name PSGallery -SourceLocation 'https://www.powershellgallery.com/api/v2' -PublishLocation 'https://www.powershellgallery.com/api/v2/package/' -ScriptSourceLocation 'https://www.powershellgallery.com/api/v2/items/psscript' -ScriptPublishLocation 'https://www.powershellgallery.com/api/v2/package/' -InstallationPolicy Trusted
+          } else {
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module PSPublishModule -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
 
       - name: Refresh module manifest
@@ -88,9 +89,10 @@ jobs:
         run: |
           Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
           if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Default
+            Register-PSRepository -Name PSGallery -SourceLocation 'https://www.powershellgallery.com/api/v2' -PublishLocation 'https://www.powershellgallery.com/api/v2/package/' -ScriptSourceLocation 'https://www.powershellgallery.com/api/v2/items/psscript' -ScriptPublishLocation 'https://www.powershellgallery.com/api/v2/package/' -InstallationPolicy Trusted
+          } else {
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
           Install-Module -Name PSWriteColor -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
 
@@ -136,9 +138,10 @@ jobs:
         run: |
           Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
           if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Default
+            Register-PSRepository -Name PSGallery -SourceLocation 'https://www.powershellgallery.com/api/v2' -PublishLocation 'https://www.powershellgallery.com/api/v2/package/' -ScriptSourceLocation 'https://www.powershellgallery.com/api/v2/items/psscript' -ScriptPublishLocation 'https://www.powershellgallery.com/api/v2/package/' -InstallationPolicy Trusted
+          } else {
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
           Install-Module -Name PSWriteColor -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
 
@@ -184,9 +187,10 @@ jobs:
         run: |
           Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
           if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Default
+            Register-PSRepository -Name PSGallery -SourceLocation 'https://www.powershellgallery.com/api/v2' -PublishLocation 'https://www.powershellgallery.com/api/v2/package/' -ScriptSourceLocation 'https://www.powershellgallery.com/api/v2/items/psscript' -ScriptPublishLocation 'https://www.powershellgallery.com/api/v2/package/' -InstallationPolicy Trusted
+          } else {
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module -Name PSPublishModule -Repository PSGallery -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
           Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
           Install-Module -Name PSWriteColor -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
