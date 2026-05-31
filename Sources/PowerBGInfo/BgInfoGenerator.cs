@@ -596,9 +596,10 @@ public class BgInfoGenerator
     {
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
-            return Path.IsPathRooted(config.OutputFileName)
+            var configuredPath = Path.IsPathRooted(config.OutputFileName)
                 ? config.OutputFileName
                 : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            return NormalizeOutputPathExtension(configuredPath);
         }
 
         if (hasBaseImage)
@@ -631,6 +632,10 @@ public class BgInfoGenerator
             {
                 extension = sourceExtension;
             }
+            else
+            {
+                extension = NormalizeOutputImageExtension(extension);
+            }
 
             return Path.Combine(directory, $"{name}_{index + 1:D3}{extension}");
         }
@@ -661,6 +666,21 @@ public class BgInfoGenerator
             ".gif" or ".dib" or ".wdp" => ".png",
             _ => ".png"
         };
+    }
+
+    private static string NormalizeOutputPathExtension(string path)
+    {
+        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        var name = Path.GetFileNameWithoutExtension(path);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = "PowerBgInfo";
+        }
+
+        var extension = NormalizeOutputImageExtension(Path.GetExtension(path));
+        return string.IsNullOrWhiteSpace(directory)
+            ? name + extension
+            : Path.Combine(directory, name + extension);
     }
 
     private void ApplyWallpaper(BgInfoConfiguration config, string outputPath)

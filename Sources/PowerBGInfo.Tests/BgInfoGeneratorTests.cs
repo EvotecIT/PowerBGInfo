@@ -471,6 +471,72 @@ public class BgInfoGeneratorTests
         Assert.Equal(expected, BgInfoGenerator.NormalizeOutputImageExtension(extension));
     }
 
+    [Fact]
+    public void GenerateNormalizesExplicitLegacyOutputFileName()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
+            OutputFileName = "wallpaper.gif",
+            BackgroundColor = Color.Black,
+            ForceWallpaperRefresh = false,
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.Equal(Path.Combine(tempDirectory, "wallpaper.png"), path);
+    }
+
+    [Fact]
+    public void GeneratePreservesWallpaperSlideshowNormalizesExplicitLegacyOutputFileName()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourceOne = Path.Combine(tempDirectory, "slide-one.jpg");
+        var sourceTwo = Path.Combine(tempDirectory, "slide-two.jpg");
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceOne);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceTwo);
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { sourceOne, sourceTwo },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "slides.gif",
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        generator.Generate(config);
+
+        Assert.Equal(2, wallpaperService.SlideshowPaths.Count);
+        Assert.EndsWith("slides_001.png", wallpaperService.SlideshowPaths[0]);
+        Assert.EndsWith("slides_002.png", wallpaperService.SlideshowPaths[1]);
+        Assert.All(wallpaperService.SlideshowPaths, generated => Assert.True(File.Exists(generated)));
+    }
+
     [Theory]
     [InlineData(".jpe")]
     [InlineData(".jfif")]
