@@ -127,6 +127,7 @@ New-BGInfo -MonitorIndex 0 -Target File {
         -TileLabelColor '#B7D3E7FF' `
         -TileValueColor '#FFFFFFFF' `
         -TileDetailColor '#9EB2C4FF' `
+        -NoTechBackdrop `
         -Opaque
 } -FilePath $samplePath `
     -ConfigurationDirectory $outputDir `
