@@ -1,6 +1,7 @@
 using DesktopManager;
 using PowerBGInfo;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using Xunit;
 
@@ -451,6 +452,67 @@ public class BgInfoGeneratorTests
 
         Assert.Equal(165f, point.X);
         Assert.Equal(95f, point.Y);
+    }
+
+    [Theory]
+    [InlineData(null, ".png")]
+    [InlineData("", ".png")]
+    [InlineData(".jpg", ".jpg")]
+    [InlineData(".jpeg", ".jpg")]
+    [InlineData(".jpe", ".jpg")]
+    [InlineData(".jfif", ".jpg")]
+    [InlineData(".gif", ".png")]
+    [InlineData(".dib", ".png")]
+    [InlineData(".wdp", ".png")]
+    [InlineData(".pnm", ".ppm")]
+    [InlineData(".tif", ".tiff")]
+    public void NormalizeOutputImageExtensionReturnsChartForgeXWritableExtension(string? extension, string expected)
+    {
+        Assert.Equal(expected, BgInfoGenerator.NormalizeOutputImageExtension(extension));
+    }
+
+    [Theory]
+    [InlineData(".jpe")]
+    [InlineData(".jfif")]
+    public void RasterImageSaveSupportsJpegAliasExtensions(string extension)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "wallpaper" + extension);
+
+        using var image = new BgInfoRasterImage();
+        image.Create(path, 8, 8, Color.Navy);
+        image.Save(path);
+
+        Assert.True(File.Exists(path));
+        Assert.True(new FileInfo(path).Length > 0);
+    }
+
+    [Fact]
+    public void RasterImageLoadSupportsLegacyGifThroughFallback()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "legacy.gif");
+        using (var bitmap = new Bitmap(6, 4))
+        {
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.DarkGreen);
+            }
+
+            bitmap.Save(path, ImageFormat.Gif);
+        }
+
+        using var image = BgInfoRasterImage.Load(path);
+
+        Assert.Equal(6, image.Width);
+        Assert.Equal(4, image.Height);
     }
 }
 

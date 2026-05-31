@@ -607,7 +607,7 @@ public class BgInfoGenerator
 
         if (hasBaseImage)
         {
-            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + Path.GetExtension(imagePath);
+            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + NormalizeOutputImageExtension(Path.GetExtension(imagePath));
             return Path.Combine(config.ConfigurationDirectory, fileName);
         }
 
@@ -616,11 +616,7 @@ public class BgInfoGenerator
 
     private static string BuildSlideshowOutputPath(BgInfoConfiguration config, string sourcePath, int index)
     {
-        var sourceExtension = Path.GetExtension(sourcePath);
-        if (string.IsNullOrWhiteSpace(sourceExtension))
-        {
-            sourceExtension = ".png";
-        }
+        var sourceExtension = NormalizeOutputImageExtension(Path.GetExtension(sourcePath));
 
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
@@ -650,6 +646,25 @@ public class BgInfoGenerator
         }
 
         return Path.Combine(config.ConfigurationDirectory, $"{sourceName}_PowerBgInfo_{index + 1:D3}{sourceExtension}");
+    }
+
+    internal static string NormalizeOutputImageExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return ".png";
+        }
+
+        return extension!.ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" or ".jpe" or ".jfif" => ".jpg",
+            ".png" => ".png",
+            ".bmp" => ".bmp",
+            ".ppm" or ".pnm" => ".ppm",
+            ".tif" or ".tiff" => ".tiff",
+            ".gif" or ".dib" or ".wdp" => ".png",
+            _ => ".png"
+        };
     }
 
     private void ApplyWallpaper(BgInfoConfiguration config, string outputPath)
