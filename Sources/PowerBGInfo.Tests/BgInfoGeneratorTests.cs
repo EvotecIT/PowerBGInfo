@@ -1,8 +1,8 @@
 using DesktopManager;
 using PowerBGInfo;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using GdiImage = ImagePlayground.Gdi.Image;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
@@ -426,7 +426,7 @@ public class BgInfoGeneratorTests
             return;
         }
 
-        using var image = new GdiImage();
+        using var image = new BgInfoRasterImage();
         image.Create(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png"), 800, 600, Color.Black);
 
         var lines = BgInfoGenerator.WrapTextLines(
@@ -452,6 +452,187 @@ public class BgInfoGeneratorTests
 
         Assert.Equal(165f, point.X);
         Assert.Equal(95f, point.Y);
+    }
+
+    [Theory]
+    [InlineData(null, ".png")]
+    [InlineData("", ".png")]
+    [InlineData(".jpg", ".jpg")]
+    [InlineData(".jpeg", ".jpg")]
+    [InlineData(".jpe", ".jpg")]
+    [InlineData(".jfif", ".jpg")]
+    [InlineData(".gif", ".png")]
+    [InlineData(".dib", ".png")]
+    [InlineData(".wdp", ".png")]
+    [InlineData(".pnm", ".ppm")]
+    [InlineData(".tif", ".tiff")]
+    public void NormalizeOutputImageExtensionReturnsChartForgeXWritableExtension(string? extension, string expected)
+    {
+        Assert.Equal(expected, BgInfoGenerator.NormalizeOutputImageExtension(extension));
+    }
+
+    [Fact]
+    public void GenerateNormalizesExplicitLegacyOutputFileName()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
+            OutputFileName = "wallpaper.gif",
+            BackgroundColor = Color.Black,
+            ForceWallpaperRefresh = false,
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.Equal(Path.Combine(tempDirectory, "wallpaper.png"), path);
+    }
+
+    [Fact]
+    public void GeneratePreservesWallpaperSlideshowNormalizesExplicitLegacyOutputFileName()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourceOne = Path.Combine(tempDirectory, "slide-one.jpg");
+        var sourceTwo = Path.Combine(tempDirectory, "slide-two.jpg");
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceOne);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "TapC-Evotec-2560x1080.jpg"), sourceTwo);
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService {
+            Slideshow = new DesktopWallpaperSlideshow {
+                ImagePaths = new[] { sourceOne, sourceTwo },
+                State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow
+            }
+        };
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            OutputFileName = "slides.gif",
+            ConfigurationDirectory = tempDirectory
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
+
+        generator.Generate(config);
+
+        Assert.Equal(2, wallpaperService.SlideshowPaths.Count);
+        Assert.EndsWith("slides_001.png", wallpaperService.SlideshowPaths[0]);
+        Assert.EndsWith("slides_002.png", wallpaperService.SlideshowPaths[1]);
+        Assert.All(wallpaperService.SlideshowPaths, generated => Assert.True(File.Exists(generated)));
+    }
+
+    [Theory]
+    [InlineData(".jpe")]
+    [InlineData(".jfif")]
+    public void RasterImageSaveSupportsJpegAliasExtensions(string extension)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "wallpaper" + extension);
+
+        using var image = new BgInfoRasterImage();
+        image.Create(path, 8, 8, Color.Navy);
+        image.Save(path);
+
+        Assert.True(File.Exists(path));
+        Assert.True(new FileInfo(path).Length > 0);
+    }
+
+    [Fact]
+    public void RasterImageLoadSupportsLegacyGifThroughFallback()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "legacy.gif");
+        using (var bitmap = new Bitmap(6, 4))
+        {
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.DarkGreen);
+            }
+
+            bitmap.Save(path, ImageFormat.Gif);
+        }
+
+        using var image = BgInfoRasterImage.Load(path);
+
+        Assert.Equal(6, image.Width);
+        Assert.Equal(4, image.Height);
+    }
+
+    [Theory]
+    [InlineData(".jpg")]
+    [InlineData(".jpeg")]
+    [InlineData(".jpe")]
+    [InlineData(".jfif")]
+    [InlineData(".png")]
+    [InlineData(".bmp")]
+    [InlineData(".gif")]
+    [InlineData(".dib")]
+    [InlineData(".wdp")]
+    [InlineData(".tif")]
+    [InlineData(".tiff")]
+    public void RasterImageSystemDrawingFallbackCoversAcceptedWallpaperFormats(string extension)
+    {
+        Assert.True(BgInfoRasterImage.CanTrySystemDrawingFallback("wallpaper" + extension));
+    }
+
+    [Fact]
+    public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourcePath = Path.Combine(tempDirectory, "legacy.gif");
+        using (var bitmap = new Bitmap(12, 8))
+        {
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.MidnightBlue);
+            }
+
+            bitmap.Save(sourcePath, ImageFormat.Gif);
+        }
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = sourcePath,
+            ConfigurationDirectory = tempDirectory,
+            ForceWallpaperRefresh = false
+        };
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.EndsWith("_PowerBgInfo.png", path);
     }
 }
 

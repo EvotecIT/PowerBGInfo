@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Themes;
-using ImagePlayground.Gdi;
-using GdiImage = ImagePlayground.Gdi.Image;
 
 namespace PowerBGInfo;
 
 internal static class BgInfoChartRenderer {
-    public static GdiImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config) {
+    public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
 
         var width = Math.Max(1, chart.Width);
         var height = Math.Max(1, chart.Height);
-        var image = new GdiImage();
+        var image = new BgInfoRasterImage();
         var background = chart.BackgroundColor ?? Color.Transparent;
         image.Create(string.Empty, width, height, background);
 
@@ -312,12 +310,8 @@ internal static class BgInfoChartRenderer {
         }
     }
 
-    private static void DrawPng(GdiImage image, byte[] png, float x, float y, float width, float height) {
-        image.WithGraphics(graphics => {
-            using var stream = new MemoryStream(png);
-            using var bitmap = new Bitmap(stream);
-            graphics.DrawImage(bitmap, x, y, width, height);
-        });
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 
     private static ChartColor ToChartColor(Color color) => ChartColor.FromRgba(color.R, color.G, color.B, color.A);

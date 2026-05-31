@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using ImagePlayground.Gdi;
 using DesktopManager;
 
 namespace PowerBGInfo;
@@ -91,7 +89,7 @@ public class BgInfoGenerator
         }
 
         using var image = hasBaseImage
-            ? LoadBaseImage(imagePath!, outputPath)
+            ? LoadBaseImage(imagePath!)
             : CreateBaseImage(config, getMonitors(), outputPath);
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
@@ -490,20 +488,16 @@ public class BgInfoGenerator
         return clone;
     }
 
-    private Image LoadBaseImage(string imagePath, string outputPath)
+    private BgInfoRasterImage LoadBaseImage(string imagePath)
     {
-        if (!PathsEqual(imagePath, outputPath))
-        {
-            File.Copy(imagePath, outputPath, true);
-        }
-        return _imageService.Load(outputPath);
+        return _imageService.Load(imagePath);
     }
 
-    private static Image CreateBaseImage(BgInfoConfiguration config, Monitors? monitors, string outputPath)
+    private static BgInfoRasterImage CreateBaseImage(BgInfoConfiguration config, Monitors? monitors, string outputPath)
     {
         var (width, height) = GetMonitorSize(monitors, config.MonitorIndex);
         var background = ResolveBackgroundColor(config, monitors);
-        var image = new Image();
+        var image = new BgInfoRasterImage();
         image.Create(outputPath, width, height, background);
         return image;
     }
@@ -602,14 +596,15 @@ public class BgInfoGenerator
     {
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
-            return Path.IsPathRooted(config.OutputFileName)
+            var configuredPath = Path.IsPathRooted(config.OutputFileName)
                 ? config.OutputFileName
                 : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            return NormalizeOutputPathExtension(configuredPath);
         }
 
         if (hasBaseImage)
         {
-            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + Path.GetExtension(imagePath);
+            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + NormalizeOutputImageExtension(Path.GetExtension(imagePath));
             return Path.Combine(config.ConfigurationDirectory, fileName);
         }
 
@@ -618,11 +613,7 @@ public class BgInfoGenerator
 
     private static string BuildSlideshowOutputPath(BgInfoConfiguration config, string sourcePath, int index)
     {
-        var sourceExtension = Path.GetExtension(sourcePath);
-        if (string.IsNullOrWhiteSpace(sourceExtension))
-        {
-            sourceExtension = ".png";
-        }
+        var sourceExtension = NormalizeOutputImageExtension(Path.GetExtension(sourcePath));
 
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
@@ -641,6 +632,10 @@ public class BgInfoGenerator
             {
                 extension = sourceExtension;
             }
+            else
+            {
+                extension = NormalizeOutputImageExtension(extension);
+            }
 
             return Path.Combine(directory, $"{name}_{index + 1:D3}{extension}");
         }
@@ -652,6 +647,40 @@ public class BgInfoGenerator
         }
 
         return Path.Combine(config.ConfigurationDirectory, $"{sourceName}_PowerBgInfo_{index + 1:D3}{sourceExtension}");
+    }
+
+    internal static string NormalizeOutputImageExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return ".png";
+        }
+
+        return extension!.ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" or ".jpe" or ".jfif" => ".jpg",
+            ".png" => ".png",
+            ".bmp" => ".bmp",
+            ".ppm" or ".pnm" => ".ppm",
+            ".tif" or ".tiff" => ".tiff",
+            ".gif" or ".dib" or ".wdp" => ".png",
+            _ => ".png"
+        };
+    }
+
+    private static string NormalizeOutputPathExtension(string path)
+    {
+        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        var name = Path.GetFileNameWithoutExtension(path);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = "PowerBgInfo";
+        }
+
+        var extension = NormalizeOutputImageExtension(Path.GetExtension(path));
+        return string.IsNullOrWhiteSpace(directory)
+            ? name + extension
+            : Path.Combine(directory, name + extension);
     }
 
     private void ApplyWallpaper(BgInfoConfiguration config, string outputPath)
@@ -702,16 +731,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static bool PathsEqual(string left, string right)
-    {
-        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
-        {
-            return false;
-        }
-        return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static void RenderCharts(Image image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
+    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
     {
         if (config.Charts.Count == 0)
         {
@@ -740,7 +760,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderTopologies(Image image, BgInfoConfiguration config)
+    private static void RenderTopologies(BgInfoRasterImage image, BgInfoConfiguration config)
     {
         if (config.Topologies.Count == 0)
         {
@@ -761,7 +781,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderVisualCanvases(Image image, BgInfoConfiguration config)
+    private static void RenderVisualCanvases(BgInfoRasterImage image, BgInfoConfiguration config)
     {
         if (config.VisualCanvases.Count == 0)
         {
@@ -776,7 +796,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderImages(Image image, BgInfoConfiguration config)
+    private static void RenderImages(BgInfoRasterImage image, BgInfoConfiguration config)
     {
         if (config.Images.Count == 0)
         {
@@ -794,15 +814,14 @@ public class BgInfoGenerator
                 throw new FileNotFoundException("BGInfo image overlay file was not found.", overlay.Path);
             }
 
-            using var stream = File.OpenRead(overlay.Path);
-            using var bitmap = System.Drawing.Image.FromStream(stream);
-            var (width, height) = ResolveImageSize(overlay, bitmap.Width, bitmap.Height);
+            using var overlayImage = BgInfoRasterImage.Load(overlay.Path);
+            var (width, height) = ResolveImageSize(overlay, overlayImage.Width, overlayImage.Height);
             var position = ResolveImagePosition(image, overlay, width, height);
-            DrawBitmap(image, bitmap, position.X, position.Y, width, height, overlay.Opacity);
+            image.DrawImage(overlayImage.ToRgbaImage(), position.X, position.Y, width, height, overlay.Opacity);
         }
     }
 
-    private static void RenderStackedCharts(Image image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock, DateTimeOffset now)
+    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock, DateTimeOffset now)
     {
         var area = ResolveChartStackArea(image, config, textBlock);
         if (area.Width <= 0 || area.Height <= 0)
@@ -855,7 +874,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static System.Drawing.RectangleF ResolveChartStackArea(Image image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
+    private static System.Drawing.RectangleF ResolveChartStackArea(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
     {
         if (!config.ChartStackAlignToTextBlock)
         {
@@ -921,7 +940,7 @@ public class BgInfoGenerator
         return new System.Drawing.PointF(x, y);
     }
 
-    internal static IReadOnlyList<string> WrapTextLines(Image image, string? text, float wrapWidth, float fontSize, string fontFamilyName)
+    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, float wrapWidth, float fontSize, string fontFamilyName)
     {
         if (image == null) throw new ArgumentNullException(nameof(image));
 
@@ -1061,7 +1080,7 @@ public class BgInfoGenerator
         return new string(buffer);
     }
 
-    private static System.Drawing.PointF ResolveChartPosition(Image image, BgInfoChart chart)
+    private static System.Drawing.PointF ResolveChartPosition(BgInfoRasterImage image, BgInfoChart chart)
     {
         if (chart.PositionX.HasValue && chart.PositionY.HasValue)
         {
@@ -1074,7 +1093,7 @@ public class BgInfoGenerator
             (int)chartWidth, (int)chartHeight, chart.Anchor, chart.OffsetX, chart.OffsetY);
     }
 
-    private static System.Drawing.PointF ResolveTopologyPosition(Image image, BgInfoTopology topology)
+    private static System.Drawing.PointF ResolveTopologyPosition(BgInfoRasterImage image, BgInfoTopology topology)
     {
         if (topology.PositionX.HasValue && topology.PositionY.HasValue)
         {
@@ -1085,7 +1104,7 @@ public class BgInfoGenerator
             Math.Max(1, topology.Width), Math.Max(1, topology.Height), topology.Anchor, topology.OffsetX, topology.OffsetY);
     }
 
-    private static System.Drawing.PointF ResolveImagePosition(Image image, BgInfoImage overlay, int width, int height)
+    private static System.Drawing.PointF ResolveImagePosition(BgInfoRasterImage image, BgInfoImage overlay, int width, int height)
     {
         var anchored = ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
             width, height, overlay.Anchor, overlay.OffsetX, overlay.OffsetY);
@@ -1154,26 +1173,7 @@ public class BgInfoGenerator
         return new System.Drawing.PointF(x, y);
     }
 
-    private static void DrawBitmap(Image image, System.Drawing.Image bitmap, float x, float y, int width, int height, double opacity)
-    {
-        image.WithGraphics(graphics => {
-            var destination = new System.Drawing.RectangleF(x, y, width, height);
-            if (opacity >= 0.999d)
-            {
-                graphics.DrawImage(bitmap, destination);
-                return;
-            }
-
-            using var attributes = new ImageAttributes();
-            var matrix = new ColorMatrix {
-                Matrix33 = (float)Math.Max(0d, Math.Min(1d, opacity))
-            };
-            attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-            graphics.DrawImage(bitmap, System.Drawing.Rectangle.Round(destination), 0, 0, bitmap.Width, bitmap.Height, System.Drawing.GraphicsUnit.Pixel, attributes);
-        });
-    }
-
-    private static List<EntryLayout> BuildEntryLayouts(Image image, BgInfoConfiguration config, IReadOnlyList<BgInfoEntry> entries)
+    private static List<EntryLayout> BuildEntryLayouts(BgInfoRasterImage image, BgInfoConfiguration config, IReadOnlyList<BgInfoEntry> entries)
     {
         var layouts = new List<EntryLayout>();
         foreach (var entry in entries)
@@ -1233,7 +1233,7 @@ public class BgInfoGenerator
         return entryLayouts.Sum(layout => layout.RowHeight) + (entryLayouts.Count - 1) * config.SpaceBetweenLines;
     }
 
-    private static float GetLineHeight(Image image, float fontSize, string fontFamilyName)
+    private static float GetLineHeight(BgInfoRasterImage image, float fontSize, string fontFamilyName)
     {
         return image.GetTextSize("Ag", fontSize, fontFamilyName).Height;
     }
@@ -1243,7 +1243,7 @@ public class BgInfoGenerator
         return (text ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
     }
 
-    private static void AddWrappedParagraph(List<string> lines, Image image, string paragraph, float wrapWidth, float fontSize, string fontFamilyName)
+    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, float wrapWidth, float fontSize, string fontFamilyName)
     {
         var words = paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0)
@@ -1289,7 +1289,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static IEnumerable<string> WrapLongWord(Image image, string word, float wrapWidth, float fontSize, string fontFamilyName)
+    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, float wrapWidth, float fontSize, string fontFamilyName)
     {
         var current = string.Empty;
         foreach (var character in word)

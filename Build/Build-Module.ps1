@@ -31,7 +31,6 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     #New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid Auto -Version Latest
     #New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '2.0.1'
-    #New-ConfigurationModule -Type RequiredModule -Name 'ImagePlayground' -Guid Auto -Version '0.0.8'
     #New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword', 'PSPublishModule'
     New-ConfigurationModuleSkip -IgnoreModuleName @('NetTCPIP', 'Microsoft.PowerShell.Utility', 'Microsoft.PowerShell.Management', 'CimCmdlets')
 
@@ -70,7 +69,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
     # when creating PSD1 use special style without comments and with only required parameters
     New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'OnMergePSD1' -PSD1Style 'Minimal'
     # configuration for documentation, at the same time it enables documentation processing
-    New-ConfigurationDocumentation -Enable:$false -StartClean -UpdateWhenNew -PathReadme 'Docs\Readme.md' -Path 'Docs'
+    New-ConfigurationDocumentation -Enable:$false -PathReadme 'Docs\Readme.md' -Path 'Docs'
 
     #New-ConfigurationImportModule -ImportSelf
 
