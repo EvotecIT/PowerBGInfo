@@ -108,8 +108,13 @@ $canvasFeatures = @(
 )
 
 New-BGInfo -MonitorIndex 0 -Target File {
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' `
-        -Subtitle 'Full ChartForgeX visual canvas rendered through PowerBGInfo' `
+    $canvasMode = @{
+        # Opaque = $true
+    }
+
+    New-BGInfoVisualCanvas @canvasMode `
+        -Title 'PowerBGInfo' `
+        -Subtitle 'Transparent ChartForgeX HUD overlay rendered through PowerBGInfo' `
         -Width 2560 `
         -Height 1080 `
         -Tile $canvasTiles `
@@ -127,8 +132,7 @@ New-BGInfo -MonitorIndex 0 -Target File {
         -TileLabelColor '#B7D3E7FF' `
         -TileValueColor '#FFFFFFFF' `
         -TileDetailColor '#9EB2C4FF' `
-        -NoTechBackdrop `
-        -Opaque
+        -NoTechBackdrop
 } -FilePath $samplePath `
     -ConfigurationDirectory $outputDir `
     -OutputFileName 'PowerBGInfo.ChartForgeX.CanvasDashboard.jpg' `

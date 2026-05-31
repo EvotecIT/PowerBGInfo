@@ -31,8 +31,12 @@ New-BGInfo -MonitorIndex 0 -Target File {
         New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label 'QUEUE' -Value '11 pending' -Detail 'SLA green' -Progress 0.18 -MiniChartKind Bars -MiniChartValues 18,14,13,17,12,11 -MiniChartMaximum 60 -Accent $c.Cyan
         New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Raised -Label 'EVIDENCE' -Value '7 days local' -Detail 'shipper active' -Progress 0.74 -Accent $c.Green
     )
+    $canvasMode = @{
+        # Opaque = $true
+    }
 
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' `
+    New-BGInfoVisualCanvas @canvasMode `
+        -Title 'PowerBGInfo' `
         -Subtitle 'Security operations desktop with live-looking local status' `
         -Tile $tiles `
         -Feature @(
@@ -53,8 +57,8 @@ New-BGInfo -MonitorIndex 0 -Target File {
         -TileLabelColor $c.Soft `
         -TileValueColor $c.Ink `
         -TileDetailColor '#94A3B8FF' `
-        -NoTechBackdrop `
-        -Opaque
+        -NoTechBackdrop
+        # -Opaque
 } -FilePath (Join-Path -Path $examplesRoot -ChildPath 'Samples\TapC-Evotec-2560x1080.jpg') `
     -ConfigurationDirectory $outputDirectory `
     -OutputFileName 'PowerBGInfo.Cool.SecurityOps.jpg' `
