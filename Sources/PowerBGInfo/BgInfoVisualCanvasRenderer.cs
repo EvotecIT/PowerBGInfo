@@ -1,22 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
-using ImagePlayground.Gdi;
-using GdiImage = ImagePlayground.Gdi.Image;
+using ChartForgeX.Raster;
 
 namespace PowerBGInfo;
 
 internal static class BgInfoVisualCanvasRenderer {
-    public static GdiImage Render(BgInfoVisualCanvas visual, BgInfoConfiguration config, int targetWidth, int targetHeight) {
+    public static BgInfoRasterImage Render(BgInfoVisualCanvas visual, BgInfoConfiguration config, int targetWidth, int targetHeight) {
         if (visual == null) throw new ArgumentNullException(nameof(visual));
         var width = visual.Width > 0 ? visual.Width : Math.Max(1, targetWidth);
         var height = visual.Height > 0 ? visual.Height : Math.Max(1, targetHeight);
         var chartCanvas = BuildCanvas(visual, width, height);
-        var image = new GdiImage();
+        var image = new BgInfoRasterImage();
         image.Create(string.Empty, width, height, Color.Transparent);
         DrawPng(image, chartCanvas.ToPng(), 0, 0, width, height);
         return image;
@@ -238,11 +236,7 @@ internal static class BgInfoVisualCanvasRenderer {
         return Math.Max(min, Math.Min(max, value));
     }
 
-    private static void DrawPng(GdiImage image, byte[] png, float x, float y, float width, float height) {
-        image.WithGraphics(graphics => {
-            using var stream = new MemoryStream(png);
-            using var bitmap = System.Drawing.Image.FromStream(stream);
-            graphics.DrawImage(bitmap, x, y, width, height);
-        });
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 }

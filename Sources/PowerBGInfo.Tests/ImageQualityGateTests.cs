@@ -63,6 +63,34 @@ public class ImageQualityGateTests {
         }
     }
 
+    [Fact]
+    public void ComparePassesPerceptualCodecLikeDifference() {
+        var root = CreateTempRoot();
+        try {
+            var baseline = Path.Combine(root, "baseline");
+            var candidate = Path.Combine(root, "candidate");
+            var output = Path.Combine(root, "report");
+            Directory.CreateDirectory(baseline);
+            Directory.CreateDirectory(candidate);
+            WriteSample(Path.Combine(baseline, "wallpaper.png"), ChartColor.FromRgba(64, 68, 72, 255));
+            WriteSample(Path.Combine(candidate, "wallpaper.png"), ChartColor.FromRgba(66, 70, 74, 255));
+
+            var report = ImageQualityComparer.Compare(new ImageComparisonOptions {
+                BaselineDirectory = baseline,
+                CandidateDirectory = candidate,
+                OutputDirectory = output
+            });
+
+            Assert.Equal(1, report.Compared);
+            Assert.Equal(1, report.Passed);
+            Assert.False(report.Results[0].StrictPixelMatch);
+            Assert.True(report.Results[0].PerceptualMatch);
+            Assert.True(report.Results[0].StructuralSimilarity > 0.995);
+        } finally {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static void WriteSample(string path, ChartColor color) {
         ImageComposition.Create(16, 10, color)
             .FillRectangle(2, 2, 6, 4, ChartColors.White.WithOpacity(0.6))

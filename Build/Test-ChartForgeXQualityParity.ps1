@@ -15,6 +15,9 @@ param(
     [double] $RmseThreshold = 3.0,
     [int] $MaxChannelThreshold = 48,
     [double] $ChangedPixelPercentThreshold = 2.0,
+    [double] $PerceptualMeanThreshold = 3.0,
+    [double] $PerceptualRmseThreshold = 12.0,
+    [double] $StructuralSimilarityThreshold = 0.995,
     [int] $DiffScale = 4,
     [ValidateSet('Debug', 'Release')]
     [string] $Configuration = 'Debug'
@@ -37,6 +40,9 @@ $arguments = @(
     '--rmse-threshold', $RmseThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
     '--max-channel-threshold', $MaxChannelThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
     '--changed-pixel-percent-threshold', $ChangedPixelPercentThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+    '--perceptual-mean-threshold', $PerceptualMeanThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+    '--perceptual-rmse-threshold', $PerceptualRmseThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+    '--ssim-threshold', $StructuralSimilarityThreshold.ToString([System.Globalization.CultureInfo]::InvariantCulture),
     '--diff-scale', $DiffScale.ToString([System.Globalization.CultureInfo]::InvariantCulture)
 )
 

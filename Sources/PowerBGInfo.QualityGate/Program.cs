@@ -69,6 +69,16 @@ static ImageComparisonOptions Parse(string[] args) {
             case "--changed-pixel-percent-threshold":
                 options.ChangedPixelPercentThreshold = DoubleValue(args, ref i, "changed-pixel-percent-threshold");
                 break;
+            case "--perceptual-mean-threshold":
+                options.PerceptualMeanThreshold = DoubleValue(args, ref i, "perceptual-mean-threshold");
+                break;
+            case "--perceptual-rmse-threshold":
+                options.PerceptualRmseThreshold = DoubleValue(args, ref i, "perceptual-rmse-threshold");
+                break;
+            case "--ssim-threshold":
+            case "--structural-similarity-threshold":
+                options.StructuralSimilarityThreshold = DoubleValue(args, ref i, "structural-similarity-threshold");
+                break;
             case "--diff-scale":
                 options.DiffScale = IntValue(args, ref i, "diff-scale");
                 break;
@@ -113,5 +123,8 @@ static void PrintUsage() {
     Console.WriteLine("      --rmse-threshold <value>                 Default: 3.0");
     Console.WriteLine("      --max-channel-threshold <0-255>          Default: 48");
     Console.WriteLine("      --changed-pixel-percent-threshold <pct>  Default: 2.0");
+    Console.WriteLine("      --perceptual-mean-threshold <value>      Default: 3.0");
+    Console.WriteLine("      --perceptual-rmse-threshold <value>      Default: 12.0");
+    Console.WriteLine("      --ssim-threshold <value>                 Default: 0.995");
     Console.WriteLine("      --diff-scale <integer>                   Default: 4");
 }

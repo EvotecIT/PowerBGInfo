@@ -1,14 +1,12 @@
 using System;
 using System.Drawing;
-using System.IO;
+using ChartForgeX.Raster;
 using ChartForgeX.Topology;
-using ImagePlayground.Gdi;
-using GdiImage = ImagePlayground.Gdi.Image;
 
 namespace PowerBGInfo;
 
 internal static class BgInfoTopologyRenderer {
-    public static GdiImage Render(BgInfoTopology topology, BgInfoConfiguration config) {
+    public static BgInfoRasterImage Render(BgInfoTopology topology, BgInfoConfiguration config) {
         if (topology == null) {
             throw new ArgumentNullException(nameof(topology));
         }
@@ -21,7 +19,7 @@ internal static class BgInfoTopologyRenderer {
         var chart = BuildTopology(topology, width, height);
         var options = BuildRenderOptions(topology);
 
-        var image = new GdiImage();
+        var image = new BgInfoRasterImage();
         image.Create(string.Empty, width, height, Color.Transparent);
         DrawPng(image, chart.ToPng(options), 0, 0, width, height);
         return image;
@@ -75,11 +73,7 @@ internal static class BgInfoTopologyRenderer {
         return theme;
     }
 
-    private static void DrawPng(GdiImage image, byte[] png, float x, float y, float width, float height) {
-        image.WithGraphics(graphics => {
-            using var stream = new MemoryStream(png);
-            using var bitmap = new Bitmap(stream);
-            graphics.DrawImage(bitmap, x, y, width, height);
-        });
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 }

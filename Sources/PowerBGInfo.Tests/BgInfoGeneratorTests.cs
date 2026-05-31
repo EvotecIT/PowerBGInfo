@@ -2,7 +2,6 @@ using DesktopManager;
 using PowerBGInfo;
 using System.Drawing;
 using System.IO;
-using GdiImage = ImagePlayground.Gdi.Image;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
@@ -426,7 +425,7 @@ public class BgInfoGeneratorTests
             return;
         }
 
-        using var image = new GdiImage();
+        using var image = new BgInfoRasterImage();
         image.Create(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png"), 800, 600, Color.Black);
 
         var lines = BgInfoGenerator.WrapTextLines(

@@ -9,6 +9,9 @@ public sealed class ImageComparisonReport {
     public double RmseThreshold { get; set; }
     public int MaxChannelThreshold { get; set; }
     public double ChangedPixelPercentThreshold { get; set; }
+    public double PerceptualMeanThreshold { get; set; }
+    public double PerceptualRmseThreshold { get; set; }
+    public double StructuralSimilarityThreshold { get; set; }
     public int Compared { get; set; }
     public int Passed { get; set; }
     public int Failed { get; set; }
@@ -33,4 +36,7 @@ public sealed class ImageComparisonResult {
     public double RmseChannelError { get; set; }
     public int MaxChannelError { get; set; }
     public double ChangedPixelPercent { get; set; }
+    public double StructuralSimilarity { get; set; }
+    public bool StrictPixelMatch { get; set; }
+    public bool PerceptualMatch { get; set; }
 }

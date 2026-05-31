@@ -35,7 +35,13 @@ internal static class HtmlReportWriter {
             .Append(report.MaxChannelThreshold.ToString(CultureInfo.InvariantCulture))
             .Append(", changed pixels <= ")
             .Append(report.ChangedPixelPercentThreshold.ToString("0.###", CultureInfo.InvariantCulture))
-            .AppendLine("%.</p>");
+            .Append("%, perceptual mean <= ")
+            .Append(report.PerceptualMeanThreshold.ToString("0.###", CultureInfo.InvariantCulture))
+            .Append(", perceptual RMSE <= ")
+            .Append(report.PerceptualRmseThreshold.ToString("0.###", CultureInfo.InvariantCulture))
+            .Append(", SSIM >= ")
+            .Append(report.StructuralSimilarityThreshold.ToString("0.#####", CultureInfo.InvariantCulture))
+            .AppendLine(".</p>");
 
         foreach (var result in report.Results.OrderBy(r => r.Passed).ThenBy(r => r.RelativePath, StringComparer.OrdinalIgnoreCase)) {
             WriteCase(builder, result);
@@ -54,7 +60,9 @@ internal static class HtmlReportWriter {
         builder.Append("Mean ").Append(result.MeanAbsoluteChannelError.ToString("0.###", CultureInfo.InvariantCulture)).Append(" | ");
         builder.Append("RMSE ").Append(result.RmseChannelError.ToString("0.###", CultureInfo.InvariantCulture)).Append(" | ");
         builder.Append("Max ").Append(result.MaxChannelError.ToString(CultureInfo.InvariantCulture)).Append(" | ");
-        builder.Append("Changed ").Append(result.ChangedPixelPercent.ToString("0.###", CultureInfo.InvariantCulture)).Append("%");
+        builder.Append("Changed ").Append(result.ChangedPixelPercent.ToString("0.###", CultureInfo.InvariantCulture)).Append("% | ");
+        builder.Append("SSIM ").Append(result.StructuralSimilarity.ToString("0.#####", CultureInfo.InvariantCulture)).Append(" | ");
+        builder.Append(result.StrictPixelMatch ? "strict" : result.PerceptualMatch ? "perceptual" : "failed");
         builder.AppendLine("</p>");
         if (!result.MissingCandidate && result.DimensionsMatch) {
             builder.AppendLine("<div class=\"grid\">");
