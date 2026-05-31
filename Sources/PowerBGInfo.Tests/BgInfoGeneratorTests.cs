@@ -581,6 +581,23 @@ public class BgInfoGeneratorTests
         Assert.Equal(4, image.Height);
     }
 
+    [Theory]
+    [InlineData(".jpg")]
+    [InlineData(".jpeg")]
+    [InlineData(".jpe")]
+    [InlineData(".jfif")]
+    [InlineData(".png")]
+    [InlineData(".bmp")]
+    [InlineData(".gif")]
+    [InlineData(".dib")]
+    [InlineData(".wdp")]
+    [InlineData(".tif")]
+    [InlineData(".tiff")]
+    public void RasterImageSystemDrawingFallbackCoversAcceptedWallpaperFormats(string extension)
+    {
+        Assert.True(BgInfoRasterImage.CanTrySystemDrawingFallback("wallpaper" + extension));
+    }
+
     [Fact]
     public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
     {

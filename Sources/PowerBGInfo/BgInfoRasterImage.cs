@@ -230,9 +230,15 @@ public sealed class BgInfoRasterImage : IDisposable {
         exception is PlatformNotSupportedException ||
         exception is TypeInitializationException { InnerException: PlatformNotSupportedException };
 
-    private static bool CanTrySystemDrawingFallback(string filePath) {
+    internal static bool CanTrySystemDrawingFallback(string filePath) {
         var extension = Path.GetExtension(filePath);
-        return extension.Equals(".gif", StringComparison.OrdinalIgnoreCase) ||
+        return extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpe", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jfif", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".gif", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".dib", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".wdp", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
