@@ -42,7 +42,9 @@ public sealed class BgInfoRasterImage : IDisposable {
     public void Create(string filePath, int width, int height, Color background) {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Image width must be positive.");
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Image height must be positive.");
-        _composition = ImageComposition.Create(width, height, ToChartColor(background));
+        _composition = background.A == 0
+            ? ImageComposition.CreateTransparent(width, height)
+            : ImageComposition.Create(width, height, ToChartColor(background));
     }
 
     /// <summary>Saves the image to disk using the output extension to choose the raster format.</summary>

@@ -21,7 +21,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <ProjectReference Include="..\PowerBGInfo\PowerBGInfo.csproj" />
-    <ProjectReference Include="..\PowerBGInfo.QualityGate\PowerBGInfo.QualityGate.csproj" />
   </ItemGroup>
 
   <ItemGroup>
