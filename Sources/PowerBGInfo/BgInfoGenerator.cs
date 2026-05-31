@@ -89,7 +89,7 @@ public class BgInfoGenerator
         }
 
         using var image = hasBaseImage
-            ? LoadBaseImage(imagePath!, outputPath)
+            ? LoadBaseImage(imagePath!)
             : CreateBaseImage(config, getMonitors(), outputPath);
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
@@ -488,13 +488,9 @@ public class BgInfoGenerator
         return clone;
     }
 
-    private BgInfoRasterImage LoadBaseImage(string imagePath, string outputPath)
+    private BgInfoRasterImage LoadBaseImage(string imagePath)
     {
-        if (!PathsEqual(imagePath, outputPath))
-        {
-            File.Copy(imagePath, outputPath, true);
-        }
-        return _imageService.Load(outputPath);
+        return _imageService.Load(imagePath);
     }
 
     private static BgInfoRasterImage CreateBaseImage(BgInfoConfiguration config, Monitors? monitors, string outputPath)
@@ -713,15 +709,6 @@ public class BgInfoGenerator
         catch
         {
         }
-    }
-
-    private static bool PathsEqual(string left, string right)
-    {
-        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
-        {
-            return false;
-        }
-        return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
     }
 
     private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)

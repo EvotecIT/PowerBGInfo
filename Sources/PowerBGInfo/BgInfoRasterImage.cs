@@ -78,19 +78,24 @@ public sealed class BgInfoRasterImage : IDisposable {
     /// <summary>Draws text using the shared ChartForgeX raster text path.</summary>
     public void AddText(float x, float y, string text, Color color, float fontSize, string fontFamilyName) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
-        using var font = CreateFont(fontFamilyName, fontSize);
-        var size = MeasureStringWithSystemDrawing(text, font);
-        var width = Math.Max(1, (int)Math.Ceiling(size.Width + 4));
-        var height = Math.Max(1, (int)Math.Ceiling(size.Height + 4));
-        using var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-        using (var graphics = Graphics.FromImage(bitmap)) {
-            graphics.Clear(Color.Transparent);
-            graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-            using var brush = new SolidBrush(color);
-            graphics.DrawString(text, font, brush, 0f, 0f, StringFormat.GenericTypographic);
-        }
+        try {
+            using var font = CreateFont(fontFamilyName, fontSize);
+            var size = MeasureStringWithSystemDrawing(text, font);
+            var width = Math.Max(1, (int)Math.Ceiling(size.Width + 4));
+            var height = Math.Max(1, (int)Math.Ceiling(size.Height + 4));
+            using var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            using (var graphics = Graphics.FromImage(bitmap)) {
+                graphics.Clear(Color.Transparent);
+                graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                using var brush = new SolidBrush(color);
+                graphics.DrawString(text, font, brush, 0f, 0f, StringFormat.GenericTypographic);
+            }
 
-        _composition.DrawImage(ToRgbaImage(bitmap), x, y, width, height);
+            _composition.DrawImage(ToRgbaImage(bitmap), x, y, width, height);
+        } catch (Exception ex) when (IsSystemDrawingUnavailable(ex)) {
+            var size = GetTextSizeWithChartForgeX(text, fontSize);
+            _composition.DrawText(x, y, Math.Max(1, size.Width + 2), text, Math.Max(1, fontSize), ToChartColor(color));
+        }
     }
 
     /// <summary>Measures text for layout and wrapping.</summary>
@@ -100,17 +105,25 @@ public sealed class BgInfoRasterImage : IDisposable {
         var cacheKey = fontSize.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "\u001f" + (fontFamilyName ?? string.Empty) + "\u001f" + normalized;
         if (_textSizeCache.TryGetValue(cacheKey, out var cached)) return cached;
 
-        using var font = CreateFont(fontFamilyName, fontSize);
-        var lines = normalized.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var width = 0f;
         var height = 0f;
         var fallbackLineHeight = GetFallbackLineHeight(fontSize);
-        foreach (var line in lines) {
-            var lineSize = line.Length == 0
-                ? new SizeF(0, fallbackLineHeight)
-                : MeasureStringWithSystemDrawing(line, font);
-            width = Math.Max(width, lineSize.Width);
-            height += Math.Max(fallbackLineHeight, lineSize.Height);
+        var lines = normalized.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        try {
+            using var font = CreateFont(fontFamilyName, fontSize);
+            foreach (var line in lines) {
+                var lineSize = line.Length == 0
+                    ? new SizeF(0, fallbackLineHeight)
+                    : MeasureStringWithSystemDrawing(line, font);
+                width = Math.Max(width, lineSize.Width);
+                height += Math.Max(fallbackLineHeight, lineSize.Height);
+            }
+        } catch (Exception ex) when (IsSystemDrawingUnavailable(ex)) {
+            foreach (var line in lines) {
+                var lineSize = MeasureRenderedLineWithChartForgeX(line, fontSize);
+                width = Math.Max(width, lineSize.Width);
+                height += Math.Max(fallbackLineHeight, lineSize.Height);
+            }
         }
 
         var size = new SizeF(width, Math.Max(fallbackLineHeight, height));
@@ -168,11 +181,60 @@ public sealed class BgInfoRasterImage : IDisposable {
         return size;
     }
 
+    private static SizeF GetTextSizeWithChartForgeX(string text, float fontSize) {
+        var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var width = 0f;
+        var height = 0f;
+        var fallbackLineHeight = GetFallbackLineHeight(fontSize);
+        foreach (var line in lines) {
+            var lineSize = MeasureRenderedLineWithChartForgeX(line, fontSize);
+            width = Math.Max(width, lineSize.Width);
+            height += Math.Max(fallbackLineHeight, lineSize.Height);
+        }
+
+        return new SizeF(width, height);
+    }
+
+    private static SizeF MeasureRenderedLineWithChartForgeX(string text, float fontSize) {
+        if (text.Length == 0) return new SizeF(0, GetFallbackLineHeight(fontSize));
+
+        var fallbackWidth = Math.Max(1f, MeasureTextWidth(text, fontSize));
+        var canvasWidth = Math.Max(16, (int)Math.Ceiling(Math.Max(fallbackWidth + fontSize * 4, text.Length * fontSize * 1.3f + 16)));
+        var canvasHeight = Math.Max(16, (int)Math.Ceiling(fontSize * 3.2f));
+        var probe = ImageComposition.CreateTransparent(canvasWidth, canvasHeight)
+            .DrawText(0, 0, canvasWidth, text, Math.Max(1, fontSize), ChartColors.White);
+        var image = probe.ToImage();
+
+        var left = image.Width;
+        var top = image.Height;
+        var right = -1;
+        var bottom = -1;
+        for (var y = 0; y < image.Height; y++) {
+            var row = y * image.Width * 4;
+            for (var x = 0; x < image.Width; x++) {
+                if (image.Pixels[row + x * 4 + 3] == 0) continue;
+                if (x < left) left = x;
+                if (x > right) right = x;
+                if (y < top) top = y;
+                if (y > bottom) bottom = y;
+            }
+        }
+
+        if (right < left || bottom < top) return new SizeF(fallbackWidth, GetFallbackLineHeight(fontSize));
+        return new SizeF(Math.Max(1, right - left + 1), Math.Max(1, bottom - top + 1));
+    }
+
+    private static bool IsSystemDrawingUnavailable(Exception exception) =>
+        exception is PlatformNotSupportedException ||
+        exception is TypeInitializationException { InnerException: PlatformNotSupportedException };
+
     private static bool CanTrySystemDrawingFallback(string filePath) {
         var extension = Path.GetExtension(filePath);
         return extension.Equals(".gif", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".dib", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".wdp", StringComparison.OrdinalIgnoreCase);
+            extension.Equals(".wdp", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".tiff", StringComparison.OrdinalIgnoreCase);
     }
 
     private static RgbaImage LoadWithSystemDrawing(string filePath) {

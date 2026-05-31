@@ -514,6 +514,43 @@ public class BgInfoGeneratorTests
         Assert.Equal(6, image.Width);
         Assert.Equal(4, image.Height);
     }
+
+    [Fact]
+    public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var sourcePath = Path.Combine(tempDirectory, "legacy.gif");
+        using (var bitmap = new Bitmap(12, 8))
+        {
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.MidnightBlue);
+            }
+
+            bitmap.Save(sourcePath, ImageFormat.Gif);
+        }
+
+        var imageService = new ImageService();
+        var wallpaperService = new FakeWallpaperService();
+        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var config = new BgInfoConfiguration
+        {
+            FilePath = sourcePath,
+            ConfigurationDirectory = tempDirectory,
+            ForceWallpaperRefresh = false
+        };
+
+        var path = generator.Generate(config);
+
+        Assert.True(File.Exists(path));
+        Assert.EndsWith("_PowerBgInfo.png", path);
+    }
 }
 
 internal class FakeWallpaperService : IWallpaperService

@@ -91,6 +91,31 @@ public class ImageQualityGateTests {
         }
     }
 
+    [Fact]
+    public void CompareFailsWhenNoBaselineImagesAreFound() {
+        var root = CreateTempRoot();
+        try {
+            var baseline = Path.Combine(root, "baseline");
+            var candidate = Path.Combine(root, "candidate");
+            var output = Path.Combine(root, "report");
+            Directory.CreateDirectory(baseline);
+            Directory.CreateDirectory(candidate);
+
+            var report = ImageQualityComparer.Compare(new ImageComparisonOptions {
+                BaselineDirectory = baseline,
+                CandidateDirectory = candidate,
+                OutputDirectory = output
+            });
+
+            Assert.Equal(0, report.Compared);
+            Assert.Equal(0, report.Passed);
+            Assert.Equal(1, report.Failed);
+            Assert.Contains("No baseline images", report.Results[0].Message);
+        } finally {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static void WriteSample(string path, ChartColor color) {
         ImageComposition.Create(16, 10, color)
             .FillRectangle(2, 2, 6, 4, ChartColors.White.WithOpacity(0.6))

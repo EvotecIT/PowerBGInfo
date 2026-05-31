@@ -33,6 +33,18 @@ public static class ImageQualityComparer {
             report.Results.Add(result);
         }
 
+        if (report.Results.Count == 0) {
+            report.Failed = 1;
+            report.Results.Add(new ImageComparisonResult {
+                RelativePath = ".",
+                BaselinePath = Path.GetFullPath(options.BaselineDirectory),
+                CandidatePath = Path.GetFullPath(options.CandidateDirectory),
+                Passed = false,
+                Message = "No baseline images were found to compare."
+            });
+            return report;
+        }
+
         report.Compared = report.Results.Count(r => !r.MissingCandidate);
         report.Missing = report.Results.Count(r => r.MissingCandidate);
         report.Passed = report.Results.Count(r => r.Passed);
