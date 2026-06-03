@@ -23,7 +23,8 @@ $palette = @{
 
 function New-VisualCanvasTiles {
     param(
-        [PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle] $SurfaceStyle,
+        [ValidateSet('Glass', 'Outline', 'Raised')]
+        [string] $SurfaceStyle,
         [switch] $UseIcons
     )
 

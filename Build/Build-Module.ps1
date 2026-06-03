@@ -88,33 +88,6 @@ Build-Module -ModuleName 'PowerBGInfo' {
         NETFramework                      = 'net8.0-windows', 'net472'
         NETHandleAssemblyWithSameName     = $true
         NETAssemblyLoadContext            = $true
-        NETAssemblyTypeAcceleratorMode    = 'AllowList'
-        NETAssemblyTypeAccelerators       = @(
-            'PowerBGInfo.BgInfoConfiguration'
-            'PowerBGInfo.BgInfoConfigurationJson'
-            'PowerBGInfo.BgInfoEntry'
-            'PowerBGInfo.BgInfoEntryType'
-            'PowerBGInfo.BgInfoVariable'
-            'PowerBGInfo.BgInfoVariableProvider'
-            'PowerBGInfo.BgInfoChart'
-            'PowerBGInfo.BgInfoChartKind'
-            'PowerBGInfo.BgInfoChartLegendPosition'
-            'PowerBGInfo.BgInfoChartMetric'
-            'PowerBGInfo.BgInfoChartPictorialSymbol'
-            'PowerBGInfo.BgInfoChartLayoutMode'
-            'PowerBGInfo.BgInfoChartStackDirection'
-            'PowerBGInfo.BgInfoTarget'
-            'PowerBGInfo.BgInfoTextPosition'
-            'PowerBGInfo.BgInfoTopology'
-            'PowerBGInfo.BgInfoVisualCanvas'
-            'PowerBGInfo.BgInfoVisualCanvasTemplate'
-            'PowerBGInfo.BgInfoVisualCanvasSide'
-            'PowerBGInfo.BgInfoVisualCanvasTile'
-            'PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle'
-            'PowerBGInfo.BgInfoVisualCanvasTileIconKind'
-            'PowerBGInfo.BgInfoVisualCanvasTileMiniChartKind'
-            'PowerBGInfo.BgInfoVisualCanvasFeature'
-        )
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true
         DotSourceClasses                  = $true

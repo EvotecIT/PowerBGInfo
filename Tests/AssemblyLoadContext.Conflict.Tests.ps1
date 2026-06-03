@@ -53,11 +53,6 @@ Import-Module PowerBGInfo -Force
     NewBGInfoAssembly = `$commandAssembly.Location
     NewBGInfoALC = `$commandAlc.Name
     NewBGInfoALCIsDefault = [object]::ReferenceEquals(`$commandAlc, [System.Runtime.Loader.AssemblyLoadContext]::Default)
-    ConfigurationAccelerator = [PowerBGInfo.BgInfoConfiguration].FullName
-    ConfigurationJsonAccelerator = [PowerBGInfo.BgInfoConfigurationJson].FullName
-    ChartLegendAccelerator = [PowerBGInfo.BgInfoChartLegendPosition].FullName
-    ChartPictorialAccelerator = [PowerBGInfo.BgInfoChartPictorialSymbol].FullName
-    TargetAccelerator = [PowerBGInfo.BgInfoTarget].FullName
     LoadedAssemblies = @(`$loadedAssemblies)
 } | ConvertTo-Json -Depth 6 -Compress
 "@
@@ -73,11 +68,6 @@ Import-Module PowerBGInfo -Force
         $result.NewBGInfoAssembly | Should -BeLike '*\Artefacts\Unpacked\Modules\PowerBGInfo\Lib\Core\PowerBGInfo.PowerShell.dll'
         $result.NewBGInfoALC | Should -Be 'PowerBGInfo'
         $result.NewBGInfoALCIsDefault | Should -BeFalse
-        $result.ConfigurationAccelerator | Should -Be 'PowerBGInfo.BgInfoConfiguration'
-        $result.ConfigurationJsonAccelerator | Should -Be 'PowerBGInfo.BgInfoConfigurationJson'
-        $result.ChartLegendAccelerator | Should -Be 'PowerBGInfo.BgInfoChartLegendPosition'
-        $result.ChartPictorialAccelerator | Should -Be 'PowerBGInfo.BgInfoChartPictorialSymbol'
-        $result.TargetAccelerator | Should -Be 'PowerBGInfo.BgInfoTarget'
 
         $loadedAssemblies = @($result.LoadedAssemblies)
         $powerShellAssembly = $loadedAssemblies | Where-Object Assembly -eq 'PowerBGInfo.PowerShell' | Select-Object -First 1
