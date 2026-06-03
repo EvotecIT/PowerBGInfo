@@ -134,20 +134,20 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
 
         $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -Tile $tile -Feature $feature
 
-        $visual | Should -BeOfType ([PowerBGInfo.BgInfoVisualCanvas])
+        $visual.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoVisualCanvas'
         $visual.Title | Should -Be 'PowerBGInfo'
         $visual.TitleColor | Should -Not -BeNullOrEmpty
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
-        $visual.FeatureAnchor | Should -Be ([PowerBGInfo.BgInfoTextPosition]::BottomRight)
+        $visual.FeatureAnchor.ToString() | Should -Be 'BottomRight'
         $visual.FeatureWidth | Should -Be 610
         $visual.FeatureOffsetX | Should -Be 165
         $visual.FeatureOffsetY | Should -Be 120
         $visual.Tiles.Count | Should -Be 1
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
-        $visual.Tiles[0].SurfaceStyle | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileSurfaceStyle]::Raised)
-        $visual.Tiles[0].IconKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileIconKind]::Computer)
-        $visual.Tiles[0].MiniChartKind | Should -Be ([PowerBGInfo.BgInfoVisualCanvasTileMiniChartKind]::Sparkline)
+        $visual.Tiles[0].SurfaceStyle.ToString() | Should -Be 'Raised'
+        $visual.Tiles[0].IconKind.ToString() | Should -Be 'Computer'
+        $visual.Tiles[0].MiniChartKind.ToString() | Should -Be 'Sparkline'
         $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
         $visual.Tiles[0].MiniChartMaximum | Should -Be 100
         $visual.Features.Count | Should -Be 1
@@ -169,10 +169,10 @@ Describe 'New-BGInfoImage cmdlet' {
 
         $image = New-BGInfoImage -Path $path -Width 180 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.85
 
-        $image | Should -BeOfType ([PowerBGInfo.BgInfoImage])
+        $image.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoImage'
         $image.Path | Should -Be (Resolve-Path -LiteralPath $path).Path
         $image.Width | Should -Be 180
-        $image.Anchor | Should -Be ([PowerBGInfo.BgInfoTextPosition]::BottomRight)
+        $image.Anchor.ToString() | Should -Be 'BottomRight'
         $image.OffsetX | Should -Be 72
         $image.OffsetY | Should -Be 54
         $image.Opacity | Should -Be 0.85
@@ -202,7 +202,7 @@ Describe 'New-BGInfoImage cmdlet' {
 
 Describe 'Export-BGInfoConfiguration cmdlet' {
     It 'writes json configuration file' {
-        $config = [PowerBGInfo.BgInfoConfiguration]::new()
+        $config = New-BGInfoConfiguration -Target File
         $path = Join-Path -Path $TestDrive -ChildPath 'bginfo.json'
         Export-BGInfoConfiguration -InputObject $config -Path $path -Force -PassThru | Should -Be $path
         Test-Path -LiteralPath $path | Should -BeTrue
@@ -222,8 +222,8 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
     }
 
     It 'supports multiple pipeline inputs' {
-        $config1 = [PowerBGInfo.BgInfoConfiguration]::new()
-        $config2 = [PowerBGInfo.BgInfoConfiguration]::new()
+        $config1 = New-BGInfoConfiguration -Target File
+        $config2 = New-BGInfoConfiguration -Target File
         $path = Join-Path -Path $TestDrive -ChildPath 'pipeline.json'
 
         $result = @((@($config1, $config2) | Export-BGInfoConfiguration -Path $path -Force -PassThru))
@@ -236,12 +236,12 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
 Describe 'New-BGInfoConfiguration cmdlet' {
     It 'creates configuration with overrides' {
         $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock -DisableWallpaperSlideshow
-        $config.Target | Should -Be ([PowerBGInfo.BgInfoTarget]::File)
+        $config.Target.ToString() | Should -Be 'File'
         $config.MonitorIndex | Should -Be 1
         $config.SpaceX | Should -Be 5
         $config.SpaceY | Should -Be 7
         $config.ValueWrapWidth | Should -Be 240
-        $config.ChartLayout | Should -Be ([PowerBGInfo.BgInfoChartLayoutMode]::Stack)
+        $config.ChartLayout.ToString() | Should -Be 'Stack'
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue
         $config.PreserveWallpaperSlideshow | Should -BeFalse
@@ -319,8 +319,8 @@ Describe 'New-BGInfo passthru' {
             New-BGInfoValue -BuiltinValue HostName
         } -ConfigurationDirectory $TestDrive -Target File -PassThru
 
-        $config | Should -BeOfType ([PowerBGInfo.BgInfoConfiguration])
-        $config.Target | Should -Be ([PowerBGInfo.BgInfoTarget]::File)
+        $config.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoConfiguration'
+        $config.Target.ToString() | Should -Be 'File'
         $config.Entries.Count | Should -Be 1
         $config.Entries[0].BuiltinValue | Should -Be 'HostName'
     }
