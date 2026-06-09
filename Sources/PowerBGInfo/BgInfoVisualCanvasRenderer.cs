@@ -47,8 +47,8 @@ internal static class BgInfoVisualCanvasRenderer {
         var accent = ToChartColor(visual.Accent);
         AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Left, 48 * scaleX, 92 * scaleY, 300 * scaleX, 82 * scaleY, 16 * scaleY);
         AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Right, 852 * scaleX, 70 * scaleY, 300 * scaleX, 96 * scaleY, 18 * scaleY);
+        AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
         canvas
-            .AddHeroBadge(538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, ">_", accent)
             .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
             .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
         if (visual.Features.Count > 0) {
@@ -86,8 +86,8 @@ internal static class BgInfoVisualCanvasRenderer {
         var titleTopMin = badgeY + badgeHeight + Math.Min(12, height * 0.025);
         var titleTopMax = Math.Max(titleTopMin, height - titleFont - subtitleFont - subtitleGap - Math.Min(24, height * 0.06));
         var titleY = Clamp(height * 0.39, titleTopMin, titleTopMax);
+        AddHeroBadge(canvas, visual, centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, accent);
         canvas
-            .AddHeroBadge(centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, ">_", accent)
             .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
             .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
         if (visual.Features.Count > 0) {
@@ -140,6 +140,11 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static IEnumerable<VisualCanvasFeatureItem> BuildFeatureItems(IEnumerable<BgInfoVisualCanvasFeature> features) {
         foreach (var feature in features) yield return new VisualCanvasFeatureItem(Resolve(feature.Icon), Resolve(feature.Label));
+    }
+
+    private static void AddHeroBadge(VisualCanvas canvas, BgInfoVisualCanvas visual, double x, double y, double width, double height, ChartColor accent) {
+        if (!visual.HeroBadgeVisible) return;
+        canvas.AddHeroBadge(x, y, width, height, ">_", accent);
     }
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));

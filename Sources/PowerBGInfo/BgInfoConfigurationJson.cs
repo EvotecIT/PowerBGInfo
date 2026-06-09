@@ -412,6 +412,7 @@ public static class BgInfoConfigurationJson {
                     HeroBadgeTop = visual.HeroBadgeTop.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTop.Value) : null,
                     HeroBadgeBottom = visual.HeroBadgeBottom.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeBottom.Value) : null,
                     HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
+                    HeroBadgeVisible = visual.HeroBadgeVisible,
                     FeatureAnchor = visual.FeatureAnchor?.ToString(),
                     FeatureWidth = visual.FeatureWidth == 0 ? null : visual.FeatureWidth,
                     FeatureHeight = visual.FeatureHeight == 0 ? null : visual.FeatureHeight,
@@ -826,6 +827,7 @@ public static class BgInfoConfigurationJson {
         if (model.PositionY.HasValue) visual.PositionY = model.PositionY.Value;
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
         if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
+        if (model.HeroBadgeVisible.HasValue) visual.HeroBadgeVisible = model.HeroBadgeVisible.Value;
         if (!string.IsNullOrWhiteSpace(model.FeatureAnchor) &&
             Enum.TryParse(model.FeatureAnchor, true, out BgInfoTextPosition featureAnchor)) {
             visual.FeatureAnchor = featureAnchor;
@@ -1184,6 +1186,7 @@ public static class BgInfoConfigurationJson {
         public string? HeroBadgeTop { get; set; }
         public string? HeroBadgeBottom { get; set; }
         public string? HeroBadgeTextColor { get; set; }
+        public bool? HeroBadgeVisible { get; set; }
         public string? FeatureAnchor { get; set; }
         public int? FeatureWidth { get; set; }
         public int? FeatureHeight { get; set; }

@@ -294,6 +294,7 @@ public class BgInfoConfigurationJsonTests
             HeroBadgeTop = Color.Navy,
             HeroBadgeBottom = Color.Black,
             HeroBadgeTextColor = Color.AliceBlue,
+            HeroBadgeVisible = false,
             FeatureAnchor = BgInfoTextPosition.BottomRight,
             FeatureWidth = 610,
             FeatureHeight = 52,
@@ -345,6 +346,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(Color.Navy.ToArgb(), loaded.HeroBadgeTop!.Value.ToArgb());
         Assert.Equal(Color.Black.ToArgb(), loaded.HeroBadgeBottom!.Value.ToArgb());
         Assert.Equal(Color.AliceBlue.ToArgb(), loaded.HeroBadgeTextColor!.Value.ToArgb());
+        Assert.False(loaded.HeroBadgeVisible);
         Assert.Equal(BgInfoTextPosition.BottomRight, loaded.FeatureAnchor);
         Assert.Equal(610, loaded.FeatureWidth);
         Assert.Equal(52, loaded.FeatureHeight);
