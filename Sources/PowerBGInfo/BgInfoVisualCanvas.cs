@@ -113,6 +113,8 @@ public sealed class BgInfoVisualCanvas {
     public Color? HeroBadgeBottom { get; set; }
     /// <summary>Hero badge symbol color.</summary>
     public Color? HeroBadgeTextColor { get; set; }
+    /// <summary>Render the central hero badge.</summary>
+    public bool HeroBadgeVisible { get; set; } = true;
     /// <summary>Optional feature-strip anchor. Null uses the template's default centered placement.</summary>
     public BgInfoTextPosition? FeatureAnchor { get; set; }
     /// <summary>Optional feature-strip width in pixels. Zero uses the template default width.</summary>

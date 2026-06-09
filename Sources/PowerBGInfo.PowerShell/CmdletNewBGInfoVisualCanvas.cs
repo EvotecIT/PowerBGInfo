@@ -117,6 +117,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public object? HeroBadgeTextColor { get; set; }
 
+    /// <para>Hide the central hero badge while keeping the title, subtitle, tiles, and feature strip.</para>
+    [Parameter]
+    public SwitchParameter NoHeroBadge { get; set; }
+
     /// <para>Optional feature-strip anchor. When omitted, the template keeps its default centered strip placement.</para>
     [Parameter]
     public BgInfoTextPosition FeatureAnchor { get; set; } = BgInfoTextPosition.BottomCenter;
@@ -179,6 +183,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             HeroBadgeTop = PowerShellColorConverter.ConvertOptional(HeroBadgeTop, nameof(HeroBadgeTop)),
             HeroBadgeBottom = PowerShellColorConverter.ConvertOptional(HeroBadgeBottom, nameof(HeroBadgeBottom)),
             HeroBadgeTextColor = PowerShellColorConverter.ConvertOptional(HeroBadgeTextColor, nameof(HeroBadgeTextColor)),
+            HeroBadgeVisible = !NoHeroBadge.IsPresent,
             FeatureAnchor = MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ? FeatureAnchor : null,
             FeatureWidth = FeatureWidth,
             FeatureHeight = FeatureHeight,

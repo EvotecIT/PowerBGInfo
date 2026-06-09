@@ -4,6 +4,34 @@ if (-not (Test-Path -LiteralPath $modulePath)) {
 }
 Import-Module -Name $modulePath -Force
 
+BeforeAll {
+function Get-ImagePixelHash {
+    param(
+        [string] $Path
+    )
+
+    Add-Type -AssemblyName System.Drawing
+    $bitmap = [System.Drawing.Bitmap]::new($Path)
+    try {
+        $bytes = New-Object byte[] ($bitmap.Width * $bitmap.Height * 4)
+        $index = 0
+        for ($y = 0; $y -lt $bitmap.Height; $y++) {
+            for ($x = 0; $x -lt $bitmap.Width; $x++) {
+                $pixel = $bitmap.GetPixel($x, $y)
+                $bytes[$index++] = $pixel.A
+                $bytes[$index++] = $pixel.R
+                $bytes[$index++] = $pixel.G
+                $bytes[$index++] = $pixel.B
+            }
+        }
+
+        return ([System.BitConverter]::ToString(([System.Security.Cryptography.SHA256]::HashData($bytes)))).Replace('-', '')
+    } finally {
+        $bitmap.Dispose()
+    }
+}
+}
+
 Describe 'New-BGInfoValue cmdlet' {
     It 'creates entry' {
         $entry = New-BGInfoValue -Name 'Test' -Value 'X'
@@ -123,6 +151,7 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TitleColor'
         $command.Parameters.Keys | Should -Contain 'TileValueColor'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
+        $command.Parameters.Keys | Should -Contain 'NoHeroBadge'
         (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'MiniChartKind'
     }
 }
@@ -139,6 +168,7 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.TitleColor | Should -Not -BeNullOrEmpty
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
+        $visual.HeroBadgeVisible | Should -BeTrue
         $visual.FeatureAnchor.ToString() | Should -Be 'BottomRight'
         $visual.FeatureWidth | Should -Be 610
         $visual.FeatureOffsetX | Should -Be 165
@@ -159,6 +189,12 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.FeatureAnchor | Should -BeNullOrEmpty
         $visual.FeatureWidth | Should -Be 610
         $visual.FeatureHeight | Should -Be 52
+    }
+
+    It 'can disable the hero badge' {
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -NoHeroBadge
+
+        $visual.HeroBadgeVisible | Should -BeFalse
     }
 }
 
@@ -348,7 +384,7 @@ Describe 'CLI interoperability' {
         & $cliPath --config $configPath --output cli.png --no-apply | Out-Null
         $cliResult = Join-Path -Path $outputDir -ChildPath 'cli.png'
 
-        (Get-FileHash -LiteralPath $psResult -Algorithm SHA256).Hash | Should -Be ((Get-FileHash -LiteralPath $cliResult -Algorithm SHA256).Hash)
+        Get-ImagePixelHash -Path $psResult | Should -Be (Get-ImagePixelHash -Path $cliResult)
     }
 
     It 'renders from json exported by inline New-BGInfo authoring' {
