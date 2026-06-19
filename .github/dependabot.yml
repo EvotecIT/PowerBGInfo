@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/Sources"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "ChartForgeX"
+    groups:
+      nuget-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
