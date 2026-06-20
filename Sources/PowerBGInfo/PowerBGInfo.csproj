@@ -32,7 +32,7 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-        <PackageReference Include="System.Management" Version="8.0.0" />
+        <PackageReference Include="System.Management" Version="10.0.9" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
         <Reference Include="System.Management" />
