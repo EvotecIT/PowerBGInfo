@@ -39,6 +39,14 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public string Detail { get; set; } = string.Empty;
 
+    /// <para>Optional tile width in pixels. Zero uses the visual canvas default or template default.</para>
+    [Parameter]
+    public int Width { get; set; }
+
+    /// <para>Optional tile height in pixels. Zero uses the visual canvas default or template default.</para>
+    [Parameter]
+    public int Height { get; set; }
+
     /// <para>Optional accent color.</para>
     [Parameter]
     public object? Accent { get; set; }
@@ -59,6 +67,10 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasTileMiniChartKind MiniChartKind { get; set; }
 
+    /// <para>Tile-specific text fitting policy. Auto inherits the visual canvas setting.</para>
+    [Parameter]
+    public BgInfoVisualCanvasTileTextFitPolicy TextFitPolicy { get; set; }
+
     /// <para>Compact chart values rendered inside the tile.</para>
     [Parameter]
     public double[] MiniChartValues { get; set; } = Array.Empty<double>();
@@ -75,11 +87,14 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             Label = Label,
             Value = Value,
             Detail = Detail,
+            Width = Width,
+            Height = Height,
             Accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent)),
             Progress = Progress,
             SurfaceStyle = SurfaceStyle,
             IconKind = IconKind,
             MiniChartKind = MiniChartKind,
+            TextFitPolicy = TextFitPolicy,
             MiniChartValues = MiniChartValues ?? Array.Empty<double>(),
             MiniChartMaximum = MiniChartMaximum
         });

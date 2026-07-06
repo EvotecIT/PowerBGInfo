@@ -390,6 +390,7 @@ public static class BgInfoConfigurationJson {
                 }
                 model.VisualCanvases.Add(new BgInfoVisualCanvasFile {
                     Template = visual.Template.ToString(),
+                    LayoutPreset = visual.LayoutPreset == BgInfoVisualCanvasLayoutPreset.Default ? null : visual.LayoutPreset.ToString(),
                     Title = visual.Title,
                     Subtitle = visual.Subtitle,
                     Width = visual.Width,
@@ -416,6 +417,16 @@ public static class BgInfoConfigurationJson {
                     FeatureAnchor = visual.FeatureAnchor?.ToString(),
                     FeatureWidth = visual.FeatureWidth == 0 ? null : visual.FeatureWidth,
                     FeatureHeight = visual.FeatureHeight == 0 ? null : visual.FeatureHeight,
+                    TileWidth = visual.TileWidth == 0 ? null : visual.TileWidth,
+                    TileHeight = visual.TileHeight == 0 ? null : visual.TileHeight,
+                    TileGap = visual.TileGap == 0 ? null : visual.TileGap,
+                    LeftTileWidth = visual.LeftTileWidth == 0 ? null : visual.LeftTileWidth,
+                    RightTileWidth = visual.RightTileWidth == 0 ? null : visual.RightTileWidth,
+                    LeftTileOffsetX = visual.LeftTileOffsetX == 0 ? null : visual.LeftTileOffsetX,
+                    LeftTileOffsetY = visual.LeftTileOffsetY == 0 ? null : visual.LeftTileOffsetY,
+                    RightTileOffsetX = visual.RightTileOffsetX == 0 ? null : visual.RightTileOffsetX,
+                    RightTileOffsetY = visual.RightTileOffsetY == 0 ? null : visual.RightTileOffsetY,
+                    TileTextFitPolicy = visual.TileTextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : visual.TileTextFitPolicy.ToString(),
                     FeatureOffsetX = visual.FeatureOffsetX == 0 ? null : visual.FeatureOffsetX,
                     FeatureOffsetY = visual.FeatureOffsetY == 0 ? null : visual.FeatureOffsetY,
                     Transparent = visual.Transparent,
@@ -821,6 +832,10 @@ public static class BgInfoConfigurationJson {
             Enum.TryParse(model.Template, true, out BgInfoVisualCanvasTemplate template)) {
             visual.Template = template;
         }
+        if (!string.IsNullOrWhiteSpace(model.LayoutPreset) &&
+            Enum.TryParse(model.LayoutPreset, true, out BgInfoVisualCanvasLayoutPreset layoutPreset)) {
+            visual.LayoutPreset = layoutPreset;
+        }
         if (model.Width.HasValue) visual.Width = model.Width.Value;
         if (model.Height.HasValue) visual.Height = model.Height.Value;
         if (model.PositionX.HasValue) visual.PositionX = model.PositionX.Value;
@@ -834,6 +849,19 @@ public static class BgInfoConfigurationJson {
         }
         if (model.FeatureWidth.HasValue) visual.FeatureWidth = model.FeatureWidth.Value;
         if (model.FeatureHeight.HasValue) visual.FeatureHeight = model.FeatureHeight.Value;
+        if (model.TileWidth.HasValue) visual.TileWidth = model.TileWidth.Value;
+        if (model.TileHeight.HasValue) visual.TileHeight = model.TileHeight.Value;
+        if (model.TileGap.HasValue) visual.TileGap = model.TileGap.Value;
+        if (model.LeftTileWidth.HasValue) visual.LeftTileWidth = model.LeftTileWidth.Value;
+        if (model.RightTileWidth.HasValue) visual.RightTileWidth = model.RightTileWidth.Value;
+        if (model.LeftTileOffsetX.HasValue) visual.LeftTileOffsetX = model.LeftTileOffsetX.Value;
+        if (model.LeftTileOffsetY.HasValue) visual.LeftTileOffsetY = model.LeftTileOffsetY.Value;
+        if (model.RightTileOffsetX.HasValue) visual.RightTileOffsetX = model.RightTileOffsetX.Value;
+        if (model.RightTileOffsetY.HasValue) visual.RightTileOffsetY = model.RightTileOffsetY.Value;
+        if (!string.IsNullOrWhiteSpace(model.TileTextFitPolicy) &&
+            Enum.TryParse(model.TileTextFitPolicy, true, out BgInfoVisualCanvasTileTextFitPolicy tileTextFitPolicy)) {
+            visual.TileTextFitPolicy = tileTextFitPolicy;
+        }
         if (model.FeatureOffsetX.HasValue) visual.FeatureOffsetX = model.FeatureOffsetX.Value;
         if (model.FeatureOffsetY.HasValue) visual.FeatureOffsetY = model.FeatureOffsetY.Value;
         ApplyColor(model.BackgroundTop, value => visual.BackgroundTop = value);
@@ -872,7 +900,9 @@ public static class BgInfoConfigurationJson {
             Icon = model.Icon ?? string.Empty,
             Label = model.Label ?? string.Empty,
             Value = model.Value ?? string.Empty,
-            Detail = model.Detail ?? string.Empty
+            Detail = model.Detail ?? string.Empty,
+            Width = model.Width ?? 0,
+            Height = model.Height ?? 0
         };
         if (!string.IsNullOrWhiteSpace(model.Side) &&
             Enum.TryParse(model.Side, true, out BgInfoVisualCanvasSide side)) {
@@ -889,6 +919,10 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.MiniChartKind) &&
             Enum.TryParse(model.MiniChartKind, true, out BgInfoVisualCanvasTileMiniChartKind miniChartKind)) {
             tile.MiniChartKind = miniChartKind;
+        }
+        if (!string.IsNullOrWhiteSpace(model.TextFitPolicy) &&
+            Enum.TryParse(model.TextFitPolicy, true, out BgInfoVisualCanvasTileTextFitPolicy textFitPolicy)) {
+            tile.TextFitPolicy = textFitPolicy;
         }
         ApplyColor(model.Accent, value => tile.Accent = value);
         if (model.Progress.HasValue) tile.Progress = model.Progress.Value;
@@ -908,11 +942,14 @@ public static class BgInfoConfigurationJson {
         Label = tile.Label,
         Value = tile.Value,
         Detail = tile.Detail,
+        Width = tile.Width == 0 ? null : tile.Width,
+        Height = tile.Height == 0 ? null : tile.Height,
         Accent = tile.Accent.HasValue ? BgInfoColorParser.ToHex(tile.Accent.Value) : null,
         Progress = tile.Progress,
         SurfaceStyle = tile.SurfaceStyle.ToString(),
         IconKind = tile.IconKind.ToString(),
         MiniChartKind = tile.MiniChartKind.ToString(),
+        TextFitPolicy = tile.TextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : tile.TextFitPolicy.ToString(),
         MiniChartValues = tile.MiniChartValues is null ? null : new List<double>(tile.MiniChartValues).ToArray(),
         MiniChartMaximum = tile.MiniChartMaximum
     };
@@ -1164,6 +1201,7 @@ public static class BgInfoConfigurationJson {
 
     internal sealed class BgInfoVisualCanvasFile {
         public string? Template { get; set; }
+        public string? LayoutPreset { get; set; }
         public string? Title { get; set; }
         public string? Subtitle { get; set; }
         public int? Width { get; set; }
@@ -1190,6 +1228,16 @@ public static class BgInfoConfigurationJson {
         public string? FeatureAnchor { get; set; }
         public int? FeatureWidth { get; set; }
         public int? FeatureHeight { get; set; }
+        public int? TileWidth { get; set; }
+        public int? TileHeight { get; set; }
+        public int? TileGap { get; set; }
+        public int? LeftTileWidth { get; set; }
+        public int? RightTileWidth { get; set; }
+        public int? LeftTileOffsetX { get; set; }
+        public int? LeftTileOffsetY { get; set; }
+        public int? RightTileOffsetX { get; set; }
+        public int? RightTileOffsetY { get; set; }
+        public string? TileTextFitPolicy { get; set; }
         public int? FeatureOffsetX { get; set; }
         public int? FeatureOffsetY { get; set; }
         public bool? Transparent { get; set; }
@@ -1204,11 +1252,14 @@ public static class BgInfoConfigurationJson {
         public string? Label { get; set; }
         public string? Value { get; set; }
         public string? Detail { get; set; }
+        public int? Width { get; set; }
+        public int? Height { get; set; }
         public string? Accent { get; set; }
         public double? Progress { get; set; }
         public string? SurfaceStyle { get; set; }
         public string? IconKind { get; set; }
         public string? MiniChartKind { get; set; }
+        public string? TextFitPolicy { get; set; }
         public double[]? MiniChartValues { get; set; }
         public double? MiniChartMaximum { get; set; }
     }

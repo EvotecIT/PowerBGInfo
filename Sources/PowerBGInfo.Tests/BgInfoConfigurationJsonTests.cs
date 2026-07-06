@@ -272,6 +272,7 @@ public class BgInfoConfigurationJsonTests
             ConfigurationDirectory = tempDirectory
         };
         var visual = new BgInfoVisualCanvas {
+            LayoutPreset = BgInfoVisualCanvasLayoutPreset.WideRails,
             Title = "PowerBGInfo",
             Subtitle = "Desktop background insights",
             Width = 1200,
@@ -298,6 +299,16 @@ public class BgInfoConfigurationJsonTests
             FeatureAnchor = BgInfoTextPosition.BottomRight,
             FeatureWidth = 610,
             FeatureHeight = 52,
+            TileWidth = 420,
+            TileHeight = 132,
+            TileGap = 24,
+            LeftTileWidth = 430,
+            RightTileWidth = 460,
+            LeftTileOffsetX = 8,
+            LeftTileOffsetY = 10,
+            RightTileOffsetX = 12,
+            RightTileOffsetY = 14,
+            TileTextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink,
             FeatureOffsetX = 165,
             FeatureOffsetY = 120,
             TechBackdrop = false
@@ -308,11 +319,14 @@ public class BgInfoConfigurationJsonTests
             Label = "HOSTNAME",
             Value = "{{HostName}}",
             Detail = "{{OSName}}",
+            Width = 460,
+            Height = 144,
             Accent = Color.DodgerBlue,
             Progress = 0.42,
             SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised,
             IconKind = BgInfoVisualCanvasTileIconKind.Computer,
             MiniChartKind = BgInfoVisualCanvasTileMiniChartKind.Area,
+            TextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis,
             MiniChartValues = new[] { 18d, 26d, 22d, 37d },
             MiniChartMaximum = 100
         });
@@ -326,6 +340,7 @@ public class BgInfoConfigurationJsonTests
 
         var roundTripped = BgInfoConfigurationJson.Load(path);
         var loaded = Assert.Single(roundTripped.VisualCanvases);
+        Assert.Equal(BgInfoVisualCanvasLayoutPreset.WideRails, loaded.LayoutPreset);
         Assert.Equal("PowerBGInfo", loaded.Title);
         Assert.Equal("Desktop background insights", loaded.Subtitle);
         Assert.Equal(1200, loaded.Width);
@@ -350,6 +365,16 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(BgInfoTextPosition.BottomRight, loaded.FeatureAnchor);
         Assert.Equal(610, loaded.FeatureWidth);
         Assert.Equal(52, loaded.FeatureHeight);
+        Assert.Equal(420, loaded.TileWidth);
+        Assert.Equal(132, loaded.TileHeight);
+        Assert.Equal(24, loaded.TileGap);
+        Assert.Equal(430, loaded.LeftTileWidth);
+        Assert.Equal(460, loaded.RightTileWidth);
+        Assert.Equal(8, loaded.LeftTileOffsetX);
+        Assert.Equal(10, loaded.LeftTileOffsetY);
+        Assert.Equal(12, loaded.RightTileOffsetX);
+        Assert.Equal(14, loaded.RightTileOffsetY);
+        Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink, loaded.TileTextFitPolicy);
         Assert.Equal(165, loaded.FeatureOffsetX);
         Assert.Equal(120, loaded.FeatureOffsetY);
         Assert.False(loaded.TechBackdrop);
@@ -360,11 +385,14 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("HOSTNAME", tile.Label);
         Assert.Equal("{{HostName}}", tile.Value);
         Assert.Equal("{{OSName}}", tile.Detail);
+        Assert.Equal(460, tile.Width);
+        Assert.Equal(144, tile.Height);
         Assert.Equal(Color.DodgerBlue.ToArgb(), tile.Accent!.Value.ToArgb());
         Assert.Equal(0.42, tile.Progress);
         Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Raised, tile.SurfaceStyle);
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
         Assert.Equal(BgInfoVisualCanvasTileMiniChartKind.Area, tile.MiniChartKind);
+        Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis, tile.TextFitPolicy);
         Assert.Equal(new[] { 18d, 26d, 22d, 37d }, tile.MiniChartValues);
         Assert.Equal(100, tile.MiniChartMaximum);
 

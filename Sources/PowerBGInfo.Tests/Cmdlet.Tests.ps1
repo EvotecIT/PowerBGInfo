@@ -152,19 +152,30 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TileValueColor'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
         $command.Parameters.Keys | Should -Contain 'NoHeroBadge'
+        $command.Parameters.Keys | Should -Contain 'LayoutPreset'
+        $command.Parameters.Keys | Should -Contain 'TileWidth'
+        $command.Parameters.Keys | Should -Contain 'TileHeight'
+        $command.Parameters.Keys | Should -Contain 'TileGap'
+        $command.Parameters.Keys | Should -Contain 'LeftTileWidth'
+        $command.Parameters.Keys | Should -Contain 'RightTileWidth'
+        $command.Parameters.Keys | Should -Contain 'TileTextFitPolicy'
         (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'MiniChartKind'
+        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'Width'
+        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'Height'
+        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'TextFitPolicy'
     }
 }
 
 Describe 'New-BGInfoVisualCanvas cmdlets' {
     It 'creates a visual canvas model' {
-        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -MiniChartValues 18,26,22 -MiniChartMaximum 100
+        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 -MiniChartMaximum 100
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
-        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -Tile $tile -Feature $feature
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
 
         $visual.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoVisualCanvas'
         $visual.Title | Should -Be 'PowerBGInfo'
+        $visual.LayoutPreset.ToString() | Should -Be 'WideRails'
         $visual.TitleColor | Should -Not -BeNullOrEmpty
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
@@ -173,11 +184,24 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.FeatureWidth | Should -Be 610
         $visual.FeatureOffsetX | Should -Be 165
         $visual.FeatureOffsetY | Should -Be 120
+        $visual.TileWidth | Should -Be 420
+        $visual.TileHeight | Should -Be 132
+        $visual.TileGap | Should -Be 24
+        $visual.LeftTileWidth | Should -Be 430
+        $visual.RightTileWidth | Should -Be 460
+        $visual.LeftTileOffsetX | Should -Be 8
+        $visual.LeftTileOffsetY | Should -Be 10
+        $visual.RightTileOffsetX | Should -Be 12
+        $visual.RightTileOffsetY | Should -Be 14
+        $visual.TileTextFitPolicy.ToString() | Should -Be 'WrapThenShrink'
         $visual.Tiles.Count | Should -Be 1
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
+        $visual.Tiles[0].Width | Should -Be 460
+        $visual.Tiles[0].Height | Should -Be 144
         $visual.Tiles[0].SurfaceStyle.ToString() | Should -Be 'Raised'
         $visual.Tiles[0].IconKind.ToString() | Should -Be 'Computer'
         $visual.Tiles[0].MiniChartKind.ToString() | Should -Be 'Sparkline'
+        $visual.Tiles[0].TextFitPolicy.ToString() | Should -Be 'SingleLineEllipsis'
         $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
         $visual.Tiles[0].MiniChartMaximum | Should -Be 100
         $visual.Features.Count | Should -Be 1
