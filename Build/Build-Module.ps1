@@ -29,11 +29,6 @@ Build-Module -ModuleName 'PowerBGInfo' {
     }
     New-ConfigurationManifest @Manifest
 
-    #New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid Auto -Version Latest
-    #New-ConfigurationModule -Type RequiredModule -Name 'DesktopManager' -Guid Auto -Version '2.0.1'
-    #New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword', 'PSPublishModule'
-    New-ConfigurationModuleSkip -IgnoreModuleName @('NetTCPIP', 'Microsoft.PowerShell.Utility', 'Microsoft.PowerShell.Management', 'CimCmdlets')
-
     $ConfigurationFormat = [ordered] @{
         RemoveComments                              = $false
         PlaceOpenBraceEnable                        = $true
@@ -71,13 +66,9 @@ Build-Module -ModuleName 'PowerBGInfo' {
     # configuration for documentation, at the same time it enables documentation processing
     New-ConfigurationDocumentation -Enable:$false -PathReadme 'Docs\Readme.md' -Path 'Docs'
 
-    #New-ConfigurationImportModule -ImportSelf
-
-    $signModule = $Env:COMPUTERNAME -eq 'EVOMAGIC'
-
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $signModule
+        SignModule                        = $true
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
         ResolveBinaryConflicts            = $true
@@ -93,11 +84,8 @@ Build-Module -ModuleName 'PowerBGInfo' {
         DotSourceClasses                  = $true
         DeleteTargetModuleBeforeBuild     = $true
         NETBinaryModuleDocumentation      = $true
-        RefreshPSD1Only                   = if ([string]::IsNullOrWhiteSpace($Env:RefreshPSD1Only)) { $true } else { [bool]::Parse($Env:RefreshPSD1Only) }
-    }
-
-    if ($signModule) {
-        $newConfigurationBuildSplat.CertificateThumbprint = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+        RefreshPSD1Only                   = if ([string]::IsNullOrWhiteSpace($Env:RefreshPSD1Only)) { $false } else { [bool]::Parse($Env:RefreshPSD1Only) }
+        CertificateThumbprint             = '92e95fb58effa6a4a75e77a33cdd6bfe6dd30f1a'
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat
