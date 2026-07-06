@@ -46,14 +46,16 @@ internal static class BgInfoVisualCanvasRenderer {
         var scaleY = height / 630.0;
         var accent = ToChartColor(visual.Accent);
         var defaultTileWidth = ApplyTileWidthPreset(visual.LayoutPreset, 300 * scaleX);
+        var leftDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
+        var rightDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
         var leftTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
         var rightTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
         var leftTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 82 * scaleY);
         var rightTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 96 * scaleY);
         var leftGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 16 * scaleY));
         var rightGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 18 * scaleY));
-        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, 48 * scaleX + visual.LeftTileOffsetX, 92 * scaleY + visual.LeftTileOffsetY, leftTileWidth, leftTileHeight, leftGap);
-        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, width - 48 * scaleX - rightTileWidth - visual.RightTileOffsetX, 70 * scaleY + visual.RightTileOffsetY, rightTileWidth, rightTileHeight, rightGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, 48 * scaleX + visual.LeftTileOffsetX, 92 * scaleY + visual.LeftTileOffsetY, leftTileWidth, leftDefaultTileWidth, leftTileHeight, leftGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, width - 48 * scaleX - rightTileWidth - visual.RightTileOffsetX, 70 * scaleY + visual.RightTileOffsetY, rightTileWidth, rightDefaultTileWidth, rightTileHeight, rightGap);
         AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
         canvas
             .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
@@ -72,20 +74,12 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static void BuildPowerBgInfoOverlay(VisualCanvas canvas, BgInfoVisualCanvas visual, int width, int height) {
         var accent = ToChartColor(visual.Accent);
-        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
-        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
-        var tileWidth = Math.Min(Clamp(ApplyTileWidthPreset(visual.LayoutPreset, width * 0.18), Math.Min(180, railBudget), Math.Min(560, railBudget)), railBudget);
-        var tileHeight = Clamp(ApplyTileHeightPreset(visual.LayoutPreset, height * 0.092), Math.Min(56, height * 0.18), Math.Min(140, height * 0.26));
-        var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
-        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
-        var leftTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, tileWidth);
-        var rightTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, tileWidth);
-        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, marginX + visual.LeftTileOffsetX, railY + visual.LeftTileOffsetY, leftTileWidth, tileHeight, tileGap);
-        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, width - marginX - rightTileWidth - visual.RightTileOffsetX, railY + visual.RightTileOffsetY, rightTileWidth, tileHeight, tileGap);
+        var layout = ResolveOverlayRailLayout(visual, width, height);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
 
-        var centerLeft = marginX + leftTileWidth + 48;
-        var centerRight = width - marginX - rightTileWidth - 48;
-        var centerWidth = Math.Max(1, centerRight - centerLeft);
+        var centerLeft = layout.CenterLeft;
+        var centerWidth = layout.CenterWidth;
         var badgeWidth = Math.Min(centerWidth, Clamp(width * 0.065, Math.Min(64, centerWidth), Math.Min(144, centerWidth)));
         var badgeHeight = Clamp(height * 0.085, Math.Min(42, height * 0.16), Math.Min(100, height * 0.22));
         var badgeY = Clamp(height * 0.23, Math.Min(24, height * 0.08), Math.Max(24, height - badgeHeight - 24));
@@ -113,11 +107,11 @@ internal static class BgInfoVisualCanvasRenderer {
         }
     }
 
-    private static void AddTiles(VisualCanvas canvas, BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double x, double y, double width, double height, double gap) {
+    private static void AddTiles(VisualCanvas canvas, BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double x, double y, double width, double defaultTileWidth, double height, double gap) {
         var cursorY = y;
         foreach (var tile in visual.Tiles) {
             if (tile.Side != side) continue;
-            var tileWidth = ResolveTileWidth(visual, tile, width);
+            var tileWidth = ResolveTileWidth(visual, tile, defaultTileWidth);
             var tileHeight = ResolveTileHeight(visual, tile, height);
             var tileX = side == BgInfoVisualCanvasSide.Right ? x + width - tileWidth : x;
             canvas.AddInfoTile(
@@ -167,6 +161,57 @@ internal static class BgInfoVisualCanvasRenderer {
     }
 
     private static double ResolveTileGap(BgInfoVisualCanvas visual, double defaultGap) => visual.TileGap > 0 ? visual.TileGap : defaultGap;
+
+    internal static (double X, double Y, double Width, double Height) ResolveDefaultTransparentCenterBounds(BgInfoVisualCanvas visual, int width, int height) {
+        var layout = ResolveOverlayRailLayout(visual, width, height);
+        return (layout.CenterLeft, layout.RailY, layout.CenterWidth, height - layout.RailY);
+    }
+
+    private static OverlayRailLayout ResolveOverlayRailLayout(BgInfoVisualCanvas visual, int width, int height) {
+        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
+        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
+        var templateTileWidth = Math.Min(Clamp(ApplyTileWidthPreset(visual.LayoutPreset, width * 0.18), Math.Min(180, railBudget), Math.Min(560, railBudget)), railBudget);
+        var tileHeight = Clamp(ApplyTileHeightPreset(visual.LayoutPreset, height * 0.092), Math.Min(56, height * 0.18), Math.Min(140, height * 0.26));
+        var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
+        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
+        var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
+        var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
+        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
+        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
+        var leftRailX = marginX + visual.LeftTileOffsetX;
+        var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
+        var centerLeft = leftRailX + leftRailWidth + 48;
+        var centerRight = rightRailX - 48;
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft));
+    }
+
+    private readonly struct OverlayRailLayout {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double tileHeight, double tileGap, double centerLeft, double centerWidth) {
+            LeftRailX = leftRailX;
+            RightRailX = rightRailX;
+            RailY = railY;
+            LeftRailWidth = leftRailWidth;
+            RightRailWidth = rightRailWidth;
+            LeftTileWidth = leftTileWidth;
+            RightTileWidth = rightTileWidth;
+            TileHeight = tileHeight;
+            TileGap = tileGap;
+            CenterLeft = centerLeft;
+            CenterWidth = centerWidth;
+        }
+
+        public double LeftRailX { get; }
+        public double RightRailX { get; }
+        public double RailY { get; }
+        public double LeftRailWidth { get; }
+        public double RightRailWidth { get; }
+        public double LeftTileWidth { get; }
+        public double RightTileWidth { get; }
+        public double TileHeight { get; }
+        public double TileGap { get; }
+        public double CenterLeft { get; }
+        public double CenterWidth { get; }
+    }
 
     private static double ApplyTileWidthPreset(BgInfoVisualCanvasLayoutPreset preset, double value) {
         switch (preset) {

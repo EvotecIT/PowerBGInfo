@@ -106,6 +106,53 @@ public class BgInfoVisualCanvasRendererTests
         Assert.True(CountOpaquePixels(pixels, 640, 100, 24, 72) > 0);
     }
 
+    [Fact]
+    public void TransparentCenterBoundsAccountForRailOffsets()
+    {
+        var visual = new BgInfoVisualCanvas {
+            LeftTileWidth = 300,
+            RightTileWidth = 300,
+            LeftTileOffsetX = 80,
+            RightTileOffsetX = 64
+        };
+
+        var bounds = BgInfoVisualCanvasRenderer.ResolveDefaultTransparentCenterBounds(visual, 1000, 520);
+
+        Assert.Equal(473, Math.Round(bounds.X));
+        Assert.Equal(70, Math.Round(bounds.Width));
+    }
+
+    [Fact]
+    public void PerTileWidthDoesNotResizeSiblingTiles()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1000,
+            Height = 520,
+            Title = string.Empty,
+            Subtitle = string.Empty,
+            HeroBadgeVisible = false
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Left,
+            Width = 460,
+            Label = "WIDE",
+            Value = "wide tile",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Left,
+            Label = "DEFAULT",
+            Value = "default tile",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1000, 520);
+        var pixels = image.ToRgbaImage();
+
+        Assert.True(CountOpaquePixels(pixels, 430, 95, 24, 40) > 0);
+        Assert.Equal(0, CountOpaquePixels(pixels, 430, 210, 24, 40));
+    }
+
     private static int CountOpaquePixels(ChartForgeX.Raster.RgbaImage image, int x, int y, int width, int height)
     {
         var count = 0;
