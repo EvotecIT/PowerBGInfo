@@ -24,7 +24,7 @@
         <ProjectReference Include="$(ChartForgeXProjectPath)" />
     </ItemGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' == ''">
-        <PackageReference Include="ChartForgeX" Version="0.1.4" />
+        <PackageReference Include="ChartForgeX" Version="0.1.9" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
