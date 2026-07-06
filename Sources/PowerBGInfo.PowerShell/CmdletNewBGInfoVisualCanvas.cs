@@ -29,6 +29,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasTemplate Template { get; set; } = BgInfoVisualCanvasTemplate.PowerBgInfoHero;
 
+    /// <para>Responsive side-rail sizing preset.</para>
+    [Parameter]
+    public BgInfoVisualCanvasLayoutPreset LayoutPreset { get; set; }
+
     /// <para>Canvas title or brand text.</para>
     [Parameter]
     public string Title { get; set; } = "PowerBGInfo";
@@ -133,6 +137,46 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public int FeatureHeight { get; set; }
 
+    /// <para>Default side-rail tile width in pixels. Zero uses the template default width.</para>
+    [Parameter]
+    public int TileWidth { get; set; }
+
+    /// <para>Default side-rail tile height in pixels. Zero uses the template default height.</para>
+    [Parameter]
+    public int TileHeight { get; set; }
+
+    /// <para>Default vertical gap between side-rail tiles in pixels. Zero uses the template default gap.</para>
+    [Parameter]
+    public int TileGap { get; set; }
+
+    /// <para>Default left side-rail tile width in pixels. Zero uses TileWidth or the template default.</para>
+    [Parameter]
+    public int LeftTileWidth { get; set; }
+
+    /// <para>Default right side-rail tile width in pixels. Zero uses TileWidth or the template default.</para>
+    [Parameter]
+    public int RightTileWidth { get; set; }
+
+    /// <para>Horizontal left side-rail offset in pixels.</para>
+    [Parameter]
+    public int LeftTileOffsetX { get; set; }
+
+    /// <para>Vertical left side-rail offset in pixels.</para>
+    [Parameter]
+    public int LeftTileOffsetY { get; set; }
+
+    /// <para>Horizontal right side-rail inset in pixels.</para>
+    [Parameter]
+    public int RightTileOffsetX { get; set; }
+
+    /// <para>Vertical right side-rail offset in pixels.</para>
+    [Parameter]
+    public int RightTileOffsetY { get; set; }
+
+    /// <para>Default side-rail tile text fitting policy.</para>
+    [Parameter]
+    public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
+
     /// <para>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</para>
     [Parameter]
     public int FeatureOffsetX { get; set; }
@@ -161,6 +205,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     protected override void EndProcessing() {
         var visual = new BgInfoVisualCanvas {
             Template = Template,
+            LayoutPreset = LayoutPreset,
             Title = Title,
             Subtitle = Subtitle,
             Width = Width,
@@ -187,6 +232,16 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             FeatureAnchor = MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ? FeatureAnchor : null,
             FeatureWidth = FeatureWidth,
             FeatureHeight = FeatureHeight,
+            TileWidth = TileWidth,
+            TileHeight = TileHeight,
+            TileGap = TileGap,
+            LeftTileWidth = LeftTileWidth,
+            RightTileWidth = RightTileWidth,
+            LeftTileOffsetX = LeftTileOffsetX,
+            LeftTileOffsetY = LeftTileOffsetY,
+            RightTileOffsetX = RightTileOffsetX,
+            RightTileOffsetY = RightTileOffsetY,
+            TileTextFitPolicy = TileTextFitPolicy,
             FeatureOffsetX = FeatureOffsetX,
             FeatureOffsetY = FeatureOffsetY,
             Transparent = !Opaque.IsPresent,

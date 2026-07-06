@@ -24,7 +24,7 @@ $palette = @{
 $tiles = @(
     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop' -Accent '#0F766EFF'
     New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}' -Detail 'primary adapter' -Accent '#2563EBFF'
-    New-BGInfoVisualCanvasTile -Side Left -IconKind OperatingSystem -SurfaceStyle Raised -Label 'OPERATING SYSTEM' -Value '{{OSName}}' -Detail '{{OSVersion}}' -Accent '#7C3AEDFF'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind OperatingSystem -SurfaceStyle Raised -Label 'OPERATING SYSTEM' -Value '{{OSName}}' -Detail '{{OSVersion}}' -TextFitPolicy WrapThenShrink -Accent '#7C3AEDFF'
     New-BGInfoVisualCanvasTile -Side Left -IconKind Shield -SurfaceStyle Raised -Label 'PATCH STATUS' -Value '94% compliant' -Detail 'last scan 08:42' -Progress 0.94 -Accent '#16A34AFF'
     New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -Detail '{{CpuCores}} cores / {{CpuLogicalCores}} threads' -MiniChartKind Area -MiniChartValues 22,28,25,36,31,42,38,34,31 -MiniChartMaximum 100 -Accent '#F97316FF'
     New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label 'MEMORY USE' -Value '11.8 GB used' -Detail '{{RAMSize}} installed' -MiniChartKind Bars -MiniChartValues 36,38,42,41,45,43,39 -MiniChartMaximum 100 -Accent '#DB2777FF'
@@ -56,10 +56,16 @@ New-BGInfo -MonitorIndex 0 -Target File {
         -HeroBadgeTop $palette.HeroBadgeTop `
         -HeroBadgeBottom $palette.HeroBadgeBottom `
         -HeroBadgeTextColor $palette.HeroBadgeTextColor `
+        -LayoutPreset WideRails `
         -FeatureAnchor BottomRight `
         -FeatureWidth 610 `
         -FeatureOffsetX 165 `
         -FeatureOffsetY 120 `
+        -TileWidth 420 `
+        -TileHeight 132 `
+        -TileGap 22 `
+        -RightTileWidth 390 `
+        -TileTextFitPolicy WrapThenShrink `
         -Tile $tiles `
         -Feature $features
 } -FilePath '..\Samples\TapC-Evotec-2560x1080.jpg' `

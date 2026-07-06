@@ -45,8 +45,17 @@ internal static class BgInfoVisualCanvasRenderer {
         var scaleX = width / 1200.0;
         var scaleY = height / 630.0;
         var accent = ToChartColor(visual.Accent);
-        AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Left, 48 * scaleX, 92 * scaleY, 300 * scaleX, 82 * scaleY, 16 * scaleY);
-        AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Right, 852 * scaleX, 70 * scaleY, 300 * scaleX, 96 * scaleY, 18 * scaleY);
+        var defaultTileWidth = ApplyTileWidthPreset(visual.LayoutPreset, 300 * scaleX);
+        var leftDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
+        var rightDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
+        var leftTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
+        var rightTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
+        var leftTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 82 * scaleY);
+        var rightTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 96 * scaleY);
+        var leftGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 16 * scaleY));
+        var rightGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 18 * scaleY));
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, 48 * scaleX + visual.LeftTileOffsetX, 92 * scaleY + visual.LeftTileOffsetY, leftTileWidth, leftDefaultTileWidth, leftTileHeight, leftGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, width - 48 * scaleX - rightTileWidth - visual.RightTileOffsetX, 70 * scaleY + visual.RightTileOffsetY, rightTileWidth, rightDefaultTileWidth, rightTileHeight, rightGap);
         AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
         canvas
             .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
@@ -65,18 +74,12 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static void BuildPowerBgInfoOverlay(VisualCanvas canvas, BgInfoVisualCanvas visual, int width, int height) {
         var accent = ToChartColor(visual.Accent);
-        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
-        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
-        var tileWidth = Math.Min(Clamp(width * 0.18, Math.Min(180, railBudget), Math.Min(470, railBudget)), railBudget);
-        var tileHeight = Clamp(height * 0.092, Math.Min(56, height * 0.18), Math.Min(106, height * 0.22));
-        var tileGap = Clamp(height * 0.018, Math.Min(8, height * 0.02), Math.Min(24, height * 0.04));
-        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
-        AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Left, marginX, railY, tileWidth, tileHeight, tileGap);
-        AddTiles(canvas, visual.Tiles, BgInfoVisualCanvasSide.Right, width - marginX - tileWidth, railY, tileWidth, tileHeight, tileGap);
+        var layout = ResolveOverlayRailLayout(visual, width, height);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
 
-        var centerLeft = marginX + tileWidth + 48;
-        var centerRight = width - marginX - tileWidth - 48;
-        var centerWidth = Math.Max(1, centerRight - centerLeft);
+        var centerLeft = layout.CenterLeft;
+        var centerWidth = layout.CenterWidth;
         var badgeWidth = Math.Min(centerWidth, Clamp(width * 0.065, Math.Min(64, centerWidth), Math.Min(144, centerWidth)));
         var badgeHeight = Clamp(height * 0.085, Math.Min(42, height * 0.16), Math.Min(100, height * 0.22));
         var badgeY = Clamp(height * 0.23, Math.Min(24, height * 0.08), Math.Max(24, height - badgeHeight - 24));
@@ -104,15 +107,18 @@ internal static class BgInfoVisualCanvasRenderer {
         }
     }
 
-    private static void AddTiles(VisualCanvas canvas, IReadOnlyList<BgInfoVisualCanvasTile> tiles, BgInfoVisualCanvasSide side, double x, double y, double width, double height, double gap) {
-        var index = 0;
-        foreach (var tile in tiles) {
+    private static void AddTiles(VisualCanvas canvas, BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double x, double y, double width, double defaultTileWidth, double height, double gap) {
+        var cursorY = y;
+        foreach (var tile in visual.Tiles) {
             if (tile.Side != side) continue;
+            var tileWidth = ResolveTileWidth(visual, tile, defaultTileWidth);
+            var tileHeight = ResolveTileHeight(visual, tile, height);
+            var tileX = side == BgInfoVisualCanvasSide.Right ? x + width - tileWidth : x;
             canvas.AddInfoTile(
-                x,
-                y + index * (height + gap),
-                width,
-                height,
+                tileX,
+                cursorY,
+                tileWidth,
+                tileHeight,
                 Resolve(tile.Icon),
                 Resolve(tile.Label),
                 Resolve(tile.Value),
@@ -123,8 +129,116 @@ internal static class BgInfoVisualCanvasRenderer {
                 MapIconKind(tile.IconKind),
                 MapMiniChartKind(tile.MiniChartKind),
                 tile.MiniChartValues,
-                tile.MiniChartMaximum);
-            index++;
+                tile.MiniChartMaximum,
+                ResolveTextFitPolicy(visual, tile));
+            cursorY += tileHeight + gap;
+        }
+    }
+
+    private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
+        var width = ResolveSideTileWidth(visual, side, defaultWidth);
+        foreach (var tile in visual.Tiles) {
+            if (tile.Side == side && tile.Width > width) width = tile.Width;
+        }
+
+        return width;
+    }
+
+    private static double ResolveTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultWidth) {
+        if (tile.Width > 0) return tile.Width;
+        return ResolveSideTileWidth(visual, tile.Side, defaultWidth);
+    }
+
+    private static double ResolveTileHeight(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultHeight) {
+        if (tile.Height > 0) return tile.Height;
+        return visual.TileHeight > 0 ? visual.TileHeight : defaultHeight;
+    }
+
+    private static double ResolveSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
+        if (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) return visual.LeftTileWidth;
+        if (side == BgInfoVisualCanvasSide.Right && visual.RightTileWidth > 0) return visual.RightTileWidth;
+        return visual.TileWidth > 0 ? visual.TileWidth : defaultWidth;
+    }
+
+    private static double ResolveTileGap(BgInfoVisualCanvas visual, double defaultGap) => visual.TileGap > 0 ? visual.TileGap : defaultGap;
+
+    internal static (double X, double Y, double Width, double Height) ResolveDefaultTransparentCenterBounds(BgInfoVisualCanvas visual, int width, int height) {
+        var layout = ResolveOverlayRailLayout(visual, width, height);
+        return (layout.CenterLeft, layout.RailY, layout.CenterWidth, height - layout.RailY);
+    }
+
+    private static OverlayRailLayout ResolveOverlayRailLayout(BgInfoVisualCanvas visual, int width, int height) {
+        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
+        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
+        var templateTileWidth = Math.Min(Clamp(ApplyTileWidthPreset(visual.LayoutPreset, width * 0.18), Math.Min(180, railBudget), Math.Min(560, railBudget)), railBudget);
+        var tileHeight = Clamp(ApplyTileHeightPreset(visual.LayoutPreset, height * 0.092), Math.Min(56, height * 0.18), Math.Min(140, height * 0.26));
+        var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
+        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
+        var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
+        var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
+        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
+        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
+        var leftRailX = marginX + visual.LeftTileOffsetX;
+        var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
+        var centerLeft = leftRailX + leftRailWidth + 48;
+        var centerRight = rightRailX - 48;
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft));
+    }
+
+    private readonly struct OverlayRailLayout {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double tileHeight, double tileGap, double centerLeft, double centerWidth) {
+            LeftRailX = leftRailX;
+            RightRailX = rightRailX;
+            RailY = railY;
+            LeftRailWidth = leftRailWidth;
+            RightRailWidth = rightRailWidth;
+            LeftTileWidth = leftTileWidth;
+            RightTileWidth = rightTileWidth;
+            TileHeight = tileHeight;
+            TileGap = tileGap;
+            CenterLeft = centerLeft;
+            CenterWidth = centerWidth;
+        }
+
+        public double LeftRailX { get; }
+        public double RightRailX { get; }
+        public double RailY { get; }
+        public double LeftRailWidth { get; }
+        public double RightRailWidth { get; }
+        public double LeftTileWidth { get; }
+        public double RightTileWidth { get; }
+        public double TileHeight { get; }
+        public double TileGap { get; }
+        public double CenterLeft { get; }
+        public double CenterWidth { get; }
+    }
+
+    private static double ApplyTileWidthPreset(BgInfoVisualCanvasLayoutPreset preset, double value) {
+        switch (preset) {
+            case BgInfoVisualCanvasLayoutPreset.Compact: return value * 0.86;
+            case BgInfoVisualCanvasLayoutPreset.Comfortable: return value * 1.12;
+            case BgInfoVisualCanvasLayoutPreset.WideRails: return value * 1.28;
+            case BgInfoVisualCanvasLayoutPreset.Dense: return value * 0.92;
+            default: return value;
+        }
+    }
+
+    private static double ApplyTileHeightPreset(BgInfoVisualCanvasLayoutPreset preset, double value) {
+        switch (preset) {
+            case BgInfoVisualCanvasLayoutPreset.Compact: return value * 0.88;
+            case BgInfoVisualCanvasLayoutPreset.Comfortable: return value * 1.18;
+            case BgInfoVisualCanvasLayoutPreset.WideRails: return value * 1.08;
+            case BgInfoVisualCanvasLayoutPreset.Dense: return value * 0.76;
+            default: return value;
+        }
+    }
+
+    private static double ApplyTileGapPreset(BgInfoVisualCanvasLayoutPreset preset, double value) {
+        switch (preset) {
+            case BgInfoVisualCanvasLayoutPreset.Compact: return value * 0.72;
+            case BgInfoVisualCanvasLayoutPreset.Comfortable: return value * 1.22;
+            case BgInfoVisualCanvasLayoutPreset.Dense: return value * 0.55;
+            default: return value;
         }
     }
 
@@ -191,6 +305,17 @@ internal static class BgInfoVisualCanvasRenderer {
             case BgInfoVisualCanvasTileMiniChartKind.Area: return VisualCanvasInfoTileMiniChartKind.Area;
             case BgInfoVisualCanvasTileMiniChartKind.Bars: return VisualCanvasInfoTileMiniChartKind.Bars;
             default: return VisualCanvasInfoTileMiniChartKind.None;
+        }
+    }
+
+    private static VisualCanvasTextFitPolicy ResolveTextFitPolicy(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile) {
+        var policy = tile.TextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? visual.TileTextFitPolicy : tile.TextFitPolicy;
+        switch (policy) {
+            case BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis: return VisualCanvasTextFitPolicy.SingleLineEllipsis;
+            case BgInfoVisualCanvasTileTextFitPolicy.Wrap: return VisualCanvasTextFitPolicy.Wrap;
+            case BgInfoVisualCanvasTileTextFitPolicy.ShrinkToFit: return VisualCanvasTextFitPolicy.ShrinkToFit;
+            case BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink: return VisualCanvasTextFitPolicy.WrapThenShrink;
+            default: return VisualCanvasTextFitPolicy.Auto;
         }
     }
 

@@ -65,10 +65,40 @@ public enum BgInfoVisualCanvasTileMiniChartKind {
     Bars
 }
 
+/// <summary>Built-in sizing density for visual canvas side rails.</summary>
+public enum BgInfoVisualCanvasLayoutPreset {
+    /// <summary>Use the default responsive PowerBGInfo template sizing.</summary>
+    Default,
+    /// <summary>Use smaller tiles and tighter vertical spacing.</summary>
+    Compact,
+    /// <summary>Use larger tiles and more breathing room.</summary>
+    Comfortable,
+    /// <summary>Favor wider side rails for longer values.</summary>
+    WideRails,
+    /// <summary>Favor fitting more tiles vertically.</summary>
+    Dense
+}
+
+/// <summary>Text fitting policy for visual canvas tiles.</summary>
+public enum BgInfoVisualCanvasTileTextFitPolicy {
+    /// <summary>Use the balanced ChartForgeX default.</summary>
+    Auto,
+    /// <summary>Keep each text role on one line and trim overflowing text.</summary>
+    SingleLineEllipsis,
+    /// <summary>Wrap text across available tile lines.</summary>
+    Wrap,
+    /// <summary>Shrink one-line text before trimming.</summary>
+    ShrinkToFit,
+    /// <summary>Wrap first, then shrink before trimming.</summary>
+    WrapThenShrink
+}
+
 /// <summary>Defines a reusable ChartForgeX visual canvas overlay.</summary>
 public sealed class BgInfoVisualCanvas {
     /// <summary>Template used to build the canvas.</summary>
     public BgInfoVisualCanvasTemplate Template { get; set; } = BgInfoVisualCanvasTemplate.PowerBgInfoHero;
+    /// <summary>Responsive side-rail sizing preset.</summary>
+    public BgInfoVisualCanvasLayoutPreset LayoutPreset { get; set; }
     /// <summary>Canvas title or brand text.</summary>
     public string Title { get; set; } = "PowerBGInfo";
     /// <summary>Canvas subtitle text.</summary>
@@ -121,6 +151,26 @@ public sealed class BgInfoVisualCanvas {
     public int FeatureWidth { get; set; }
     /// <summary>Optional feature-strip height in pixels. Zero uses the template default height.</summary>
     public int FeatureHeight { get; set; }
+    /// <summary>Default tile width in pixels. Zero uses the template default width.</summary>
+    public int TileWidth { get; set; }
+    /// <summary>Default tile height in pixels. Zero uses the template default height.</summary>
+    public int TileHeight { get; set; }
+    /// <summary>Default vertical gap between tiles in pixels. Zero uses the template default gap.</summary>
+    public int TileGap { get; set; }
+    /// <summary>Default left side-rail tile width in pixels. Zero uses TileWidth or the template default.</summary>
+    public int LeftTileWidth { get; set; }
+    /// <summary>Default right side-rail tile width in pixels. Zero uses TileWidth or the template default.</summary>
+    public int RightTileWidth { get; set; }
+    /// <summary>Horizontal left side-rail offset in pixels.</summary>
+    public int LeftTileOffsetX { get; set; }
+    /// <summary>Vertical left side-rail offset in pixels.</summary>
+    public int LeftTileOffsetY { get; set; }
+    /// <summary>Horizontal right side-rail inset in pixels.</summary>
+    public int RightTileOffsetX { get; set; }
+    /// <summary>Vertical right side-rail offset in pixels.</summary>
+    public int RightTileOffsetY { get; set; }
+    /// <summary>Default tile text fitting policy.</summary>
+    public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
     /// <summary>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</summary>
     public int FeatureOffsetX { get; set; }
     /// <summary>Vertical feature-strip offset. For bottom anchors, positive values inset from the bottom edge.</summary>
@@ -147,6 +197,10 @@ public sealed class BgInfoVisualCanvasTile {
     public string Value { get; set; } = string.Empty;
     /// <summary>Optional detail text. Templates are resolved at render time.</summary>
     public string Detail { get; set; } = string.Empty;
+    /// <summary>Optional tile width in pixels. Zero uses the visual canvas default or template default.</summary>
+    public int Width { get; set; }
+    /// <summary>Optional tile height in pixels. Zero uses the visual canvas default or template default.</summary>
+    public int Height { get; set; }
     /// <summary>Optional tile accent color.</summary>
     public Color? Accent { get; set; }
     /// <summary>Optional progress value from zero to one.</summary>
@@ -157,6 +211,8 @@ public sealed class BgInfoVisualCanvasTile {
     public BgInfoVisualCanvasTileIconKind IconKind { get; set; }
     /// <summary>Compact tile chart kind.</summary>
     public BgInfoVisualCanvasTileMiniChartKind MiniChartKind { get; set; }
+    /// <summary>Tile-specific text fitting policy. Auto inherits the visual canvas setting.</summary>
+    public BgInfoVisualCanvasTileTextFitPolicy TextFitPolicy { get; set; }
     /// <summary>Compact tile chart values.</summary>
     public IReadOnlyList<double> MiniChartValues { get; set; } = System.Array.Empty<double>();
     /// <summary>Optional compact tile chart maximum.</summary>
