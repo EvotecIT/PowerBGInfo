@@ -83,6 +83,13 @@ if ($Development) {
     )
 }
 
+$AssemblyLoadSkip = @(
+    'PowerBGInfo.PowerShell.dll',
+    'System.Management.Automation.dll',
+    'System.Management.dll'
+)
+$Assembly = @($Assembly | Where-Object { $AssemblyLoadSkip -notcontains $_.Name })
+
 $FoundErrors = @(
     if ($Development) {
         foreach ($BinaryModule in $BinaryDev) {
