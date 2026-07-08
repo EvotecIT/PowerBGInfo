@@ -502,4 +502,23 @@ public class BgInfoConfigurationJsonTests
 
         Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
     }
+
+    [Fact]
+    public void SaveAndLoadPreservesEmptyHeroBadgeText() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration();
+        configuration.VisualCanvases.Add(new BgInfoVisualCanvas {
+            HeroBadgeText = string.Empty,
+            HeroBadgeImagePath = @"Images\Evotec.png"
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var visual = Assert.Single(roundTripped.VisualCanvases);
+        Assert.Equal(string.Empty, visual.HeroBadgeText);
+    }
 }

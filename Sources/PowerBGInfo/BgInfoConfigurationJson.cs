@@ -849,7 +849,7 @@ public static class BgInfoConfigurationJson {
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
         if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
         if (model.HeroBadgeVisible.HasValue) visual.HeroBadgeVisible = model.HeroBadgeVisible.Value;
-        if (!string.IsNullOrWhiteSpace(model.HeroBadgeText)) visual.HeroBadgeText = model.HeroBadgeText!;
+        if (model.HeroBadgeText != null) visual.HeroBadgeText = model.HeroBadgeText;
         if (!string.IsNullOrWhiteSpace(model.HeroBadgeImagePath)) visual.HeroBadgeImagePath = ResolvePath(model.HeroBadgeImagePath, baseDirectory);
         if (!string.IsNullOrWhiteSpace(model.HeroBadgeImageFit) &&
             Enum.TryParse(model.HeroBadgeImageFit, true, out BgInfoImageFit heroBadgeImageFit)) {

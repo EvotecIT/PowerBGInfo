@@ -73,7 +73,12 @@ public sealed class BgInfoRasterImage : IDisposable {
     public void DrawImage(RgbaImage image, float x, float y) => DrawImage(image, x, y, image.Width, image.Height);
 
     /// <summary>Draws an RGBA image into the destination rectangle.</summary>
-    public void DrawImage(RgbaImage image, float x, float y, float width, float height, double opacity = 1d, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
+    public void DrawImage(RgbaImage image, float x, float y, float width, float height, double opacity = 1d) {
+        DrawImage(image, x, y, width, height, opacity, VisualCanvasImageFit.Stretch);
+    }
+
+    /// <summary>Draws an RGBA image into the destination rectangle with a fit mode.</summary>
+    public void DrawImage(RgbaImage image, float x, float y, float width, float height, double opacity, VisualCanvasImageFit fit) {
         _composition.DrawImage(image, x, y, Math.Max(1f, width), Math.Max(1f, height), fit, opacity);
     }
 

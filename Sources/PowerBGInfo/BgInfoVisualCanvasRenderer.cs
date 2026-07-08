@@ -278,6 +278,7 @@ internal static class BgInfoVisualCanvasRenderer {
             height,
             text,
             accent,
+            imageHref: null,
             imageRgba: rgba.Pixels,
             imageSourceWidth: rgba.Width,
             imageSourceHeight: rgba.Height,
