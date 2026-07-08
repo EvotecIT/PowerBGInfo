@@ -1,3 +1,7 @@
+param(
+    [bool] $SignModule = $(if ([string]::IsNullOrWhiteSpace($Env:SignModule)) { $true } else { [bool]::Parse($Env:SignModule) })
+)
+
 Import-Module PSPublishModule -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'PowerBGInfo' {
@@ -68,7 +72,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $true
+        SignModule                        = $SignModule
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
         ResolveBinaryConflicts            = $true
