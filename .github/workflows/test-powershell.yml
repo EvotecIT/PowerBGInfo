@@ -199,6 +199,7 @@ jobs:
         shell: pwsh
         env:
           RefreshPSD1Only: 'false'
+          SignModule: 'false'
         run: ./Build/Build-Module.ps1
         timeout-minutes: 15
 

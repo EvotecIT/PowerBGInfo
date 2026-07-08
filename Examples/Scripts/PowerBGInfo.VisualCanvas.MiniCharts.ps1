@@ -17,9 +17,9 @@ $palette = @{
     TileGlassTop           = '#EE132444'
     TileGlassBottom        = '#D9040A18'
     TileProgressTrackColor = '#F0263A5E'
-    HeroBadgeTop           = '#13284C'
-    HeroBadgeBottom        = '#061225'
-    HeroBadgeTextColor     = '#F8FBFF'
+    HeroBadgeTop           = '#F8FAFC'
+    HeroBadgeBottom        = '#CBD5E1'
+    HeroBadgeTextColor     = '#0F172A'
 }
 
 $tiles = @(
@@ -51,9 +51,10 @@ New-BGInfo -MonitorIndex 0 -Target File {
         -HeroBadgeTop $palette.HeroBadgeTop `
         -HeroBadgeBottom $palette.HeroBadgeBottom `
         -HeroBadgeTextColor $palette.HeroBadgeTextColor `
+        -HeroBadgeImagePath $logoImage `
+        -HeroBadgeImageFit Contain `
+        -HeroBadgeImagePadding 14 `
         -Tile $tiles
-
-    New-BGInfoImage -Path $logoImage -Width 210 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.92
 } -FilePath $sampleImage `
     -ConfigurationDirectory $outputDirectory `
     -OutputFileName 'PowerBGInfo.VisualCanvas.MiniCharts.jpg' `

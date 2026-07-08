@@ -296,6 +296,11 @@ public class BgInfoConfigurationJsonTests
             HeroBadgeBottom = Color.Black,
             HeroBadgeTextColor = Color.AliceBlue,
             HeroBadgeVisible = false,
+            HeroBadgeText = "EV",
+            HeroBadgeImagePath = @"Images\Evotec.png",
+            HeroBadgeImageFit = BgInfoImageFit.Cover,
+            HeroBadgeImagePadding = 14,
+            HeroBadgeImageOpacity = 0.82,
             FeatureAnchor = BgInfoTextPosition.BottomRight,
             FeatureWidth = 610,
             FeatureHeight = 52,
@@ -362,6 +367,11 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(Color.Black.ToArgb(), loaded.HeroBadgeBottom!.Value.ToArgb());
         Assert.Equal(Color.AliceBlue.ToArgb(), loaded.HeroBadgeTextColor!.Value.ToArgb());
         Assert.False(loaded.HeroBadgeVisible);
+        Assert.Equal("EV", loaded.HeroBadgeText);
+        Assert.EndsWith(Path.Combine("Images", "Evotec.png"), loaded.HeroBadgeImagePath);
+        Assert.Equal(BgInfoImageFit.Cover, loaded.HeroBadgeImageFit);
+        Assert.Equal(14, loaded.HeroBadgeImagePadding);
+        Assert.Equal(0.82, loaded.HeroBadgeImageOpacity);
         Assert.Equal(BgInfoTextPosition.BottomRight, loaded.FeatureAnchor);
         Assert.Equal(610, loaded.FeatureWidth);
         Assert.Equal(52, loaded.FeatureHeight);
@@ -455,7 +465,8 @@ public class BgInfoConfigurationJsonTests
             Anchor = BgInfoTextPosition.BottomRight,
             OffsetX = 72,
             OffsetY = 54,
-            Opacity = 0.85
+            Opacity = 0.85,
+            Fit = BgInfoImageFit.Contain
         });
         configuration.Images.Add(null!);
 
@@ -470,6 +481,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(72, image.OffsetX);
         Assert.Equal(54, image.OffsetY);
         Assert.Equal(0.85, image.Opacity);
+        Assert.Equal(BgInfoImageFit.Contain, image.Fit);
     }
 
     [Fact]
@@ -489,5 +501,24 @@ public class BgInfoConfigurationJsonTests
 """);
 
         Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
+    }
+
+    [Fact]
+    public void SaveAndLoadPreservesEmptyHeroBadgeText() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration();
+        configuration.VisualCanvases.Add(new BgInfoVisualCanvas {
+            HeroBadgeText = string.Empty,
+            HeroBadgeImagePath = @"Images\Evotec.png"
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var roundTripped = BgInfoConfigurationJson.Load(path);
+        var visual = Assert.Single(roundTripped.VisualCanvases);
+        Assert.Equal(string.Empty, visual.HeroBadgeText);
     }
 }

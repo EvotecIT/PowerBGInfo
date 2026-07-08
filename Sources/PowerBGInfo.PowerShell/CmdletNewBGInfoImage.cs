@@ -43,6 +43,10 @@ public sealed class CmdletNewBGInfoImage : PSCmdlet {
     [Parameter]
     public double Opacity { get; set; } = 1d;
 
+    /// <para>How the image is fitted inside the destination rectangle.</para>
+    [Parameter]
+    public BgInfoImageFit Fit { get; set; } = BgInfoImageFit.Stretch;
+
     /// <summary>Emits an image overlay definition.</summary>
     protected override void EndProcessing() {
         if (Width < 0) {
@@ -65,7 +69,8 @@ public sealed class CmdletNewBGInfoImage : PSCmdlet {
             Anchor = Anchor,
             OffsetX = OffsetX,
             OffsetY = OffsetY,
-            Opacity = Opacity
+            Opacity = Opacity,
+            Fit = Fit
         };
 
         if (MyInvocation.BoundParameters.ContainsKey(nameof(PositionX))) {

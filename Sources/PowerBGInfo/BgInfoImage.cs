@@ -20,4 +20,6 @@ public sealed class BgInfoImage {
     public int? PositionY { get; set; }
     /// <summary>Image opacity from zero to one.</summary>
     public double Opacity { get; set; } = 1d;
+    /// <summary>How the image is fitted inside the destination rectangle.</summary>
+    public BgInfoImageFit Fit { get; set; } = BgInfoImageFit.Stretch;
 }

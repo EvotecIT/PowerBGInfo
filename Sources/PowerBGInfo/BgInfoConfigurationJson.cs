@@ -202,7 +202,7 @@ public static class BgInfoConfigurationJson {
 
         if (model.VisualCanvases != null) {
             foreach (var visualModel in model.VisualCanvases) {
-                var visual = MapVisualCanvas(visualModel);
+                var visual = MapVisualCanvas(visualModel, baseDirectory);
                 if (visual != null) {
                     configuration.VisualCanvases.Add(visual);
                 }
@@ -414,6 +414,11 @@ public static class BgInfoConfigurationJson {
                     HeroBadgeBottom = visual.HeroBadgeBottom.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeBottom.Value) : null,
                     HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
                     HeroBadgeVisible = visual.HeroBadgeVisible,
+                    HeroBadgeText = string.Equals(visual.HeroBadgeText, ">_", StringComparison.Ordinal) ? null : visual.HeroBadgeText,
+                    HeroBadgeImagePath = string.IsNullOrWhiteSpace(visual.HeroBadgeImagePath) ? null : visual.HeroBadgeImagePath,
+                    HeroBadgeImageFit = visual.HeroBadgeImageFit == BgInfoImageFit.Contain ? null : visual.HeroBadgeImageFit.ToString(),
+                    HeroBadgeImagePadding = visual.HeroBadgeImagePadding == 10 ? null : visual.HeroBadgeImagePadding,
+                    HeroBadgeImageOpacity = visual.HeroBadgeImageOpacity == 1d ? null : ValidateImageOpacity(visual.HeroBadgeImageOpacity),
                     FeatureAnchor = visual.FeatureAnchor?.ToString(),
                     FeatureWidth = visual.FeatureWidth == 0 ? null : visual.FeatureWidth,
                     FeatureHeight = visual.FeatureHeight == 0 ? null : visual.FeatureHeight,
@@ -452,7 +457,8 @@ public static class BgInfoConfigurationJson {
                     OffsetY = image.OffsetY,
                     PositionX = image.PositionX,
                     PositionY = image.PositionY,
-                    Opacity = ValidateImageOpacity(image.Opacity)
+                    Opacity = ValidateImageOpacity(image.Opacity),
+                    Fit = image.Fit == BgInfoImageFit.Stretch ? null : image.Fit.ToString()
                 });
             }
         }
@@ -818,7 +824,7 @@ public static class BgInfoConfigurationJson {
         Muted = edge.IsMuted
     };
 
-    private static BgInfoVisualCanvas? MapVisualCanvas(BgInfoVisualCanvasFile model) {
+    private static BgInfoVisualCanvas? MapVisualCanvas(BgInfoVisualCanvasFile model, string baseDirectory) {
         if (model == null) {
             return null;
         }
@@ -843,6 +849,14 @@ public static class BgInfoConfigurationJson {
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
         if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
         if (model.HeroBadgeVisible.HasValue) visual.HeroBadgeVisible = model.HeroBadgeVisible.Value;
+        if (model.HeroBadgeText != null) visual.HeroBadgeText = model.HeroBadgeText;
+        if (!string.IsNullOrWhiteSpace(model.HeroBadgeImagePath)) visual.HeroBadgeImagePath = ResolvePath(model.HeroBadgeImagePath, baseDirectory);
+        if (!string.IsNullOrWhiteSpace(model.HeroBadgeImageFit) &&
+            Enum.TryParse(model.HeroBadgeImageFit, true, out BgInfoImageFit heroBadgeImageFit)) {
+            visual.HeroBadgeImageFit = heroBadgeImageFit;
+        }
+        if (model.HeroBadgeImagePadding.HasValue) visual.HeroBadgeImagePadding = ValidateImagePadding(model.HeroBadgeImagePadding.Value, "Hero badge image padding");
+        if (model.HeroBadgeImageOpacity.HasValue) visual.HeroBadgeImageOpacity = ValidateImageOpacity(model.HeroBadgeImageOpacity.Value);
         if (!string.IsNullOrWhiteSpace(model.FeatureAnchor) &&
             Enum.TryParse(model.FeatureAnchor, true, out BgInfoTextPosition featureAnchor)) {
             visual.FeatureAnchor = featureAnchor;
@@ -978,7 +992,19 @@ public static class BgInfoConfigurationJson {
         if (model.PositionX.HasValue) image.PositionX = model.PositionX.Value;
         if (model.PositionY.HasValue) image.PositionY = model.PositionY.Value;
         if (model.Opacity.HasValue) image.Opacity = ValidateImageOpacity(model.Opacity.Value);
+        if (!string.IsNullOrWhiteSpace(model.Fit) &&
+            Enum.TryParse(model.Fit, true, out BgInfoImageFit fit)) {
+            image.Fit = fit;
+        }
         return image;
+    }
+
+    private static int ValidateImagePadding(int padding, string name) {
+        if (padding < 0) {
+            throw new InvalidDataException(name + " cannot be negative.");
+        }
+
+        return padding;
     }
 
     private static double ValidateImageOpacity(double opacity) {
@@ -1225,6 +1251,11 @@ public static class BgInfoConfigurationJson {
         public string? HeroBadgeBottom { get; set; }
         public string? HeroBadgeTextColor { get; set; }
         public bool? HeroBadgeVisible { get; set; }
+        public string? HeroBadgeText { get; set; }
+        public string? HeroBadgeImagePath { get; set; }
+        public string? HeroBadgeImageFit { get; set; }
+        public int? HeroBadgeImagePadding { get; set; }
+        public double? HeroBadgeImageOpacity { get; set; }
         public string? FeatureAnchor { get; set; }
         public int? FeatureWidth { get; set; }
         public int? FeatureHeight { get; set; }
@@ -1279,6 +1310,7 @@ public static class BgInfoConfigurationJson {
         public int? PositionX { get; set; }
         public int? PositionY { get; set; }
         public double? Opacity { get; set; }
+        public string? Fit { get; set; }
     }
 }
 

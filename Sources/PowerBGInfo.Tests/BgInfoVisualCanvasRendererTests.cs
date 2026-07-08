@@ -36,6 +36,40 @@ public class BgInfoVisualCanvasRendererTests
     }
 
     [Fact]
+    public void RenderUsesHeroBadgeImageWhenConfigured()
+    {
+        var logoPath = Path.Combine(Path.GetTempPath(), "powerbginfo-badge-" + Path.GetRandomFileName() + ".png");
+        try
+        {
+            using (var logo = new BgInfoRasterImage())
+            {
+                logo.Create(logoPath, 12, 12, System.Drawing.Color.Red);
+                logo.Save(logoPath);
+            }
+
+            var visual = new BgInfoVisualCanvas {
+                Width = 1200,
+                Height = 630,
+                Title = string.Empty,
+                Subtitle = string.Empty,
+                HeroBadgeText = string.Empty,
+                HeroBadgeImagePath = logoPath,
+                HeroBadgeImageFit = BgInfoImageFit.Contain,
+                HeroBadgeImagePadding = 8
+            };
+
+            using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1200, 630);
+            var pixels = image.ToRgbaImage();
+
+            Assert.True(CountPixels(pixels, 538, 157, 124, 88, (r, g, b, a) => a > 0 && r > 200 && g < 40 && b < 40) > 1000);
+        }
+        finally
+        {
+            if (File.Exists(logoPath)) File.Delete(logoPath);
+        }
+    }
+
+    [Fact]
     public void RenderUsesConfiguredVisualCanvasTileSize()
     {
         var visual = new BgInfoVisualCanvas {
@@ -155,6 +189,11 @@ public class BgInfoVisualCanvasRendererTests
 
     private static int CountOpaquePixels(ChartForgeX.Raster.RgbaImage image, int x, int y, int width, int height)
     {
+        return CountPixels(image, x, y, width, height, (_, _, _, a) => a > 0);
+    }
+
+    private static int CountPixels(ChartForgeX.Raster.RgbaImage image, int x, int y, int width, int height, Func<byte, byte, byte, byte, bool> predicate)
+    {
         var count = 0;
         var right = Math.Min(image.Width, x + width);
         var bottom = Math.Min(image.Height, y + height);
@@ -163,7 +202,8 @@ public class BgInfoVisualCanvasRendererTests
             var rowStart = row * image.Width * 4;
             for (var column = Math.Max(0, x); column < right; column++)
             {
-                if (image.Pixels[rowStart + column * 4 + 3] > 0)
+                var index = rowStart + column * 4;
+                if (predicate(image.Pixels[index], image.Pixels[index + 1], image.Pixels[index + 2], image.Pixels[index + 3]))
                 {
                     count++;
                 }
