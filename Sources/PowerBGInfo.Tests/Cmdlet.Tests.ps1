@@ -152,6 +152,9 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TileValueColor'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
         $command.Parameters.Keys | Should -Contain 'NoHeroBadge'
+        $command.Parameters.Keys | Should -Contain 'HeroBadgeText'
+        $command.Parameters.Keys | Should -Contain 'HeroBadgeImagePath'
+        $command.Parameters.Keys | Should -Contain 'HeroBadgeImageFit'
         $command.Parameters.Keys | Should -Contain 'LayoutPreset'
         $command.Parameters.Keys | Should -Contain 'TileWidth'
         $command.Parameters.Keys | Should -Contain 'TileHeight'
@@ -171,7 +174,10 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 -MiniChartMaximum 100
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
-        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
+        $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
+        Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
+
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -HeroBadgeText EV -HeroBadgeImagePath $path -HeroBadgeImageFit Cover -HeroBadgeImagePadding 14 -HeroBadgeImageOpacity 0.82 -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
 
         $visual.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoVisualCanvas'
         $visual.Title | Should -Be 'PowerBGInfo'
@@ -180,6 +186,11 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeVisible | Should -BeTrue
+        $visual.HeroBadgeText | Should -Be 'EV'
+        $visual.HeroBadgeImagePath | Should -Be (Resolve-Path -LiteralPath $path).Path
+        $visual.HeroBadgeImageFit.ToString() | Should -Be 'Cover'
+        $visual.HeroBadgeImagePadding | Should -Be 14
+        $visual.HeroBadgeImageOpacity | Should -Be 0.82
         $visual.FeatureAnchor.ToString() | Should -Be 'BottomRight'
         $visual.FeatureWidth | Should -Be 610
         $visual.FeatureOffsetX | Should -Be 165
@@ -227,7 +238,7 @@ Describe 'New-BGInfoImage cmdlet' {
         $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
         Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
 
-        $image = New-BGInfoImage -Path $path -Width 180 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.85
+        $image = New-BGInfoImage -Path $path -Width 180 -Anchor BottomRight -OffsetX 72 -OffsetY 54 -Opacity 0.85 -Fit Contain
 
         $image.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoImage'
         $image.Path | Should -Be (Resolve-Path -LiteralPath $path).Path
@@ -236,6 +247,7 @@ Describe 'New-BGInfoImage cmdlet' {
         $image.OffsetX | Should -Be 72
         $image.OffsetY | Should -Be 54
         $image.Opacity | Should -Be 0.85
+        $image.Fit.ToString() | Should -Be 'Contain'
     }
 
     It 'rejects non-finite opacity' {

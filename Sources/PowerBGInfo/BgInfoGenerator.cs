@@ -817,7 +817,7 @@ public class BgInfoGenerator
             using var overlayImage = BgInfoRasterImage.Load(overlay.Path);
             var (width, height) = ResolveImageSize(overlay, overlayImage.Width, overlayImage.Height);
             var position = ResolveImagePosition(image, overlay, width, height);
-            image.DrawImage(overlayImage.ToRgbaImage(), position.X, position.Y, width, height, overlay.Opacity);
+            image.DrawImage(overlayImage.ToRgbaImage(), position.X, position.Y, width, height, overlay.Opacity, BgInfoImageFitMapper.ToVisualCanvasFit(overlay.Fit));
         }
     }
 

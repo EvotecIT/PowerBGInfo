@@ -125,6 +125,27 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public SwitchParameter NoHeroBadge { get; set; }
 
+    /// <para>Text rendered in the central hero badge when no image is configured.</para>
+    [Parameter]
+    [Alias("HeroBadgeSymbol")]
+    public string HeroBadgeText { get; set; } = ">_";
+
+    /// <para>Optional image path rendered inside the central hero badge.</para>
+    [Parameter]
+    public string HeroBadgeImagePath { get; set; } = string.Empty;
+
+    /// <para>How the hero badge image is fitted inside the badge.</para>
+    [Parameter]
+    public BgInfoImageFit HeroBadgeImageFit { get; set; } = BgInfoImageFit.Contain;
+
+    /// <para>Padding inside the hero badge image area.</para>
+    [Parameter]
+    public int HeroBadgeImagePadding { get; set; } = 10;
+
+    /// <para>Hero badge image opacity from zero to one.</para>
+    [Parameter]
+    public double HeroBadgeImageOpacity { get; set; } = 1d;
+
     /// <para>Optional feature-strip anchor. When omitted, the template keeps its default centered strip placement.</para>
     [Parameter]
     public BgInfoTextPosition FeatureAnchor { get; set; } = BgInfoTextPosition.BottomCenter;
@@ -203,6 +224,15 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
 
     /// <summary>Emits a visual canvas definition.</summary>
     protected override void EndProcessing() {
+        if (HeroBadgeImagePadding < 0) {
+            ThrowTerminatingError(new ErrorRecord(new ArgumentOutOfRangeException(nameof(HeroBadgeImagePadding), HeroBadgeImagePadding, "Hero badge image padding cannot be negative."), "BGInfoVisualCanvasInvalidHeroBadgeImagePadding", ErrorCategory.InvalidArgument, HeroBadgeImagePadding));
+            return;
+        }
+        if (double.IsNaN(HeroBadgeImageOpacity) || double.IsInfinity(HeroBadgeImageOpacity) || HeroBadgeImageOpacity < 0d || HeroBadgeImageOpacity > 1d) {
+            ThrowTerminatingError(new ErrorRecord(new ArgumentOutOfRangeException(nameof(HeroBadgeImageOpacity), HeroBadgeImageOpacity, "Hero badge image opacity must be between 0 and 1."), "BGInfoVisualCanvasInvalidHeroBadgeImageOpacity", ErrorCategory.InvalidArgument, HeroBadgeImageOpacity));
+            return;
+        }
+
         var visual = new BgInfoVisualCanvas {
             Template = Template,
             LayoutPreset = LayoutPreset,
@@ -229,6 +259,11 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             HeroBadgeBottom = PowerShellColorConverter.ConvertOptional(HeroBadgeBottom, nameof(HeroBadgeBottom)),
             HeroBadgeTextColor = PowerShellColorConverter.ConvertOptional(HeroBadgeTextColor, nameof(HeroBadgeTextColor)),
             HeroBadgeVisible = !NoHeroBadge.IsPresent,
+            HeroBadgeText = HeroBadgeText,
+            HeroBadgeImagePath = string.IsNullOrWhiteSpace(HeroBadgeImagePath) ? string.Empty : SessionState.Path.GetUnresolvedProviderPathFromPSPath(HeroBadgeImagePath),
+            HeroBadgeImageFit = HeroBadgeImageFit,
+            HeroBadgeImagePadding = HeroBadgeImagePadding,
+            HeroBadgeImageOpacity = HeroBadgeImageOpacity,
             FeatureAnchor = MyInvocation.BoundParameters.ContainsKey(nameof(FeatureAnchor)) ? FeatureAnchor : null,
             FeatureWidth = FeatureWidth,
             FeatureHeight = FeatureHeight,

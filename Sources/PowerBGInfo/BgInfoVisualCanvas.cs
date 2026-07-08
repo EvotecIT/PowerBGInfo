@@ -145,6 +145,16 @@ public sealed class BgInfoVisualCanvas {
     public Color? HeroBadgeTextColor { get; set; }
     /// <summary>Render the central hero badge.</summary>
     public bool HeroBadgeVisible { get; set; } = true;
+    /// <summary>Text rendered in the central hero badge when no image is configured.</summary>
+    public string HeroBadgeText { get; set; } = ">_";
+    /// <summary>Optional image path rendered inside the central hero badge.</summary>
+    public string HeroBadgeImagePath { get; set; } = string.Empty;
+    /// <summary>How the hero badge image is fitted inside the badge.</summary>
+    public BgInfoImageFit HeroBadgeImageFit { get; set; } = BgInfoImageFit.Contain;
+    /// <summary>Padding inside the hero badge image area.</summary>
+    public int HeroBadgeImagePadding { get; set; } = 10;
+    /// <summary>Hero badge image opacity from zero to one.</summary>
+    public double HeroBadgeImageOpacity { get; set; } = 1d;
     /// <summary>Optional feature-strip anchor. Null uses the template's default centered placement.</summary>
     public BgInfoTextPosition? FeatureAnchor { get; set; }
     /// <summary>Optional feature-strip width in pixels. Zero uses the template default width.</summary>

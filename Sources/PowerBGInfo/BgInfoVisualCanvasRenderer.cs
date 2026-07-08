@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
@@ -258,7 +259,31 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static void AddHeroBadge(VisualCanvas canvas, BgInfoVisualCanvas visual, double x, double y, double width, double height, ChartColor accent) {
         if (!visual.HeroBadgeVisible) return;
-        canvas.AddHeroBadge(x, y, width, height, ">_", accent);
+        var text = Resolve(visual.HeroBadgeText);
+        if (string.IsNullOrWhiteSpace(visual.HeroBadgeImagePath)) {
+            canvas.AddHeroBadge(x, y, width, height, text, accent);
+            return;
+        }
+
+        if (!File.Exists(visual.HeroBadgeImagePath)) {
+            throw new FileNotFoundException("BGInfo hero badge image file was not found.", visual.HeroBadgeImagePath);
+        }
+
+        using var badgeImage = BgInfoRasterImage.Load(visual.HeroBadgeImagePath);
+        var rgba = badgeImage.ToRgbaImage();
+        canvas.AddHeroBadge(
+            x,
+            y,
+            width,
+            height,
+            text,
+            accent,
+            imageRgba: rgba.Pixels,
+            imageSourceWidth: rgba.Width,
+            imageSourceHeight: rgba.Height,
+            imageFit: BgInfoImageFitMapper.ToVisualCanvasFit(visual.HeroBadgeImageFit),
+            imagePadding: visual.HeroBadgeImagePadding,
+            imageOpacity: visual.HeroBadgeImageOpacity);
     }
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));

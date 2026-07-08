@@ -73,8 +73,8 @@ public sealed class BgInfoRasterImage : IDisposable {
     public void DrawImage(RgbaImage image, float x, float y) => DrawImage(image, x, y, image.Width, image.Height);
 
     /// <summary>Draws an RGBA image into the destination rectangle.</summary>
-    public void DrawImage(RgbaImage image, float x, float y, float width, float height, double opacity = 1d) {
-        _composition.DrawImage(image, x, y, Math.Max(1f, width), Math.Max(1f, height), VisualCanvasImageFit.Stretch, opacity);
+    public void DrawImage(RgbaImage image, float x, float y, float width, float height, double opacity = 1d, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
+        _composition.DrawImage(image, x, y, Math.Max(1f, width), Math.Max(1f, height), fit, opacity);
     }
 
     /// <summary>Draws text using the shared ChartForgeX raster text path.</summary>
