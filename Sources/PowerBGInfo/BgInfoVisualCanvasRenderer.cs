@@ -271,20 +271,19 @@ internal static class BgInfoVisualCanvasRenderer {
 
         using var badgeImage = BgInfoRasterImage.Load(visual.HeroBadgeImagePath);
         var rgba = badgeImage.ToRgbaImage();
-        canvas.AddHeroBadge(
-            x,
-            y,
-            width,
-            height,
-            text,
-            accent,
-            imageHref: null,
-            imageRgba: rgba.Pixels,
-            imageSourceWidth: rgba.Width,
-            imageSourceHeight: rgba.Height,
-            imageFit: BgInfoImageFitMapper.ToVisualCanvasFit(visual.HeroBadgeImageFit),
-            imagePadding: visual.HeroBadgeImagePadding,
-            imageOpacity: visual.HeroBadgeImageOpacity);
+        canvas.AddHeroBadge(x, y, width, height, string.Empty, accent);
+
+        var padding = Math.Max(0, visual.HeroBadgeImagePadding);
+        canvas.AddImage(
+            x + padding,
+            y + padding,
+            Math.Max(1, width - padding * 2),
+            Math.Max(1, height - padding * 2),
+            rgba: rgba.Pixels,
+            sourceWidth: rgba.Width,
+            sourceHeight: rgba.Height,
+            opacity: visual.HeroBadgeImageOpacity,
+            fit: BgInfoImageFitMapper.ToVisualCanvasFit(visual.HeroBadgeImageFit));
     }
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
