@@ -570,6 +570,26 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
+    public void RasterImageTextPreservesExplicitLineBreaks()
+    {
+        using var image = new BgInfoRasterImage();
+        image.Create(Path.Combine(Path.GetTempPath(), "bginfo-multiline.png"), 120, 70, ChartColors.Transparent);
+        image.AddText(2, 2, "First\nSecond", ChartColors.White, 14, "Consolas");
+
+        var pixels = image.ToRgbaImage();
+        var lowerLinePixels = 0;
+        for (var y = 18; y < pixels.Height; y++)
+        {
+            for (var x = 0; x < pixels.Width; x++)
+            {
+                if (pixels.Pixels[(y * pixels.Width + x) * 4 + 3] > 0) lowerLinePixels++;
+            }
+        }
+
+        Assert.True(lowerLinePixels > 0);
+    }
+
+    [Fact]
     public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());

@@ -14,7 +14,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
         # ID used to uniquely identify this module
         GUID                   = '91b9c52d-6a39-4a65-a276-409b9390ee04'
         # Version number of this module.
-        ModuleVersion          = '1.0.X'
+        ModuleVersion          = '2.0.X'
         # Author of this module
         Author                 = 'Przemyslaw Klys'
         # Company or vendor of this module

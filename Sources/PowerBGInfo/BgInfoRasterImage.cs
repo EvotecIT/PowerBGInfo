@@ -80,7 +80,7 @@ public sealed class BgInfoRasterImage : IDisposable {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
         var style = CreateTextStyle(fontSize, fontFamilyName, color);
         var size = TextLayoutEngine.Measure(text, style);
-        _composition.DrawText(x, y, Math.Max(1, size.Width + 2), text, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
+        _composition.DrawText(x, y, Math.Max(1, size.Width + 2), text, style, TextWrapMode.NoWrap, null, TextTrimming.None);
     }
 
     /// <summary>Measures text for layout and wrapping.</summary>
