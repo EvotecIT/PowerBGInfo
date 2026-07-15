@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace PowerBGInfo;
 
@@ -22,10 +23,10 @@ internal static class BgInfoChartRenderer {
         image.Create(string.Empty, width, height, background);
 
         var padding = Math.Max(0, chart.Padding);
-        var plotLeft = (float)padding;
-        var plotTop = (float)padding;
-        var plotWidth = Math.Max(1f, width - padding * 2f);
-        var plotHeight = Math.Max(1f, height - padding * 2f);
+        var plotLeft = (double)padding;
+        var plotTop = (double)padding;
+        var plotWidth = Math.Max(1d, width - padding * 2d);
+        var plotHeight = Math.Max(1d, height - padding * 2d);
 
         var title = chart.Title ?? string.Empty;
         var showValue = chart.ShowLatestValue && values.Count > 0;
@@ -36,10 +37,10 @@ internal static class BgInfoChartRenderer {
         var fontFamily = chart.FontFamilyName ?? config.FontFamilyName;
         var titleSize = !string.IsNullOrWhiteSpace(title)
             ? image.GetTextSize(title, chart.TitleFontSize ?? config.FontSize, fontFamily)
-            : SizeF.Empty;
+            : new TextMetrics(0, 0, 0);
         var valueSize = !string.IsNullOrWhiteSpace(latestValueText)
             ? image.GetTextSize(latestValueText, chart.ValueFontSize ?? config.ValueFontSize, fontFamily)
-            : SizeF.Empty;
+            : new TextMetrics(0, 0, 0);
         var headerHeight = Math.Max(titleSize.Height, valueSize.Height);
         if (headerHeight > 0) {
             plotTop += headerHeight + 4;
@@ -64,7 +65,7 @@ internal static class BgInfoChartRenderer {
     }
 
     private static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
-        var accent = ToChartColor(chart.LineColor ?? config.ValueColor);
+        var accent = chart.LineColor ?? config.ValueColor;
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
             .WithTheme(CreateOverlayTheme(chart, config, accent))
@@ -98,7 +99,7 @@ internal static class BgInfoChartRenderer {
                 plot.AddLine(chart.Title, BuildIndexedPoints(values), accent);
                 break;
             case BgInfoChartKind.Area:
-                plot.AddSmoothArea(chart.Title, BuildIndexedPoints(values), ToChartColor(chart.FillColor ?? chart.LineColor ?? config.ValueColor));
+                plot.AddSmoothArea(chart.Title, BuildIndexedPoints(values), chart.FillColor ?? chart.LineColor ?? config.ValueColor);
                 break;
             case BgInfoChartKind.Gauge:
                 AddGauge(plot, chart, values, accent);
@@ -147,7 +148,7 @@ internal static class BgInfoChartRenderer {
             .WithPictorialShape(ResolvePictorialShape(chart.PictorialSymbol));
 
         if (chart.Palette.Count > 0) {
-            plot.WithPalette(chart.Palette.Select(ToChartColor).ToArray());
+            plot.WithPalette(chart.Palette.ToArray());
         }
         if (chart.DonutInnerRadiusRatio.HasValue) {
             plot.WithDonutInnerRadiusRatio(chart.DonutInnerRadiusRatio.Value);
@@ -168,13 +169,13 @@ internal static class BgInfoChartRenderer {
     }
 
     private static ChartTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config, ChartColor accent) {
-        var text = ToChartColor(chart.TextColor ?? config.Color);
-        var grid = ToChartColor(chart.GridColor ?? chart.TextColor ?? config.ValueColor);
+        var text = chart.TextColor ?? config.Color;
+        var grid = chart.GridColor ?? chart.TextColor ?? config.ValueColor;
         return ChartTheme.Minimal()
             .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent)
             .WithTextColors(text, text)
             .WithGuideColors(WithAlpha(grid, 90), WithAlpha(grid, 120))
-            .WithPalette(accent, WithAlpha(accent, 190), ToChartColor(config.Color), ToChartColor(config.ValueColor))
+            .WithPalette(accent, WithAlpha(accent, 190), config.Color, config.ValueColor)
             .WithTypography(18, 11, 10, 9, 9, 9)
             .WithStrokeWidth(2.2)
             .WithMarkerRadius(2.4);
@@ -255,7 +256,7 @@ internal static class BgInfoChartRenderer {
             : (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static ChartColor? ColorAt(BgInfoChart chart, int index) =>
-        index < chart.Palette.Count ? ToChartColor(chart.Palette[index]) : null;
+        index < chart.Palette.Count ? chart.Palette[index] : null;
 
     private static void ApplyPointColors(Chart plot, BgInfoChart chart) {
         if (plot.Series.Count == 0 || chart.Palette.Count == 0) {
@@ -263,7 +264,7 @@ internal static class BgInfoChartRenderer {
         }
 
         for (var i = 0; i < chart.Palette.Count; i++) {
-            plot.Series[0].WithPointColor(i, ToChartColor(chart.Palette[i]));
+            plot.Series[0].WithPointColor(i, chart.Palette[i]);
         }
     }
 
@@ -310,11 +311,9 @@ internal static class BgInfoChartRenderer {
         }
     }
 
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
         image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
-
-    private static ChartColor ToChartColor(Color color) => ChartColor.FromRgba(color.R, color.G, color.B, color.A);
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 

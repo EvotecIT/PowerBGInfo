@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 
 #if NET472
@@ -568,7 +569,7 @@ public static class BgInfoConfigurationJson {
         ApplyColor(model.LineColor, value => chart.LineColor = value);
         ApplyColor(model.FillColor, value => chart.FillColor = value);
         if (model.Palette != null) {
-            var colors = new List<System.Drawing.Color>();
+            var colors = new List<ChartForgeX.Primitives.ChartColor>();
             foreach (var item in model.Palette) {
                 if (BgInfoColorParser.TryParse(item, out var color)) {
                     colors.Add(color);
@@ -772,7 +773,7 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.Status) && Enum.TryParse(model.Status, true, out TopologyHealthStatus status)) {
             edge.Status = status;
         }
-        if (!string.IsNullOrWhiteSpace(model.Direction) && Enum.TryParse(model.Direction, true, out TopologyDirection direction)) {
+        if (!string.IsNullOrWhiteSpace(model.Direction) && Enum.TryParse(model.Direction, true, out VisualLinkDirection direction)) {
             edge.Direction = direction;
         }
         if (!string.IsNullOrWhiteSpace(model.Routing) && Enum.TryParse(model.Routing, true, out TopologyEdgeRouting routing)) {
@@ -1015,7 +1016,7 @@ public static class BgInfoConfigurationJson {
         return opacity;
     }
 
-    private static void ApplyColor(string? text, Action<System.Drawing.Color> setter) {
+    private static void ApplyColor(string? text, Action<ChartForgeX.Primitives.ChartColor> setter) {
         if (string.IsNullOrWhiteSpace(text)) {
             return;
         }

@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using System.Management.Automation;
 using PowerBGInfo;
 

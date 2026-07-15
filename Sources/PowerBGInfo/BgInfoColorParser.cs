@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Primitives;
 
 namespace PowerBGInfo;
@@ -21,12 +21,7 @@ public static class BgInfoColorParser {
         }
 
         var trimmed = text.Trim();
-        if (ChartColor.TryParse(trimmed, out var chartColor)) {
-            color = Color.FromArgb(chartColor.A, chartColor.R, chartColor.G, chartColor.B);
-            return true;
-        }
-
-        return false;
+        return ChartColor.TryParse(trimmed, out color);
     }
 
     /// <summary>
@@ -35,6 +30,6 @@ public static class BgInfoColorParser {
     /// <param name="color">Color value.</param>
     /// <returns>Formatted color string.</returns>
     public static string ToHex(Color color) {
-        return ChartColor.FromRgba(color.R, color.G, color.B, color.A).ToHexRgba();
+        return color.ToHexRgba();
     }
 }

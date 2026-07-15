@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using ChartForgeX.Primitives;
 using DesktopManager;
 
 namespace PowerBGInfo;
@@ -94,23 +95,23 @@ public class BgInfoGenerator
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
         var entryLayouts = BuildEntryLayouts(image, config, expandedEntries);
-        float highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
-        float highestValueWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.ValueWidth);
+        double highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
+        double highestValueWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.ValueWidth);
         bool hasValueEntries = entryLayouts.Any(layout => layout.Entry.Type != BgInfoEntryType.Label);
         var totalWidth = highestWidth + (hasValueEntries ? config.SpaceBetweenColumns + highestValueWidth : 0f);
         var textBlockHeight = GetTextBlockHeight(config, entryLayouts);
 
-        float posX;
-        float posY;
-        float textStartX;
-        float textStartY;
+        double posX;
+        double posY;
+        double textStartX;
+        double textStartY;
 
         if (config.UseScreenCoordinates)
         {
             var (screenWidth, screenHeight) = GetMonitorSize(getMonitors(), config.MonitorIndex);
 
-            float scaleX;
-            float scaleY;
+            double scaleX;
+            double scaleY;
 
             if (config.WallpaperFit is DesktopWallpaperPosition.Fill or DesktopWallpaperPosition.Stretch)
             {
@@ -120,8 +121,8 @@ public class BgInfoGenerator
             }
             else
             {
-                scaleX = (float)screenWidth / image.Width;
-                scaleY = (float)screenHeight / image.Height;
+                scaleX = (double)screenWidth / image.Width;
+                scaleY = (double)screenHeight / image.Height;
             }
 
             posX = config.SpaceX / scaleX;
@@ -218,7 +219,7 @@ public class BgInfoGenerator
             posY += layout.RowHeight + config.SpaceBetweenLines;
         }
 
-        var textBlock = new System.Drawing.RectangleF(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
+        var textBlock = new ChartRect(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
 
         RenderCharts(image, config, textBlock);
         RenderTopologies(image, config);
@@ -564,7 +565,7 @@ public class BgInfoGenerator
         return (width, height);
     }
 
-    private static System.Drawing.Color ResolveBackgroundColor(BgInfoConfiguration config, Monitors? monitors)
+    private static ChartColor ResolveBackgroundColor(BgInfoConfiguration config, Monitors? monitors)
     {
         if (config.BackgroundColor.HasValue)
         {
@@ -573,7 +574,7 @@ public class BgInfoGenerator
 
         if (monitors == null)
         {
-            return System.Drawing.Color.Black;
+            return ChartColor.Black;
         }
 
         uint rgb;
@@ -583,13 +584,13 @@ public class BgInfoGenerator
         }
         catch
         {
-            return System.Drawing.Color.Black;
+            return ChartColor.Black;
         }
 
         byte r = (byte)(rgb & 0xFF);
         byte g = (byte)((rgb >> 8) & 0xFF);
         byte b = (byte)((rgb >> 16) & 0xFF);
-        return System.Drawing.Color.FromArgb(255, r, g, b);
+        return ChartColor.FromRgb(r, g, b);
     }
 
     private static string BuildOutputPath(BgInfoConfiguration config, string? imagePath, bool hasBaseImage)
@@ -731,7 +732,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
+    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock)
     {
         if (config.Charts.Count == 0)
         {
@@ -821,20 +822,20 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock, DateTimeOffset now)
+    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, DateTimeOffset now)
     {
         var area = ResolveChartStackArea(image, config, textBlock);
         if (area.Width <= 0 || area.Height <= 0)
         {
-            area = new System.Drawing.RectangleF(0, 0, image.Width, image.Height);
+            area = new ChartRect(0, 0, image.Width, image.Height);
         }
 
         int offsetX = config.ChartStackOffsetX;
         int offsetY = config.ChartStackOffsetY;
-        float spacing = Math.Max(0, config.ChartStackSpacing);
+        double spacing = Math.Max(0, config.ChartStackSpacing);
         bool outside = config.ChartStackAlignToTextBlock && config.ChartStackOutsideTextBlock && textBlock.Width > 0 && textBlock.Height > 0;
-        float? cursorX = null;
-        float? cursorY = null;
+        double? cursorX = null;
+        double? cursorY = null;
 
         for (int i = 0; i < config.Charts.Count; i++)
         {
@@ -851,8 +852,8 @@ public class BgInfoGenerator
                 ? ResolveChartPositionOutsideTextBlock(textBlock, width, height, config.ChartStackAnchor, offsetX, offsetY)
                 : ResolveChartPosition(area, width, height, config.ChartStackAnchor, offsetX, offsetY);
 
-            float positionX = cursorX ?? basePosition.X;
-            float positionY = cursorY ?? basePosition.Y;
+            double positionX = cursorX ?? basePosition.X;
+            double positionY = cursorY ?? basePosition.Y;
             if (config.ChartStackDirection == BgInfoChartStackDirection.Vertical)
             {
                 var direction = ResolveStackDirection(config.ChartStackAnchor, vertical: true);
@@ -868,31 +869,31 @@ public class BgInfoGenerator
                 cursorX = positionX + (width + spacing) * direction;
             }
 
-            var position = new System.Drawing.PointF(positionX, positionY);
+            var position = new ChartPoint(positionX, positionY);
             using var chartImage = BgInfoChartRenderer.Render(chart, values, config);
             image.DrawImage(chartImage, position.X, position.Y);
         }
     }
 
-    private static System.Drawing.RectangleF ResolveChartStackArea(BgInfoRasterImage image, BgInfoConfiguration config, System.Drawing.RectangleF textBlock)
+    private static ChartRect ResolveChartStackArea(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock)
     {
         if (!config.ChartStackAlignToTextBlock)
         {
-            return new System.Drawing.RectangleF(0, 0, image.Width, image.Height);
+            return new ChartRect(0, 0, image.Width, image.Height);
         }
 
         if (textBlock.Width <= 0 || textBlock.Height <= 0)
         {
-            return new System.Drawing.RectangleF(0, 0, image.Width, image.Height);
+            return new ChartRect(0, 0, image.Width, image.Height);
         }
 
         return textBlock;
     }
 
-    private static System.Drawing.PointF ResolveChartPositionOutsideTextBlock(System.Drawing.RectangleF textBlock, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
+    private static ChartPoint ResolveChartPositionOutsideTextBlock(ChartRect textBlock, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
     {
-        float x;
-        float y;
+        double x;
+        double y;
         switch (anchor)
         {
             case BgInfoTextPosition.TopLeft:
@@ -937,10 +938,10 @@ public class BgInfoGenerator
                 break;
         }
 
-        return new System.Drawing.PointF(x, y);
+        return new ChartPoint(x, y);
     }
 
-    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, float wrapWidth, float fontSize, string fontFamilyName)
+    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, double wrapWidth, double fontSize, string fontFamilyName)
     {
         if (image == null) throw new ArgumentNullException(nameof(image));
 
@@ -1080,35 +1081,35 @@ public class BgInfoGenerator
         return new string(buffer);
     }
 
-    private static System.Drawing.PointF ResolveChartPosition(BgInfoRasterImage image, BgInfoChart chart)
+    private static ChartPoint ResolveChartPosition(BgInfoRasterImage image, BgInfoChart chart)
     {
         if (chart.PositionX.HasValue && chart.PositionY.HasValue)
         {
-            return new System.Drawing.PointF(chart.PositionX.Value, chart.PositionY.Value);
+            return new ChartPoint(chart.PositionX.Value, chart.PositionY.Value);
         }
 
-        float chartWidth = Math.Max(1, chart.Width);
-        float chartHeight = Math.Max(1, chart.Height);
-        return ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+        double chartWidth = Math.Max(1, chart.Width);
+        double chartHeight = Math.Max(1, chart.Height);
+        return ResolveChartPosition(new ChartRect(0, 0, image.Width, image.Height),
             (int)chartWidth, (int)chartHeight, chart.Anchor, chart.OffsetX, chart.OffsetY);
     }
 
-    private static System.Drawing.PointF ResolveTopologyPosition(BgInfoRasterImage image, BgInfoTopology topology)
+    private static ChartPoint ResolveTopologyPosition(BgInfoRasterImage image, BgInfoTopology topology)
     {
         if (topology.PositionX.HasValue && topology.PositionY.HasValue)
         {
-            return new System.Drawing.PointF(topology.PositionX.Value, topology.PositionY.Value);
+            return new ChartPoint(topology.PositionX.Value, topology.PositionY.Value);
         }
 
-        return ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+        return ResolveChartPosition(new ChartRect(0, 0, image.Width, image.Height),
             Math.Max(1, topology.Width), Math.Max(1, topology.Height), topology.Anchor, topology.OffsetX, topology.OffsetY);
     }
 
-    private static System.Drawing.PointF ResolveImagePosition(BgInfoRasterImage image, BgInfoImage overlay, int width, int height)
+    private static ChartPoint ResolveImagePosition(BgInfoRasterImage image, BgInfoImage overlay, int width, int height)
     {
-        var anchored = ResolveChartPosition(new System.Drawing.RectangleF(0, 0, image.Width, image.Height),
+        var anchored = ResolveChartPosition(new ChartRect(0, 0, image.Width, image.Height),
             width, height, overlay.Anchor, overlay.OffsetX, overlay.OffsetY);
-        return new System.Drawing.PointF(overlay.PositionX ?? anchored.X, overlay.PositionY ?? anchored.Y);
+        return new ChartPoint(overlay.PositionX ?? anchored.X, overlay.PositionY ?? anchored.Y);
     }
 
     private static (int Width, int Height) ResolveImageSize(BgInfoImage overlay, int sourceWidth, int sourceHeight)
@@ -1131,10 +1132,10 @@ public class BgInfoGenerator
         return (Math.Max(1, width), Math.Max(1, height));
     }
 
-    internal static System.Drawing.PointF ResolveChartPosition(System.Drawing.RectangleF area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
+    internal static ChartPoint ResolveChartPosition(ChartRect area, int chartWidth, int chartHeight, BgInfoTextPosition anchor, int offsetX, int offsetY)
     {
-        float x = area.X + offsetX;
-        float y = area.Y + offsetY;
+        double x = area.X + offsetX;
+        double y = area.Y + offsetY;
         switch (anchor)
         {
             case BgInfoTextPosition.TopCenter:
@@ -1170,7 +1171,7 @@ public class BgInfoGenerator
                 break;
         }
 
-        return new System.Drawing.PointF(x, y);
+        return new ChartPoint(x, y);
     }
 
     private static List<EntryLayout> BuildEntryLayouts(BgInfoRasterImage image, BgInfoConfiguration config, IReadOnlyList<BgInfoEntry> entries)
@@ -1223,7 +1224,7 @@ public class BgInfoGenerator
         return entry.Value;
     }
 
-    private static float GetTextBlockHeight(BgInfoConfiguration config, IReadOnlyList<EntryLayout> entryLayouts)
+    private static double GetTextBlockHeight(BgInfoConfiguration config, IReadOnlyList<EntryLayout> entryLayouts)
     {
         if (entryLayouts.Count == 0)
         {
@@ -1233,7 +1234,7 @@ public class BgInfoGenerator
         return entryLayouts.Sum(layout => layout.RowHeight) + (entryLayouts.Count - 1) * config.SpaceBetweenLines;
     }
 
-    private static float GetLineHeight(BgInfoRasterImage image, float fontSize, string fontFamilyName)
+    private static double GetLineHeight(BgInfoRasterImage image, double fontSize, string fontFamilyName)
     {
         return image.GetTextSize("Ag", fontSize, fontFamilyName).Height;
     }
@@ -1243,7 +1244,7 @@ public class BgInfoGenerator
         return (text ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
     }
 
-    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, float wrapWidth, float fontSize, string fontFamilyName)
+    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, double wrapWidth, double fontSize, string fontFamilyName)
     {
         var words = paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0)
@@ -1289,7 +1290,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, float wrapWidth, float fontSize, string fontFamilyName)
+    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, double wrapWidth, double fontSize, string fontFamilyName)
     {
         var current = string.Empty;
         foreach (var character in word)
@@ -1315,12 +1316,12 @@ public class BgInfoGenerator
     {
         public EntryLayout(
             BgInfoEntry entry,
-            float labelWidth,
-            float labelHeight,
+            double labelWidth,
+            double labelHeight,
             string[] valueLines,
-            float valueWidth,
-            float valueLineHeight,
-            float rowHeight)
+            double valueWidth,
+            double valueLineHeight,
+            double rowHeight)
         {
             Entry = entry;
             LabelWidth = labelWidth;
@@ -1332,11 +1333,11 @@ public class BgInfoGenerator
         }
 
         public BgInfoEntry Entry { get; }
-        public float LabelWidth { get; }
-        public float LabelHeight { get; }
+        public double LabelWidth { get; }
+        public double LabelHeight { get; }
         public string[] ValueLines { get; }
-        public float ValueWidth { get; }
-        public float ValueLineHeight { get; }
-        public float RowHeight { get; }
+        public double ValueWidth { get; }
+        public double ValueLineHeight { get; }
+        public double RowHeight { get; }
     }
 }

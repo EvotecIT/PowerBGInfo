@@ -37,6 +37,7 @@ You can read about this project on this [blog post](https://evotec.xyz/powerbgin
 - Preserve the current Windows wallpaper slideshow by rendering one BGInfo image per slideshow source.
 - Handle solid-color desktops when Windows has no wallpaper file.
 - Add transparent ChartForgeX charts and topology diagrams on top of real wallpapers.
+- Render and compose wallpaper content without a production dependency on `System.Drawing`.
 - Export JSON configurations when you need a portable deployment artifact.
 
 ## Installation

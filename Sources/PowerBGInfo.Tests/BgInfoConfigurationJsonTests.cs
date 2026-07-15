@@ -1,5 +1,6 @@
 using System.IO;
-using System.Drawing;
+using ChartForgeX.Primitives;
+using Color = ChartForgeX.Primitives.ChartColors;
 using ChartForgeX.Topology;
 using Xunit;
 
@@ -235,7 +236,7 @@ public class BgInfoConfigurationJsonTests
             Label = "HTTPS",
             Kind = TopologyEdgeKind.Connectivity,
             Status = TopologyHealthStatus.Healthy,
-            Direction = TopologyDirection.Forward
+            Direction = VisualLinkDirection.Forward
         });
         configuration.Topologies.Add(topology);
 
@@ -279,15 +280,15 @@ public class BgInfoConfigurationJsonTests
             Height = 630,
             PositionX = 12,
             PositionY = 34,
-            BackgroundTop = Color.FromArgb(255, 2, 7, 19),
-            BackgroundBottom = Color.FromArgb(255, 7, 26, 53),
+            BackgroundTop = ChartColor.FromArgb(255, 2, 7, 19),
+            BackgroundBottom = ChartColor.FromArgb(255, 7, 26, 53),
             Accent = Color.DeepSkyBlue,
             SecondaryAccent = Color.Cyan,
             TitleColor = Color.White,
             TitleAccentColor = Color.DeepSkyBlue,
             SubtitleColor = Color.LightSteelBlue,
-            TileGlassTop = Color.FromArgb(230, 10, 20, 30),
-            TileGlassBottom = Color.FromArgb(220, 5, 10, 15),
+            TileGlassTop = ChartColor.FromArgb(230, 10, 20, 30),
+            TileGlassBottom = ChartColor.FromArgb(220, 5, 10, 15),
             TileLabelColor = Color.LightBlue,
             TileValueColor = Color.WhiteSmoke,
             TileDetailColor = Color.SlateGray,
@@ -352,20 +353,20 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(630, loaded.Height);
         Assert.Equal(12, loaded.PositionX);
         Assert.Equal(34, loaded.PositionY);
-        Assert.Equal(Color.DeepSkyBlue.ToArgb(), loaded.Accent.ToArgb());
-        Assert.Equal(Color.Cyan.ToArgb(), loaded.SecondaryAccent!.Value.ToArgb());
-        Assert.Equal(Color.White.ToArgb(), loaded.TitleColor!.Value.ToArgb());
-        Assert.Equal(Color.DeepSkyBlue.ToArgb(), loaded.TitleAccentColor!.Value.ToArgb());
-        Assert.Equal(Color.LightSteelBlue.ToArgb(), loaded.SubtitleColor!.Value.ToArgb());
-        Assert.Equal(Color.FromArgb(230, 10, 20, 30).ToArgb(), loaded.TileGlassTop!.Value.ToArgb());
-        Assert.Equal(Color.FromArgb(220, 5, 10, 15).ToArgb(), loaded.TileGlassBottom!.Value.ToArgb());
-        Assert.Equal(Color.LightBlue.ToArgb(), loaded.TileLabelColor!.Value.ToArgb());
-        Assert.Equal(Color.WhiteSmoke.ToArgb(), loaded.TileValueColor!.Value.ToArgb());
-        Assert.Equal(Color.SlateGray.ToArgb(), loaded.TileDetailColor!.Value.ToArgb());
-        Assert.Equal(Color.DarkSlateBlue.ToArgb(), loaded.TileProgressTrackColor!.Value.ToArgb());
-        Assert.Equal(Color.Navy.ToArgb(), loaded.HeroBadgeTop!.Value.ToArgb());
-        Assert.Equal(Color.Black.ToArgb(), loaded.HeroBadgeBottom!.Value.ToArgb());
-        Assert.Equal(Color.AliceBlue.ToArgb(), loaded.HeroBadgeTextColor!.Value.ToArgb());
+        Assert.Equal(Color.DeepSkyBlue.ToHexRgba(), loaded.Accent.ToHexRgba());
+        Assert.Equal(Color.Cyan.ToHexRgba(), loaded.SecondaryAccent!.Value.ToHexRgba());
+        Assert.Equal(Color.White.ToHexRgba(), loaded.TitleColor!.Value.ToHexRgba());
+        Assert.Equal(Color.DeepSkyBlue.ToHexRgba(), loaded.TitleAccentColor!.Value.ToHexRgba());
+        Assert.Equal(Color.LightSteelBlue.ToHexRgba(), loaded.SubtitleColor!.Value.ToHexRgba());
+        Assert.Equal(ChartColor.FromArgb(230, 10, 20, 30).ToHexRgba(), loaded.TileGlassTop!.Value.ToHexRgba());
+        Assert.Equal(ChartColor.FromArgb(220, 5, 10, 15).ToHexRgba(), loaded.TileGlassBottom!.Value.ToHexRgba());
+        Assert.Equal(Color.LightBlue.ToHexRgba(), loaded.TileLabelColor!.Value.ToHexRgba());
+        Assert.Equal(Color.WhiteSmoke.ToHexRgba(), loaded.TileValueColor!.Value.ToHexRgba());
+        Assert.Equal(Color.SlateGray.ToHexRgba(), loaded.TileDetailColor!.Value.ToHexRgba());
+        Assert.Equal(Color.DarkSlateBlue.ToHexRgba(), loaded.TileProgressTrackColor!.Value.ToHexRgba());
+        Assert.Equal(Color.Navy.ToHexRgba(), loaded.HeroBadgeTop!.Value.ToHexRgba());
+        Assert.Equal(Color.Black.ToHexRgba(), loaded.HeroBadgeBottom!.Value.ToHexRgba());
+        Assert.Equal(Color.AliceBlue.ToHexRgba(), loaded.HeroBadgeTextColor!.Value.ToHexRgba());
         Assert.False(loaded.HeroBadgeVisible);
         Assert.Equal("EV", loaded.HeroBadgeText);
         Assert.EndsWith(Path.Combine("Images", "Evotec.png"), loaded.HeroBadgeImagePath);
@@ -397,7 +398,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("{{OSName}}", tile.Detail);
         Assert.Equal(460, tile.Width);
         Assert.Equal(144, tile.Height);
-        Assert.Equal(Color.DodgerBlue.ToArgb(), tile.Accent!.Value.ToArgb());
+        Assert.Equal(Color.DodgerBlue.ToHexRgba(), tile.Accent!.Value.ToHexRgba());
         Assert.Equal(0.42, tile.Progress);
         Assert.Equal(BgInfoVisualCanvasTileSurfaceStyle.Raised, tile.SurfaceStyle);
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);

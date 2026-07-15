@@ -12,7 +12,6 @@
         <Company>Evotec</Company>
         <Authors>Przemyslaw Klys</Authors>
         <LangVersion>latest</LangVersion>
-        <UseSystemDrawing>true</UseSystemDrawing>
         <PackageReadmeFile>README.MD</PackageReadmeFile>
     </PropertyGroup>
 

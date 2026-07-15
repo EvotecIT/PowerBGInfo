@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using System.Management.Automation;
 using ChartForgeX.Primitives;
 using PowerBGInfo;
@@ -26,7 +26,7 @@ internal static class PowerShellColorConverter {
         }
 
         if (value is ChartColor chartColor) {
-            return Color.FromArgb(chartColor.A, chartColor.R, chartColor.G, chartColor.B);
+            return chartColor;
         }
 
         if (value is string text && BgInfoColorParser.TryParse(text, out var parsed)) {
