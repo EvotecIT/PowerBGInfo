@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Raster;
 using ChartForgeX.Topology;
 
@@ -73,7 +73,7 @@ internal static class BgInfoTopologyRenderer {
         return theme;
     }
 
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
         image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 }

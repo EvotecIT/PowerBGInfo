@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using System.IO;
 using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 
 namespace PowerBGInfo;
 
@@ -25,7 +26,7 @@ internal static class BgInfoVisualCanvasRenderer {
         var canvas = VisualCanvas.Create(width, height)
             .WithTitle(Resolve(visual.Title))
             .WithTheme(BuildTheme(visual))
-            .WithBackground(ToChartColor(visual.BackgroundTop), ToChartColor(visual.BackgroundBottom))
+            .WithBackground(visual.BackgroundTop, visual.BackgroundBottom)
             .WithBackdrop(visual.Transparent ? VisualCanvasBackdropStyle.Transparent : (visual.TechBackdrop ? VisualCanvasBackdropStyle.TechHorizon : VisualCanvasBackdropStyle.Plain));
 
         switch (visual.Template) {
@@ -45,7 +46,7 @@ internal static class BgInfoVisualCanvasRenderer {
 
         var scaleX = width / 1200.0;
         var scaleY = height / 630.0;
-        var accent = ToChartColor(visual.Accent);
+        var accent = visual.Accent;
         var defaultTileWidth = ApplyTileWidthPreset(visual.LayoutPreset, 300 * scaleX);
         var leftDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
         var rightDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
@@ -60,7 +61,7 @@ internal static class BgInfoVisualCanvasRenderer {
         AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
         canvas
             .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
-            .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
+            .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, TextAlignment.Center);
         if (visual.Features.Count > 0) {
             var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
             var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
@@ -74,7 +75,7 @@ internal static class BgInfoVisualCanvasRenderer {
     }
 
     private static void BuildPowerBgInfoOverlay(VisualCanvas canvas, BgInfoVisualCanvas visual, int width, int height) {
-        var accent = ToChartColor(visual.Accent);
+        var accent = visual.Accent;
         var layout = ResolveOverlayRailLayout(visual, width, height);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
@@ -93,7 +94,7 @@ internal static class BgInfoVisualCanvasRenderer {
         AddHeroBadge(canvas, visual, centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, accent);
         canvas
             .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
-            .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, VisualCanvasTextAlignment.Center);
+            .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, TextAlignment.Center);
         if (visual.Features.Count > 0) {
             var stripHeight = Clamp(height * 0.075, Math.Min(36, height * 0.1), Math.Min(64, height * 0.14));
             var stripWidth = Clamp(centerWidth * 0.72, Math.Min(120, centerWidth), Math.Min(760, centerWidth));
@@ -124,7 +125,7 @@ internal static class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Label),
                 Resolve(tile.Value),
                 Resolve(tile.Detail),
-                tile.Accent.HasValue ? ToChartColor(tile.Accent.Value) : (ChartColor?)null,
+                tile.Accent,
                 tile.Progress,
                 MapSurfaceStyle(tile.SurfaceStyle),
                 MapIconKind(tile.IconKind),
@@ -288,13 +289,11 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
-    private static ChartColor ToChartColor(Color color) => ChartColor.FromRgba(color.R, color.G, color.B, color.A);
-
     private static VisualCanvasTheme BuildTheme(BgInfoVisualCanvas visual) {
         var theme = new VisualCanvasTheme {
-            Accent = ToChartColor(visual.Accent),
-            HeroTitleAccentColor = ToChartColor(visual.Accent),
-            ImagePlaceholderStroke = ToChartColor(visual.Accent).WithOpacity(0.34)
+            Accent = visual.Accent,
+            HeroTitleAccentColor = visual.Accent,
+            ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34)
         };
         ApplyColor(visual.SecondaryAccent, value => theme.SecondaryAccent = value);
         ApplyColor(visual.TitleColor, value => theme.HeroTitleColor = value);
@@ -312,8 +311,8 @@ internal static class BgInfoVisualCanvasRenderer {
         return theme;
     }
 
-    private static void ApplyColor(Color? color, Action<ChartColor> setter) {
-        if (color.HasValue) setter(ToChartColor(color.Value));
+    private static void ApplyColor(ChartColor? color, Action<ChartColor> setter) {
+        if (color.HasValue) setter(color.Value);
     }
 
     private static VisualCanvasInfoTileSurfaceStyle MapSurfaceStyle(BgInfoVisualCanvasTileSurfaceStyle style) {
@@ -391,7 +390,7 @@ internal static class BgInfoVisualCanvasRenderer {
         return Math.Max(min, Math.Min(max, value));
     }
 
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, float x, float y, float width, float height) {
+    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
         image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 }

@@ -1,7 +1,8 @@
 using DesktopManager;
 using PowerBGInfo;
-using System.Drawing;
-using System.Drawing.Imaging;
+using ChartForgeX.Composition;
+using ChartForgeX.Primitives;
+using Color = ChartForgeX.Primitives.ChartColors;
 using System.IO;
 using Xunit;
 
@@ -446,7 +447,7 @@ public class BgInfoGeneratorTests
     [Fact]
     public void ResolveChartPositionAppliesOffsetsForCenteredAnchors()
     {
-        var area = new RectangleF(0, 0, 400, 200);
+        var area = new ChartRect(0, 0, 400, 200);
 
         var point = BgInfoGenerator.ResolveChartPosition(area, 100, 50, BgInfoTextPosition.MiddleCenter, 15, 20);
 
@@ -555,25 +556,12 @@ public class BgInfoGeneratorTests
     }
 
     [Fact]
-    public void RasterImageLoadSupportsLegacyGifThroughFallback()
+    public void RasterImageLoadSupportsGifWithoutPlatformDrawing()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "legacy.gif");
-        using (var bitmap = new Bitmap(6, 4))
-        {
-            using (var graphics = Graphics.FromImage(bitmap))
-            {
-                graphics.Clear(Color.DarkGreen);
-            }
-
-            bitmap.Save(path, ImageFormat.Gif);
-        }
+        File.WriteAllBytes(path, ImageComposition.Create(6, 4, Color.DarkGreen).ToGif());
 
         using var image = BgInfoRasterImage.Load(path);
 
@@ -581,43 +569,33 @@ public class BgInfoGeneratorTests
         Assert.Equal(4, image.Height);
     }
 
-    [Theory]
-    [InlineData(".jpg")]
-    [InlineData(".jpeg")]
-    [InlineData(".jpe")]
-    [InlineData(".jfif")]
-    [InlineData(".png")]
-    [InlineData(".bmp")]
-    [InlineData(".gif")]
-    [InlineData(".dib")]
-    [InlineData(".wdp")]
-    [InlineData(".tif")]
-    [InlineData(".tiff")]
-    public void RasterImageSystemDrawingFallbackCoversAcceptedWallpaperFormats(string extension)
+    [Fact]
+    public void RasterImageTextPreservesExplicitLineBreaks()
     {
-        Assert.True(BgInfoRasterImage.CanTrySystemDrawingFallback("wallpaper" + extension));
+        using var image = new BgInfoRasterImage();
+        image.Create(Path.Combine(Path.GetTempPath(), "bginfo-multiline.png"), 120, 70, ChartColors.Transparent);
+        image.AddText(2, 2, "First\nSecond", ChartColors.White, 14, "Consolas");
+
+        var pixels = image.ToRgbaImage();
+        var lowerLinePixels = 0;
+        for (var y = 18; y < pixels.Height; y++)
+        {
+            for (var x = 0; x < pixels.Width; x++)
+            {
+                if (pixels.Pixels[(y * pixels.Width + x) * 4 + 3] > 0) lowerLinePixels++;
+            }
+        }
+
+        Assert.True(lowerLinePixels > 0);
     }
 
     [Fact]
     public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
         var sourcePath = Path.Combine(tempDirectory, "legacy.gif");
-        using (var bitmap = new Bitmap(12, 8))
-        {
-            using (var graphics = Graphics.FromImage(bitmap))
-            {
-                graphics.Clear(Color.MidnightBlue);
-            }
-
-            bitmap.Save(sourcePath, ImageFormat.Gif);
-        }
+        File.WriteAllBytes(sourcePath, ImageComposition.Create(12, 8, Color.MidnightBlue).ToGif());
 
         var imageService = new ImageService();
         var wallpaperService = new FakeWallpaperService();

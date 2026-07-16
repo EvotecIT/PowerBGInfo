@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using PowerBGInfo;
 using System.Management.Automation;
@@ -34,7 +35,7 @@ public sealed class CmdletNewBGInfoTopologyEdge : PSCmdlet {
 
     /// <para>Direction marker behavior.</para>
     [Parameter]
-    public TopologyDirection Direction { get; set; } = TopologyDirection.None;
+    public VisualLinkDirection Direction { get; set; } = VisualLinkDirection.None;
 
     /// <para>Edge routing mode.</para>
     [Parameter]

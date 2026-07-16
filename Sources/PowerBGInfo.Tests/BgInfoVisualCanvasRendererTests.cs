@@ -43,7 +43,7 @@ public class BgInfoVisualCanvasRendererTests
         {
             using (var logo = new BgInfoRasterImage())
             {
-                logo.Create(logoPath, 12, 12, System.Drawing.Color.Red);
+                logo.Create(logoPath, 12, 12, ChartForgeX.Primitives.ChartColors.Red);
                 logo.Save(logoPath);
             }
 

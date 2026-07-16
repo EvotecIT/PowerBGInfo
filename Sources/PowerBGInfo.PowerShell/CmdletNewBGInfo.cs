@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Drawing;
+using Color = ChartForgeX.Primitives.ChartColor;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation;
