@@ -46,6 +46,13 @@ Describe 'New-BGInfoValue cmdlet' {
         $entry.BuiltinValue | Should -Be 'HostName'
     }
 
+    It 'resolves WMI-backed builtin values in the PowerShell host' {
+        $entry = New-BGInfoValue -BuiltinValue 'OSName'
+        $entry.Name | Should -Be 'OSName'
+        $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.BuiltinValue | Should -Be 'OSName'
+    }
+
     It 'creates template entries for foreach variables' {
         $entry = New-BGInfoValue -ForEach 'Volumes' -Name 'Drive {{DriveLetter}}' -Value '{{SizeRemaining}}'
         $entry.ForEach | Should -Be 'Volumes'

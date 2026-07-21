@@ -5,7 +5,6 @@ using System.IO;
 using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
-using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 
 namespace PowerBGInfo;
@@ -18,7 +17,7 @@ internal static class BgInfoVisualCanvasRenderer {
         var chartCanvas = BuildCanvas(visual, width, height);
         var image = new BgInfoRasterImage();
         image.Create(string.Empty, width, height, Color.Transparent);
-        DrawPng(image, chartCanvas.ToPng(), 0, 0, width, height);
+        image.DrawImage(chartCanvas.ToRgbaImage(), 0, 0, width, height);
         return image;
     }
 
@@ -390,7 +389,4 @@ internal static class BgInfoVisualCanvasRenderer {
         return Math.Max(min, Math.Min(max, value));
     }
 
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
-        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
-    }
 }

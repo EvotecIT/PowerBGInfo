@@ -61,6 +61,11 @@ jobs:
           $config.ConfigurationDirectory = $outputDir
           $config.OutputFileName = 'interop.png'
           $config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
+          $osEntry = New-BGInfoValue -BuiltinValue OSName
+          if ([string]::IsNullOrWhiteSpace($osEntry.Value)) {
+              throw 'Expected the PowerShell host to resolve the WMI-backed OSName value.'
+          }
+          $config.Entries.Add($osEntry)
           Export-BGInfoConfiguration -InputObject $config -Path $configPath -Force
           if (-not (Test-Path -LiteralPath $configPath)) {
               throw "Expected exported config at $configPath"
