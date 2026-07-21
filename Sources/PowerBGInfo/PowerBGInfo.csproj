@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Company>Evotec</Company>
         <Authors>Przemyslaw Klys</Authors>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>2.0.1</VersionPrefix>
         <AssemblyName>PowerBGInfo</AssemblyName>
         <Copyright>(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.</Copyright>
         <TargetFrameworks>net472;net8.0-windows;net9.0-windows</TargetFrameworks>
@@ -11,7 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ChartForgeXVersion>1.0.3</ChartForgeXVersion>
+        <ChartForgeXVersion>1.1.0</ChartForgeXVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>

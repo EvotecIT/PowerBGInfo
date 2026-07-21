@@ -11,6 +11,8 @@ using ChartForgeX.Typography;
 namespace PowerBGInfo;
 
 internal static class BgInfoChartRenderer {
+    private const int MinimumTrendPointBudget = 64;
+
     public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
@@ -63,7 +65,7 @@ internal static class BgInfoChartRenderer {
         return image;
     }
 
-    private static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
+    internal static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
         var accent = chart.LineColor ?? config.ValueColor;
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
@@ -95,10 +97,10 @@ internal static class BgInfoChartRenderer {
                 plot.AddHorizontalBar(chart.Title, BuildIndexedPoints(values), accent);
                 break;
             case BgInfoChartKind.Line:
-                plot.AddLine(chart.Title, BuildIndexedPoints(values), accent);
+                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: false, area: false);
                 break;
             case BgInfoChartKind.Area:
-                plot.AddSmoothArea(chart.Title, BuildIndexedPoints(values), chart.FillColor ?? chart.LineColor ?? config.ValueColor);
+                AddTrendSeries(plot, chart.Title, values, width, chart.FillColor ?? chart.LineColor ?? config.ValueColor, smooth: true, area: true);
                 break;
             case BgInfoChartKind.Gauge:
                 AddGauge(plot, chart, values, accent);
@@ -127,11 +129,38 @@ internal static class BgInfoChartRenderer {
                 plot.AddPictorial(chart.Title, BuildPictorialItems(chart, values), ResolvePictorialShape(chart.PictorialSymbol), accent);
                 break;
             default:
-                plot.AddSmoothLine(chart.Title, BuildIndexedPoints(values), accent);
+                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: true, area: false);
                 break;
         }
 
         return plot;
+    }
+
+    private static void AddTrendSeries(Chart plot, string name, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {
+        var points = BuildIndexedPoints(values);
+        var pointBudget = ResolveTrendPointBudget(width);
+        if (values.Count > pointBudget) {
+            if (area) {
+                plot.AddDecimatedArea(name, points, pointBudget, ChartDecimationMode.LargestTriangleThreeBuckets, color);
+            } else {
+                plot.AddDecimatedLine(name, points, pointBudget, ChartDecimationMode.LargestTriangleThreeBuckets, color);
+            }
+            plot.Series[plot.Series.Count - 1].WithSmooth(smooth);
+            return;
+        }
+
+        if (area) {
+            if (smooth) plot.AddSmoothArea(name, points, color);
+            else plot.AddArea(name, points, color);
+        } else {
+            if (smooth) plot.AddSmoothLine(name, points, color);
+            else plot.AddLine(name, points, color);
+        }
+    }
+
+    internal static int ResolveTrendPointBudget(int width) {
+        var pixelBudget = Math.Max(1L, width) * 2L;
+        return (int)Math.Min(int.MaxValue, Math.Max(MinimumTrendPointBudget, pixelBudget));
     }
 
     private static void ApplyChartOptions(Chart plot, BgInfoChart chart) {
