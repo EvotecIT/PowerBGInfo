@@ -11,7 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ChartForgeXVersion>1.0.0</ChartForgeXVersion>
+        <ChartForgeXVersion>1.0.3</ChartForgeXVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
@@ -32,7 +32,10 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-        <PackageReference Include="System.Management" Version="10.0.10" />
+        <!-- Keep the reference identity at the .NET 8 contract so PowerShell 7 hosts can satisfy it
+             with their already-loaded System.Management assembly. Newer compile-time identities fail
+             in older hosts before PowerBGInfo can execute its WMI-backed built-in values. -->
+        <PackageReference Include="System.Management" Version="8.0.0" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
         <Reference Include="System.Management" />

@@ -1,6 +1,5 @@
 using System;
 using Color = ChartForgeX.Primitives.ChartColor;
-using ChartForgeX.Raster;
 using ChartForgeX.Topology;
 
 namespace PowerBGInfo;
@@ -21,7 +20,7 @@ internal static class BgInfoTopologyRenderer {
 
         var image = new BgInfoRasterImage();
         image.Create(string.Empty, width, height, Color.Transparent);
-        DrawPng(image, chart.ToPng(options), 0, 0, width, height);
+        image.DrawImage(chart.ToRgbaImage(options), 0, 0, width, height);
         return image;
     }
 
@@ -73,7 +72,4 @@ internal static class BgInfoTopologyRenderer {
         return theme;
     }
 
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
-        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
-    }
 }

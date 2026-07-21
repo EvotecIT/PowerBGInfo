@@ -7,6 +7,9 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "ChartForgeX"
+      - dependency-name: "System.Management"
+        update-types:
+          - "version-update:semver-major"
     groups:
       nuget-minor-patch:
         applies-to: version-updates

@@ -5,7 +5,6 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
-using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
@@ -60,7 +59,7 @@ internal static class BgInfoChartRenderer {
         }
 
         var plot = BuildChartForgeXChart(chart, values, config, (int)Math.Round(plotWidth), (int)Math.Round(plotHeight));
-        DrawPng(image, plot.ToPng(), plotLeft, plotTop, plotWidth, plotHeight);
+        image.DrawImage(plot.ToRgbaImage(), plotLeft, plotTop, plotWidth, plotHeight);
         return image;
     }
 
@@ -309,10 +308,6 @@ internal static class BgInfoChartRenderer {
             default:
                 return ChartPictorialShape.Circle;
         }
-    }
-
-    private static void DrawPng(BgInfoRasterImage image, byte[] png, double x, double y, double width, double height) {
-        image.DrawImage(RasterImageDecoder.Decode(png), x, y, width, height);
     }
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
