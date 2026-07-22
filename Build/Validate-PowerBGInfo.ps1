@@ -20,6 +20,17 @@ function Assert-PathExists {
     }
 }
 
+function Assert-NativeCommandSucceeded {
+    param(
+        [int] $ExitCode,
+        [string] $Description
+    )
+
+    if ($ExitCode -ne 0) {
+        throw "$Description failed with exit code $ExitCode."
+    }
+}
+
 function Get-ImagePixelHash {
     param(
         [string] $Path
@@ -77,25 +88,35 @@ $singleFileOutputPath = Join-Path -Path $renderDirectory -ChildPath 'singlefile.
 $aotOutputPath = Join-Path -Path $renderDirectory -ChildPath 'aot.png'
 $singleFileDirectory = Join-Path -Path $validationRoot -ChildPath 'cli-singlefile'
 $aotDirectory = Join-Path -Path $validationRoot -ChildPath 'cli-aot'
+$hadDevelopmentConfiguration = Test-Path -LiteralPath Env:PowerBGInfoDevelopmentConfiguration
+$previousDevelopmentConfiguration = $Env:PowerBGInfoDevelopmentConfiguration
 
 try {
+    $Env:PowerBGInfoDevelopmentConfiguration = $Configuration
     New-Item -ItemType Directory -Path $renderDirectory -Force | Out-Null
 
     dotnet build $solutionPath -c $Configuration | Out-Null
+    Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Solution build'
     dotnet test $solutionPath -c $Configuration --no-build | Out-Null
+    Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Solution test run'
 
-    Invoke-Pester -Path (Join-Path -Path $repositoryRoot -ChildPath 'Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1') -Output Detailed | Out-Null
+    $pesterResult = Invoke-Pester -Path (Join-Path -Path $repositoryRoot -ChildPath 'Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1') -Output Detailed -PassThru
+    if ($pesterResult.FailedCount -gt 0) {
+        throw "$($pesterResult.FailedCount) PowerBGInfo Pester test(s) failed."
+    }
 
     Assert-PathExists -Path $modulePath -Description 'PowerBGInfo.PowerShell module'
     Assert-PathExists -Path $cliPath -Description 'PowerBGInfo CLI'
     Assert-PathExists -Path $validationScriptPath -Description 'validation script'
 
     & $cliPath --script $validationScriptPath --module $modulePath --directory $renderDirectory --output (Split-Path -Path $scriptOutputPath -Leaf) --export-json $validationJsonPath --no-apply | Out-Null
+    Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Script-backed CLI validation'
 
     Assert-PathExists -Path $scriptOutputPath -Description 'script-backed CLI output'
     Assert-PathExists -Path $validationJsonPath -Description 'exported validation json'
 
     & $cliPath --config $validationJsonPath --directory $renderDirectory --output (Split-Path -Path $jsonOutputPath -Leaf) --no-apply | Out-Null
+    Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'JSON-backed CLI validation'
     Assert-PathExists -Path $jsonOutputPath -Description 'json-backed CLI output'
 
     @"
@@ -104,6 +125,7 @@ Invoke-BGInfo -Path '$($validationJsonPath.Replace("'", "''"))' -ConfigurationDi
 "@ | Set-Content -LiteralPath $powerShellRunnerPath -Encoding UTF8
 
     pwsh -NoLogo -NoProfile -File $powerShellRunnerPath | Out-Null
+    Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'PowerShell module validation'
     Assert-PathExists -Path $powerShellOutputPath -Description 'Invoke-BGInfo output'
 
     Assert-ImageEquivalent -ReferencePath $scriptOutputPath -CandidatePath $jsonOutputPath -Description 'CLI script vs CLI json'
@@ -111,18 +133,22 @@ Invoke-BGInfo -Path '$($validationJsonPath.Replace("'", "''"))' -ConfigurationDi
 
     if (-not $SkipPublishSingleFile.IsPresent) {
         dotnet publish $cliProjectPath -c $Configuration -f net8.0-windows -r win-x64 --self-contained false -p:PublishSingleFile=true -o $singleFileDirectory | Out-Null
+        Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Single-file CLI publish'
         $singleFileCliPath = Join-Path -Path $singleFileDirectory -ChildPath 'PowerBGInfo.Cli.exe'
         Assert-PathExists -Path $singleFileCliPath -Description 'single-file CLI'
         & $singleFileCliPath --config $validationJsonPath --directory $renderDirectory --output (Split-Path -Path $singleFileOutputPath -Leaf) --no-apply | Out-Null
+        Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Single-file CLI validation'
         Assert-PathExists -Path $singleFileOutputPath -Description 'single-file CLI output'
         Assert-ImageEquivalent -ReferencePath $jsonOutputPath -CandidatePath $singleFileOutputPath -Description 'single-file CLI vs normal CLI'
     }
 
     if (-not $SkipPublishAot.IsPresent) {
         dotnet publish $cliProjectPath -c $Configuration -f net8.0-windows -r win-x64 -p:PublishAot=true -o $aotDirectory | Out-Null
+        Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'NativeAOT CLI publish'
         $aotCliPath = Join-Path -Path $aotDirectory -ChildPath 'PowerBGInfo.Cli.exe'
         Assert-PathExists -Path $aotCliPath -Description 'NativeAOT CLI'
         & $aotCliPath --config $validationJsonPath --directory $renderDirectory --output (Split-Path -Path $aotOutputPath -Leaf) --no-apply | Out-Null
+        Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'NativeAOT CLI validation'
         Assert-PathExists -Path $aotOutputPath -Description 'NativeAOT CLI output'
         if ((Get-ImagePixelHash -Path $jsonOutputPath) -ne (Get-ImagePixelHash -Path $aotOutputPath)) {
             Write-Warning 'NativeAOT CLI output differs from the normal CLI output on this machine. NativeAOT remains a smoke-tested file-generation path rather than a strict parity path.'
@@ -144,6 +170,11 @@ Invoke-BGInfo -Path '$($validationJsonPath.Replace("'", "''"))' -ConfigurationDi
         Write-Host "Artifacts kept at : $validationRoot"
     }
 } finally {
+    if ($hadDevelopmentConfiguration) {
+        $Env:PowerBGInfoDevelopmentConfiguration = $previousDevelopmentConfiguration
+    } else {
+        Remove-Item -LiteralPath Env:PowerBGInfoDevelopmentConfiguration -ErrorAction SilentlyContinue
+    }
     if (-not $KeepArtifacts.IsPresent -and (Test-Path -LiteralPath $validationRoot)) {
         Remove-Item -LiteralPath $validationRoot -Recurse -Force
     }

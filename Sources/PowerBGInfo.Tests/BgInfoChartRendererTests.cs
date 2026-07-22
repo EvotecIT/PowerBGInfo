@@ -26,7 +26,7 @@ public class BgInfoChartRendererTests
         Assert.True(series.IsDecimated);
         Assert.Equal(sourcePointCount, series.SourcePointCount);
         Assert.Equal(ChartDecimationMode.LargestTriangleThreeBuckets, series.DecimationMode);
-        Assert.True(series.Points.Count <= BgInfoChartRenderer.ResolveTrendPointBudget(chart.Width));
+        Assert.True(series.Points.Count <= ChartResolutionPolicy.Trend().ResolvePointBudget(chart.Width));
         Assert.Equal(0, series.SourcePointIndices[0]);
         Assert.Equal(sourcePointCount - 1, series.SourcePointIndices[series.SourcePointIndices.Count - 1]);
         Assert.Contains(spikeIndex, series.SourcePointIndices);
@@ -69,15 +69,5 @@ public class BgInfoChartRendererTests
         Assert.Null(series.DecimationMode);
         Assert.Equal(values.Length, series.Points.Count);
         Assert.True(series.Smooth);
-    }
-
-    [Theory]
-    [InlineData(-10, 64)]
-    [InlineData(1, 64)]
-    [InlineData(240, 480)]
-    [InlineData(int.MaxValue, int.MaxValue)]
-    public void TrendPointBudgetIsBoundedAndWidthAware(int width, int expected)
-    {
-        Assert.Equal(expected, BgInfoChartRenderer.ResolveTrendPointBudget(width));
     }
 }

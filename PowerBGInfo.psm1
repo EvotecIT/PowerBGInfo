@@ -1,6 +1,13 @@
 ﻿# to speed up development adding direct path to binaries, instead of the the Lib folder
 $Development = $true
-$DevelopmentPath = "$PSScriptRoot\Sources\PowerBGInfo.PowerShell\bin\Debug"
+$DevelopmentConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) {
+    'Debug'
+} elseif ($Env:PowerBGInfoDevelopmentConfiguration -in @('Debug', 'Release')) {
+    $Env:PowerBGInfoDevelopmentConfiguration
+} else {
+    throw "PowerBGInfoDevelopmentConfiguration must be Debug or Release. Received '$Env:PowerBGInfoDevelopmentConfiguration'."
+}
+$DevelopmentPath = "$PSScriptRoot\Sources\PowerBGInfo.PowerShell\bin\$DevelopmentConfiguration"
 $DevelopmentFolderCore = "net8.0-windows"
 $DevelopmentFolderDefault = "net472"
 $BinaryModules = @(

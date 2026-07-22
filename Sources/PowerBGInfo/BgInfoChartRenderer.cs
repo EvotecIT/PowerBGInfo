@@ -11,8 +11,6 @@ using ChartForgeX.Typography;
 namespace PowerBGInfo;
 
 internal static class BgInfoChartRenderer {
-    private const int MinimumTrendPointBudget = 64;
-
     public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
@@ -138,29 +136,12 @@ internal static class BgInfoChartRenderer {
 
     private static void AddTrendSeries(Chart plot, string name, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {
         var points = BuildIndexedPoints(values);
-        var pointBudget = ResolveTrendPointBudget(width);
-        if (values.Count > pointBudget) {
-            if (area) {
-                plot.AddDecimatedArea(name, points, pointBudget, ChartDecimationMode.LargestTriangleThreeBuckets, color);
-            } else {
-                plot.AddDecimatedLine(name, points, pointBudget, ChartDecimationMode.LargestTriangleThreeBuckets, color);
-            }
-            plot.Series[plot.Series.Count - 1].WithSmooth(smooth);
-            return;
-        }
-
         if (area) {
-            if (smooth) plot.AddSmoothArea(name, points, color);
-            else plot.AddArea(name, points, color);
+            plot.AddAdaptiveArea(name, points, width, ChartResolutionPolicy.Trend(), color);
         } else {
-            if (smooth) plot.AddSmoothLine(name, points, color);
-            else plot.AddLine(name, points, color);
+            plot.AddAdaptiveLine(name, points, width, ChartResolutionPolicy.Trend(), color);
         }
-    }
-
-    internal static int ResolveTrendPointBudget(int width) {
-        var pixelBudget = Math.Max(1L, width) * 2L;
-        return (int)Math.Min(int.MaxValue, Math.Max(MinimumTrendPointBudget, pixelBudget));
+        plot.Series[plot.Series.Count - 1].WithSmooth(smooth);
     }
 
     private static void ApplyChartOptions(Chart plot, BgInfoChart chart) {
