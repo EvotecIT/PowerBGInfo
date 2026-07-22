@@ -101,8 +101,8 @@ try {
     Assert-NativeCommandSucceeded -ExitCode $LASTEXITCODE -Description 'Solution test run'
 
     $pesterResult = Invoke-Pester -Path (Join-Path -Path $repositoryRoot -ChildPath 'Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1') -Output Detailed -PassThru
-    if ($pesterResult.FailedCount -gt 0) {
-        throw "$($pesterResult.FailedCount) PowerBGInfo Pester test(s) failed."
+    if ($pesterResult.Result -ne 'Passed') {
+        throw "PowerBGInfo Pester validation failed with result '$($pesterResult.Result)' (tests: $($pesterResult.FailedCount), blocks: $($pesterResult.FailedBlocksCount), containers: $($pesterResult.FailedContainersCount))."
     }
 
     Assert-PathExists -Path $modulePath -Description 'PowerBGInfo.PowerShell module'
