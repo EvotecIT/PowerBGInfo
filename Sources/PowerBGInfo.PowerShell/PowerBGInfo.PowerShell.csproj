@@ -7,7 +7,7 @@
         <Description>PowerShell module for generating BGInfo-style desktop overlays on Windows.</Description>
         <AssemblyName>PowerBGInfo.PowerShell</AssemblyName>
         <AssemblyTitle>PowerBGInfo.PowerShell</AssemblyTitle>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>2.0.1</VersionPrefix>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Company>Evotec</Company>
         <Authors>Przemyslaw Klys</Authors>

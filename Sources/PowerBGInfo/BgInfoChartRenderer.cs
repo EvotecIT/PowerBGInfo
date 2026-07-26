@@ -63,7 +63,7 @@ internal static class BgInfoChartRenderer {
         return image;
     }
 
-    private static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
+    internal static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
         var accent = chart.LineColor ?? config.ValueColor;
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
@@ -95,10 +95,10 @@ internal static class BgInfoChartRenderer {
                 plot.AddHorizontalBar(chart.Title, BuildIndexedPoints(values), accent);
                 break;
             case BgInfoChartKind.Line:
-                plot.AddLine(chart.Title, BuildIndexedPoints(values), accent);
+                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: false, area: false);
                 break;
             case BgInfoChartKind.Area:
-                plot.AddSmoothArea(chart.Title, BuildIndexedPoints(values), chart.FillColor ?? chart.LineColor ?? config.ValueColor);
+                AddTrendSeries(plot, chart.Title, values, width, chart.FillColor ?? chart.LineColor ?? config.ValueColor, smooth: true, area: true);
                 break;
             case BgInfoChartKind.Gauge:
                 AddGauge(plot, chart, values, accent);
@@ -127,11 +127,21 @@ internal static class BgInfoChartRenderer {
                 plot.AddPictorial(chart.Title, BuildPictorialItems(chart, values), ResolvePictorialShape(chart.PictorialSymbol), accent);
                 break;
             default:
-                plot.AddSmoothLine(chart.Title, BuildIndexedPoints(values), accent);
+                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: true, area: false);
                 break;
         }
 
         return plot;
+    }
+
+    private static void AddTrendSeries(Chart plot, string name, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {
+        var points = BuildIndexedPoints(values);
+        if (area) {
+            plot.AddAdaptiveArea(name, points, width, ChartResolutionPolicy.Trend(), color);
+        } else {
+            plot.AddAdaptiveLine(name, points, width, ChartResolutionPolicy.Trend(), color);
+        }
+        plot.Series[plot.Series.Count - 1].WithSmooth(smooth);
     }
 
     private static void ApplyChartOptions(Chart plot, BgInfoChart chart) {

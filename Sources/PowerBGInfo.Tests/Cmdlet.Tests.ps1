@@ -1,10 +1,15 @@
-$modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Debug\net8.0-windows\PowerBGInfo.PowerShell.dll'
+$discoveryConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
+$discoveryFallbackConfiguration = if ($discoveryConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
+$modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
 if (-not (Test-Path -LiteralPath $modulePath)) {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Release\net8.0-windows\PowerBGInfo.PowerShell.dll'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryFallbackConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
 }
 Import-Module -Name $modulePath -Force
 
 BeforeAll {
+$testConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
+$fallbackConfiguration = if ($testConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
+
 function Get-ImagePixelHash {
     param(
         [string] $Path
@@ -411,9 +416,9 @@ Describe 'CLI interoperability' {
         $sampleImage = (Resolve-Path -Path $sampleImage).Path
         $outputDir = Join-Path -Path $TestDrive -ChildPath 'interop'
         $configPath = Join-Path -Path $TestDrive -ChildPath 'interop.json'
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         $config = New-BGInfoConfiguration -Target File
@@ -435,9 +440,9 @@ Describe 'CLI interoperability' {
         $sampleImage = (Resolve-Path -Path $sampleImage).Path
         $outputDir = Join-Path -Path $TestDrive -ChildPath 'inline-cli'
         $configPath = Join-Path -Path $TestDrive -ChildPath 'inline-cli.json'
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         New-BGInfo {
@@ -453,9 +458,9 @@ Describe 'CLI interoperability' {
         $sampleImage = (Resolve-Path -Path $sampleImage).Path
         $outputDir = Join-Path -Path $TestDrive -ChildPath 'volume-cli'
         $configPath = Join-Path -Path $TestDrive -ChildPath 'volume-cli.json'
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         New-BGInfo {
@@ -477,9 +482,9 @@ Describe 'CLI interoperability' {
         $outputDir = Join-Path -Path $TestDrive -ChildPath 'script-cli'
         $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script.ps1'
         $moduleManifestPath = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\PowerBGInfo.psd1')).Path
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         @"
@@ -497,9 +502,9 @@ New-BGInfo {
         $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-export-script.ps1'
         $moduleManifestPath = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\PowerBGInfo.psd1')).Path
         $exportPath = Join-Path -Path $TestDrive -ChildPath 'script-export.json'
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         @"
@@ -521,13 +526,13 @@ New-BGInfo {
         $sampleImage = (Resolve-Path -Path $sampleImage).Path
         $outputDir = Join-Path -Path $TestDrive -ChildPath 'script-cli-module'
         $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script-module.ps1'
-        $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Debug\net8.0-windows\PowerBGInfo.PowerShell.dll'
+        $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$testConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
         if (-not (Test-Path -LiteralPath $modulePath)) {
-            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.PowerShell\bin\Release\net8.0-windows\PowerBGInfo.PowerShell.dll'
+            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
         }
-        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Debug\net8.0-windows\PowerBGInfo.Cli.exe'
+        $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         if (-not (Test-Path -LiteralPath $cliPath)) {
-            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath '..\PowerBGInfo.Cli\bin\Release\net8.0-windows\PowerBGInfo.Cli.exe'
+            $cliPath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
         }
 
         @"
