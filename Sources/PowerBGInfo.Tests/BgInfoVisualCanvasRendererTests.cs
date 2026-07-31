@@ -236,6 +236,64 @@ public class BgInfoVisualCanvasRendererTests
     }
 
     [Fact]
+    public void CenterOnlyLaneShrinksToFitWithinNarrowCanvas()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 320,
+            Height = 480,
+            HeroContentVisible = false,
+            CenterTileWidth = 460,
+            TileHeight = 100
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Label = "CENTER",
+            Value = "narrow canvas",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 320, 480);
+        var opaqueRuns = FindOpaqueRuns(image.ToRgbaImage(), 80);
+
+        var run = Assert.Single(opaqueRuns);
+        Assert.True(run.Start > 0);
+        Assert.True(run.End < 319);
+    }
+
+    [Fact]
+    public void CenterOffsetIsClampedBeforeOccupiedRightLane()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1024,
+            Height = 768,
+            HeroContentVisible = false,
+            CenterTileWidth = 460,
+            CenterTileOffsetX = 480,
+            RightTileWidth = 460,
+            TileHeight = 100
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Label = "CENTER",
+            Value = "offset lane",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Right,
+            Label = "RIGHT",
+            Value = "right lane",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1024, 768);
+        var opaqueRuns = FindOpaqueRuns(image.ToRgbaImage(), 150);
+
+        Assert.Equal(2, opaqueRuns.Count);
+        Assert.True(opaqueRuns[1].Start - opaqueRuns[0].End >= 20);
+        Assert.True(opaqueRuns[1].End < 1024);
+    }
+
+    [Fact]
     public void OpaqueCenterLaneRendersWithoutHeroContent()
     {
         var visual = new BgInfoVisualCanvas {
