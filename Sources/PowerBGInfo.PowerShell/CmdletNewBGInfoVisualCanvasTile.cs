@@ -5,7 +5,7 @@ using PowerBGInfo;
 namespace PowerBGInfo.PowerShell;
 
 /// <summary>Creates a BGInfo visual canvas tile definition.</summary>
-/// <para>Tiles are the readable side-rail information boxes used by New-BGInfoVisualCanvas.</para>
+/// <para>Tiles are the readable lane-based information boxes used by New-BGInfoVisualCanvas.</para>
 /// <example>
 /// <code>
 /// New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop' -Accent '#0F766EFF'
@@ -19,8 +19,9 @@ namespace PowerBGInfo.PowerShell;
 [Cmdlet(VerbsCommon.New, "BGInfoVisualCanvasTile")]
 [OutputType(typeof(BgInfoVisualCanvasTile))]
 public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
-    /// <para>Side rail placement.</para>
+    /// <para>Tile lane placement.</para>
     [Parameter]
+    [Alias("Lane")]
     public BgInfoVisualCanvasSide Side { get; set; }
 
     /// <para>Compact tile icon or symbol.</para>

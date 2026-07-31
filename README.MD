@@ -322,6 +322,23 @@ New-BGInfo -Target File {
 
 `Examples\Scripts\PowerBGInfo.VisualCanvas.ps1` renders three variants: glass panels with text badges, outline-only panels with text badges, and outline-only panels with built-in icons. `Examples\Scripts\PowerBGInfo.VisualCanvas.ContrastBox.ps1` shows light high-contrast boxes over a dark wallpaper, moves the feature strip to the bottom-right so it does not cover the Evotec logo, and exports the same layout to `Examples\Configuration\PowerBGInfo.VisualCanvas.ContrastBox.json`. `Examples\Scripts\PowerBGInfo.VisualCanvas.RaisedSections.ps1` shows a stronger glass treatment with icon tiles and progress rails for a more raised section look over the same wallpaper. `Examples\Scripts\PowerBGInfo.VisualCanvas.Raised3D.ps1` uses the reusable `Raised` surface style on a black operational background. `Examples\Scripts\PowerBGInfo.VisualCanvas.MiniCharts.ps1` combines the same visual canvas with purpose-matched mini charts inside the CPU, RAM, disk, and patching sections plus a logo inside the central hero badge. Tile `-SurfaceStyle` supports `Glass`, `Outline`, and `Raised`; tile `-IconKind` can render built-in icons such as `Computer`, `Network`, `OperatingSystem`, `Cpu`, `Memory`, `User`, `Domain`, `Terminal`, `Storage`, and `Shield`.
 
+When Windows desktop icons occupy the left side, place one tile lane in the center and another on the right. `-Lane` is an alias for the existing `-Side` parameter, and `-NoHeroContent` removes the badge, title, and subtitle so the centered tiles have a clear working area:
+
+```powershell
+$tiles = @(
+    New-BGInfoVisualCanvasTile -Lane Center -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Lane Center -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}'
+    New-BGInfoVisualCanvasTile -Lane Right -IconKind Cpu -SurfaceStyle Raised -Label CPU -Value '{{CpuCores}} cores'
+    New-BGInfoVisualCanvasTile -Lane Right -IconKind Memory -SurfaceStyle Raised -Label RAM -Value '{{RAMSize}}'
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -NoHeroContent -Tile $tiles -CenterTileWidth 460 -RightTileWidth 460
+} -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.CenterRight.jpg' -WallpaperFit Fill
+```
+
+Use `-CenterTileOffsetX` and `-CenterTileOffsetY` when the wallpaper needs the centered lane moved away from a logo or another focal point. `Examples\Scripts\PowerBGInfo.VisualCanvas.CenterRight.ps1` contains the complete example.
+
 The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Use `-HeroBadgeText` for a text mark, `-HeroBadgeImagePath` for a logo inside the central badge, or `-NoHeroBadge` when the badge should be omitted entirely. Badge text, logo path, image fit, padding, opacity, colors, and visibility are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code. Standalone image overlays also accept `-Fit Stretch|Contain|Cover|Center|Tile`; `Stretch` remains the default for existing configurations.
 
 For a high-contrast color box treatment, use a light translucent tile fill, dark tile text, the `Raised` surface style, and per-tile accents:

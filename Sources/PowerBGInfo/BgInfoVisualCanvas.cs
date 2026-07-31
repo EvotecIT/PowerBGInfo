@@ -9,12 +9,14 @@ public enum BgInfoVisualCanvasTemplate {
     PowerBgInfoHero
 }
 
-/// <summary>Visual canvas side rail placement.</summary>
+/// <summary>Visual canvas tile lane placement.</summary>
 public enum BgInfoVisualCanvasSide {
     /// <summary>Place the tile on the left side rail.</summary>
-    Left,
+    Left = 0,
     /// <summary>Place the tile on the right side rail.</summary>
-    Right
+    Right = 1,
+    /// <summary>Place the tile on the centered tile lane.</summary>
+    Center = 2
 }
 
 /// <summary>Visual canvas tile surface treatment.</summary>
@@ -145,6 +147,8 @@ public sealed class BgInfoVisualCanvas {
     public Color? HeroBadgeTextColor { get; set; }
     /// <summary>Render the central hero badge.</summary>
     public bool HeroBadgeVisible { get; set; } = true;
+    /// <summary>Render the central hero badge, title, and subtitle.</summary>
+    public bool HeroContentVisible { get; set; } = true;
     /// <summary>Text rendered in the central hero badge when no image is configured.</summary>
     public string HeroBadgeText { get; set; } = ">_";
     /// <summary>Optional image path rendered inside the central hero badge.</summary>
@@ -171,6 +175,8 @@ public sealed class BgInfoVisualCanvas {
     public int LeftTileWidth { get; set; }
     /// <summary>Default right side-rail tile width in pixels. Zero uses TileWidth or the template default.</summary>
     public int RightTileWidth { get; set; }
+    /// <summary>Default centered-lane tile width in pixels. Zero uses TileWidth or the template default.</summary>
+    public int CenterTileWidth { get; set; }
     /// <summary>Horizontal left side-rail offset in pixels.</summary>
     public int LeftTileOffsetX { get; set; }
     /// <summary>Vertical left side-rail offset in pixels.</summary>
@@ -179,6 +185,10 @@ public sealed class BgInfoVisualCanvas {
     public int RightTileOffsetX { get; set; }
     /// <summary>Vertical right side-rail offset in pixels.</summary>
     public int RightTileOffsetY { get; set; }
+    /// <summary>Horizontal centered-lane offset in pixels. Positive values move the lane to the right.</summary>
+    public int CenterTileOffsetX { get; set; }
+    /// <summary>Vertical centered-lane offset in pixels.</summary>
+    public int CenterTileOffsetY { get; set; }
     /// <summary>Default tile text fitting policy.</summary>
     public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
     /// <summary>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</summary>
@@ -189,15 +199,15 @@ public sealed class BgInfoVisualCanvas {
     public bool Transparent { get; set; } = true;
     /// <summary>Render ChartForgeX's built-in technology backdrop when the canvas is not transparent.</summary>
     public bool TechBackdrop { get; set; }
-    /// <summary>Gets side rail tiles.</summary>
+    /// <summary>Gets tile lane definitions.</summary>
     public List<BgInfoVisualCanvasTile> Tiles { get; } = new();
     /// <summary>Gets bottom feature strip items.</summary>
     public List<BgInfoVisualCanvasFeature> Features { get; } = new();
 }
 
-/// <summary>Defines one visual canvas side-rail tile.</summary>
+/// <summary>Defines one visual canvas tile.</summary>
 public sealed class BgInfoVisualCanvasTile {
-    /// <summary>Side rail placement.</summary>
+    /// <summary>Tile lane placement.</summary>
     public BgInfoVisualCanvasSide Side { get; set; }
     /// <summary>Compact tile icon or symbol.</summary>
     public string Icon { get; set; } = string.Empty;
