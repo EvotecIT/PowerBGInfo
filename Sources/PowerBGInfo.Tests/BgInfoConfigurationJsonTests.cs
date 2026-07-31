@@ -461,6 +461,9 @@ public class BgInfoConfigurationJsonTests
     [Theory]
     [InlineData("Middle")]
     [InlineData("999")]
+    [InlineData("1")]
+    [InlineData("Left, Center")]
+    [InlineData("Left, Right")]
     public void LoadRejectsUnknownVisualCanvasTileSides(string side) {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);

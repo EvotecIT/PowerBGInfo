@@ -927,10 +927,10 @@ public static class BgInfoConfigurationJson {
             Width = model.Width ?? 0,
             Height = model.Height ?? 0
         };
-        if (!string.IsNullOrWhiteSpace(model.Side)) {
-            if (!Enum.TryParse(model.Side, true, out BgInfoVisualCanvasSide side) ||
-                !Enum.IsDefined(typeof(BgInfoVisualCanvasSide), side)) {
-                throw new InvalidDataException("Unknown visual canvas tile side '" + model.Side + "'. Expected Left, Center, or Right.");
+        var sideValue = model.Side;
+        if (!string.IsNullOrWhiteSpace(sideValue)) {
+            if (!TryParseDefinedEnumName(sideValue, out BgInfoVisualCanvasSide side)) {
+                throw new InvalidDataException("Unknown visual canvas tile side '" + sideValue + "'. Expected Left, Center, or Right.");
             }
             tile.Side = side;
         }
@@ -955,6 +955,22 @@ public static class BgInfoConfigurationJson {
         if (model.MiniChartValues != null) tile.MiniChartValues = model.MiniChartValues;
         if (model.MiniChartMaximum.HasValue) tile.MiniChartMaximum = model.MiniChartMaximum.Value;
         return tile;
+    }
+
+    private static bool TryParseDefinedEnumName<TEnum>(string? value, out TEnum parsed) where TEnum : struct, Enum {
+        if (value == null) {
+            parsed = default;
+            return false;
+        }
+
+        var candidate = value.Trim();
+        foreach (var name in Enum.GetNames(typeof(TEnum))) {
+            if (!string.Equals(candidate, name, StringComparison.OrdinalIgnoreCase)) continue;
+            return Enum.TryParse(candidate, true, out parsed);
+        }
+
+        parsed = default;
+        return false;
     }
 
     private static BgInfoVisualCanvasFeature MapVisualCanvasFeature(BgInfoVisualCanvasFeatureFile model) => new() {
