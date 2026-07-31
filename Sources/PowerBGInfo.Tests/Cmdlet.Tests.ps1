@@ -164,6 +164,7 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TileValueColor'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeTextColor'
         $command.Parameters.Keys | Should -Contain 'NoHeroBadge'
+        $command.Parameters.Keys | Should -Contain 'NoHeroContent'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeText'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeImagePath'
         $command.Parameters.Keys | Should -Contain 'HeroBadgeImageFit'
@@ -173,23 +174,28 @@ Describe 'New-BGInfo cmdlet parameters' {
         $command.Parameters.Keys | Should -Contain 'TileGap'
         $command.Parameters.Keys | Should -Contain 'LeftTileWidth'
         $command.Parameters.Keys | Should -Contain 'RightTileWidth'
+        $command.Parameters.Keys | Should -Contain 'CenterTileWidth'
+        $command.Parameters.Keys | Should -Contain 'CenterTileOffsetX'
+        $command.Parameters.Keys | Should -Contain 'CenterTileOffsetY'
         $command.Parameters.Keys | Should -Contain 'TileTextFitPolicy'
-        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'MiniChartKind'
-        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'Width'
-        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'Height'
-        (Get-Command New-BGInfoVisualCanvasTile).Parameters.Keys | Should -Contain 'TextFitPolicy'
+        $tileCommand = Get-Command New-BGInfoVisualCanvasTile
+        $tileCommand.Parameters.Keys | Should -Contain 'MiniChartKind'
+        $tileCommand.Parameters.Keys | Should -Contain 'Width'
+        $tileCommand.Parameters.Keys | Should -Contain 'Height'
+        $tileCommand.Parameters.Keys | Should -Contain 'TextFitPolicy'
+        $tileCommand.Parameters['Side'].Aliases | Should -Contain 'Lane'
     }
 }
 
 Describe 'New-BGInfoVisualCanvas cmdlets' {
     It 'creates a visual canvas model' {
-        $tile = New-BGInfoVisualCanvasTile -Side Left -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 -MiniChartMaximum 100
+        $tile = New-BGInfoVisualCanvasTile -Lane Center -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 -MiniChartMaximum 100
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
         $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
         Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
 
-        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -HeroBadgeText EV -HeroBadgeImagePath $path -HeroBadgeImageFit Cover -HeroBadgeImagePadding 14 -HeroBadgeImageOpacity 0.82 -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -HeroBadgeText EV -HeroBadgeImagePath $path -HeroBadgeImageFit Cover -HeroBadgeImagePadding 14 -HeroBadgeImageOpacity 0.82 -NoHeroContent -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -CenterTileWidth 440 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -CenterTileOffsetX -18 -CenterTileOffsetY 16 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
 
         $visual.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoVisualCanvas'
         $visual.Title | Should -Be 'PowerBGInfo'
@@ -198,6 +204,7 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.TileValueColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeTextColor | Should -Not -BeNullOrEmpty
         $visual.HeroBadgeVisible | Should -BeTrue
+        $visual.HeroContentVisible | Should -BeFalse
         $visual.HeroBadgeText | Should -Be 'EV'
         $visual.HeroBadgeImagePath | Should -Be (Resolve-Path -LiteralPath $path).Path
         $visual.HeroBadgeImageFit.ToString() | Should -Be 'Cover'
@@ -212,10 +219,13 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.TileGap | Should -Be 24
         $visual.LeftTileWidth | Should -Be 430
         $visual.RightTileWidth | Should -Be 460
+        $visual.CenterTileWidth | Should -Be 440
         $visual.LeftTileOffsetX | Should -Be 8
         $visual.LeftTileOffsetY | Should -Be 10
         $visual.RightTileOffsetX | Should -Be 12
         $visual.RightTileOffsetY | Should -Be 14
+        $visual.CenterTileOffsetX | Should -Be -18
+        $visual.CenterTileOffsetY | Should -Be 16
         $visual.TileTextFitPolicy.ToString() | Should -Be 'WrapThenShrink'
         $visual.Tiles.Count | Should -Be 1
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
@@ -227,6 +237,7 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.Tiles[0].TextFitPolicy.ToString() | Should -Be 'SingleLineEllipsis'
         $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
         $visual.Tiles[0].MiniChartMaximum | Should -Be 100
+        $visual.Tiles[0].Side.ToString() | Should -Be 'Center'
         $visual.Features.Count | Should -Be 1
     }
 
@@ -242,6 +253,22 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -NoHeroBadge
 
         $visual.HeroBadgeVisible | Should -BeFalse
+    }
+
+    It 'can disable all hero content' {
+        $visual = New-BGInfoVisualCanvas -NoHeroContent
+
+        $visual.HeroContentVisible | Should -BeFalse
+        $visual.HeroBadgeVisible | Should -BeTrue
+    }
+
+    It 'warns when centered tiles may overlap visible hero content' {
+        $tile = New-BGInfoVisualCanvasTile -Lane Center -Label HOSTNAME -Value '{{HostName}}'
+        $layoutWarnings = @()
+
+        $null = New-BGInfoVisualCanvas -Tile $tile -WarningAction SilentlyContinue -WarningVariable layoutWarnings
+
+        $layoutWarnings | Should -Match 'NoHeroContent'
     }
 }
 

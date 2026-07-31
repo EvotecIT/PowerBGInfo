@@ -415,6 +415,7 @@ public static class BgInfoConfigurationJson {
                     HeroBadgeBottom = visual.HeroBadgeBottom.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeBottom.Value) : null,
                     HeroBadgeTextColor = visual.HeroBadgeTextColor.HasValue ? BgInfoColorParser.ToHex(visual.HeroBadgeTextColor.Value) : null,
                     HeroBadgeVisible = visual.HeroBadgeVisible,
+                    HeroContentVisible = visual.HeroContentVisible ? null : false,
                     HeroBadgeText = string.Equals(visual.HeroBadgeText, ">_", StringComparison.Ordinal) ? null : visual.HeroBadgeText,
                     HeroBadgeImagePath = string.IsNullOrWhiteSpace(visual.HeroBadgeImagePath) ? null : visual.HeroBadgeImagePath,
                     HeroBadgeImageFit = visual.HeroBadgeImageFit == BgInfoImageFit.Contain ? null : visual.HeroBadgeImageFit.ToString(),
@@ -428,10 +429,13 @@ public static class BgInfoConfigurationJson {
                     TileGap = visual.TileGap == 0 ? null : visual.TileGap,
                     LeftTileWidth = visual.LeftTileWidth == 0 ? null : visual.LeftTileWidth,
                     RightTileWidth = visual.RightTileWidth == 0 ? null : visual.RightTileWidth,
+                    CenterTileWidth = visual.CenterTileWidth == 0 ? null : visual.CenterTileWidth,
                     LeftTileOffsetX = visual.LeftTileOffsetX == 0 ? null : visual.LeftTileOffsetX,
                     LeftTileOffsetY = visual.LeftTileOffsetY == 0 ? null : visual.LeftTileOffsetY,
                     RightTileOffsetX = visual.RightTileOffsetX == 0 ? null : visual.RightTileOffsetX,
                     RightTileOffsetY = visual.RightTileOffsetY == 0 ? null : visual.RightTileOffsetY,
+                    CenterTileOffsetX = visual.CenterTileOffsetX == 0 ? null : visual.CenterTileOffsetX,
+                    CenterTileOffsetY = visual.CenterTileOffsetY == 0 ? null : visual.CenterTileOffsetY,
                     TileTextFitPolicy = visual.TileTextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : visual.TileTextFitPolicy.ToString(),
                     FeatureOffsetX = visual.FeatureOffsetX == 0 ? null : visual.FeatureOffsetX,
                     FeatureOffsetY = visual.FeatureOffsetY == 0 ? null : visual.FeatureOffsetY,
@@ -850,6 +854,7 @@ public static class BgInfoConfigurationJson {
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
         if (model.TechBackdrop.HasValue) visual.TechBackdrop = model.TechBackdrop.Value;
         if (model.HeroBadgeVisible.HasValue) visual.HeroBadgeVisible = model.HeroBadgeVisible.Value;
+        if (model.HeroContentVisible.HasValue) visual.HeroContentVisible = model.HeroContentVisible.Value;
         if (model.HeroBadgeText != null) visual.HeroBadgeText = model.HeroBadgeText;
         if (!string.IsNullOrWhiteSpace(model.HeroBadgeImagePath)) visual.HeroBadgeImagePath = ResolvePath(model.HeroBadgeImagePath, baseDirectory);
         if (!string.IsNullOrWhiteSpace(model.HeroBadgeImageFit) &&
@@ -869,10 +874,13 @@ public static class BgInfoConfigurationJson {
         if (model.TileGap.HasValue) visual.TileGap = model.TileGap.Value;
         if (model.LeftTileWidth.HasValue) visual.LeftTileWidth = model.LeftTileWidth.Value;
         if (model.RightTileWidth.HasValue) visual.RightTileWidth = model.RightTileWidth.Value;
+        if (model.CenterTileWidth.HasValue) visual.CenterTileWidth = model.CenterTileWidth.Value;
         if (model.LeftTileOffsetX.HasValue) visual.LeftTileOffsetX = model.LeftTileOffsetX.Value;
         if (model.LeftTileOffsetY.HasValue) visual.LeftTileOffsetY = model.LeftTileOffsetY.Value;
         if (model.RightTileOffsetX.HasValue) visual.RightTileOffsetX = model.RightTileOffsetX.Value;
         if (model.RightTileOffsetY.HasValue) visual.RightTileOffsetY = model.RightTileOffsetY.Value;
+        if (model.CenterTileOffsetX.HasValue) visual.CenterTileOffsetX = model.CenterTileOffsetX.Value;
+        if (model.CenterTileOffsetY.HasValue) visual.CenterTileOffsetY = model.CenterTileOffsetY.Value;
         if (!string.IsNullOrWhiteSpace(model.TileTextFitPolicy) &&
             Enum.TryParse(model.TileTextFitPolicy, true, out BgInfoVisualCanvasTileTextFitPolicy tileTextFitPolicy)) {
             visual.TileTextFitPolicy = tileTextFitPolicy;
@@ -919,8 +927,11 @@ public static class BgInfoConfigurationJson {
             Width = model.Width ?? 0,
             Height = model.Height ?? 0
         };
-        if (!string.IsNullOrWhiteSpace(model.Side) &&
-            Enum.TryParse(model.Side, true, out BgInfoVisualCanvasSide side)) {
+        if (!string.IsNullOrWhiteSpace(model.Side)) {
+            if (!Enum.TryParse(model.Side, true, out BgInfoVisualCanvasSide side) ||
+                !Enum.IsDefined(typeof(BgInfoVisualCanvasSide), side)) {
+                throw new InvalidDataException("Unknown visual canvas tile side '" + model.Side + "'. Expected Left, Center, or Right.");
+            }
             tile.Side = side;
         }
         if (!string.IsNullOrWhiteSpace(model.SurfaceStyle) &&
@@ -1252,6 +1263,7 @@ public static class BgInfoConfigurationJson {
         public string? HeroBadgeBottom { get; set; }
         public string? HeroBadgeTextColor { get; set; }
         public bool? HeroBadgeVisible { get; set; }
+        public bool? HeroContentVisible { get; set; }
         public string? HeroBadgeText { get; set; }
         public string? HeroBadgeImagePath { get; set; }
         public string? HeroBadgeImageFit { get; set; }
@@ -1265,10 +1277,13 @@ public static class BgInfoConfigurationJson {
         public int? TileGap { get; set; }
         public int? LeftTileWidth { get; set; }
         public int? RightTileWidth { get; set; }
+        public int? CenterTileWidth { get; set; }
         public int? LeftTileOffsetX { get; set; }
         public int? LeftTileOffsetY { get; set; }
         public int? RightTileOffsetX { get; set; }
         public int? RightTileOffsetY { get; set; }
+        public int? CenterTileOffsetX { get; set; }
+        public int? CenterTileOffsetY { get; set; }
         public string? TileTextFitPolicy { get; set; }
         public int? FeatureOffsetX { get; set; }
         public int? FeatureOffsetY { get; set; }

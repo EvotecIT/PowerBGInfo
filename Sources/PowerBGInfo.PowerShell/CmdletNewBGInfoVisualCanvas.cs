@@ -125,6 +125,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public SwitchParameter NoHeroBadge { get; set; }
 
+    /// <para>Hide the central hero badge, title, and subtitle while keeping tiles and the feature strip.</para>
+    [Parameter]
+    public SwitchParameter NoHeroContent { get; set; }
+
     /// <para>Text rendered in the central hero badge when no image is configured.</para>
     [Parameter]
     [Alias("HeroBadgeSymbol")]
@@ -158,15 +162,15 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public int FeatureHeight { get; set; }
 
-    /// <para>Default side-rail tile width in pixels. Zero uses the template default width.</para>
+    /// <para>Default tile width in pixels. Zero uses the template default width.</para>
     [Parameter]
     public int TileWidth { get; set; }
 
-    /// <para>Default side-rail tile height in pixels. Zero uses the template default height.</para>
+    /// <para>Default tile height in pixels. Zero uses the template default height.</para>
     [Parameter]
     public int TileHeight { get; set; }
 
-    /// <para>Default vertical gap between side-rail tiles in pixels. Zero uses the template default gap.</para>
+    /// <para>Default vertical gap between tiles in pixels. Zero uses the template default gap.</para>
     [Parameter]
     public int TileGap { get; set; }
 
@@ -177,6 +181,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     /// <para>Default right side-rail tile width in pixels. Zero uses TileWidth or the template default.</para>
     [Parameter]
     public int RightTileWidth { get; set; }
+
+    /// <para>Default centered-lane tile width in pixels. Zero uses TileWidth or the template default.</para>
+    [Parameter]
+    public int CenterTileWidth { get; set; }
 
     /// <para>Horizontal left side-rail offset in pixels.</para>
     [Parameter]
@@ -194,7 +202,15 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public int RightTileOffsetY { get; set; }
 
-    /// <para>Default side-rail tile text fitting policy.</para>
+    /// <para>Horizontal centered-lane offset in pixels. Positive values move the lane to the right.</para>
+    [Parameter]
+    public int CenterTileOffsetX { get; set; }
+
+    /// <para>Vertical centered-lane offset in pixels.</para>
+    [Parameter]
+    public int CenterTileOffsetY { get; set; }
+
+    /// <para>Default tile text fitting policy.</para>
     [Parameter]
     public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
 
@@ -214,7 +230,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public SwitchParameter Opaque { get; set; }
 
-    /// <para>Side rail tile definitions.</para>
+    /// <para>Tile lane definitions.</para>
     [Parameter]
     public BgInfoVisualCanvasTile[] Tile { get; set; } = Array.Empty<BgInfoVisualCanvasTile>();
 
@@ -259,6 +275,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             HeroBadgeBottom = PowerShellColorConverter.ConvertOptional(HeroBadgeBottom, nameof(HeroBadgeBottom)),
             HeroBadgeTextColor = PowerShellColorConverter.ConvertOptional(HeroBadgeTextColor, nameof(HeroBadgeTextColor)),
             HeroBadgeVisible = !NoHeroBadge.IsPresent,
+            HeroContentVisible = !NoHeroContent.IsPresent,
             HeroBadgeText = HeroBadgeText,
             HeroBadgeImagePath = string.IsNullOrWhiteSpace(HeroBadgeImagePath) ? string.Empty : SessionState.Path.GetUnresolvedProviderPathFromPSPath(HeroBadgeImagePath),
             HeroBadgeImageFit = HeroBadgeImageFit,
@@ -272,10 +289,13 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             TileGap = TileGap,
             LeftTileWidth = LeftTileWidth,
             RightTileWidth = RightTileWidth,
+            CenterTileWidth = CenterTileWidth,
             LeftTileOffsetX = LeftTileOffsetX,
             LeftTileOffsetY = LeftTileOffsetY,
             RightTileOffsetX = RightTileOffsetX,
             RightTileOffsetY = RightTileOffsetY,
+            CenterTileOffsetX = CenterTileOffsetX,
+            CenterTileOffsetY = CenterTileOffsetY,
             TileTextFitPolicy = TileTextFitPolicy,
             FeatureOffsetX = FeatureOffsetX,
             FeatureOffsetY = FeatureOffsetY,
@@ -284,6 +304,12 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         };
         foreach (var tile in Tile ?? Array.Empty<BgInfoVisualCanvasTile>()) if (tile != null) visual.Tiles.Add(tile);
         foreach (var feature in Feature ?? Array.Empty<BgInfoVisualCanvasFeature>()) if (feature != null) visual.Features.Add(feature);
+        var hasCenterTiles = visual.Tiles.Exists(tile => tile.Side == BgInfoVisualCanvasSide.Center);
+        var hasVisibleHeroContent = visual.HeroContentVisible &&
+            (visual.HeroBadgeVisible || !string.IsNullOrWhiteSpace(visual.Title) || !string.IsNullOrWhiteSpace(visual.Subtitle));
+        if (hasCenterTiles && hasVisibleHeroContent) {
+            WriteWarning("Centered tiles can overlap the hero badge, title, or subtitle. Use -NoHeroContent for a tile-only layout, or move the lane with -CenterTileOffsetX and -CenterTileOffsetY.");
+        }
         WriteObject(visual);
     }
 

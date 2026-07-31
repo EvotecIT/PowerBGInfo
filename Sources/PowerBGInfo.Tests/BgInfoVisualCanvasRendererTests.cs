@@ -3,6 +3,14 @@ namespace PowerBGInfo.Tests;
 public class BgInfoVisualCanvasRendererTests
 {
     [Fact]
+    public void CenterPlacementPreservesExistingSideValues()
+    {
+        Assert.Equal(0, (int)BgInfoVisualCanvasSide.Left);
+        Assert.Equal(1, (int)BgInfoVisualCanvasSide.Right);
+        Assert.Equal(2, (int)BgInfoVisualCanvasSide.Center);
+    }
+
+    [Fact]
     public void DefaultOpaqueFeatureStripPlacementPreservesTemplateCenterAndBottomMargin()
     {
         var visual = new BgInfoVisualCanvas {
@@ -33,6 +41,24 @@ public class BgInfoVisualCanvasRendererTests
         var pixels = image.ToRgbaImage();
 
         Assert.Equal(0, CountOpaquePixels(pixels, 538, 157, 124, 88));
+    }
+
+    [Fact]
+    public void RenderSkipsAllHeroLayersWhenHeroContentIsDisabled()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1200,
+            Height = 630,
+            Title = "PowerBGInfo",
+            Subtitle = "Desktop background insights",
+            HeroBadgeVisible = true,
+            HeroContentVisible = false
+        };
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1200, 630);
+        var pixels = image.ToRgbaImage();
+
+        Assert.Equal(0, CountOpaquePixels(pixels, 240, 140, 720, 320));
     }
 
     [Fact]
@@ -141,6 +167,100 @@ public class BgInfoVisualCanvasRendererTests
     }
 
     [Fact]
+    public void CenterLaneCentersTilesWithDifferentWidthsAndHonorsOffsets()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1000,
+            Height = 520,
+            HeroContentVisible = false,
+            CenterTileWidth = 320,
+            CenterTileOffsetX = 25,
+            CenterTileOffsetY = 10,
+            TileHeight = 80,
+            TileGap = 20
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Width = 400,
+            Label = "WIDE",
+            Value = "wide centered tile",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Label = "DEFAULT",
+            Value = "default centered tile",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1000, 520);
+        var pixels = image.ToRgbaImage();
+
+        Assert.True(CountOpaquePixels(pixels, 328, 104, 16, 48) > 0);
+        Assert.Equal(0, CountOpaquePixels(pixels, 328, 204, 16, 48));
+        Assert.True(CountOpaquePixels(pixels, 368, 204, 16, 48) > 0);
+    }
+
+    [Fact]
+    public void CenterAndRightLanesShrinkToRemainSeparatedOnNarrowCanvases()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1024,
+            Height = 768,
+            HeroContentVisible = false,
+            CenterTileWidth = 460,
+            RightTileWidth = 460,
+            TileHeight = 100
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Label = "CENTER",
+            Value = "center lane",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Right,
+            Label = "RIGHT",
+            Value = "right lane",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1024, 768);
+        var pixels = image.ToRgbaImage();
+        var opaqueRuns = FindOpaqueRuns(pixels, 150);
+
+        Assert.Equal(2, opaqueRuns.Count);
+        Assert.InRange((opaqueRuns[0].Start + opaqueRuns[0].End) / 2d, 500, 524);
+        Assert.True(opaqueRuns[1].Start - opaqueRuns[0].End >= 20);
+        Assert.True(opaqueRuns[1].End < pixels.Width);
+    }
+
+    [Fact]
+    public void OpaqueCenterLaneRendersWithoutHeroContent()
+    {
+        var visual = new BgInfoVisualCanvas {
+            Width = 1200,
+            Height = 630,
+            Transparent = false,
+            TechBackdrop = false,
+            HeroContentVisible = false,
+            CenterTileWidth = 320,
+            TileHeight = 90
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Center,
+            Label = "CENTER",
+            Value = "opaque center lane",
+            SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised
+        });
+
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 1200, 630);
+        var pixels = image.ToRgbaImage();
+
+        Assert.True(CountOpaquePixels(pixels, 440, 70, 320, 90) > 0);
+    }
+
+    [Fact]
     public void TransparentCenterBoundsAccountForRailOffsets()
     {
         var visual = new BgInfoVisualCanvas {
@@ -211,5 +331,24 @@ public class BgInfoVisualCanvasRendererTests
         }
 
         return count;
+    }
+
+    private static List<(int Start, int End)> FindOpaqueRuns(ChartForgeX.Raster.RgbaImage image, int y)
+    {
+        var runs = new List<(int Start, int End)>();
+        var start = -1;
+        var rowStart = y * image.Width * 4;
+        for (var x = 0; x < image.Width; x++)
+        {
+            var opaque = image.Pixels[rowStart + x * 4 + 3] > 0;
+            if (opaque && start < 0) start = x;
+            if (!opaque && start >= 0)
+            {
+                runs.Add((start, x - 1));
+                start = -1;
+            }
+        }
+        if (start >= 0) runs.Add((start, image.Width - 1));
+        return runs;
     }
 }

@@ -49,18 +49,30 @@ internal static class BgInfoVisualCanvasRenderer {
         var defaultTileWidth = ApplyTileWidthPreset(visual.LayoutPreset, 300 * scaleX);
         var leftDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
         var rightDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
+        var centerDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Center, defaultTileWidth);
         var leftTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, defaultTileWidth);
         var rightTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, defaultTileWidth);
+        var centerTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, defaultTileWidth);
+        var laneScale = ResolveCenteredLaneWidthScale(visual, width, 48 * scaleX, 48 * scaleX, leftTileWidth, centerTileWidth, rightTileWidth);
+        leftDefaultTileWidth *= laneScale;
+        rightDefaultTileWidth *= laneScale;
+        centerDefaultTileWidth *= laneScale;
+        leftTileWidth *= laneScale;
+        rightTileWidth *= laneScale;
+        centerTileWidth *= laneScale;
         var leftTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 82 * scaleY);
         var rightTileHeight = ApplyTileHeightPreset(visual.LayoutPreset, 96 * scaleY);
         var leftGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 16 * scaleY));
         var rightGap = ResolveTileGap(visual, ApplyTileGapPreset(visual.LayoutPreset, 18 * scaleY));
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, 48 * scaleX + visual.LeftTileOffsetX, 92 * scaleY + visual.LeftTileOffsetY, leftTileWidth, leftDefaultTileWidth, leftTileHeight, leftGap);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, width - 48 * scaleX - rightTileWidth - visual.RightTileOffsetX, 70 * scaleY + visual.RightTileOffsetY, rightTileWidth, rightDefaultTileWidth, rightTileHeight, rightGap);
-        AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
-        canvas
-            .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
-            .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, TextAlignment.Center);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, 48 * scaleX, centerTileWidth), 70 * scaleY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, rightTileHeight, rightGap);
+        if (visual.HeroContentVisible) {
+            AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
+            canvas
+                .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
+                .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, TextAlignment.Center);
+        }
         if (visual.Features.Count > 0) {
             var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
             var stripHeight = ResolveFeatureHeight(visual, 62 * scaleY);
@@ -78,22 +90,27 @@ internal static class BgInfoVisualCanvasRenderer {
         var layout = ResolveOverlayRailLayout(visual, width, height);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
+        var centerTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
+        var centerDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, layout.MarginX, centerTileWidth), layout.RailY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, layout.TileHeight, layout.TileGap);
 
         var centerLeft = layout.CenterLeft;
         var centerWidth = layout.CenterWidth;
-        var badgeWidth = Math.Min(centerWidth, Clamp(width * 0.065, Math.Min(64, centerWidth), Math.Min(144, centerWidth)));
-        var badgeHeight = Clamp(height * 0.085, Math.Min(42, height * 0.16), Math.Min(100, height * 0.22));
-        var badgeY = Clamp(height * 0.23, Math.Min(24, height * 0.08), Math.Max(24, height - badgeHeight - 24));
-        var titleFont = Clamp(width * 0.042, Math.Min(28, height * 0.09), Math.Min(96, height * 0.16));
-        var subtitleFont = Clamp(width * 0.014, Math.Min(12, height * 0.035), Math.Min(30, height * 0.07));
-        var subtitleGap = Clamp(height * 0.035, 8, 32);
-        var titleTopMin = badgeY + badgeHeight + Math.Min(12, height * 0.025);
-        var titleTopMax = Math.Max(titleTopMin, height - titleFont - subtitleFont - subtitleGap - Math.Min(24, height * 0.06));
-        var titleY = Clamp(height * 0.39, titleTopMin, titleTopMax);
-        AddHeroBadge(canvas, visual, centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, accent);
-        canvas
-            .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
-            .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, TextAlignment.Center);
+        if (visual.HeroContentVisible) {
+            var badgeWidth = Math.Min(centerWidth, Clamp(width * 0.065, Math.Min(64, centerWidth), Math.Min(144, centerWidth)));
+            var badgeHeight = Clamp(height * 0.085, Math.Min(42, height * 0.16), Math.Min(100, height * 0.22));
+            var badgeY = Clamp(height * 0.23, Math.Min(24, height * 0.08), Math.Max(24, height - badgeHeight - 24));
+            var titleFont = Clamp(width * 0.042, Math.Min(28, height * 0.09), Math.Min(96, height * 0.16));
+            var subtitleFont = Clamp(width * 0.014, Math.Min(12, height * 0.035), Math.Min(30, height * 0.07));
+            var subtitleGap = Clamp(height * 0.035, 8, 32);
+            var titleTopMin = badgeY + badgeHeight + Math.Min(12, height * 0.025);
+            var titleTopMax = Math.Max(titleTopMin, height - titleFont - subtitleFont - subtitleGap - Math.Min(24, height * 0.06));
+            var titleY = Clamp(height * 0.39, titleTopMin, titleTopMax);
+            AddHeroBadge(canvas, visual, centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, accent);
+            canvas
+                .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
+                .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, TextAlignment.Center);
+        }
         if (visual.Features.Count > 0) {
             var stripHeight = Clamp(height * 0.075, Math.Min(36, height * 0.1), Math.Min(64, height * 0.14));
             var stripWidth = Clamp(centerWidth * 0.72, Math.Min(120, centerWidth), Math.Min(760, centerWidth));
@@ -112,9 +129,20 @@ internal static class BgInfoVisualCanvasRenderer {
         var cursorY = y;
         foreach (var tile in visual.Tiles) {
             if (tile.Side != side) continue;
-            var tileWidth = ResolveTileWidth(visual, tile, defaultTileWidth);
+            var tileWidth = Math.Min(ResolveTileWidth(visual, tile, defaultTileWidth), width);
             var tileHeight = ResolveTileHeight(visual, tile, height);
-            var tileX = side == BgInfoVisualCanvasSide.Right ? x + width - tileWidth : x;
+            double tileX;
+            switch (side) {
+                case BgInfoVisualCanvasSide.Right:
+                    tileX = x + width - tileWidth;
+                    break;
+                case BgInfoVisualCanvasSide.Center:
+                    tileX = x + (width - tileWidth) / 2;
+                    break;
+                default:
+                    tileX = x;
+                    break;
+            }
             canvas.AddInfoTile(
                 tileX,
                 cursorY,
@@ -158,10 +186,42 @@ internal static class BgInfoVisualCanvasRenderer {
     private static double ResolveSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
         if (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) return visual.LeftTileWidth;
         if (side == BgInfoVisualCanvasSide.Right && visual.RightTileWidth > 0) return visual.RightTileWidth;
+        if (side == BgInfoVisualCanvasSide.Center && visual.CenterTileWidth > 0) return visual.CenterTileWidth;
         return visual.TileWidth > 0 ? visual.TileWidth : defaultWidth;
     }
 
     private static double ResolveTileGap(BgInfoVisualCanvas visual, double defaultGap) => visual.TileGap > 0 ? visual.TileGap : defaultGap;
+
+    private static bool HasTiles(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side) {
+        foreach (var tile in visual.Tiles) {
+            if (tile.Side == side) return true;
+        }
+
+        return false;
+    }
+
+    private static double ResolveCenteredLaneWidthScale(BgInfoVisualCanvas visual, double width, double marginX, double laneGap, double leftWidth, double centerWidth, double rightWidth) {
+        if (!HasTiles(visual, BgInfoVisualCanvasSide.Center)) return 1;
+
+        var scale = 1d;
+        if (HasTiles(visual, BgInfoVisualCanvasSide.Left)) {
+            var available = width - 2 * marginX - 2 * laneGap + 2 * visual.CenterTileOffsetX - 2 * visual.LeftTileOffsetX;
+            var required = 2 * leftWidth + centerWidth;
+            if (required > 0) scale = Math.Min(scale, Math.Max(1, available) / required);
+        }
+        if (HasTiles(visual, BgInfoVisualCanvasSide.Right)) {
+            var available = width - 2 * marginX - 2 * laneGap - 2 * visual.CenterTileOffsetX - 2 * visual.RightTileOffsetX;
+            var required = centerWidth + 2 * rightWidth;
+            if (required > 0) scale = Math.Min(scale, Math.Max(1, available) / required);
+        }
+
+        return Math.Min(1, scale);
+    }
+
+    private static double ResolveCenteredLaneX(BgInfoVisualCanvas visual, double width, double marginX, double centerWidth) {
+        var requested = (width - centerWidth) / 2 + visual.CenterTileOffsetX;
+        return Clamp(requested, marginX, Math.Max(marginX, width - marginX - centerWidth));
+    }
 
     internal static (double X, double Y, double Width, double Height) ResolveDefaultTransparentCenterBounds(BgInfoVisualCanvas visual, int width, int height) {
         var layout = ResolveOverlayRailLayout(visual, width, height);
@@ -179,15 +239,21 @@ internal static class BgInfoVisualCanvasRenderer {
         var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
         var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
+        var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth);
+        var laneWidthScale = ResolveCenteredLaneWidthScale(visual, width, marginX, 48, leftRailWidth, centerRailWidth, rightRailWidth);
+        leftTileWidth *= laneWidthScale;
+        rightTileWidth *= laneWidthScale;
+        leftRailWidth *= laneWidthScale;
+        rightRailWidth *= laneWidthScale;
         var leftRailX = marginX + visual.LeftTileOffsetX;
         var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
         var centerLeft = leftRailX + leftRailWidth + 48;
         var centerRight = rightRailX - 48;
-        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft));
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft));
     }
 
     private readonly struct OverlayRailLayout {
-        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double tileHeight, double tileGap, double centerLeft, double centerWidth) {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth) {
             LeftRailX = leftRailX;
             RightRailX = rightRailX;
             RailY = railY;
@@ -195,6 +261,9 @@ internal static class BgInfoVisualCanvasRenderer {
             RightRailWidth = rightRailWidth;
             LeftTileWidth = leftTileWidth;
             RightTileWidth = rightTileWidth;
+            TemplateTileWidth = templateTileWidth;
+            LaneWidthScale = laneWidthScale;
+            MarginX = marginX;
             TileHeight = tileHeight;
             TileGap = tileGap;
             CenterLeft = centerLeft;
@@ -208,6 +277,9 @@ internal static class BgInfoVisualCanvasRenderer {
         public double RightRailWidth { get; }
         public double LeftTileWidth { get; }
         public double RightTileWidth { get; }
+        public double TemplateTileWidth { get; }
+        public double LaneWidthScale { get; }
+        public double MarginX { get; }
         public double TileHeight { get; }
         public double TileGap { get; }
         public double CenterLeft { get; }

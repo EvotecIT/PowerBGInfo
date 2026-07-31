@@ -297,6 +297,7 @@ public class BgInfoConfigurationJsonTests
             HeroBadgeBottom = Color.Black,
             HeroBadgeTextColor = Color.AliceBlue,
             HeroBadgeVisible = false,
+            HeroContentVisible = false,
             HeroBadgeText = "EV",
             HeroBadgeImagePath = @"Images\Evotec.png",
             HeroBadgeImageFit = BgInfoImageFit.Cover,
@@ -310,17 +311,20 @@ public class BgInfoConfigurationJsonTests
             TileGap = 24,
             LeftTileWidth = 430,
             RightTileWidth = 460,
+            CenterTileWidth = 440,
             LeftTileOffsetX = 8,
             LeftTileOffsetY = 10,
             RightTileOffsetX = 12,
             RightTileOffsetY = 14,
+            CenterTileOffsetX = -18,
+            CenterTileOffsetY = 16,
             TileTextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink,
             FeatureOffsetX = 165,
             FeatureOffsetY = 120,
             TechBackdrop = false
         };
         visual.Tiles.Add(new BgInfoVisualCanvasTile {
-            Side = BgInfoVisualCanvasSide.Left,
+            Side = BgInfoVisualCanvasSide.Center,
             Icon = "PC",
             Label = "HOSTNAME",
             Value = "{{HostName}}",
@@ -368,6 +372,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(Color.Black.ToHexRgba(), loaded.HeroBadgeBottom!.Value.ToHexRgba());
         Assert.Equal(Color.AliceBlue.ToHexRgba(), loaded.HeroBadgeTextColor!.Value.ToHexRgba());
         Assert.False(loaded.HeroBadgeVisible);
+        Assert.False(loaded.HeroContentVisible);
         Assert.Equal("EV", loaded.HeroBadgeText);
         Assert.EndsWith(Path.Combine("Images", "Evotec.png"), loaded.HeroBadgeImagePath);
         Assert.Equal(BgInfoImageFit.Cover, loaded.HeroBadgeImageFit);
@@ -381,17 +386,20 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(24, loaded.TileGap);
         Assert.Equal(430, loaded.LeftTileWidth);
         Assert.Equal(460, loaded.RightTileWidth);
+        Assert.Equal(440, loaded.CenterTileWidth);
         Assert.Equal(8, loaded.LeftTileOffsetX);
         Assert.Equal(10, loaded.LeftTileOffsetY);
         Assert.Equal(12, loaded.RightTileOffsetX);
         Assert.Equal(14, loaded.RightTileOffsetY);
+        Assert.Equal(-18, loaded.CenterTileOffsetX);
+        Assert.Equal(16, loaded.CenterTileOffsetY);
         Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink, loaded.TileTextFitPolicy);
         Assert.Equal(165, loaded.FeatureOffsetX);
         Assert.Equal(120, loaded.FeatureOffsetY);
         Assert.False(loaded.TechBackdrop);
 
         var tile = Assert.Single(loaded.Tiles);
-        Assert.Equal(BgInfoVisualCanvasSide.Left, tile.Side);
+        Assert.Equal(BgInfoVisualCanvasSide.Center, tile.Side);
         Assert.Equal("PC", tile.Icon);
         Assert.Equal("HOSTNAME", tile.Label);
         Assert.Equal("{{HostName}}", tile.Value);
@@ -448,6 +456,33 @@ public class BgInfoConfigurationJsonTests
         var visual = Assert.Single(configuration.VisualCanvases);
         Assert.Single(visual.Tiles);
         Assert.Single(visual.Features);
+    }
+
+    [Theory]
+    [InlineData("Middle")]
+    [InlineData("999")]
+    public void LoadRejectsUnknownVisualCanvasTileSides(string side) {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, $$"""
+{
+  "VisualCanvases": [
+    {
+      "Tiles": [
+        {
+          "Side": "{{side}}",
+          "Label": "HOSTNAME",
+          "Value": "DEV-WKS-01"
+        }
+      ]
+    }
+  ]
+}
+""");
+
+        var exception = Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
+        Assert.Contains(side, exception.Message);
     }
 
     [Fact]
