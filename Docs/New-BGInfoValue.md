@@ -1,232 +1,209 @@
 ---
 external help file: PowerBGInfo-help.xml
 Module Name: PowerBGInfo
-online version:
+online version: https://github.com/EvotecIT/PowerBGInfo
 schema: 2.0.0
 ---
-
 # New-BGInfoValue
-
 ## SYNOPSIS
-Special function that provides a way to create a value that will be displayed on the background image.
+Creates a BGInfo value entry.
 
 ## SYNTAX
-
 ### Values (Default)
-```
-New-BGInfoValue -Name <String> -Value <String> [-Color <Color>] [-FontSize <Single>] [-FontFamilyName <String>]
- [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>] [<CommonParameters>]
+```powershell
+New-BGInfoValue -Name <string> -Value <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
 ```
 
 ### Builtin
+```powershell
+New-BGInfoValue -BuiltinValue <string> [-Name <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
 ```
-New-BGInfoValue [-Name <String>] -BuiltinValue <String> [-Color <Color>] [-FontSize <Single>]
- [-FontFamilyName <String>] [-ValueColor <Color>] [-ValueFontSize <Single>] [-ValueFontFamilyName <String>]
- [<CommonParameters>]
+
+### Template
+```powershell
+New-BGInfoValue -Name <string> -Value <string> -ForEach <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Special function that provides a way to create a value that will be displayed on the background image.
-It allows using builtin values, or custom values depending on user needs.
+Creates a BGInfo value entry.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+New-BGInfoValue -Name 'Name' -Value 'Value'
 ```
-New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 20 -FontFamilyName 'Calibri'
 
-
-New-BGInfoValue -BuiltinValue FullUserName
-New-BGInfoValue -BuiltinValue CpuName
-```
 
 ### EXAMPLE 2
+```powershell
+New-BGInfoValue -BuiltinValue 'Value'
 ```
-# Lets get all drives and their labels
 
 
-foreach ($Disk in (Get-Disk)) {
-    $Volumes = $Disk | Get-Partition | Get-Volume
-    foreach ($V in $Volumes) {
-        New-BGInfoValue -Name "Drive $($V.DriveLetter)" -Value $V.SizeRemaining
-    }
-}
+### EXAMPLE 3
+```powershell
+New-BGInfoValue -Name 'Name' -Value 'Value' -ForEach 'Value'
 ```
+
 
 ## PARAMETERS
 
-### -Name
-Label that will be used on the left side of the value.
-
-```yaml
-Type: String
-Parameter Sets: Values
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: String
-Parameter Sets: Builtin
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Value
-Cystom Value that will be displayed on the right side of the label.
-
-```yaml
-Type: String
-Parameter Sets: Values
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -BuiltinValue
-Builtin value that will be displayed on the right side of the label.
-It can be one of the following:
-- UserName - Current user name
-- HostName - Current host name
-- FullUserName - Current user name with domain
-- CpuName - CPU name
-- CpuMaxClockSpeed - CPU max clock speed
-- CpuCores - CPU cores
-- CpuLogicalCores - CPU logical cores
-- RAMSize - RAM size
-- RAMSpeed - RAM speed
-- RAMPartNumber - RAM part number
-- BiosVersion - BIOS version
-- BiosManufacturer - BIOS manufacturer
-- BiosReleaseDate - BIOS release date
-- OSName - OS name
-- OSVersion - OS version
-- OSArchitecture - OS architecture
-- OSBuild - OS build
-- OSInstallDate - OS install date
-- OSLastBootUpTime - OS last boot up time
-- UserDNSDomain - User DNS domain
-- FQDN - Fully qualified domain name
-- IPv4Address - IPv4 address
-- IPv6Address - IPv6 address
+Built-in token to resolve to a value.
 
 ```yaml
 Type: String
 Parameter Sets: Builtin
-Aliases:
+Aliases: None
+Possible values: UserName, HostName, FullUserName, CpuName, CpuMaxClockSpeed, CpuCores, CpuLogicalCores, RAMSize, RAMSpeed, RAMPartNumber, BiosVersion, BiosManufacturer, BiosReleaseDate, OSName, OSVersion, OSArchitecture, OSBuild, OSInstallDate, OSLastBootUpTime, UserDNSDomain, FQDN, IPv4Address, IPv6Address
 
 Required: True
-Position: Named
+Position: named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Color
-Color for the label.
-If not provided it will be taken from the parent New-BGInfo command.
+Label color override.
 
 ```yaml
-Type: Color
-Parameter Sets: (All)
-Aliases:
+Type: Object
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
 
 Required: False
-Position: Named
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FontFamilyName
+Label font family override.
+
+```yaml
+Type: String
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -FontSize
-Font size for the label.
-If not provided it will be taken from the parent New-BGInfo command.
+Label font size override.
 
 ```yaml
 Type: Single
-Parameter Sets: (All)
-Aliases:
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
 
 Required: False
-Position: Named
-Default value: 0
+Position: named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FontFamilyName
-Font family name for the label.
-If not provided it will be taken from the parent New-BGInfo command.
+### -ForEach
+Variable name used to expand this entry multiple times.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
-Aliases:
+Parameter Sets: Template
+Aliases: None
+Possible values:
 
-Required: False
-Position: Named
+Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+Label text to render.
+
+```yaml
+Type: String
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Value
+Explicit value to render.
+
+```yaml
+Type: String
+Parameter Sets: Values, Template
+Aliases: None
+Possible values:
+
+Required: True
+Position: named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueColor
-Color for the value.
-If not provided it will be taken first from Color of the label and if that is not provided from the parent New-BGInfo command.
+Value color override.
 
 ```yaml
-Type: Color
-Parameter Sets: (All)
-Aliases:
+Type: Object
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
 
 Required: False
-Position: Named
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontFamilyName
+Value font family override.
+
+```yaml
+Type: String
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ValueFontSize
-Font size for the value.
-If not provided it will be taken first from FontSize of the label and if that is not provided from the parent New-BGInfo command.
+Value font size override.
 
 ```yaml
 Type: Single
-Parameter Sets: (All)
-Aliases:
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
 
 Required: False
-Position: Named
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ValueFontFamilyName
-Font family name for the value.
-If not provided it will be taken first from FontFamilyName of the label and if that is not provided from the parent New-BGInfo command.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
+Position: named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -237,9 +214,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+- `None`
+
 ## OUTPUTS
 
-## NOTES
-General notes
+- `PowerBGInfo.BgInfoEntry`
 
 ## RELATED LINKS
+
+- None

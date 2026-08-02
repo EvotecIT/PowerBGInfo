@@ -4,34 +4,34 @@ Module Name: PowerBGInfo
 online version: https://github.com/EvotecIT/PowerBGInfo
 schema: 2.0.0
 ---
-# New-BGInfoLabel
+# Export-BGInfoConfiguration
 ## SYNOPSIS
-Creates a BGInfo label entry.
+Exports a BGInfo configuration to JSON.
 
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [<CommonParameters>]
+Export-BGInfoConfiguration [-Path] <string> -InputObject <BgInfoConfiguration> [-Force] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Creates a BGInfo label entry.
+Writes a JSON file compatible with Invoke-BGInfo and the CLI.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoLabel -Name 'Name'
+Export-BGInfoConfiguration -InputObject 'Value'
 ```
 
 
 ## PARAMETERS
 
-### -Color
-Label color override.
+### -Force
+Overwrite the output file if it exists.
 
 ```yaml
-Type: Object
+Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -43,11 +43,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FontFamilyName
-Label font family override.
+### -InputObject
+Configuration object to export.
 
 ```yaml
-Type: String
+Type: BgInfoConfiguration
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: True
+Position: named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -PassThru
+Return the output path.
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -59,40 +75,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FontSize
-Label font size override.
-
-```yaml
-Type: Single
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForEach
-Variable name used to expand this label multiple times.
-
-```yaml
-Type: String
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-Label text to render.
+### -Path
+Output path for the JSON configuration file.
 
 ```yaml
 Type: String
@@ -101,7 +85,7 @@ Aliases: None
 Possible values:
 
 Required: True
-Position: named
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -112,11 +96,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-- `None`
+- `PowerBGInfo.BgInfoConfiguration`
 
 ## OUTPUTS
 
-- `PowerBGInfo.BgInfoEntry`
+- `System.String`
 
 ## RELATED LINKS
 

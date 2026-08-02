@@ -4,47 +4,31 @@ Module Name: PowerBGInfo
 online version: https://github.com/EvotecIT/PowerBGInfo
 schema: 2.0.0
 ---
-# New-BGInfoLabel
+# New-BGInfoTopologyGroup
 ## SYNOPSIS
-Creates a BGInfo label entry.
+Creates a BGInfo topology group definition.
 
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [<CommonParameters>]
+New-BGInfoTopologyGroup [-Id] <string> [-Label] <string> [-Subtitle <string>] [-Status <TopologyHealthStatus>] [-Symbol <string>] [-Color <string>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Creates a BGInfo label entry.
+Creates a BGInfo topology group definition.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoLabel -Name 'Name'
+New-BGInfoTopologyGroup -Color 'Value'
 ```
 
 
 ## PARAMETERS
 
 ### -Color
-Label color override.
-
-```yaml
-Type: Object
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FontFamilyName
-Label font family override.
+Optional group accent color as CSS hex.
 
 ```yaml
 Type: String
@@ -59,40 +43,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FontSize
-Label font size override.
-
-```yaml
-Type: Single
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForEach
-Variable name used to expand this label multiple times.
-
-```yaml
-Type: String
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-Label text to render.
+### -Id
+Stable group identifier.
 
 ```yaml
 Type: String
@@ -101,6 +53,70 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Label
+Group label rendered in the topology.
+
+```yaml
+Type: String
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Status
+Group health or state.
+
+```yaml
+Type: TopologyHealthStatus
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Healthy, Warning, Critical, Unknown, Disabled
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Subtitle
+Optional group subtitle.
+
+```yaml
+Type: String
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Symbol
+Short symbol rendered near the group header.
+
+```yaml
+Type: String
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -116,7 +132,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `PowerBGInfo.BgInfoEntry`
+- `ChartForgeX.Topology.TopologyGroup`
 
 ## RELATED LINKS
 

@@ -4,79 +4,31 @@ Module Name: PowerBGInfo
 online version: https://github.com/EvotecIT/PowerBGInfo
 schema: 2.0.0
 ---
-# New-BGInfoLabel
+# New-BGInfoVariable
 ## SYNOPSIS
-Creates a BGInfo label entry.
+Creates a reusable BGInfo variable backed by a built-in provider.
 
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [<CommonParameters>]
+New-BGInfoVariable -Name <string> -Provider <BgInfoVariableProvider> [-Argument <string>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Creates a BGInfo label entry.
+Creates a reusable BGInfo variable backed by a built-in provider.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoLabel -Name 'Name'
+New-BGInfoVariable -Name 'Name' -Provider 'Value'
 ```
 
 
 ## PARAMETERS
 
-### -Color
-Label color override.
-
-```yaml
-Type: Object
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FontFamilyName
-Label font family override.
-
-```yaml
-Type: String
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FontSize
-Label font size override.
-
-```yaml
-Type: Single
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForEach
-Variable name used to expand this label multiple times.
+### -Argument
+Optional provider argument for filtering/customization.
 
 ```yaml
 Type: String
@@ -92,13 +44,29 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-Label text to render.
+Name used by -ForEach references.
 
 ```yaml
 Type: String
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Provider
+Built-in provider used to populate the variable.
+
+```yaml
+Type: BgInfoVariableProvider
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Volumes
 
 Required: True
 Position: named
@@ -116,7 +84,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `PowerBGInfo.BgInfoEntry`
+- `PowerBGInfo.BgInfoVariable`
 
 ## RELATED LINKS
 

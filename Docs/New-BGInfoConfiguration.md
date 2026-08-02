@@ -4,24 +4,24 @@ Module Name: PowerBGInfo
 online version: https://github.com/EvotecIT/PowerBGInfo
 schema: 2.0.0
 ---
-# New-BGInfo
+# New-BGInfoConfiguration
 ## SYNOPSIS
-Creates a BGInfo overlay image and optionally applies it as wallpaper.
+Creates a BGInfo configuration object.
 
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfo [-BGInfoContent] <scriptblock> -ConfigurationDirectory <string> [-FilePath <string>] [-OutputFileName <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <int>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-JsonPath <string>] [-ExportOnly] [-PassThru] [<CommonParameters>]
+New-BGInfoConfiguration [-FilePath <string>] [-OutputFileName <string>] [-ConfigurationDirectory <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <float>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-Entries <BgInfoEntry[]>] [-Variables <BgInfoVariable[]>] [-Charts <BgInfoChart[]>] [-Topologies <BgInfoTopology[]>] [-Images <BgInfoImage[]>] [-VisualCanvases <BgInfoVisualCanvas[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Use the script block to emit label/value entries.
+Use this to build reusable configurations that can be exported to JSON.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfo -ConfigurationDirectory 'Value'
+New-BGInfoConfiguration -FilePath 'C:\Path'
 ```
 
 
@@ -59,22 +59,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -BGInfoContent
-Script block that outputs BGInfo entries.
-
-```yaml
-Type: ScriptBlock
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ChartLayout
 Chart layout mode.
 
@@ -83,6 +67,22 @@ Type: BgInfoChartLayoutMode
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values: Manual, Stack
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Charts
+Charts to include in the configuration.
+
+```yaml
+Type: BgInfoChart[]
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
 
 Required: False
 Position: named
@@ -172,7 +172,7 @@ Accept wildcard characters: False
 ```
 
 ### -ChartStackOutsideTextBlock
-Place stacked charts outside the text block.
+Place stacked charts outside of the text block.
 
 ```yaml
 Type: SwitchParameter
@@ -228,7 +228,7 @@ Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -236,7 +236,7 @@ Accept wildcard characters: False
 ```
 
 ### -DisableWallpaperRefresh
-Disable the forced wallpaper refresh after generation.
+Disable wallpaper refresh (keep old behavior).
 
 ```yaml
 Type: SwitchParameter
@@ -267,6 +267,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Entries
+Entries to include in the configuration.
+
+```yaml
+Type: BgInfoEntry[]
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ExcludeDefaultUserProfile
 Exclude the default user profile when applying to all users.
 
@@ -283,24 +299,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExportOnly
-Export JSON only and skip image generation/application. Requires JsonPath.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -FilePath
-Optional base wallpaper file path. When omitted, current wallpaper is used.
+Optional base wallpaper file path.
 
 ```yaml
 Type: String
@@ -335,7 +335,7 @@ Accept wildcard characters: False
 Default label font size.
 
 ```yaml
-Type: Int32
+Type: Single
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -347,11 +347,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -JsonPath
-Optional path where the generated configuration JSON should be saved.
+### -Images
+Image overlays to include in the configuration.
 
 ```yaml
-Type: String
+Type: BgInfoImage[]
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -395,24 +395,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Return the generated configuration object instead of rendering the image.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: __AllParameterSets
-Aliases: None
-Possible values:
-
-Required: False
-Position: named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -PositionX
-Legacy position X placeholder (reserved for future layout strategies).
+Legacy position X placeholder.
 
 ```yaml
 Type: Single
@@ -428,7 +412,7 @@ Accept wildcard characters: False
 ```
 
 ### -PositionY
-Legacy position Y placeholder (reserved for future layout strategies).
+Legacy position Y placeholder.
 
 ```yaml
 Type: Single
@@ -524,7 +508,7 @@ Accept wildcard characters: False
 ```
 
 ### -TextPosition
-Layout anchor position (for example TopLeft, TopCenter, BottomRight).
+Layout anchor position.
 
 ```yaml
 Type: BgInfoTextPosition
@@ -539,8 +523,24 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Topologies
+Topology diagrams to include in the configuration.
+
+```yaml
+Type: BgInfoTopology[]
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -UseScreenCoordinates
-Use screen coordinates for placement calculations.
+Use screen coordinates for layout positioning.
 
 ```yaml
 Type: SwitchParameter
@@ -619,6 +619,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Variables
+Variables to include in the configuration.
+
+```yaml
+Type: BgInfoVariable[]
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -VisualCanvases
+Visual canvas overlays to include in the configuration.
+
+```yaml
+Type: BgInfoVisualCanvas[]
+Parameter Sets: __AllParameterSets
+Aliases: VisualCanvas
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -WallpaperFit
 Wallpaper fit mode used after generation.
 
@@ -644,7 +676,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `System.String`
 - `PowerBGInfo.BgInfoConfiguration`
 
 ## RELATED LINKS
