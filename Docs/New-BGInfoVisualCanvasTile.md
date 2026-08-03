@@ -11,7 +11,7 @@ Creates a BGInfo visual canvas tile definition.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-MiniChartValues <double[]>] [-MiniChartMaximum <double>] [<CommonParameters>]
+New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <Double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-MiniChartValues <double[]>] [-MiniChartMaximum <Double>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -149,7 +149,7 @@ Accept wildcard characters: False
 Optional compact chart maximum.
 
 ```yaml
-Type: Nullable`1
+Type: Double
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -181,7 +181,7 @@ Accept wildcard characters: False
 Optional progress value from zero to one.
 
 ```yaml
-Type: Nullable`1
+Type: Double
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
