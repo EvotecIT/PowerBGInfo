@@ -19,4 +19,14 @@ These PowerBGInfo examples focus on repeatable desktop background layouts rather
     <h3>Position background information</h3>
     <p>Place inventory text at a predictable coordinate on the wallpaper.</p>
   </a>
+  <a class="ev-example-card" href="./configuration-and-deployment/">
+    <span class="ev-example-card__eyebrow">Deployment</span>
+    <h3>Export and deploy a configuration</h3>
+    <p>Separate reviewed JSON layout from scheduled or RMM execution.</p>
+  </a>
+  <a class="ev-example-card" href="./charts-and-topology/">
+    <span class="ev-example-card__eyebrow">Visuals</span>
+    <h3>Add charts and topology</h3>
+    <p>Composite compact operational ChartForgeX visuals into the wallpaper.</p>
+  </a>
 </div>
