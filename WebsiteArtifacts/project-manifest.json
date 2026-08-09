@@ -1,0 +1,28 @@
+{
+  "slug": "powerbginfo",
+  "name": "PowerBGInfo",
+  "description": "Generate support-ready Windows desktop and logon backgrounds from PowerShell data, charts, and topology.",
+  "mode": "hub-full",
+  "contentMode": "hybrid",
+  "status": "active",
+  "listed": true,
+  "sourceRef": "v2-speedygonzales",
+  "links": {
+    "source": "https://github.com/EvotecIT/PowerBGInfo",
+    "powerShellGallery": "https://www.powershellgallery.com/packages/PowerBGInfo",
+    "releases": "https://github.com/EvotecIT/PowerBGInfo/releases"
+  },
+  "surfaces": {
+    "docs": true,
+    "apiPowerShell": true,
+    "apiDotNet": false,
+    "examples": true,
+    "downloads": true,
+    "releases": true,
+    "changelog": true
+  },
+  "artifacts": {
+    "docs": "Website/content/project-docs",
+    "examples": "Website/content/examples"
+  }
+}
