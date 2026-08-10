@@ -24,10 +24,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: EvotecIT/ChartForgeX
           ref: main
@@ -51,7 +51,7 @@ jobs:
           ./Build/Build-Module.ps1
 
       - name: Upload refreshed manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: psd1
           path: PowerBGInfo.psd1
@@ -62,23 +62,23 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: EvotecIT/ChartForgeX
           ref: main
           path: external/ChartForgeX
 
       - name: Download manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: psd1
           path: .
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             9.0.x
@@ -111,23 +111,23 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: EvotecIT/ChartForgeX
           ref: main
           path: external/ChartForgeX
 
       - name: Download manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: psd1
           path: .
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             9.0.x
@@ -160,23 +160,23 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: EvotecIT/ChartForgeX
           ref: main
           path: external/ChartForgeX
 
       - name: Download manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: psd1
           path: .
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             9.0.x
