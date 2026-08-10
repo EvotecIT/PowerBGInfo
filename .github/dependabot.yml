@@ -1,20 +1,33 @@
 version: 2
 updates:
-  - package-ecosystem: "nuget"
-    directory: "/Sources"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+  - package-ecosystem: nuget
+    directory: /Sources
     ignore:
-      - dependency-name: "ChartForgeX"
-      - dependency-name: "System.Management"
+      - dependency-name: ChartForgeX
+      - dependency-name: System.Management
         update-types:
-          - "version-update:semver-major"
+          - version-update:semver-major
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
+      include:
+        - '*'
+    open-pull-requests-limit: 1
     groups:
-      nuget-minor-patch:
-        applies-to: version-updates
+      all-dependencies:
         patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+          - '*'
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
+      include:
+        - '*'
+    open-pull-requests-limit: 1
+    groups:
+      all-dependencies:
+        patterns:
+          - '*'
