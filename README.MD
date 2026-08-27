@@ -178,12 +178,33 @@ Example output:
 ## More layout and output options
 
 - `-TextPosition`, `-PositionX`, `-PositionY`, `-SpaceX`, and `-SpaceY` control where the text block is placed.
-- `-Bold` and `-Underline` style labels. Use `-ValueBold` and `-ValueUnderline` for value-specific overrides; otherwise an entry's label style is inherited by its value.
+- Labels, values, chart titles, and chart values support independent font family, size, color, numeric weight (`100` through `900`), italic, underline, strikethrough, baseline, and casing controls.
+- Underline and strikethrough patterns are `None`, `Single`, `Double`, `Dotted`, `Dashed`, and `Wavy`. Baselines are `Normal`, `Subscript`, and `Superscript`. Casing transforms are `None`, `Uppercase`, `Lowercase`, `TitleCase`, `SentenceCase`, and `ToggleCase`.
+- `-Bold` and `-Underline` remain convenient compatibility switches. The more specific `-FontWeight` and `-UnderlineStyle` parameters win when both forms are supplied. Value-specific parameters use the `Value` prefix, and chart title parameters use the `Title` prefix.
 - `-UseScreenCoordinates` makes placement calculations match the monitor coordinate space.
 - `-OutputFileName` controls the generated image name and path.
+- `-Target File` writes PNG, GIF, JPEG, BMP, PPM, or TIFF according to `-OutputFileName`. Wallpaper and logon targets keep PNG, JPEG, or BMP and normalize other requested formats to PNG for Windows compatibility.
 - `-DisableWallpaperSlideshow` forces static wallpaper output instead of preserving the active Windows slideshow.
 - `-JsonPath` and `-ExportOnly` save reusable configuration without applying the wallpaper.
 - `New-BGInfoChart`, `New-BGInfoTopology`, and `New-BGInfoVisualCanvas` add ChartForgeX-backed transparent overlays with optional chart history and reusable visual canvas boxes.
+
+For example, this uses the complete style surface without changing the source strings:
+
+```powershell
+New-BGInfo -Target File -OutputFileName 'styled-wallpaper.tiff' {
+    New-BGInfoLabel -Name 'SYSTEM DETAILS' `
+        -FontFamilyName 'Segoe UI' -FontWeight 700 -Italic `
+        -UnderlineStyle Double -TextCase TitleCase -Color Gold
+
+    New-BGInfoValue -Name 'Computer' -BuiltinValue HostName `
+        -FontWeight 600 -StrikethroughStyle Dotted `
+        -ValueFontFamilyName 'Consolas' -ValueFontWeight 400 `
+        -ValueUnderlineStyle Wavy -ValueBaseline Subscript `
+        -ValueTextCase ToggleCase -ValueColor White
+} -ConfigurationDirectory $PSScriptRoot\Output
+```
+
+PowerBGInfo produces final raster wallpaper images. Use ChartForgeX directly when the required output is native SVG or HTML; the same shared text-style engine is used by both projects.
 
 ## Deployment recipes
 

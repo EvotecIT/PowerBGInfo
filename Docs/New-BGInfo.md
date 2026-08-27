@@ -11,7 +11,7 @@ Creates a BGInfo overlay image and optionally applies it as wallpaper.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfo [-BGInfoContent] <scriptblock> -ConfigurationDirectory <string> [-FilePath <string>] [-OutputFileName <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <int>] [-Bold] [-Underline] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueUnderline] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-JsonPath <string>] [-ExportOnly] [-PassThru] [<CommonParameters>]
+New-BGInfo [-BGInfoContent] <scriptblock> -ConfigurationDirectory <string> [-FilePath <string>] [-OutputFileName <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <int>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-JsonPath <string>] [-ExportOnly] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,6 +51,22 @@ Type: Object
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Baseline
+Default label subscript or superscript placement.
+
+```yaml
+Type: TextBaseline
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Normal, Superscript, Subscript
 
 Required: False
 Position: named
@@ -363,6 +379,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -FontWeight
+Default numeric label font weight from 100 through 900.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Italic
+Render labels with italic text by default.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -JsonPath
 Optional path where the generated configuration JSON should be saved.
 
@@ -523,6 +571,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -StrikethroughStyle
+Default label strikethrough pattern.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Target
 Output target (Wallpaper, File, LogonScreen, or Both).
 
@@ -531,6 +595,22 @@ Type: BgInfoTarget
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values: Wallpaper, LogonScreen, Both, File
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TextCase
+Default display-time label casing transform.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
 
 Required: False
 Position: named
@@ -571,6 +651,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -UnderlineStyle
+Default label underline pattern.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -UseScreenCoordinates
 Use screen coordinates for placement calculations.
 
@@ -579,6 +675,22 @@ Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueBaseline
+Default value subscript or superscript placement.
+
+```yaml
+Type: TextBaseline
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Normal, Superscript, Subscript
 
 Required: False
 Position: named
@@ -651,6 +763,70 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ValueFontWeight
+Default numeric value font weight from 100 through 900.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueItalic
+Render values with italic text by default.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueStrikethroughStyle
+Default value strikethrough pattern.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueTextCase
+Default display-time value casing transform.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ValueUnderline
 Underline values by default.
 
@@ -659,6 +835,22 @@ Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueUnderlineStyle
+Default value underline pattern.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
 
 Required: False
 Position: named

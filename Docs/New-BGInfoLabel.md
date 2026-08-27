@@ -11,7 +11,7 @@ Creates a BGInfo label entry.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-Underline] [<CommonParameters>]
+New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,6 +26,22 @@ New-BGInfoLabel -Name 'Name'
 
 
 ## PARAMETERS
+
+### -Baseline
+Subscript or superscript placement for the label.
+
+```yaml
+Type: TextBaseline
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Normal, Superscript, Subscript
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Bold
 Render the label with a bold font weight.
@@ -91,11 +107,43 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -FontWeight
+Numeric label font weight from 100 through 900.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ForEach
 Variable name used to expand this label multiple times.
 
 ```yaml
 Type: String
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Italic
+Render the label with italic text.
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -123,6 +171,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -StrikethroughStyle
+Strikethrough pattern for the label.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TextCase
+Display-time casing transform for the label.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Underline
 Underline the label.
 
@@ -131,6 +211,22 @@ Type: SwitchParameter
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UnderlineStyle
+Underline pattern for the label.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
 
 Required: False
 Position: named

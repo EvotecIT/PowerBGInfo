@@ -1,4 +1,5 @@
 using Color = ChartForgeX.Primitives.ChartColor;
+using ChartForgeX.Typography;
 using System.Management.Automation;
 
 namespace PowerBGInfo.PowerShell;
@@ -40,9 +41,34 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public SwitchParameter Bold { get; set; }
 
+    /// <para>Default numeric label font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int FontWeight { get; set; } = 400;
+
+    /// <para>Render labels with italic text by default.</para>
+    [Parameter]
+    public SwitchParameter Italic { get; set; }
+
     /// <para>Underline labels by default.</para>
     [Parameter]
     public SwitchParameter Underline { get; set; }
+
+    /// <para>Default label underline pattern.</para>
+    [Parameter]
+    public TextDecorationStyle UnderlineStyle { get; set; }
+
+    /// <para>Default label strikethrough pattern.</para>
+    [Parameter]
+    public TextDecorationStyle StrikethroughStyle { get; set; }
+
+    /// <para>Default label subscript or superscript placement.</para>
+    [Parameter]
+    public TextBaseline Baseline { get; set; }
+
+    /// <para>Default display-time label casing transform.</para>
+    [Parameter]
+    public TextCaseTransform TextCase { get; set; }
 
     /// <para>Default value color.</para>
     [Parameter]
@@ -60,9 +86,34 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public SwitchParameter ValueBold { get; set; }
 
+    /// <para>Default numeric value font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int ValueFontWeight { get; set; } = 400;
+
+    /// <para>Render values with italic text by default.</para>
+    [Parameter]
+    public SwitchParameter ValueItalic { get; set; }
+
     /// <para>Underline values by default.</para>
     [Parameter]
     public SwitchParameter ValueUnderline { get; set; }
+
+    /// <para>Default value underline pattern.</para>
+    [Parameter]
+    public TextDecorationStyle ValueUnderlineStyle { get; set; }
+
+    /// <para>Default value strikethrough pattern.</para>
+    [Parameter]
+    public TextDecorationStyle ValueStrikethroughStyle { get; set; }
+
+    /// <para>Default value subscript or superscript placement.</para>
+    [Parameter]
+    public TextBaseline ValueBaseline { get; set; }
+
+    /// <para>Default display-time value casing transform.</para>
+    [Parameter]
+    public TextCaseTransform ValueTextCase { get; set; }
 
     /// <para>Maximum width used when wrapping value text. Set to 0 to disable wrapping.</para>
     [Parameter]
@@ -197,12 +248,24 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(BackgroundColor))) config.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));
         if (IsParameterBound(nameof(FontSize))) config.FontSize = FontSize;
         if (IsParameterBound(nameof(Bold))) config.Bold = Bold.IsPresent;
+        if (IsParameterBound(nameof(FontWeight))) config.FontWeight = PowerShellTextStyleValidator.ValidateFontWeight(FontWeight, nameof(FontWeight));
+        if (IsParameterBound(nameof(Italic))) config.Italic = Italic.IsPresent;
         if (IsParameterBound(nameof(Underline))) config.Underline = Underline.IsPresent;
+        if (IsParameterBound(nameof(UnderlineStyle))) config.UnderlineStyle = UnderlineStyle;
+        if (IsParameterBound(nameof(StrikethroughStyle))) config.StrikethroughStyle = StrikethroughStyle;
+        if (IsParameterBound(nameof(Baseline))) config.Baseline = Baseline;
+        if (IsParameterBound(nameof(TextCase))) config.TextCase = TextCase;
         if (IsParameterBound(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
         if (IsParameterBound(nameof(ValueFontSize))) config.ValueFontSize = ValueFontSize;
         if (IsParameterBound(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
         if (IsParameterBound(nameof(ValueBold))) config.ValueBold = ValueBold.IsPresent;
+        if (IsParameterBound(nameof(ValueFontWeight))) config.ValueFontWeight = PowerShellTextStyleValidator.ValidateFontWeight(ValueFontWeight, nameof(ValueFontWeight));
+        if (IsParameterBound(nameof(ValueItalic))) config.ValueItalic = ValueItalic.IsPresent;
         if (IsParameterBound(nameof(ValueUnderline))) config.ValueUnderline = ValueUnderline.IsPresent;
+        if (IsParameterBound(nameof(ValueUnderlineStyle))) config.ValueUnderlineStyle = ValueUnderlineStyle;
+        if (IsParameterBound(nameof(ValueStrikethroughStyle))) config.ValueStrikethroughStyle = ValueStrikethroughStyle;
+        if (IsParameterBound(nameof(ValueBaseline))) config.ValueBaseline = ValueBaseline;
+        if (IsParameterBound(nameof(ValueTextCase))) config.ValueTextCase = ValueTextCase;
         if (IsParameterBound(nameof(ValueWrapWidth))) config.ValueWrapWidth = ValueWrapWidth;
         if (IsParameterBound(nameof(SpaceBetweenLines))) config.SpaceBetweenLines = SpaceBetweenLines;
         if (IsParameterBound(nameof(SpaceBetweenColumns))) config.SpaceBetweenColumns = SpaceBetweenColumns;

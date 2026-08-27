@@ -389,6 +389,23 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Default label subscript or superscript placement.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
           <maml:name>BGInfoContent</maml:name>
           <maml:description>
@@ -637,6 +654,30 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Default numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render labels with italic text by default.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>JsonPath</maml:name>
           <maml:description>
             <maml:para>Optional path where the generated configuration JSON should be saved.</maml:para>
@@ -757,6 +798,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Default label strikethrough pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Target</maml:name>
           <maml:description>
             <maml:para>Output target (Wallpaper, File, LogonScreen, or Both).</maml:para>
@@ -770,6 +831,26 @@
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>BgInfoTarget</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Default display-time label casing transform.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -810,6 +891,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Default label underline pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>UseScreenCoordinates</maml:name>
           <maml:description>
             <maml:para>Use screen coordinates for placement calculations.</maml:para>
@@ -817,6 +918,23 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Default value subscript or superscript placement.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -870,6 +988,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Default numeric value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render values with italic text by default.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Default value strikethrough pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Default display-time value casing transform.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline values by default.</maml:para>
@@ -877,6 +1059,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Default value underline pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -936,6 +1138,23 @@
         <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
         <dev:type>
           <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Baseline</maml:name>
+        <maml:description>
+          <maml:para>Default label subscript or superscript placement.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -1188,6 +1407,30 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>FontWeight</maml:name>
+        <maml:description>
+          <maml:para>Default numeric label font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Italic</maml:name>
+        <maml:description>
+          <maml:para>Render labels with italic text by default.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>JsonPath</maml:name>
         <maml:description>
           <maml:para>Optional path where the generated configuration JSON should be saved.</maml:para>
@@ -1308,6 +1551,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>StrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Default label strikethrough pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Target</maml:name>
         <maml:description>
           <maml:para>Output target (Wallpaper, File, LogonScreen, or Both).</maml:para>
@@ -1321,6 +1584,26 @@
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>BgInfoTarget</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TextCase</maml:name>
+        <maml:description>
+          <maml:para>Default display-time label casing transform.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -1361,6 +1644,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>UnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Default label underline pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>UseScreenCoordinates</maml:name>
         <maml:description>
           <maml:para>Use screen coordinates for placement calculations.</maml:para>
@@ -1368,6 +1671,23 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueBaseline</maml:name>
+        <maml:description>
+          <maml:para>Default value subscript or superscript placement.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -1421,6 +1741,70 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Default numeric value font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueItalic</maml:name>
+        <maml:description>
+          <maml:para>Render values with italic text by default.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueStrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Default value strikethrough pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueTextCase</maml:name>
+        <maml:description>
+          <maml:para>Default display-time value casing transform.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueUnderline</maml:name>
         <maml:description>
           <maml:para>Underline values by default.</maml:para>
@@ -1428,6 +1812,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueUnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Default value underline pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -2118,6 +2522,23 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>TitleBold</maml:name>
           <maml:description>
             <maml:para>Render the chart title with a bold font weight.</maml:para>
@@ -2125,6 +2546,18 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleColor</maml:name>
+          <maml:description>
+            <maml:para>Independent chart title color.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2142,6 +2575,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric title font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the chart title with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>TitleUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the chart title.</maml:para>
@@ -2149,6 +2646,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2166,6 +2683,23 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueBold</maml:name>
           <maml:description>
             <maml:para>Render the latest value with a bold font weight.</maml:para>
@@ -2173,6 +2707,18 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueColor</maml:name>
+          <maml:description>
+            <maml:para>Independent latest-value color.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2190,6 +2736,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric latest-value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueFormat</maml:name>
           <maml:description>
             <maml:para>Format string for the latest value.</maml:para>
@@ -2197,6 +2755,38 @@
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the latest value with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2214,6 +2804,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the latest value.</maml:para>
@@ -2221,6 +2831,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2843,6 +3473,23 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>TitleBold</maml:name>
           <maml:description>
             <maml:para>Render the chart title with a bold font weight.</maml:para>
@@ -2850,6 +3497,18 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleColor</maml:name>
+          <maml:description>
+            <maml:para>Independent chart title color.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2867,6 +3526,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric title font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the chart title with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>TitleUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the chart title.</maml:para>
@@ -2874,6 +3597,43 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the chart title.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2891,6 +3651,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueColor</maml:name>
+          <maml:description>
+            <maml:para>Independent latest-value color.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueFontSize</maml:name>
           <maml:description>
             <maml:para>Value font size.</maml:para>
@@ -2903,6 +3675,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric latest-value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueFormat</maml:name>
           <maml:description>
             <maml:para>Format string for the latest value.</maml:para>
@@ -2910,6 +3694,18 @@
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the latest value with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2927,6 +3723,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueSuffix</maml:name>
           <maml:description>
             <maml:para>Suffix appended to the latest value.</maml:para>
@@ -2939,6 +3755,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the latest value.</maml:para>
@@ -2946,6 +3782,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the latest value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -3568,6 +4424,23 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleBaseline</maml:name>
+        <maml:description>
+          <maml:para>Subscript or superscript placement for the chart title.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>TitleBold</maml:name>
         <maml:description>
           <maml:para>Render the chart title with a bold font weight.</maml:para>
@@ -3575,6 +4448,18 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleColor</maml:name>
+        <maml:description>
+          <maml:para>Independent chart title color.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -3592,6 +4477,70 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Numeric title font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleItalic</maml:name>
+        <maml:description>
+          <maml:para>Render the chart title with italic text.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleStrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Strikethrough pattern for the chart title.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleTextCase</maml:name>
+        <maml:description>
+          <maml:para>Display-time casing transform for the chart title.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>TitleUnderline</maml:name>
         <maml:description>
           <maml:para>Underline the chart title.</maml:para>
@@ -3599,6 +4548,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleUnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Underline pattern for the chart title.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -3616,6 +4585,23 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueBaseline</maml:name>
+        <maml:description>
+          <maml:para>Subscript or superscript placement for the latest value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueBold</maml:name>
         <maml:description>
           <maml:para>Render the latest value with a bold font weight.</maml:para>
@@ -3623,6 +4609,18 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueColor</maml:name>
+        <maml:description>
+          <maml:para>Independent latest-value color.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -3640,6 +4638,18 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Numeric latest-value font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueFormat</maml:name>
         <maml:description>
           <maml:para>Format string for the latest value.</maml:para>
@@ -3647,6 +4657,18 @@
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueItalic</maml:name>
+        <maml:description>
+          <maml:para>Render the latest value with italic text.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -3664,6 +4686,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueStrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Strikethrough pattern for the latest value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueSuffix</maml:name>
         <maml:description>
           <maml:para>Suffix appended to the latest value.</maml:para>
@@ -3676,6 +4718,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueTextCase</maml:name>
+        <maml:description>
+          <maml:para>Display-time casing transform for the latest value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueUnderline</maml:name>
         <maml:description>
           <maml:para>Underline the latest value.</maml:para>
@@ -3683,6 +4745,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueUnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Underline pattern for the latest value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -3765,6 +4847,23 @@
           <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
           <dev:type>
             <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Default label subscript or superscript placement.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -4016,6 +5115,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Default numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Images</maml:name>
           <maml:description>
@@ -4024,6 +5135,18 @@
           <command:parameterValue required="false" variableLength="false">BgInfoImage[]</command:parameterValue>
           <dev:type>
             <maml:name>BgInfoImage[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render labels with italic text by default.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -4125,6 +5248,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Default label strikethrough pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Target</maml:name>
           <maml:description>
             <maml:para>Output target (Wallpaper, File, LogonScreen, or Both).</maml:para>
@@ -4138,6 +5281,26 @@
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>BgInfoTarget</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Default display-time label casing transform.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -4190,6 +5353,26 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Default label underline pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>UseScreenCoordinates</maml:name>
           <maml:description>
             <maml:para>Use screen coordinates for layout positioning.</maml:para>
@@ -4197,6 +5380,23 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Default value subscript or superscript placement.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -4250,6 +5450,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Default numeric value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render values with italic text by default.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Default value strikethrough pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Default display-time value casing transform.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline values by default.</maml:para>
@@ -4257,6 +5521,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Default value underline pattern.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -4340,6 +5624,23 @@
         <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
         <dev:type>
           <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Baseline</maml:name>
+        <maml:description>
+          <maml:para>Default label subscript or superscript placement.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -4591,6 +5892,18 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>FontWeight</maml:name>
+        <maml:description>
+          <maml:para>Default numeric label font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Images</maml:name>
         <maml:description>
@@ -4599,6 +5912,18 @@
         <command:parameterValue required="false" variableLength="false">BgInfoImage[]</command:parameterValue>
         <dev:type>
           <maml:name>BgInfoImage[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Italic</maml:name>
+        <maml:description>
+          <maml:para>Render labels with italic text by default.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -4700,6 +6025,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>StrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Default label strikethrough pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Target</maml:name>
         <maml:description>
           <maml:para>Output target (Wallpaper, File, LogonScreen, or Both).</maml:para>
@@ -4713,6 +6058,26 @@
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>BgInfoTarget</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TextCase</maml:name>
+        <maml:description>
+          <maml:para>Default display-time label casing transform.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -4765,6 +6130,26 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>UnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Default label underline pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>UseScreenCoordinates</maml:name>
         <maml:description>
           <maml:para>Use screen coordinates for layout positioning.</maml:para>
@@ -4772,6 +6157,23 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueBaseline</maml:name>
+        <maml:description>
+          <maml:para>Default value subscript or superscript placement.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -4825,6 +6227,70 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Default numeric value font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueItalic</maml:name>
+        <maml:description>
+          <maml:para>Render values with italic text by default.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueStrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Default value strikethrough pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueTextCase</maml:name>
+        <maml:description>
+          <maml:para>Default display-time value casing transform.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueUnderline</maml:name>
         <maml:description>
           <maml:para>Underline values by default.</maml:para>
@@ -4832,6 +6298,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueUnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Default value underline pattern.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -5264,6 +6750,23 @@
       <command:syntaxItem parameterSetName="__AllParameterSets">
         <maml:name>New-BGInfoLabel</maml:name>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Bold</maml:name>
           <maml:description>
             <maml:para>Render the label with a bold font weight.</maml:para>
@@ -5312,6 +6815,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ForEach</maml:name>
           <maml:description>
             <maml:para>Variable name used to expand this label multiple times.</maml:para>
@@ -5319,6 +6834,18 @@
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render the label with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -5336,6 +6863,46 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Underline</maml:name>
           <maml:description>
             <maml:para>Underline the label.</maml:para>
@@ -5347,9 +6914,46 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Baseline</maml:name>
+        <maml:description>
+          <maml:para>Subscript or superscript placement for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Bold</maml:name>
         <maml:description>
@@ -5399,6 +7003,18 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>FontWeight</maml:name>
+        <maml:description>
+          <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ForEach</maml:name>
         <maml:description>
           <maml:para>Variable name used to expand this label multiple times.</maml:para>
@@ -5406,6 +7022,18 @@
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Italic</maml:name>
+        <maml:description>
+          <maml:para>Render the label with italic text.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -5423,6 +7051,46 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>StrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Strikethrough pattern for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TextCase</maml:name>
+        <maml:description>
+          <maml:para>Display-time casing transform for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Underline</maml:name>
         <maml:description>
           <maml:para>Underline the label.</maml:para>
@@ -5430,6 +7098,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>UnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Underline pattern for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -7003,6 +8691,23 @@
       <command:syntaxItem parameterSetName="Values">
         <maml:name>New-BGInfoValue</maml:name>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Bold</maml:name>
           <maml:description>
             <maml:para>Render the label with a bold font weight.</maml:para>
@@ -7050,6 +8755,30 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render the label with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Name</maml:name>
           <maml:description>
@@ -7058,6 +8787,46 @@
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7074,6 +8843,26 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Value</maml:name>
           <maml:description>
@@ -7082,6 +8871,23 @@
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7135,6 +8941,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the value with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the value.</maml:para>
@@ -7146,9 +9016,46 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Builtin">
         <maml:name>New-BGInfoValue</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Bold</maml:name>
           <maml:description>
@@ -7235,6 +9142,30 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render the label with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Name</maml:name>
           <maml:description>
             <maml:para>Label text to render.</maml:para>
@@ -7247,6 +9178,46 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Underline</maml:name>
           <maml:description>
             <maml:para>Underline the label.</maml:para>
@@ -7254,6 +9225,43 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7307,6 +9315,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the value with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the value.</maml:para>
@@ -7318,9 +9390,46 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Template">
         <maml:name>New-BGInfoValue</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Baseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Bold</maml:name>
           <maml:description>
@@ -7369,6 +9478,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ForEach</maml:name>
           <maml:description>
@@ -7377,6 +9498,18 @@
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Italic</maml:name>
+          <maml:description>
+            <maml:para>Render the label with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7394,6 +9527,46 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Underline</maml:name>
           <maml:description>
             <maml:para>Underline the label.</maml:para>
@@ -7401,6 +9574,26 @@
           <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>UnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the label.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7413,6 +9606,23 @@
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueBaseline</maml:name>
+          <maml:description>
+            <maml:para>Subscript or superscript placement for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextBaseline</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7466,6 +9676,70 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Numeric value font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueItalic</maml:name>
+          <maml:description>
+            <maml:para>Render the value with italic text.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueStrikethroughStyle</maml:name>
+          <maml:description>
+            <maml:para>Strikethrough pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueTextCase</maml:name>
+          <maml:description>
+            <maml:para>Display-time casing transform for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueUnderline</maml:name>
           <maml:description>
             <maml:para>Underline the value.</maml:para>
@@ -7477,9 +9751,46 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueUnderlineStyle</maml:name>
+          <maml:description>
+            <maml:para>Underline pattern for the value.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextDecorationStyle</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Baseline</maml:name>
+        <maml:description>
+          <maml:para>Subscript or superscript placement for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Bold</maml:name>
         <maml:description>
@@ -7565,6 +9876,18 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>FontWeight</maml:name>
+        <maml:description>
+          <maml:para>Numeric label font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ForEach</maml:name>
         <maml:description>
@@ -7577,14 +9900,66 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Italic</maml:name>
+        <maml:description>
+          <maml:para>Render the label with italic text.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Name</maml:name>
         <maml:description>
           <maml:para>Label text to render.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>StrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Strikethrough pattern for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TextCase</maml:name>
+        <maml:description>
+          <maml:para>Display-time casing transform for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -7601,6 +9976,26 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>UnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Underline pattern for the label.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Value</maml:name>
         <maml:description>
@@ -7609,6 +10004,23 @@
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueBaseline</maml:name>
+        <maml:description>
+          <maml:para>Subscript or superscript placement for the value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextBaseline</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Normal</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Superscript</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Subscript</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextBaseline</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -7662,6 +10074,70 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Numeric value font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueItalic</maml:name>
+        <maml:description>
+          <maml:para>Render the value with italic text.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueStrikethroughStyle</maml:name>
+        <maml:description>
+          <maml:para>Strikethrough pattern for the value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueTextCase</maml:name>
+        <maml:description>
+          <maml:para>Display-time casing transform for the value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueUnderline</maml:name>
         <maml:description>
           <maml:para>Underline the value.</maml:para>
@@ -7669,6 +10145,26 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueUnderlineStyle</maml:name>
+        <maml:description>
+          <maml:para>Underline pattern for the value.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextDecorationStyle</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dotted</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dashed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Wavy</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextDecorationStyle</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>

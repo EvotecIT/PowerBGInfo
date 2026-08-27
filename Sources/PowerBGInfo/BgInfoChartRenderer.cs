@@ -31,31 +31,47 @@ internal static class BgInfoChartRenderer {
         var showValue = chart.ShowLatestValue && values.Count > 0;
         var latestValueText = showValue ? FormatValue(values[values.Count - 1], chart) : string.Empty;
 
-        var titleColor = chart.TextColor ?? config.Color;
-        var valueColor = chart.TextColor ?? config.ValueColor;
+        var titleColor = chart.TitleColor ?? chart.TextColor ?? config.Color;
+        var valueColor = chart.ValueColor ?? chart.TextColor ?? config.ValueColor;
         var titleFontFamily = chart.FontFamilyName ?? config.FontFamilyName;
         var valueFontFamily = chart.FontFamilyName ?? config.ValueFontFamilyName;
-        var titleBold = chart.TitleBold ?? config.Bold;
-        var titleUnderline = chart.TitleUnderline ?? config.Underline;
-        var valueBold = chart.ValueBold ?? config.ValueBold;
-        var valueUnderline = chart.ValueUnderline ?? config.ValueUnderline;
+        var titleStyle = BgInfoRasterImage.CreateTextStyle(
+            chart.TitleFontSize ?? config.FontSize,
+            titleFontFamily,
+            titleColor,
+            chart.TitleFontWeight ?? ResolveWeight(chart.TitleBold) ?? config.FontWeight,
+            chart.TitleItalic ?? config.Italic,
+            chart.TitleUnderlineStyle ?? ResolveUnderline(chart.TitleUnderline) ?? config.UnderlineStyle,
+            chart.TitleStrikethroughStyle ?? config.StrikethroughStyle,
+            chart.TitleBaseline ?? config.Baseline,
+            chart.TitleTextCase ?? config.TextCase);
+        var valueStyle = BgInfoRasterImage.CreateTextStyle(
+            chart.ValueFontSize ?? config.ValueFontSize,
+            valueFontFamily,
+            valueColor,
+            chart.ValueFontWeight ?? ResolveWeight(chart.ValueBold) ?? config.ValueFontWeight,
+            chart.ValueItalic ?? config.ValueItalic,
+            chart.ValueUnderlineStyle ?? ResolveUnderline(chart.ValueUnderline) ?? config.ValueUnderlineStyle,
+            chart.ValueStrikethroughStyle ?? config.ValueStrikethroughStyle,
+            chart.ValueBaseline ?? config.ValueBaseline,
+            chart.ValueTextCase ?? config.ValueTextCase);
         var titleSize = !string.IsNullOrWhiteSpace(title)
-            ? image.GetTextSize(title, chart.TitleFontSize ?? config.FontSize, titleFontFamily, titleBold, titleUnderline)
+            ? image.GetTextSize(title, titleStyle)
             : new TextMetrics(0, 0, 0);
         var valueSize = !string.IsNullOrWhiteSpace(latestValueText)
-            ? image.GetTextSize(latestValueText, chart.ValueFontSize ?? config.ValueFontSize, valueFontFamily, valueBold, valueUnderline)
+            ? image.GetTextSize(latestValueText, valueStyle)
             : new TextMetrics(0, 0, 0);
         var headerHeight = Math.Max(titleSize.Height, valueSize.Height);
         if (headerHeight > 0) {
             plotTop += headerHeight + 4;
             plotHeight = Math.Max(1, height - plotTop - padding);
             if (!string.IsNullOrWhiteSpace(title)) {
-                image.AddText(padding, padding, title, titleColor, chart.TitleFontSize ?? config.FontSize, titleFontFamily, titleBold, titleUnderline);
+                image.AddText(padding, padding, title, titleStyle);
             }
 
             if (!string.IsNullOrWhiteSpace(latestValueText)) {
                 var valueX = Math.Max(padding, width - padding - valueSize.Width);
-                image.AddText(valueX, padding, latestValueText, valueColor, chart.ValueFontSize ?? config.ValueFontSize, valueFontFamily, valueBold, valueUnderline);
+                image.AddText(valueX, padding, latestValueText, valueStyle);
             }
         }
 
@@ -85,6 +101,13 @@ internal static class BgInfoChartRenderer {
             .WithPadding(8, 8, 8, 8)
             .WithPngSupersampling(2)
             .WithValueFormatter(value => FormatValue(value, chart));
+
+        ApplyTextStyle(plot.Options.TitleStyle, ResolveChartTitleStyle(chart, config), chart.TitleFontSize);
+        var valueStyle = ResolveChartValueStyle(chart, config);
+        ApplyTextStyle(plot.Options.DataLabelStyle, valueStyle, chart.ValueFontSize);
+        ApplyTextStyle(plot.Options.LegendStyle, valueStyle, chart.ValueFontSize);
+        ApplyTextStyle(plot.Options.TickLabelStyle, valueStyle, chart.ValueFontSize);
+        ApplyTextStyle(plot.Options.AxisTitleStyle, ResolveChartTitleStyle(chart, config), chart.TitleFontSize);
 
         if (chart.ShowGrid && chart.GridLineCount > 0) {
             plot.WithGrid();
@@ -326,6 +349,44 @@ internal static class BgInfoChartRenderer {
     }
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
+
+    private static TextStyle ResolveChartTitleStyle(BgInfoChart chart, BgInfoConfiguration config) => BgInfoRasterImage.CreateTextStyle(
+        chart.TitleFontSize ?? config.FontSize,
+        chart.FontFamilyName ?? config.FontFamilyName,
+        chart.TitleColor ?? chart.TextColor ?? config.Color,
+        chart.TitleFontWeight ?? ResolveWeight(chart.TitleBold) ?? config.FontWeight,
+        chart.TitleItalic ?? config.Italic,
+        chart.TitleUnderlineStyle ?? ResolveUnderline(chart.TitleUnderline) ?? config.UnderlineStyle,
+        chart.TitleStrikethroughStyle ?? config.StrikethroughStyle,
+        chart.TitleBaseline ?? config.Baseline,
+        chart.TitleTextCase ?? config.TextCase);
+
+    private static TextStyle ResolveChartValueStyle(BgInfoChart chart, BgInfoConfiguration config) => BgInfoRasterImage.CreateTextStyle(
+        chart.ValueFontSize ?? config.ValueFontSize,
+        chart.FontFamilyName ?? config.ValueFontFamilyName,
+        chart.ValueColor ?? chart.TextColor ?? config.ValueColor,
+        chart.ValueFontWeight ?? ResolveWeight(chart.ValueBold) ?? config.ValueFontWeight,
+        chart.ValueItalic ?? config.ValueItalic,
+        chart.ValueUnderlineStyle ?? ResolveUnderline(chart.ValueUnderline) ?? config.ValueUnderlineStyle,
+        chart.ValueStrikethroughStyle ?? config.ValueStrikethroughStyle,
+        chart.ValueBaseline ?? config.ValueBaseline,
+        chart.ValueTextCase ?? config.ValueTextCase);
+
+    private static int? ResolveWeight(bool? bold) => bold.HasValue ? (bold.Value ? 700 : 400) : null;
+
+    private static TextDecorationStyle? ResolveUnderline(bool? underline) => underline.HasValue ? (underline.Value ? TextDecorationStyle.Single : TextDecorationStyle.None) : null;
+
+    private static void ApplyTextStyle(TextStyleOverride target, TextStyle source, float? explicitFontSize) {
+        target.Color = source.Color;
+        target.FontFamily = source.Font.Family;
+        if (explicitFontSize.HasValue) target.FontSize = explicitFontSize.Value;
+        target.FontWeight = source.Font.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        target.Italic = source.Font.Italic;
+        target.UnderlineStyle = source.UnderlineStyle;
+        target.StrikethroughStyle = source.StrikethroughStyle;
+        target.Baseline = source.Baseline;
+        target.TextCase = source.TextCase;
+    }
 
     private static string FormatValue(double value, BgInfoChart chart) {
         var format = string.IsNullOrWhiteSpace(chart.ValueFormat) ? "0.##" : chart.ValueFormat;

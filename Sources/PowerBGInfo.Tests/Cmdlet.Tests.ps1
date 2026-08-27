@@ -45,12 +45,30 @@ Describe 'New-BGInfoValue cmdlet' {
     }
 
     It 'supports independent label and value font styles' {
-        $entry = New-BGInfoValue -Name 'Test' -Value 'X' -Bold -Underline -ValueBold:$false -ValueUnderline
+        $entry = New-BGInfoValue -Name 'Test' -Value 'X' -FontWeight 800 -Italic -UnderlineStyle Double -StrikethroughStyle Dashed -Baseline Superscript -TextCase Uppercase -ValueFontWeight 300 -ValueItalic -ValueUnderlineStyle Wavy -ValueStrikethroughStyle Dotted -ValueBaseline Subscript -ValueTextCase ToggleCase
 
-        $entry.Bold | Should -BeTrue
-        $entry.Underline | Should -BeTrue
-        $entry.ValueBold | Should -BeFalse
-        $entry.ValueUnderline | Should -BeTrue
+        $entry.FontWeight | Should -Be 800
+        $entry.Italic | Should -BeTrue
+        $entry.UnderlineStyle.ToString() | Should -Be 'Double'
+        $entry.StrikethroughStyle.ToString() | Should -Be 'Dashed'
+        $entry.Baseline.ToString() | Should -Be 'Superscript'
+        $entry.TextCase.ToString() | Should -Be 'Uppercase'
+        $entry.ValueFontWeight | Should -Be 300
+        $entry.ValueItalic | Should -BeTrue
+        $entry.ValueUnderlineStyle.ToString() | Should -Be 'Wavy'
+        $entry.ValueStrikethroughStyle.ToString() | Should -Be 'Dotted'
+        $entry.ValueBaseline.ToString() | Should -Be 'Subscript'
+        $entry.ValueTextCase.ToString() | Should -Be 'ToggleCase'
+        $entry.Bold | Should -BeNullOrEmpty
+        $entry.Underline | Should -BeNullOrEmpty
+        $entry.ValueBold | Should -BeNullOrEmpty
+        $entry.ValueUnderline | Should -BeNullOrEmpty
+    }
+
+    It 'accepts intermediate numeric font weights and rejects out-of-range values' {
+        (New-BGInfoValue -Name 'Test' -Value 'X' -FontWeight 550).FontWeight | Should -Be 550
+        { New-BGInfoValue -Name 'Test' -Value 'X' -FontWeight 99 -ErrorAction Stop } | Should -Throw
+        { New-BGInfoValue -Name 'Test' -Value 'X' -ValueFontWeight 901 -ErrorAction Stop } | Should -Throw
     }
 
     It 'resolves builtin values' {
@@ -78,10 +96,16 @@ Describe 'New-BGInfoValue cmdlet' {
 
 Describe 'New-BGInfoLabel cmdlet' {
     It 'supports native font styles' {
-        $entry = New-BGInfoLabel -Name 'Test' -Bold -Underline
+        $entry = New-BGInfoLabel -Name 'Test' -FontWeight 600 -Italic -UnderlineStyle Dotted -StrikethroughStyle Double -Baseline Subscript -TextCase SentenceCase
 
-        $entry.Bold | Should -BeTrue
-        $entry.Underline | Should -BeTrue
+        $entry.Bold | Should -BeNullOrEmpty
+        $entry.Underline | Should -BeNullOrEmpty
+        $entry.FontWeight | Should -Be 600
+        $entry.Italic | Should -BeTrue
+        $entry.UnderlineStyle.ToString() | Should -Be 'Dotted'
+        $entry.StrikethroughStyle.ToString() | Should -Be 'Double'
+        $entry.Baseline.ToString() | Should -Be 'Subscript'
+        $entry.TextCase.ToString() | Should -Be 'SentenceCase'
     }
 
     It 'accepts bare RGB hex color strings' {
@@ -146,21 +170,47 @@ Describe 'New-BGInfo cmdlet parameters' {
     It 'supports label and value font style defaults' {
         $config = New-BGInfo {
             New-BGInfoValue -Name 'Test' -Value 'X'
-        } -ConfigurationDirectory $TestDrive -Target File -Bold -Underline -ValueBold -ValueUnderline -PassThru
+        } -ConfigurationDirectory $TestDrive -Target File -FontWeight 900 -Italic -UnderlineStyle Double -StrikethroughStyle Dashed -Baseline Superscript -TextCase TitleCase -ValueFontWeight 200 -ValueItalic -ValueUnderlineStyle Wavy -ValueStrikethroughStyle Dotted -ValueBaseline Subscript -ValueTextCase Lowercase -PassThru
 
         $config.Bold | Should -BeTrue
         $config.Underline | Should -BeTrue
-        $config.ValueBold | Should -BeTrue
+        $config.FontWeight | Should -Be 900
+        $config.Italic | Should -BeTrue
+        $config.UnderlineStyle.ToString() | Should -Be 'Double'
+        $config.StrikethroughStyle.ToString() | Should -Be 'Dashed'
+        $config.Baseline.ToString() | Should -Be 'Superscript'
+        $config.TextCase.ToString() | Should -Be 'TitleCase'
+        $config.ValueBold | Should -BeFalse
         $config.ValueUnderline | Should -BeTrue
+        $config.ValueFontWeight | Should -Be 200
+        $config.ValueItalic | Should -BeTrue
+        $config.ValueUnderlineStyle.ToString() | Should -Be 'Wavy'
+        $config.ValueStrikethroughStyle.ToString() | Should -Be 'Dotted'
+        $config.ValueBaseline.ToString() | Should -Be 'Subscript'
+        $config.ValueTextCase.ToString() | Should -Be 'Lowercase'
     }
 
     It 'supports chart title and value font styles' {
-        $chart = New-BGInfoChart -Title 'CPU' -Value 42 -TitleBold -TitleUnderline -ValueBold -ValueUnderline
+        $chart = New-BGInfoChart -Title 'CPU' -Value 42 -TitleColor Gold -ValueColor Cyan -TitleFontWeight 800 -TitleItalic -TitleUnderlineStyle Double -TitleStrikethroughStyle Dashed -TitleBaseline Superscript -TitleTextCase TitleCase -ValueFontWeight 300 -ValueItalic -ValueUnderlineStyle Wavy -ValueStrikethroughStyle Dotted -ValueBaseline Subscript -ValueTextCase ToggleCase
 
-        $chart.TitleBold | Should -BeTrue
-        $chart.TitleUnderline | Should -BeTrue
-        $chart.ValueBold | Should -BeTrue
-        $chart.ValueUnderline | Should -BeTrue
+        $chart.TitleBold | Should -BeNullOrEmpty
+        $chart.TitleUnderline | Should -BeNullOrEmpty
+        $chart.TitleColor | Should -Not -BeNullOrEmpty
+        $chart.ValueColor | Should -Not -BeNullOrEmpty
+        $chart.TitleFontWeight | Should -Be 800
+        $chart.TitleItalic | Should -BeTrue
+        $chart.TitleUnderlineStyle.ToString() | Should -Be 'Double'
+        $chart.TitleStrikethroughStyle.ToString() | Should -Be 'Dashed'
+        $chart.TitleBaseline.ToString() | Should -Be 'Superscript'
+        $chart.TitleTextCase.ToString() | Should -Be 'TitleCase'
+        $chart.ValueBold | Should -BeNullOrEmpty
+        $chart.ValueUnderline | Should -BeNullOrEmpty
+        $chart.ValueFontWeight | Should -Be 300
+        $chart.ValueItalic | Should -BeTrue
+        $chart.ValueUnderlineStyle.ToString() | Should -Be 'Wavy'
+        $chart.ValueStrikethroughStyle.ToString() | Should -Be 'Dotted'
+        $chart.ValueBaseline.ToString() | Should -Be 'Subscript'
+        $chart.ValueTextCase.ToString() | Should -Be 'ToggleCase'
     }
 
     It 'supports JsonPath export' {

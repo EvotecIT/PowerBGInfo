@@ -1,4 +1,5 @@
 using Color = ChartForgeX.Primitives.ChartColor;
+using ChartForgeX.Typography;
 using System.Management.Automation;
 using PowerBGInfo;
 
@@ -108,6 +109,14 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public object? TextColor { get; set; }
 
+    /// <para>Independent chart title color.</para>
+    [Parameter]
+    public object? TitleColor { get; set; }
+
+    /// <para>Independent latest-value color.</para>
+    [Parameter]
+    public object? ValueColor { get; set; }
+
     /// <para>Font family for title and value.</para>
     [Parameter]
     public string FontFamilyName { get; set; } = string.Empty;
@@ -124,17 +133,67 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public SwitchParameter TitleBold { get; set; }
 
+    /// <para>Numeric title font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int TitleFontWeight { get; set; }
+
+    /// <para>Render the chart title with italic text.</para>
+    [Parameter]
+    public SwitchParameter TitleItalic { get; set; }
+
     /// <para>Underline the chart title.</para>
     [Parameter]
     public SwitchParameter TitleUnderline { get; set; }
+
+    /// <para>Underline pattern for the chart title.</para>
+    [Parameter]
+    public TextDecorationStyle TitleUnderlineStyle { get; set; }
+
+    /// <para>Strikethrough pattern for the chart title.</para>
+    [Parameter]
+    public TextDecorationStyle TitleStrikethroughStyle { get; set; }
+
+    /// <para>Subscript or superscript placement for the chart title.</para>
+    [Parameter]
+    public TextBaseline TitleBaseline { get; set; }
+
+    /// <para>Display-time casing transform for the chart title.</para>
+    [Parameter]
+    public TextCaseTransform TitleTextCase { get; set; }
 
     /// <para>Render the latest value with a bold font weight.</para>
     [Parameter]
     public SwitchParameter ValueBold { get; set; }
 
+    /// <para>Numeric latest-value font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int ValueFontWeight { get; set; }
+
+    /// <para>Render the latest value with italic text.</para>
+    [Parameter]
+    public SwitchParameter ValueItalic { get; set; }
+
     /// <para>Underline the latest value.</para>
     [Parameter]
     public SwitchParameter ValueUnderline { get; set; }
+
+    /// <para>Underline pattern for the latest value.</para>
+    [Parameter]
+    public TextDecorationStyle ValueUnderlineStyle { get; set; }
+
+    /// <para>Strikethrough pattern for the latest value.</para>
+    [Parameter]
+    public TextDecorationStyle ValueStrikethroughStyle { get; set; }
+
+    /// <para>Subscript or superscript placement for the latest value.</para>
+    [Parameter]
+    public TextBaseline ValueBaseline { get; set; }
+
+    /// <para>Display-time casing transform for the latest value.</para>
+    [Parameter]
+    public TextCaseTransform ValueTextCase { get; set; }
 
     /// <para>Show the latest value text.</para>
     [Parameter]
@@ -291,6 +350,12 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         if (MyInvocation.BoundParameters.ContainsKey(nameof(TextColor))) {
             chart.TextColor = PowerShellColorConverter.ConvertRequired(TextColor, nameof(TextColor));
         }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleColor))) {
+            chart.TitleColor = PowerShellColorConverter.ConvertRequired(TitleColor, nameof(TitleColor));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueColor))) {
+            chart.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
+        }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(GridColor))) {
             chart.GridColor = PowerShellColorConverter.ConvertRequired(GridColor, nameof(GridColor));
         }
@@ -306,14 +371,50 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleBold))) {
             chart.TitleBold = TitleBold.IsPresent;
         }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleFontWeight))) {
+            chart.TitleFontWeight = PowerShellTextStyleValidator.ValidateFontWeight(TitleFontWeight, nameof(TitleFontWeight));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleItalic))) {
+            chart.TitleItalic = TitleItalic.IsPresent;
+        }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleUnderline))) {
             chart.TitleUnderline = TitleUnderline.IsPresent;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleUnderlineStyle))) {
+            chart.TitleUnderlineStyle = TitleUnderlineStyle;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleStrikethroughStyle))) {
+            chart.TitleStrikethroughStyle = TitleStrikethroughStyle;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleBaseline))) {
+            chart.TitleBaseline = TitleBaseline;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleTextCase))) {
+            chart.TitleTextCase = TitleTextCase;
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueBold))) {
             chart.ValueBold = ValueBold.IsPresent;
         }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontWeight))) {
+            chart.ValueFontWeight = PowerShellTextStyleValidator.ValidateFontWeight(ValueFontWeight, nameof(ValueFontWeight));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueItalic))) {
+            chart.ValueItalic = ValueItalic.IsPresent;
+        }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueUnderline))) {
             chart.ValueUnderline = ValueUnderline.IsPresent;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueUnderlineStyle))) {
+            chart.ValueUnderlineStyle = ValueUnderlineStyle;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueStrikethroughStyle))) {
+            chart.ValueStrikethroughStyle = ValueStrikethroughStyle;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueBaseline))) {
+            chart.ValueBaseline = ValueBaseline;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueTextCase))) {
+            chart.ValueTextCase = ValueTextCase;
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ShowGrid))) {
             chart.ShowGrid = ShowGrid.IsPresent;

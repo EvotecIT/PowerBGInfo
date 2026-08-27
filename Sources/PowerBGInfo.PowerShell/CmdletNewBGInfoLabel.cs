@@ -1,4 +1,5 @@
 using System.Management.Automation;
+using ChartForgeX.Typography;
 using PowerBGInfo;
 
 namespace PowerBGInfo.PowerShell;
@@ -30,9 +31,34 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
     [Parameter]
     public SwitchParameter Bold { get; set; }
 
+    /// <para>Numeric label font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int FontWeight { get; set; }
+
+    /// <para>Render the label with italic text.</para>
+    [Parameter]
+    public SwitchParameter Italic { get; set; }
+
     /// <para>Underline the label.</para>
     [Parameter]
     public SwitchParameter Underline { get; set; }
+
+    /// <para>Underline pattern for the label.</para>
+    [Parameter]
+    public TextDecorationStyle UnderlineStyle { get; set; }
+
+    /// <para>Strikethrough pattern for the label.</para>
+    [Parameter]
+    public TextDecorationStyle StrikethroughStyle { get; set; }
+
+    /// <para>Subscript or superscript placement for the label.</para>
+    [Parameter]
+    public TextBaseline Baseline { get; set; }
+
+    /// <para>Display-time casing transform for the label.</para>
+    [Parameter]
+    public TextCaseTransform TextCase { get; set; }
 
     /// <summary>Emits a BGInfo label entry.</summary>
     protected override void EndProcessing() {
@@ -45,7 +71,13 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,
             Bold = IsParameterBound(nameof(Bold)) ? Bold.IsPresent : null,
-            Underline = IsParameterBound(nameof(Underline)) ? Underline.IsPresent : null
+            FontWeight = IsParameterBound(nameof(FontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(FontWeight, nameof(FontWeight)) : null,
+            Italic = IsParameterBound(nameof(Italic)) ? Italic.IsPresent : null,
+            Underline = IsParameterBound(nameof(Underline)) ? Underline.IsPresent : null,
+            UnderlineStyle = IsParameterBound(nameof(UnderlineStyle)) ? UnderlineStyle : null,
+            StrikethroughStyle = IsParameterBound(nameof(StrikethroughStyle)) ? StrikethroughStyle : null,
+            Baseline = IsParameterBound(nameof(Baseline)) ? Baseline : null,
+            TextCase = IsParameterBound(nameof(TextCase)) ? TextCase : null
         };
         WriteObject(entry);
     }

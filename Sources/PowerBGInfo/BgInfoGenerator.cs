@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 using DesktopManager;
 
 namespace PowerBGInfo;
@@ -204,15 +205,15 @@ public class BgInfoGenerator
             var entry = layout.Entry;
             if (entry.Type == BgInfoEntryType.Label)
             {
-                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
+                image.AddText(posX, posY, entry.Name, layout.LabelStyle);
             }
             else
             {
-                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
+                image.AddText(posX, posY, entry.Name, layout.LabelStyle);
                 var valueY = posY;
                 foreach (var line in layout.ValueLines)
                 {
-                    image.AddText(posX + highestWidth + config.SpaceBetweenColumns, valueY, line, entry.ValueColor!.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value);
+                    image.AddText(posX + highestWidth + config.SpaceBetweenColumns, valueY, line, layout.ValueStyle);
                     valueY += layout.ValueLineHeight;
                 }
             }
@@ -410,13 +411,27 @@ public class BgInfoGenerator
             FillColor = source.FillColor,
             Palette = source.Palette.ToArray(),
             TextColor = source.TextColor,
+            TitleColor = source.TitleColor,
+            ValueColor = source.ValueColor,
             FontFamilyName = source.FontFamilyName,
             TitleFontSize = source.TitleFontSize,
             ValueFontSize = source.ValueFontSize,
             TitleBold = source.TitleBold,
+            TitleFontWeight = source.TitleFontWeight,
+            TitleItalic = source.TitleItalic,
             TitleUnderline = source.TitleUnderline,
+            TitleUnderlineStyle = source.TitleUnderlineStyle,
+            TitleStrikethroughStyle = source.TitleStrikethroughStyle,
+            TitleBaseline = source.TitleBaseline,
+            TitleTextCase = source.TitleTextCase,
             ValueBold = source.ValueBold,
+            ValueFontWeight = source.ValueFontWeight,
+            ValueItalic = source.ValueItalic,
             ValueUnderline = source.ValueUnderline,
+            ValueUnderlineStyle = source.ValueUnderlineStyle,
+            ValueStrikethroughStyle = source.ValueStrikethroughStyle,
+            ValueBaseline = source.ValueBaseline,
+            ValueTextCase = source.ValueTextCase,
             ShowLatestValue = source.ShowLatestValue,
             ValueFormat = source.ValueFormat,
             ValueSuffix = source.ValueSuffix,
@@ -463,12 +478,24 @@ public class BgInfoGenerator
             Color = source.Color,
             FontSize = source.FontSize,
             Bold = source.Bold,
+            FontWeight = source.FontWeight,
+            Italic = source.Italic,
             Underline = source.Underline,
+            UnderlineStyle = source.UnderlineStyle,
+            StrikethroughStyle = source.StrikethroughStyle,
+            Baseline = source.Baseline,
+            TextCase = source.TextCase,
             ValueColor = source.ValueColor,
             ValueFontSize = source.ValueFontSize,
             ValueFontFamilyName = source.ValueFontFamilyName,
             ValueBold = source.ValueBold,
+            ValueFontWeight = source.ValueFontWeight,
+            ValueItalic = source.ValueItalic,
             ValueUnderline = source.ValueUnderline,
+            ValueUnderlineStyle = source.ValueUnderlineStyle,
+            ValueStrikethroughStyle = source.ValueStrikethroughStyle,
+            ValueBaseline = source.ValueBaseline,
+            ValueTextCase = source.ValueTextCase,
             ValueWrapWidth = source.ValueWrapWidth,
             BackgroundColor = source.BackgroundColor,
             SpaceBetweenLines = source.SpaceBetweenLines,
@@ -608,12 +635,12 @@ public class BgInfoGenerator
             var configuredPath = Path.IsPathRooted(config.OutputFileName)
                 ? config.OutputFileName
                 : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
-            return NormalizeOutputPathExtension(configuredPath);
+            return NormalizeOutputPathExtension(configuredPath, config.Target);
         }
 
         if (hasBaseImage)
         {
-            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + NormalizeOutputImageExtension(Path.GetExtension(imagePath));
+            var fileName = Path.GetFileNameWithoutExtension(imagePath) + "_PowerBgInfo" + NormalizeOutputImageExtension(Path.GetExtension(imagePath), config.Target);
             return Path.Combine(config.ConfigurationDirectory, fileName);
         }
 
@@ -622,7 +649,7 @@ public class BgInfoGenerator
 
     private static string BuildSlideshowOutputPath(BgInfoConfiguration config, string sourcePath, int index)
     {
-        var sourceExtension = NormalizeOutputImageExtension(Path.GetExtension(sourcePath));
+        var sourceExtension = NormalizeOutputImageExtension(Path.GetExtension(sourcePath), BgInfoTarget.Wallpaper);
 
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
@@ -643,7 +670,7 @@ public class BgInfoGenerator
             }
             else
             {
-                extension = NormalizeOutputImageExtension(extension);
+                extension = NormalizeOutputImageExtension(extension, BgInfoTarget.Wallpaper);
             }
 
             return Path.Combine(directory, $"{name}_{index + 1:D3}{extension}");
@@ -672,12 +699,22 @@ public class BgInfoGenerator
             ".bmp" => ".bmp",
             ".ppm" or ".pnm" => ".ppm",
             ".tif" or ".tiff" => ".tiff",
-            ".gif" or ".dib" or ".wdp" => ".png",
+            ".gif" => ".gif",
+            ".dib" or ".wdp" => ".png",
             _ => ".png"
         };
     }
 
-    private static string NormalizeOutputPathExtension(string path)
+    internal static string NormalizeOutputImageExtension(string? extension, BgInfoTarget target)
+    {
+        var normalized = NormalizeOutputImageExtension(extension);
+        var desktopTarget = (target & (BgInfoTarget.Wallpaper | BgInfoTarget.LogonScreen)) != 0;
+        return desktopTarget && normalized is not ".png" and not ".jpg" and not ".bmp"
+            ? ".png"
+            : normalized;
+    }
+
+    private static string NormalizeOutputPathExtension(string path, BgInfoTarget target)
     {
         var directory = Path.GetDirectoryName(path) ?? string.Empty;
         var name = Path.GetFileNameWithoutExtension(path);
@@ -686,7 +723,7 @@ public class BgInfoGenerator
             name = "PowerBgInfo";
         }
 
-        var extension = NormalizeOutputImageExtension(Path.GetExtension(path));
+        var extension = NormalizeOutputImageExtension(Path.GetExtension(path), target);
         return string.IsNullOrWhiteSpace(directory)
             ? name + extension
             : Path.Combine(directory, name + extension);
@@ -951,7 +988,14 @@ public class BgInfoGenerator
 
     internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, double wrapWidth, double fontSize, string fontFamilyName, bool bold = false, bool underline = false)
     {
+        var style = BgInfoRasterImage.CreateTextStyle(fontSize, fontFamilyName, ChartColor.Black, bold ? 700 : 400, false, underline ? TextDecorationStyle.Single : TextDecorationStyle.None, TextDecorationStyle.None, TextBaseline.Normal, TextCaseTransform.None);
+        return WrapTextLines(image, text, wrapWidth, style);
+    }
+
+    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, double wrapWidth, TextStyle style)
+    {
         if (image == null) throw new ArgumentNullException(nameof(image));
+        if (style == null) throw new ArgumentNullException(nameof(style));
 
         var normalized = NormalizeLineEndings(text);
         if (normalized.Length == 0)
@@ -974,7 +1018,7 @@ public class BgInfoGenerator
                 continue;
             }
 
-            AddWrappedParagraph(lines, image, paragraph, wrapWidth, fontSize, fontFamilyName, bold, underline);
+            AddWrappedParagraph(lines, image, paragraph, wrapWidth, style);
         }
 
         return lines.Count == 0 ? new[] { string.Empty } : lines;
@@ -1189,20 +1233,26 @@ public class BgInfoGenerator
         {
             ApplyEntryTextDefaults(entry, config);
 
-            var labelSize = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
+            var labelStyle = CreateLabelTextStyle(entry);
+            var valueStyle = entry.Type == BgInfoEntryType.Label ? labelStyle.Clone() : CreateValueTextStyle(entry);
+            var labelSize = image.GetTextSize(entry.Name, labelStyle);
             var resolvedValue = ResolveEntryValue(entry);
+            var transformedValue = TextCaseTransformer.Apply(resolvedValue ?? string.Empty, valueStyle.TextCase);
+            valueStyle.TextCase = TextCaseTransform.None;
             var valueLines = entry.Type == BgInfoEntryType.Label
                 ? Array.Empty<string>()
-                : WrapTextLines(image, resolvedValue, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value).ToArray();
+                : WrapTextLines(image, transformedValue, config.ValueWrapWidth, valueStyle).ToArray();
             var valueLineHeight = entry.Type == BgInfoEntryType.Label
                 ? 0f
-                : GetLineHeight(image, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value);
+                : GetLineHeight(image, valueStyle);
             var valueWidth = valueLines.Length == 0
                 ? 0f
-                : valueLines.Max(line => image.GetTextSize(line, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value).Width);
+                : valueLines.Max(line => image.GetTextSize(line, valueStyle).Width);
             var valueHeight = valueLines.Length == 0 ? 0f : valueLineHeight * valueLines.Length;
             layouts.Add(new EntryLayout(
                 entry,
+                labelStyle,
+                valueStyle,
                 labelSize.Width,
                 labelSize.Height,
                 valueLines,
@@ -1224,16 +1274,54 @@ public class BgInfoGenerator
             entry.ValueColor ??= entry.Color ?? config.ValueColor;
             entry.ValueFontSize ??= entry.FontSize ?? config.ValueFontSize;
             entry.ValueFontFamilyName ??= entry.FontFamilyName ?? config.ValueFontFamilyName;
-            entry.ValueBold ??= entry.Bold ?? config.ValueBold;
-            entry.ValueUnderline ??= entry.Underline ?? config.ValueUnderline;
+            entry.ValueFontWeight ??= ResolveWeight(entry.ValueBold) ?? entry.FontWeight ?? ResolveWeight(entry.Bold) ?? config.ValueFontWeight;
+            entry.ValueBold ??= entry.ValueFontWeight >= 600;
+            entry.ValueItalic ??= entry.Italic ?? config.ValueItalic;
+            entry.ValueUnderlineStyle ??= ResolveUnderline(entry.ValueUnderline) ?? entry.UnderlineStyle ?? ResolveUnderline(entry.Underline) ?? config.ValueUnderlineStyle;
+            entry.ValueUnderline ??= entry.ValueUnderlineStyle != TextDecorationStyle.None;
+            entry.ValueStrikethroughStyle ??= entry.StrikethroughStyle ?? config.ValueStrikethroughStyle;
+            entry.ValueBaseline ??= entry.Baseline ?? config.ValueBaseline;
+            entry.ValueTextCase ??= entry.TextCase ?? config.ValueTextCase;
         }
 
         entry.Color ??= config.Color;
         entry.FontSize ??= config.FontSize;
         entry.FontFamilyName ??= config.FontFamilyName;
-        entry.Bold ??= config.Bold;
-        entry.Underline ??= config.Underline;
+        entry.FontWeight ??= ResolveWeight(entry.Bold) ?? config.FontWeight;
+        entry.Bold ??= entry.FontWeight >= 600;
+        entry.Italic ??= config.Italic;
+        entry.UnderlineStyle ??= ResolveUnderline(entry.Underline) ?? config.UnderlineStyle;
+        entry.Underline ??= entry.UnderlineStyle != TextDecorationStyle.None;
+        entry.StrikethroughStyle ??= config.StrikethroughStyle;
+        entry.Baseline ??= config.Baseline;
+        entry.TextCase ??= config.TextCase;
     }
+
+    private static int? ResolveWeight(bool? bold) => bold.HasValue ? (bold.Value ? 700 : 400) : null;
+
+    private static TextDecorationStyle? ResolveUnderline(bool? underline) => underline.HasValue ? (underline.Value ? TextDecorationStyle.Single : TextDecorationStyle.None) : null;
+
+    private static TextStyle CreateLabelTextStyle(BgInfoEntry entry) => BgInfoRasterImage.CreateTextStyle(
+        entry.FontSize!.Value,
+        entry.FontFamilyName,
+        entry.Color!.Value,
+        entry.FontWeight!.Value,
+        entry.Italic!.Value,
+        entry.UnderlineStyle!.Value,
+        entry.StrikethroughStyle!.Value,
+        entry.Baseline!.Value,
+        entry.TextCase!.Value);
+
+    private static TextStyle CreateValueTextStyle(BgInfoEntry entry) => BgInfoRasterImage.CreateTextStyle(
+        entry.ValueFontSize!.Value,
+        entry.ValueFontFamilyName,
+        entry.ValueColor!.Value,
+        entry.ValueFontWeight!.Value,
+        entry.ValueItalic!.Value,
+        entry.ValueUnderlineStyle!.Value,
+        entry.ValueStrikethroughStyle!.Value,
+        entry.ValueBaseline!.Value,
+        entry.ValueTextCase!.Value);
 
     private static string? ResolveEntryValue(BgInfoEntry entry)
     {
@@ -1255,9 +1343,9 @@ public class BgInfoGenerator
         return entryLayouts.Sum(layout => layout.RowHeight) + (entryLayouts.Count - 1) * config.SpaceBetweenLines;
     }
 
-    private static double GetLineHeight(BgInfoRasterImage image, double fontSize, string fontFamilyName, bool bold, bool underline)
+    private static double GetLineHeight(BgInfoRasterImage image, TextStyle style)
     {
-        return image.GetTextSize("Ag", fontSize, fontFamilyName, bold, underline).Height;
+        return image.GetTextSize("Ag", style).Height;
     }
 
     private static string NormalizeLineEndings(string? text)
@@ -1265,7 +1353,7 @@ public class BgInfoGenerator
         return (text ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
     }
 
-    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, double wrapWidth, double fontSize, string fontFamilyName, bool bold, bool underline)
+    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, double wrapWidth, TextStyle style)
     {
         var words = paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0)
@@ -1278,7 +1366,7 @@ public class BgInfoGenerator
         foreach (var word in words)
         {
             var candidate = string.IsNullOrEmpty(current) ? word : current + " " + word;
-            if (image.GetTextSize(candidate, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
+            if (image.GetTextSize(candidate, style).Width <= wrapWidth)
             {
                 current = candidate;
                 continue;
@@ -1289,15 +1377,15 @@ public class BgInfoGenerator
                 lines.Add(current);
             }
 
-            if (image.GetTextSize(word, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
+            if (image.GetTextSize(word, style).Width <= wrapWidth)
             {
                 current = word;
                 continue;
             }
 
-            foreach (var fragment in WrapLongWord(image, word, wrapWidth, fontSize, fontFamilyName, bold, underline))
+            foreach (var fragment in WrapLongWord(image, word, wrapWidth, style))
             {
-                if (image.GetTextSize(fragment, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
+                if (image.GetTextSize(fragment, style).Width <= wrapWidth)
                 {
                     lines.Add(fragment);
                 }
@@ -1311,13 +1399,13 @@ public class BgInfoGenerator
         }
     }
 
-    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, double wrapWidth, double fontSize, string fontFamilyName, bool bold, bool underline)
+    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, double wrapWidth, TextStyle style)
     {
         var current = string.Empty;
         foreach (var character in word)
         {
             var candidate = current + character;
-            if (!string.IsNullOrEmpty(current) && image.GetTextSize(candidate, fontSize, fontFamilyName, bold, underline).Width > wrapWidth)
+            if (!string.IsNullOrEmpty(current) && image.GetTextSize(candidate, style).Width > wrapWidth)
             {
                 yield return current;
                 current = character.ToString();
@@ -1337,6 +1425,8 @@ public class BgInfoGenerator
     {
         public EntryLayout(
             BgInfoEntry entry,
+            TextStyle labelStyle,
+            TextStyle valueStyle,
             double labelWidth,
             double labelHeight,
             string[] valueLines,
@@ -1345,6 +1435,8 @@ public class BgInfoGenerator
             double rowHeight)
         {
             Entry = entry;
+            LabelStyle = labelStyle;
+            ValueStyle = valueStyle;
             LabelWidth = labelWidth;
             LabelHeight = labelHeight;
             ValueLines = valueLines;
@@ -1354,6 +1446,8 @@ public class BgInfoGenerator
         }
 
         public BgInfoEntry Entry { get; }
+        public TextStyle LabelStyle { get; }
+        public TextStyle ValueStyle { get; }
         public double LabelWidth { get; }
         public double LabelHeight { get; }
         public string[] ValueLines { get; }

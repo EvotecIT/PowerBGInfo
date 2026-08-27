@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Color = ChartForgeX.Primitives.ChartColor;
+using ChartForgeX.Typography;
 
 namespace PowerBGInfo;
 
@@ -99,6 +100,16 @@ public enum BgInfoChartMetric {
 
 /// <summary>Defines a chart block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoChart {
+    private int? _titleFontWeight;
+    private TextDecorationStyle? _titleUnderlineStyle;
+    private TextDecorationStyle? _titleStrikethroughStyle;
+    private TextBaseline? _titleBaseline;
+    private TextCaseTransform? _titleTextCase;
+    private int? _valueFontWeight;
+    private TextDecorationStyle? _valueUnderlineStyle;
+    private TextDecorationStyle? _valueStrikethroughStyle;
+    private TextBaseline? _valueBaseline;
+    private TextCaseTransform? _valueTextCase;
     /// <summary>Chart identifier used for history storage.</summary>
     public string Id { get; set; } = string.Empty;
     /// <summary>Title displayed above the chart.</summary>
@@ -147,6 +158,10 @@ public sealed class BgInfoChart {
     public IReadOnlyList<Color> Palette { get; set; } = Array.Empty<Color>();
     /// <summary>Text color for title and value.</summary>
     public Color? TextColor { get; set; }
+    /// <summary>Optional title text color override.</summary>
+    public Color? TitleColor { get; set; }
+    /// <summary>Optional latest-value text color override.</summary>
+    public Color? ValueColor { get; set; }
     /// <summary>Font family for title and value.</summary>
     public string? FontFamilyName { get; set; }
     /// <summary>Title font size.</summary>
@@ -155,12 +170,66 @@ public sealed class BgInfoChart {
     public float? ValueFontSize { get; set; }
     /// <summary>Whether the title uses a bold font weight.</summary>
     public bool? TitleBold { get; set; }
+    /// <summary>Numeric title font weight from 100 through 900.</summary>
+    public int? TitleFontWeight {
+        get => _titleFontWeight;
+        set => _titleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(value, nameof(value));
+    }
+    /// <summary>Whether the title uses italic text.</summary>
+    public bool? TitleItalic { get; set; }
     /// <summary>Whether the title is underlined.</summary>
     public bool? TitleUnderline { get; set; }
+    /// <summary>Title underline pattern.</summary>
+    public TextDecorationStyle? TitleUnderlineStyle {
+        get => _titleUnderlineStyle;
+        set => _titleUnderlineStyle = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Title strikethrough pattern.</summary>
+    public TextDecorationStyle? TitleStrikethroughStyle {
+        get => _titleStrikethroughStyle;
+        set => _titleStrikethroughStyle = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Title subscript or superscript placement.</summary>
+    public TextBaseline? TitleBaseline {
+        get => _titleBaseline;
+        set => _titleBaseline = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Display-time title casing transform.</summary>
+    public TextCaseTransform? TitleTextCase {
+        get => _titleTextCase;
+        set => _titleTextCase = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
     /// <summary>Whether the latest value uses a bold font weight.</summary>
     public bool? ValueBold { get; set; }
+    /// <summary>Numeric latest-value font weight from 100 through 900.</summary>
+    public int? ValueFontWeight {
+        get => _valueFontWeight;
+        set => _valueFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(value, nameof(value));
+    }
+    /// <summary>Whether the latest value uses italic text.</summary>
+    public bool? ValueItalic { get; set; }
     /// <summary>Whether the latest value is underlined.</summary>
     public bool? ValueUnderline { get; set; }
+    /// <summary>Latest-value underline pattern.</summary>
+    public TextDecorationStyle? ValueUnderlineStyle {
+        get => _valueUnderlineStyle;
+        set => _valueUnderlineStyle = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Latest-value strikethrough pattern.</summary>
+    public TextDecorationStyle? ValueStrikethroughStyle {
+        get => _valueStrikethroughStyle;
+        set => _valueStrikethroughStyle = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Latest-value subscript or superscript placement.</summary>
+    public TextBaseline? ValueBaseline {
+        get => _valueBaseline;
+        set => _valueBaseline = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
+    /// <summary>Display-time latest-value casing transform.</summary>
+    public TextCaseTransform? ValueTextCase {
+        get => _valueTextCase;
+        set => _valueTextCase = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
     /// <summary>Whether to show the latest value.</summary>
     public bool ShowLatestValue { get; set; } = true;
     /// <summary>Format string used for latest value.</summary>

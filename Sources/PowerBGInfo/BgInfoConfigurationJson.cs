@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 
 #if NET472
 using System.Web.Script.Serialization;
@@ -121,10 +122,22 @@ public static class BgInfoConfigurationJson {
 
         if (model.FontSize.HasValue) configuration.FontSize = model.FontSize.Value;
         if (model.Bold.HasValue) configuration.Bold = model.Bold.Value;
+        if (model.FontWeight.HasValue) configuration.FontWeight = model.FontWeight.Value;
+        if (model.Italic.HasValue) configuration.Italic = model.Italic.Value;
         if (model.Underline.HasValue) configuration.Underline = model.Underline.Value;
+        ApplyEnum<TextDecorationStyle>(model.UnderlineStyle, value => configuration.UnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.StrikethroughStyle, value => configuration.StrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.Baseline, value => configuration.Baseline = value);
+        ApplyEnum<TextCaseTransform>(model.TextCase, value => configuration.TextCase = value);
         if (model.ValueFontSize.HasValue) configuration.ValueFontSize = model.ValueFontSize.Value;
         if (model.ValueBold.HasValue) configuration.ValueBold = model.ValueBold.Value;
+        if (model.ValueFontWeight.HasValue) configuration.ValueFontWeight = model.ValueFontWeight.Value;
+        if (model.ValueItalic.HasValue) configuration.ValueItalic = model.ValueItalic.Value;
         if (model.ValueUnderline.HasValue) configuration.ValueUnderline = model.ValueUnderline.Value;
+        ApplyEnum<TextDecorationStyle>(model.ValueUnderlineStyle, value => configuration.ValueUnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.ValueStrikethroughStyle, value => configuration.ValueStrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.ValueBaseline, value => configuration.ValueBaseline = value);
+        ApplyEnum<TextCaseTransform>(model.ValueTextCase, value => configuration.ValueTextCase = value);
         if (model.ValueWrapWidth.HasValue) configuration.ValueWrapWidth = model.ValueWrapWidth.Value;
         if (model.SpaceBetweenLines.HasValue) configuration.SpaceBetweenLines = model.SpaceBetweenLines.Value;
         if (model.SpaceBetweenColumns.HasValue) configuration.SpaceBetweenColumns = model.SpaceBetweenColumns.Value;
@@ -235,12 +248,24 @@ public static class BgInfoConfigurationJson {
             Color = BgInfoColorParser.ToHex(configuration.Color),
             FontSize = configuration.FontSize,
             Bold = configuration.Bold,
+            FontWeight = configuration.FontWeight,
+            Italic = configuration.Italic,
             Underline = configuration.Underline,
+            UnderlineStyle = configuration.UnderlineStyle.ToString(),
+            StrikethroughStyle = configuration.StrikethroughStyle.ToString(),
+            Baseline = configuration.Baseline.ToString(),
+            TextCase = configuration.TextCase.ToString(),
             ValueColor = BgInfoColorParser.ToHex(configuration.ValueColor),
             ValueFontSize = configuration.ValueFontSize,
             ValueFontFamilyName = configuration.ValueFontFamilyName,
             ValueBold = configuration.ValueBold,
+            ValueFontWeight = configuration.ValueFontWeight,
+            ValueItalic = configuration.ValueItalic,
             ValueUnderline = configuration.ValueUnderline,
+            ValueUnderlineStyle = configuration.ValueUnderlineStyle.ToString(),
+            ValueStrikethroughStyle = configuration.ValueStrikethroughStyle.ToString(),
+            ValueBaseline = configuration.ValueBaseline.ToString(),
+            ValueTextCase = configuration.ValueTextCase.ToString(),
             ValueWrapWidth = configuration.ValueWrapWidth,
             BackgroundColor = configuration.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(configuration.BackgroundColor.Value) : null,
             SpaceBetweenLines = configuration.SpaceBetweenLines,
@@ -281,12 +306,24 @@ public static class BgInfoConfigurationJson {
                     FontSize = entry.FontSize,
                     FontFamilyName = entry.FontFamilyName,
                     Bold = entry.Bold,
+                    FontWeight = entry.FontWeight,
+                    Italic = entry.Italic,
                     Underline = entry.Underline,
+                    UnderlineStyle = entry.UnderlineStyle?.ToString(),
+                    StrikethroughStyle = entry.StrikethroughStyle?.ToString(),
+                    Baseline = entry.Baseline?.ToString(),
+                    TextCase = entry.TextCase?.ToString(),
                     ValueColor = entry.ValueColor.HasValue ? BgInfoColorParser.ToHex(entry.ValueColor.Value) : null,
                     ValueFontSize = entry.ValueFontSize,
                     ValueFontFamilyName = entry.ValueFontFamilyName,
                     ValueBold = entry.ValueBold,
-                    ValueUnderline = entry.ValueUnderline
+                    ValueFontWeight = entry.ValueFontWeight,
+                    ValueItalic = entry.ValueItalic,
+                    ValueUnderline = entry.ValueUnderline,
+                    ValueUnderlineStyle = entry.ValueUnderlineStyle?.ToString(),
+                    ValueStrikethroughStyle = entry.ValueStrikethroughStyle?.ToString(),
+                    ValueBaseline = entry.ValueBaseline?.ToString(),
+                    ValueTextCase = entry.ValueTextCase?.ToString()
                 });
             }
         }
@@ -328,13 +365,27 @@ public static class BgInfoConfigurationJson {
                     FillColor = chart.FillColor.HasValue ? BgInfoColorParser.ToHex(chart.FillColor.Value) : null,
                     Palette = chart.Palette is null ? null : chart.Palette.Select(BgInfoColorParser.ToHex).ToArray(),
                     TextColor = chart.TextColor.HasValue ? BgInfoColorParser.ToHex(chart.TextColor.Value) : null,
+                    TitleColor = chart.TitleColor.HasValue ? BgInfoColorParser.ToHex(chart.TitleColor.Value) : null,
+                    ValueColor = chart.ValueColor.HasValue ? BgInfoColorParser.ToHex(chart.ValueColor.Value) : null,
                     FontFamilyName = chart.FontFamilyName,
                     TitleFontSize = chart.TitleFontSize,
                     ValueFontSize = chart.ValueFontSize,
                     TitleBold = chart.TitleBold,
+                    TitleFontWeight = chart.TitleFontWeight,
+                    TitleItalic = chart.TitleItalic,
                     TitleUnderline = chart.TitleUnderline,
+                    TitleUnderlineStyle = chart.TitleUnderlineStyle?.ToString(),
+                    TitleStrikethroughStyle = chart.TitleStrikethroughStyle?.ToString(),
+                    TitleBaseline = chart.TitleBaseline?.ToString(),
+                    TitleTextCase = chart.TitleTextCase?.ToString(),
                     ValueBold = chart.ValueBold,
+                    ValueFontWeight = chart.ValueFontWeight,
+                    ValueItalic = chart.ValueItalic,
                     ValueUnderline = chart.ValueUnderline,
+                    ValueUnderlineStyle = chart.ValueUnderlineStyle?.ToString(),
+                    ValueStrikethroughStyle = chart.ValueStrikethroughStyle?.ToString(),
+                    ValueBaseline = chart.ValueBaseline?.ToString(),
+                    ValueTextCase = chart.ValueTextCase?.ToString(),
                     ShowLatestValue = chart.ShowLatestValue,
                     ValueFormat = chart.ValueFormat,
                     ValueSuffix = chart.ValueSuffix,
@@ -523,11 +574,23 @@ public static class BgInfoConfigurationJson {
         if (model.FontSize.HasValue) entry.FontSize = model.FontSize.Value;
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) entry.FontFamilyName = model.FontFamilyName;
         if (model.Bold.HasValue) entry.Bold = model.Bold.Value;
+        if (model.FontWeight.HasValue) entry.FontWeight = model.FontWeight.Value;
+        if (model.Italic.HasValue) entry.Italic = model.Italic.Value;
         if (model.Underline.HasValue) entry.Underline = model.Underline.Value;
+        ApplyEnum<TextDecorationStyle>(model.UnderlineStyle, value => entry.UnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.StrikethroughStyle, value => entry.StrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.Baseline, value => entry.Baseline = value);
+        ApplyEnum<TextCaseTransform>(model.TextCase, value => entry.TextCase = value);
         if (model.ValueFontSize.HasValue) entry.ValueFontSize = model.ValueFontSize.Value;
         if (!string.IsNullOrWhiteSpace(model.ValueFontFamilyName)) entry.ValueFontFamilyName = model.ValueFontFamilyName;
         if (model.ValueBold.HasValue) entry.ValueBold = model.ValueBold.Value;
+        if (model.ValueFontWeight.HasValue) entry.ValueFontWeight = model.ValueFontWeight.Value;
+        if (model.ValueItalic.HasValue) entry.ValueItalic = model.ValueItalic.Value;
         if (model.ValueUnderline.HasValue) entry.ValueUnderline = model.ValueUnderline.Value;
+        ApplyEnum<TextDecorationStyle>(model.ValueUnderlineStyle, value => entry.ValueUnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.ValueStrikethroughStyle, value => entry.ValueStrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.ValueBaseline, value => entry.ValueBaseline = value);
+        ApplyEnum<TextCaseTransform>(model.ValueTextCase, value => entry.ValueTextCase = value);
 
         return entry;
     }
@@ -603,14 +666,28 @@ public static class BgInfoConfigurationJson {
             chart.Palette = colors;
         }
         ApplyColor(model.TextColor, value => chart.TextColor = value);
+        ApplyColor(model.TitleColor, value => chart.TitleColor = value);
+        ApplyColor(model.ValueColor, value => chart.ValueColor = value);
 
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) chart.FontFamilyName = model.FontFamilyName;
         if (model.TitleFontSize.HasValue) chart.TitleFontSize = model.TitleFontSize.Value;
         if (model.ValueFontSize.HasValue) chart.ValueFontSize = model.ValueFontSize.Value;
         if (model.TitleBold.HasValue) chart.TitleBold = model.TitleBold.Value;
+        if (model.TitleFontWeight.HasValue) chart.TitleFontWeight = model.TitleFontWeight.Value;
+        if (model.TitleItalic.HasValue) chart.TitleItalic = model.TitleItalic.Value;
         if (model.TitleUnderline.HasValue) chart.TitleUnderline = model.TitleUnderline.Value;
+        ApplyEnum<TextDecorationStyle>(model.TitleUnderlineStyle, value => chart.TitleUnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.TitleStrikethroughStyle, value => chart.TitleStrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.TitleBaseline, value => chart.TitleBaseline = value);
+        ApplyEnum<TextCaseTransform>(model.TitleTextCase, value => chart.TitleTextCase = value);
         if (model.ValueBold.HasValue) chart.ValueBold = model.ValueBold.Value;
+        if (model.ValueFontWeight.HasValue) chart.ValueFontWeight = model.ValueFontWeight.Value;
+        if (model.ValueItalic.HasValue) chart.ValueItalic = model.ValueItalic.Value;
         if (model.ValueUnderline.HasValue) chart.ValueUnderline = model.ValueUnderline.Value;
+        ApplyEnum<TextDecorationStyle>(model.ValueUnderlineStyle, value => chart.ValueUnderlineStyle = value);
+        ApplyEnum<TextDecorationStyle>(model.ValueStrikethroughStyle, value => chart.ValueStrikethroughStyle = value);
+        ApplyEnum<TextBaseline>(model.ValueBaseline, value => chart.ValueBaseline = value);
+        ApplyEnum<TextCaseTransform>(model.ValueTextCase, value => chart.ValueTextCase = value);
         if (model.ShowLatestValue.HasValue) chart.ShowLatestValue = model.ShowLatestValue.Value;
         if (!string.IsNullOrWhiteSpace(model.ValueFormat)) chart.ValueFormat = model.ValueFormat!;
         if (!string.IsNullOrWhiteSpace(model.ValueSuffix)) chart.ValueSuffix = model.ValueSuffix!;
@@ -1077,6 +1154,11 @@ public static class BgInfoConfigurationJson {
         }
     }
 
+    private static void ApplyEnum<TEnum>(string? text, Action<TEnum> setter) where TEnum : struct {
+        if (string.IsNullOrWhiteSpace(text)) return;
+        if (Enum.TryParse(text, true, out TEnum parsed) && Enum.IsDefined(typeof(TEnum), parsed)) setter(parsed);
+    }
+
     private static string ResolvePath(string? path, string baseDirectory) {
         if (string.IsNullOrWhiteSpace(path)) {
             return string.Empty;
@@ -1102,12 +1184,24 @@ public static class BgInfoConfigurationJson {
         public string? Color { get; set; }
         public float? FontSize { get; set; }
         public bool? Bold { get; set; }
+        public int? FontWeight { get; set; }
+        public bool? Italic { get; set; }
         public bool? Underline { get; set; }
+        public string? UnderlineStyle { get; set; }
+        public string? StrikethroughStyle { get; set; }
+        public string? Baseline { get; set; }
+        public string? TextCase { get; set; }
         public string? ValueColor { get; set; }
         public float? ValueFontSize { get; set; }
         public string? ValueFontFamilyName { get; set; }
         public bool? ValueBold { get; set; }
+        public int? ValueFontWeight { get; set; }
+        public bool? ValueItalic { get; set; }
         public bool? ValueUnderline { get; set; }
+        public string? ValueUnderlineStyle { get; set; }
+        public string? ValueStrikethroughStyle { get; set; }
+        public string? ValueBaseline { get; set; }
+        public string? ValueTextCase { get; set; }
         public int? ValueWrapWidth { get; set; }
         public string? BackgroundColor { get; set; }
         public int? SpaceBetweenLines { get; set; }
@@ -1157,12 +1251,24 @@ public static class BgInfoConfigurationJson {
         public float? FontSize { get; set; }
         public string? FontFamilyName { get; set; }
         public bool? Bold { get; set; }
+        public int? FontWeight { get; set; }
+        public bool? Italic { get; set; }
         public bool? Underline { get; set; }
+        public string? UnderlineStyle { get; set; }
+        public string? StrikethroughStyle { get; set; }
+        public string? Baseline { get; set; }
+        public string? TextCase { get; set; }
         public string? ValueColor { get; set; }
         public float? ValueFontSize { get; set; }
         public string? ValueFontFamilyName { get; set; }
         public bool? ValueBold { get; set; }
+        public int? ValueFontWeight { get; set; }
+        public bool? ValueItalic { get; set; }
         public bool? ValueUnderline { get; set; }
+        public string? ValueUnderlineStyle { get; set; }
+        public string? ValueStrikethroughStyle { get; set; }
+        public string? ValueBaseline { get; set; }
+        public string? ValueTextCase { get; set; }
     }
 
     internal sealed class BgInfoChartFile {
@@ -1188,13 +1294,27 @@ public static class BgInfoConfigurationJson {
         public string? FillColor { get; set; }
         public string[]? Palette { get; set; }
         public string? TextColor { get; set; }
+        public string? TitleColor { get; set; }
+        public string? ValueColor { get; set; }
         public string? FontFamilyName { get; set; }
         public float? TitleFontSize { get; set; }
         public float? ValueFontSize { get; set; }
         public bool? TitleBold { get; set; }
+        public int? TitleFontWeight { get; set; }
+        public bool? TitleItalic { get; set; }
         public bool? TitleUnderline { get; set; }
+        public string? TitleUnderlineStyle { get; set; }
+        public string? TitleStrikethroughStyle { get; set; }
+        public string? TitleBaseline { get; set; }
+        public string? TitleTextCase { get; set; }
         public bool? ValueBold { get; set; }
+        public int? ValueFontWeight { get; set; }
+        public bool? ValueItalic { get; set; }
         public bool? ValueUnderline { get; set; }
+        public string? ValueUnderlineStyle { get; set; }
+        public string? ValueStrikethroughStyle { get; set; }
+        public string? ValueBaseline { get; set; }
+        public string? ValueTextCase { get; set; }
         public bool? ShowLatestValue { get; set; }
         public string? ValueFormat { get; set; }
         public string? ValueSuffix { get; set; }
