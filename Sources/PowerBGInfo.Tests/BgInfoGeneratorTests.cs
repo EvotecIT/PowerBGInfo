@@ -589,6 +589,51 @@ public class BgInfoGeneratorTests
         Assert.True(lowerLinePixels > 0);
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void RasterImageRendersNativeFontStyles(bool bold, bool underline)
+    {
+        using var regular = new BgInfoRasterImage();
+        regular.Create(Path.Combine(Path.GetTempPath(), "bginfo-font-regular.png"), 220, 70, ChartColors.Transparent);
+        regular.AddText(4, 4, "PowerBGInfo", ChartColors.White, 28, "Arial", false, false);
+
+        using var styled = new BgInfoRasterImage();
+        styled.Create(Path.Combine(Path.GetTempPath(), "bginfo-font-styled.png"), 220, 70, ChartColors.Transparent);
+        styled.AddText(4, 4, "PowerBGInfo", ChartColors.White, 28, "Arial", bold, underline);
+
+        Assert.False(regular.ToRgbaImage().Pixels.SequenceEqual(styled.ToRgbaImage().Pixels));
+    }
+
+    [Fact]
+    public void ApplyEntryTextDefaultsKeepsLabelAndValueSettingsDistinct()
+    {
+        var entry = new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Label", Value = "Value" };
+        var config = new BgInfoConfiguration
+        {
+            Color = ChartColors.Red,
+            ValueColor = ChartColors.Blue,
+            FontSize = 24,
+            ValueFontSize = 13,
+            FontFamilyName = "Arial",
+            ValueFontFamilyName = "Consolas",
+            Bold = true,
+            ValueUnderline = true,
+        };
+
+        BgInfoGenerator.ApplyEntryTextDefaults(entry, config);
+
+        Assert.Equal(ChartColors.Red, entry.Color);
+        Assert.Equal(ChartColors.Blue, entry.ValueColor);
+        Assert.Equal(24, entry.FontSize);
+        Assert.Equal(13, entry.ValueFontSize);
+        Assert.Equal("Arial", entry.FontFamilyName);
+        Assert.Equal("Consolas", entry.ValueFontFamilyName);
+        Assert.True(entry.Bold);
+        Assert.False(entry.ValueBold);
+        Assert.True(entry.ValueUnderline);
+    }
+
     [Fact]
     public void GenerateLoadsLegacyBaseImageBeforeNormalizingOutputExtension()
     {

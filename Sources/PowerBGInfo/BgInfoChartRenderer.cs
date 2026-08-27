@@ -33,24 +33,29 @@ internal static class BgInfoChartRenderer {
 
         var titleColor = chart.TextColor ?? config.Color;
         var valueColor = chart.TextColor ?? config.ValueColor;
-        var fontFamily = chart.FontFamilyName ?? config.FontFamilyName;
+        var titleFontFamily = chart.FontFamilyName ?? config.FontFamilyName;
+        var valueFontFamily = chart.FontFamilyName ?? config.ValueFontFamilyName;
+        var titleBold = chart.TitleBold ?? config.Bold;
+        var titleUnderline = chart.TitleUnderline ?? config.Underline;
+        var valueBold = chart.ValueBold ?? config.ValueBold;
+        var valueUnderline = chart.ValueUnderline ?? config.ValueUnderline;
         var titleSize = !string.IsNullOrWhiteSpace(title)
-            ? image.GetTextSize(title, chart.TitleFontSize ?? config.FontSize, fontFamily)
+            ? image.GetTextSize(title, chart.TitleFontSize ?? config.FontSize, titleFontFamily, titleBold, titleUnderline)
             : new TextMetrics(0, 0, 0);
         var valueSize = !string.IsNullOrWhiteSpace(latestValueText)
-            ? image.GetTextSize(latestValueText, chart.ValueFontSize ?? config.ValueFontSize, fontFamily)
+            ? image.GetTextSize(latestValueText, chart.ValueFontSize ?? config.ValueFontSize, valueFontFamily, valueBold, valueUnderline)
             : new TextMetrics(0, 0, 0);
         var headerHeight = Math.Max(titleSize.Height, valueSize.Height);
         if (headerHeight > 0) {
             plotTop += headerHeight + 4;
             plotHeight = Math.Max(1, height - plotTop - padding);
             if (!string.IsNullOrWhiteSpace(title)) {
-                image.AddText(padding, padding, title, titleColor, chart.TitleFontSize ?? config.FontSize, fontFamily);
+                image.AddText(padding, padding, title, titleColor, chart.TitleFontSize ?? config.FontSize, titleFontFamily, titleBold, titleUnderline);
             }
 
             if (!string.IsNullOrWhiteSpace(latestValueText)) {
                 var valueX = Math.Max(padding, width - padding - valueSize.Width);
-                image.AddText(valueX, padding, latestValueText, valueColor, chart.ValueFontSize ?? config.ValueFontSize, fontFamily);
+                image.AddText(valueX, padding, latestValueText, valueColor, chart.ValueFontSize ?? config.ValueFontSize, valueFontFamily, valueBold, valueUnderline);
             }
         }
 

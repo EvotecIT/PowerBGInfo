@@ -120,6 +120,22 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public float ValueFontSize { get; set; }
 
+    /// <para>Render the chart title with a bold font weight.</para>
+    [Parameter]
+    public SwitchParameter TitleBold { get; set; }
+
+    /// <para>Underline the chart title.</para>
+    [Parameter]
+    public SwitchParameter TitleUnderline { get; set; }
+
+    /// <para>Render the latest value with a bold font weight.</para>
+    [Parameter]
+    public SwitchParameter ValueBold { get; set; }
+
+    /// <para>Underline the latest value.</para>
+    [Parameter]
+    public SwitchParameter ValueUnderline { get; set; }
+
     /// <para>Show the latest value text.</para>
     [Parameter]
     public SwitchParameter ShowLatestValue { get; set; }
@@ -286,6 +302,18 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontSize))) {
             chart.ValueFontSize = ValueFontSize;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleBold))) {
+            chart.TitleBold = TitleBold.IsPresent;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleUnderline))) {
+            chart.TitleUnderline = TitleUnderline.IsPresent;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueBold))) {
+            chart.ValueBold = ValueBold.IsPresent;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueUnderline))) {
+            chart.ValueUnderline = ValueUnderline.IsPresent;
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ShowGrid))) {
             chart.ShowGrid = ShowGrid.IsPresent;

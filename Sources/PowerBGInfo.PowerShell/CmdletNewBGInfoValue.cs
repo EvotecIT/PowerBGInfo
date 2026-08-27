@@ -61,6 +61,14 @@ public class CmdletNewBGInfoValue : PSCmdlet {
     [Parameter]
     public string FontFamilyName { get; set; } = string.Empty;
 
+    /// <para>Render the label with a bold font weight.</para>
+    [Parameter]
+    public SwitchParameter Bold { get; set; }
+
+    /// <para>Underline the label.</para>
+    [Parameter]
+    public SwitchParameter Underline { get; set; }
+
     /// <para>Value color override.</para>
     [Parameter]
     public object? ValueColor { get; set; }
@@ -72,6 +80,14 @@ public class CmdletNewBGInfoValue : PSCmdlet {
     /// <para>Value font family override.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = string.Empty;
+
+    /// <para>Render the value with a bold font weight.</para>
+    [Parameter]
+    public SwitchParameter ValueBold { get; set; }
+
+    /// <para>Underline the value.</para>
+    [Parameter]
+    public SwitchParameter ValueUnderline { get; set; }
 
     /// <para>Variable name used to expand this entry multiple times.</para>
     [Parameter(ParameterSetName = "Template", Mandatory = true)]
@@ -91,9 +107,13 @@ public class CmdletNewBGInfoValue : PSCmdlet {
             Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,
+            Bold = IsParameterBound(nameof(Bold)) ? Bold.IsPresent : null,
+            Underline = IsParameterBound(nameof(Underline)) ? Underline.IsPresent : null,
             ValueColor = IsParameterBound(nameof(ValueColor)) ? PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)) : null,
             ValueFontSize = IsParameterBound(nameof(ValueFontSize)) ? ValueFontSize : null,
-            ValueFontFamilyName = IsParameterBound(nameof(ValueFontFamilyName)) ? ValueFontFamilyName : null
+            ValueFontFamilyName = IsParameterBound(nameof(ValueFontFamilyName)) ? ValueFontFamilyName : null,
+            ValueBold = IsParameterBound(nameof(ValueBold)) ? ValueBold.IsPresent : null,
+            ValueUnderline = IsParameterBound(nameof(ValueUnderline)) ? ValueUnderline.IsPresent : null
         };
         WriteObject(entry);
     }

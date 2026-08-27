@@ -77,20 +77,34 @@ public sealed class BgInfoRasterImage : IDisposable {
 
     /// <summary>Draws text using the shared ChartForgeX raster text path.</summary>
     public void AddText(double x, double y, string text, Color color, double fontSize, string fontFamilyName) {
+        AddText(x, y, text, color, fontSize, fontFamilyName, false, false);
+    }
+
+    /// <summary>Draws text using the requested font traits through the shared ChartForgeX raster text path.</summary>
+    public void AddText(double x, double y, string text, Color color, double fontSize, string fontFamilyName, bool bold, bool underline) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
-        var style = CreateTextStyle(fontSize, fontFamilyName, color);
+        var style = CreateTextStyle(fontSize, fontFamilyName, color, bold, underline);
         var size = TextLayoutEngine.Measure(text, style);
         _composition.DrawText(x, y, Math.Max(1, size.Width + 2), text, style, TextWrapMode.NoWrap, null, TextTrimming.None);
     }
 
     /// <summary>Measures text for layout and wrapping.</summary>
     public TextMetrics GetTextSize(string? text, double fontSize, string fontFamilyName) {
+        return GetTextSize(text, fontSize, fontFamilyName, false, false);
+    }
+
+    /// <summary>Measures styled text for layout and wrapping.</summary>
+    public TextMetrics GetTextSize(string? text, double fontSize, string fontFamilyName, bool bold, bool underline) {
         var normalized = text ?? string.Empty;
         if (normalized.Length == 0) return new TextMetrics(0, 0, 0);
-        var cacheKey = fontSize.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "\u001f" + (fontFamilyName ?? string.Empty) + "\u001f" + normalized;
+        var cacheKey = fontSize.ToString("R", System.Globalization.CultureInfo.InvariantCulture) +
+                       "\u001f" + (fontFamilyName ?? string.Empty) +
+                       "\u001f" + (bold ? "1" : "0") +
+                       "\u001f" + (underline ? "1" : "0") +
+                       "\u001f" + normalized;
         if (_textSizeCache.TryGetValue(cacheKey, out var cached)) return cached;
 
-        var size = TextLayoutEngine.Measure(normalized, CreateTextStyle(fontSize, fontFamilyName, Color.Black));
+        var size = TextLayoutEngine.Measure(normalized, CreateTextStyle(fontSize, fontFamilyName, Color.Black, bold, underline));
         _textSizeCache[cacheKey] = size;
         return size;
     }
@@ -106,9 +120,11 @@ public sealed class BgInfoRasterImage : IDisposable {
         _composition = ImageComposition.FromImage(image)
     };
 
-    private static TextStyle CreateTextStyle(double fontSize, string? fontFamilyName, Color color) {
+    private static TextStyle CreateTextStyle(double fontSize, string? fontFamilyName, Color color, bool bold, bool underline) {
         var style = TextStyle.Create(Math.Max(1, fontSize), color);
         style.Font = FontSpec.FromFamily(string.IsNullOrWhiteSpace(fontFamilyName) ? "Segoe UI, Arial, sans-serif" : fontFamilyName!);
+        style.Font.Weight = bold ? 700 : 400;
+        style.Underline = underline;
         return style;
     }
 

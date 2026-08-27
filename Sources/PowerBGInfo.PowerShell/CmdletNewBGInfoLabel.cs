@@ -26,6 +26,14 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
     [Parameter]
     public string FontFamilyName { get; set; } = string.Empty;
 
+    /// <para>Render the label with a bold font weight.</para>
+    [Parameter]
+    public SwitchParameter Bold { get; set; }
+
+    /// <para>Underline the label.</para>
+    [Parameter]
+    public SwitchParameter Underline { get; set; }
+
     /// <summary>Emits a BGInfo label entry.</summary>
     protected override void EndProcessing() {
         var entry = new BgInfoEntry
@@ -35,7 +43,9 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
             ForEach = string.IsNullOrWhiteSpace(ForEach) ? null : ForEach,
             Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
-            FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null
+            FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,
+            Bold = IsParameterBound(nameof(Bold)) ? Bold.IsPresent : null,
+            Underline = IsParameterBound(nameof(Underline)) ? Underline.IsPresent : null
         };
         WriteObject(entry);
     }

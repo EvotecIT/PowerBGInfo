@@ -65,6 +65,14 @@ public class BgInfoConfiguration {
     /// </summary>
     public float FontSize { get; set; } = 16f;
     /// <summary>
+    /// Gets or sets whether labels use a bold font weight by default.
+    /// </summary>
+    public bool Bold { get; set; }
+    /// <summary>
+    /// Gets or sets whether labels are underlined by default.
+    /// </summary>
+    public bool Underline { get; set; }
+    /// <summary>
     /// Gets or sets the default value color.
     /// </summary>
     public Color ValueColor { get; set; } = Color.Black;
@@ -76,6 +84,14 @@ public class BgInfoConfiguration {
     /// Gets or sets the default value font family.
     /// </summary>
     public string ValueFontFamilyName { get; set; } = "Calibri";
+    /// <summary>
+    /// Gets or sets whether values use a bold font weight by default.
+    /// </summary>
+    public bool ValueBold { get; set; }
+    /// <summary>
+    /// Gets or sets whether values are underlined by default.
+    /// </summary>
+    public bool ValueUnderline { get; set; }
     /// <summary>
     /// Gets or sets the maximum width used when wrapping value text. Set to 0 to disable wrapping.
     /// </summary>

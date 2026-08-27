@@ -31,6 +31,7 @@ You can read about this project on this [blog post](https://evotec.xyz/powerbgin
 - Generate a wallpaper from a normal PowerShell script.
 - Use built-in values such as host name, user name, OS details, CPU, RAM, BIOS, and disk information.
 - Add custom values from your own PowerShell, CIM/WMI, registry, AD, APIs, or RMM data.
+- Style labels and values independently with bold text and underlines.
 - Place information in corners, center positions, or explicit screen coordinates.
 - Wrap long values such as AD computer descriptions with `-ValueWrapWidth`.
 - Apply output to the current user, all users, the logon/lock screen, or just write a file.
@@ -57,7 +58,7 @@ Create a simple generated wallpaper:
 
 ```powershell
 New-BGInfo -MonitorIndex 0 {
-    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 24
+    New-BGInfoValue -BuiltinValue HostName -Color Red -FontSize 24 -Bold
     New-BGInfoValue -BuiltinValue FullUserName -Name 'User'
     New-BGInfoValue -BuiltinValue OSName -Name 'OS'
     New-BGInfoValue -BuiltinValue CpuName -Name 'CPU'
@@ -177,6 +178,7 @@ Example output:
 ## More layout and output options
 
 - `-TextPosition`, `-PositionX`, `-PositionY`, `-SpaceX`, and `-SpaceY` control where the text block is placed.
+- `-Bold` and `-Underline` style labels. Use `-ValueBold` and `-ValueUnderline` for value-specific overrides; otherwise an entry's label style is inherited by its value.
 - `-UseScreenCoordinates` makes placement calculations match the monitor coordinate space.
 - `-OutputFileName` controls the generated image name and path.
 - `-DisableWallpaperSlideshow` forces static wallpaper output instead of preserving the active Windows slideshow.

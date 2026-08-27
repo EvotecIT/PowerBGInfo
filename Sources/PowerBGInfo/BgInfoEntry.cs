@@ -50,6 +50,14 @@ public class BgInfoEntry {
     /// </summary>
     public string? FontFamilyName { get; set; }
     /// <summary>
+    /// Gets or sets whether the label uses a bold font weight.
+    /// </summary>
+    public bool? Bold { get; set; }
+    /// <summary>
+    /// Gets or sets whether the label is underlined.
+    /// </summary>
+    public bool? Underline { get; set; }
+    /// <summary>
     /// Gets or sets the value color.
     /// </summary>
     public Color? ValueColor { get; set; }
@@ -61,4 +69,12 @@ public class BgInfoEntry {
     /// Gets or sets the value font family.
     /// </summary>
     public string? ValueFontFamilyName { get; set; }
+    /// <summary>
+    /// Gets or sets whether the value uses a bold font weight.
+    /// </summary>
+    public bool? ValueBold { get; set; }
+    /// <summary>
+    /// Gets or sets whether the value is underlined.
+    /// </summary>
+    public bool? ValueUnderline { get; set; }
 }

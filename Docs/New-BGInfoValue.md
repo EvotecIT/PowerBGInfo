@@ -11,17 +11,17 @@ Creates a BGInfo value entry.
 ## SYNTAX
 ### Values (Default)
 ```powershell
-New-BGInfoValue -Name <string> -Value <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
+New-BGInfoValue -Name <string> -Value <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-Underline] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueUnderline] [<CommonParameters>]
 ```
 
 ### Builtin
 ```powershell
-New-BGInfoValue -BuiltinValue <string> [-Name <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
+New-BGInfoValue -BuiltinValue <string> [-Name <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-Underline] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueUnderline] [<CommonParameters>]
 ```
 
 ### Template
 ```powershell
-New-BGInfoValue -Name <string> -Value <string> -ForEach <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [<CommonParameters>]
+New-BGInfoValue -Name <string> -Value <string> -ForEach <string> [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-Underline] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueUnderline] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -48,6 +48,22 @@ New-BGInfoValue -Name 'Name' -Value 'Value' -ForEach 'Value'
 
 
 ## PARAMETERS
+
+### -Bold
+Render the label with a bold font weight.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -BuiltinValue
 Built-in token to resolve to a value.
@@ -145,6 +161,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Underline
+Underline the label.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Value
 Explicit value to render.
 
@@ -155,6 +187,22 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueBold
+Render the value with a bold font weight.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -198,6 +246,22 @@ Value font size override.
 
 ```yaml
 Type: Single
+Parameter Sets: Values, Builtin, Template
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueUnderline
+Underline the value.
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: Values, Builtin, Template
 Aliases: None
 Possible values:

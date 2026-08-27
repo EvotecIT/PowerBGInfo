@@ -204,15 +204,15 @@ public class BgInfoGenerator
             var entry = layout.Entry;
             if (entry.Type == BgInfoEntryType.Label)
             {
-                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!);
+                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
             }
             else
             {
-                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!);
+                image.AddText(posX, posY, entry.Name, entry.Color!.Value, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
                 var valueY = posY;
                 foreach (var line in layout.ValueLines)
                 {
-                    image.AddText(posX + highestWidth + config.SpaceBetweenColumns, valueY, line, entry.ValueColor!.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
+                    image.AddText(posX + highestWidth + config.SpaceBetweenColumns, valueY, line, entry.ValueColor!.Value, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value);
                     valueY += layout.ValueLineHeight;
                 }
             }
@@ -413,6 +413,10 @@ public class BgInfoGenerator
             FontFamilyName = source.FontFamilyName,
             TitleFontSize = source.TitleFontSize,
             ValueFontSize = source.ValueFontSize,
+            TitleBold = source.TitleBold,
+            TitleUnderline = source.TitleUnderline,
+            ValueBold = source.ValueBold,
+            ValueUnderline = source.ValueUnderline,
             ShowLatestValue = source.ShowLatestValue,
             ValueFormat = source.ValueFormat,
             ValueSuffix = source.ValueSuffix,
@@ -458,9 +462,13 @@ public class BgInfoGenerator
             FontFamilyName = source.FontFamilyName,
             Color = source.Color,
             FontSize = source.FontSize,
+            Bold = source.Bold,
+            Underline = source.Underline,
             ValueColor = source.ValueColor,
             ValueFontSize = source.ValueFontSize,
             ValueFontFamilyName = source.ValueFontFamilyName,
+            ValueBold = source.ValueBold,
+            ValueUnderline = source.ValueUnderline,
             ValueWrapWidth = source.ValueWrapWidth,
             BackgroundColor = source.BackgroundColor,
             SpaceBetweenLines = source.SpaceBetweenLines,
@@ -941,7 +949,7 @@ public class BgInfoGenerator
         return new ChartPoint(x, y);
     }
 
-    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, double wrapWidth, double fontSize, string fontFamilyName)
+    internal static IReadOnlyList<string> WrapTextLines(BgInfoRasterImage image, string? text, double wrapWidth, double fontSize, string fontFamilyName, bool bold = false, bool underline = false)
     {
         if (image == null) throw new ArgumentNullException(nameof(image));
 
@@ -966,7 +974,7 @@ public class BgInfoGenerator
                 continue;
             }
 
-            AddWrappedParagraph(lines, image, paragraph, wrapWidth, fontSize, fontFamilyName);
+            AddWrappedParagraph(lines, image, paragraph, wrapWidth, fontSize, fontFamilyName, bold, underline);
         }
 
         return lines.Count == 0 ? new[] { string.Empty } : lines;
@@ -1179,27 +1187,19 @@ public class BgInfoGenerator
         var layouts = new List<EntryLayout>();
         foreach (var entry in entries)
         {
-            entry.Color ??= config.Color;
-            entry.FontSize ??= config.FontSize;
-            entry.FontFamilyName ??= config.FontFamilyName;
-            if (entry.Type != BgInfoEntryType.Label)
-            {
-                entry.ValueColor ??= entry.Color ?? config.ValueColor;
-                entry.ValueFontSize ??= entry.FontSize ?? config.ValueFontSize;
-                entry.ValueFontFamilyName ??= entry.FontFamilyName ?? config.ValueFontFamilyName;
-            }
+            ApplyEntryTextDefaults(entry, config);
 
-            var labelSize = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!);
+            var labelSize = image.GetTextSize(entry.Name, entry.FontSize!.Value, entry.FontFamilyName!, entry.Bold!.Value, entry.Underline!.Value);
             var resolvedValue = ResolveEntryValue(entry);
             var valueLines = entry.Type == BgInfoEntryType.Label
                 ? Array.Empty<string>()
-                : WrapTextLines(image, resolvedValue, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).ToArray();
+                : WrapTextLines(image, resolvedValue, config.ValueWrapWidth, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value).ToArray();
             var valueLineHeight = entry.Type == BgInfoEntryType.Label
                 ? 0f
-                : GetLineHeight(image, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!);
+                : GetLineHeight(image, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value);
             var valueWidth = valueLines.Length == 0
                 ? 0f
-                : valueLines.Max(line => image.GetTextSize(line, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!).Width);
+                : valueLines.Max(line => image.GetTextSize(line, entry.ValueFontSize!.Value, entry.ValueFontFamilyName!, entry.ValueBold!.Value, entry.ValueUnderline!.Value).Width);
             var valueHeight = valueLines.Length == 0 ? 0f : valueLineHeight * valueLines.Length;
             layouts.Add(new EntryLayout(
                 entry,
@@ -1212,6 +1212,27 @@ public class BgInfoGenerator
         }
 
         return layouts;
+    }
+
+    internal static void ApplyEntryTextDefaults(BgInfoEntry entry, BgInfoConfiguration config)
+    {
+        if (entry == null) throw new ArgumentNullException(nameof(entry));
+        if (config == null) throw new ArgumentNullException(nameof(config));
+
+        if (entry.Type != BgInfoEntryType.Label)
+        {
+            entry.ValueColor ??= entry.Color ?? config.ValueColor;
+            entry.ValueFontSize ??= entry.FontSize ?? config.ValueFontSize;
+            entry.ValueFontFamilyName ??= entry.FontFamilyName ?? config.ValueFontFamilyName;
+            entry.ValueBold ??= entry.Bold ?? config.ValueBold;
+            entry.ValueUnderline ??= entry.Underline ?? config.ValueUnderline;
+        }
+
+        entry.Color ??= config.Color;
+        entry.FontSize ??= config.FontSize;
+        entry.FontFamilyName ??= config.FontFamilyName;
+        entry.Bold ??= config.Bold;
+        entry.Underline ??= config.Underline;
     }
 
     private static string? ResolveEntryValue(BgInfoEntry entry)
@@ -1234,9 +1255,9 @@ public class BgInfoGenerator
         return entryLayouts.Sum(layout => layout.RowHeight) + (entryLayouts.Count - 1) * config.SpaceBetweenLines;
     }
 
-    private static double GetLineHeight(BgInfoRasterImage image, double fontSize, string fontFamilyName)
+    private static double GetLineHeight(BgInfoRasterImage image, double fontSize, string fontFamilyName, bool bold, bool underline)
     {
-        return image.GetTextSize("Ag", fontSize, fontFamilyName).Height;
+        return image.GetTextSize("Ag", fontSize, fontFamilyName, bold, underline).Height;
     }
 
     private static string NormalizeLineEndings(string? text)
@@ -1244,7 +1265,7 @@ public class BgInfoGenerator
         return (text ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
     }
 
-    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, double wrapWidth, double fontSize, string fontFamilyName)
+    private static void AddWrappedParagraph(List<string> lines, BgInfoRasterImage image, string paragraph, double wrapWidth, double fontSize, string fontFamilyName, bool bold, bool underline)
     {
         var words = paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0)
@@ -1257,7 +1278,7 @@ public class BgInfoGenerator
         foreach (var word in words)
         {
             var candidate = string.IsNullOrEmpty(current) ? word : current + " " + word;
-            if (image.GetTextSize(candidate, fontSize, fontFamilyName).Width <= wrapWidth)
+            if (image.GetTextSize(candidate, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
             {
                 current = candidate;
                 continue;
@@ -1268,15 +1289,15 @@ public class BgInfoGenerator
                 lines.Add(current);
             }
 
-            if (image.GetTextSize(word, fontSize, fontFamilyName).Width <= wrapWidth)
+            if (image.GetTextSize(word, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
             {
                 current = word;
                 continue;
             }
 
-            foreach (var fragment in WrapLongWord(image, word, wrapWidth, fontSize, fontFamilyName))
+            foreach (var fragment in WrapLongWord(image, word, wrapWidth, fontSize, fontFamilyName, bold, underline))
             {
-                if (image.GetTextSize(fragment, fontSize, fontFamilyName).Width <= wrapWidth)
+                if (image.GetTextSize(fragment, fontSize, fontFamilyName, bold, underline).Width <= wrapWidth)
                 {
                     lines.Add(fragment);
                 }
@@ -1290,13 +1311,13 @@ public class BgInfoGenerator
         }
     }
 
-    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, double wrapWidth, double fontSize, string fontFamilyName)
+    private static IEnumerable<string> WrapLongWord(BgInfoRasterImage image, string word, double wrapWidth, double fontSize, string fontFamilyName, bool bold, bool underline)
     {
         var current = string.Empty;
         foreach (var character in word)
         {
             var candidate = current + character;
-            if (!string.IsNullOrEmpty(current) && image.GetTextSize(candidate, fontSize, fontFamilyName).Width > wrapWidth)
+            if (!string.IsNullOrEmpty(current) && image.GetTextSize(candidate, fontSize, fontFamilyName, bold, underline).Width > wrapWidth)
             {
                 yield return current;
                 current = character.ToString();

@@ -43,6 +43,14 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public int FontSize { get; set; } = 16;
 
+    /// <para>Render labels with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter Bold { get; set; }
+
+    /// <para>Underline labels by default.</para>
+    [Parameter]
+    public SwitchParameter Underline { get; set; }
+
     /// <para>Default value color.</para>
     [Parameter]
     public object ValueColor { get; set; } = "Black";
@@ -54,6 +62,14 @@ public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Default value font family.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
+
+    /// <para>Render values with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter ValueBold { get; set; }
+
+    /// <para>Underline values by default.</para>
+    [Parameter]
+    public SwitchParameter ValueUnderline { get; set; }
 
     /// <para>Maximum width used when wrapping value text. Set to 0 to disable wrapping.</para>
     [Parameter]
@@ -190,9 +206,13 @@ public class CmdletNewBGInfo : PSCmdlet {
             Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color)),
             BackgroundColor = PowerShellColorConverter.ConvertOptional(BackgroundColor, nameof(BackgroundColor)),
             FontSize = FontSize,
+            Bold = Bold.IsPresent,
+            Underline = Underline.IsPresent,
             ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)),
             ValueFontFamilyName = ValueFontFamilyName,
             ValueFontSize = ValueFontSize,
+            ValueBold = ValueBold.IsPresent,
+            ValueUnderline = ValueUnderline.IsPresent,
             ValueWrapWidth = ValueWrapWidth,
             SpaceBetweenLines = SpaceBetweenLines,
             SpaceBetweenColumns = SpaceBetweenColumns,
@@ -323,9 +343,13 @@ public class CmdletNewBGInfo : PSCmdlet {
             Color = GetColor(item, "Color"),
             FontSize = GetSingle(item, "FontSize"),
             FontFamilyName = GetString(item, "FontFamilyName"),
+            Bold = GetBoolean(item, "Bold"),
+            Underline = GetBoolean(item, "Underline"),
             ValueColor = GetColor(item, "ValueColor"),
             ValueFontSize = GetSingle(item, "ValueFontSize"),
-            ValueFontFamilyName = GetString(item, "ValueFontFamilyName")
+            ValueFontFamilyName = GetString(item, "ValueFontFamilyName"),
+            ValueBold = GetBoolean(item, "ValueBold"),
+            ValueUnderline = GetBoolean(item, "ValueUnderline")
         };
 
         return true;
@@ -388,6 +412,17 @@ public class CmdletNewBGInfo : PSCmdlet {
     private static float? GetSingle(PSObject item, string name)
     {
         return ConvertToSingle(GetPropertyValue(item, name));
+    }
+
+    private static bool? GetBoolean(PSObject item, string name)
+    {
+        var value = GetPropertyValue(item, name);
+        if (value == null)
+        {
+            return null;
+        }
+
+        return LanguagePrimitives.TryConvertTo<bool>(value, out var result) ? result : null;
     }
 
     private static float? ConvertToSingle(object? value)

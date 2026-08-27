@@ -153,6 +153,14 @@ public sealed class BgInfoChart {
     public float? TitleFontSize { get; set; }
     /// <summary>Value font size.</summary>
     public float? ValueFontSize { get; set; }
+    /// <summary>Whether the title uses a bold font weight.</summary>
+    public bool? TitleBold { get; set; }
+    /// <summary>Whether the title is underlined.</summary>
+    public bool? TitleUnderline { get; set; }
+    /// <summary>Whether the latest value uses a bold font weight.</summary>
+    public bool? ValueBold { get; set; }
+    /// <summary>Whether the latest value is underlined.</summary>
+    public bool? ValueUnderline { get; set; }
     /// <summary>Whether to show the latest value.</summary>
     public bool ShowLatestValue { get; set; } = true;
     /// <summary>Format string used for latest value.</summary>

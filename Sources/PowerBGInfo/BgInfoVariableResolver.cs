@@ -94,9 +94,13 @@ internal static partial class BgInfoVariableResolver {
             Color = entry.Color,
             FontSize = entry.FontSize,
             FontFamilyName = entry.FontFamilyName,
+            Bold = entry.Bold,
+            Underline = entry.Underline,
             ValueColor = entry.ValueColor,
             ValueFontSize = entry.ValueFontSize,
-            ValueFontFamilyName = entry.ValueFontFamilyName
+            ValueFontFamilyName = entry.ValueFontFamilyName,
+            ValueBold = entry.ValueBold,
+            ValueUnderline = entry.ValueUnderline
         };
     }
 

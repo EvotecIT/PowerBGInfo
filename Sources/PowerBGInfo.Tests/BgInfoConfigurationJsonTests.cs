@@ -17,14 +17,22 @@ public class BgInfoConfigurationJsonTests
 
         var configuration = new BgInfoConfiguration
         {
-            ConfigurationDirectory = tempDirectory
+            ConfigurationDirectory = tempDirectory,
+            Bold = true,
+            Underline = true,
+            ValueBold = true,
+            ValueUnderline = true
         };
         configuration.Entries.Add(new BgInfoEntry
         {
             Type = BgInfoEntryType.Value,
             Name = "Host",
             BuiltinValue = "HostName",
-            Value = "stale-value"
+            Value = "stale-value",
+            Bold = true,
+            Underline = true,
+            ValueBold = false,
+            ValueUnderline = false
         });
 
         BgInfoConfigurationJson.Save(configuration, path);
@@ -34,9 +42,17 @@ public class BgInfoConfigurationJsonTests
         Assert.DoesNotContain("stale-value", json);
 
         var roundTripped = BgInfoConfigurationJson.Load(path);
+        Assert.True(roundTripped.Bold);
+        Assert.True(roundTripped.Underline);
+        Assert.True(roundTripped.ValueBold);
+        Assert.True(roundTripped.ValueUnderline);
         var entry = Assert.Single(roundTripped.Entries);
         Assert.Equal("HostName", entry.BuiltinValue);
         Assert.Null(entry.Value);
+        Assert.True(entry.Bold);
+        Assert.True(entry.Underline);
+        Assert.False(entry.ValueBold);
+        Assert.False(entry.ValueUnderline);
     }
 
     [Fact]
@@ -157,7 +173,11 @@ public class BgInfoConfigurationJsonTests
             DonutCenterLabel = "Used",
             ProgressBarThicknessRatio = 0.4,
             PictorialSymbol = BgInfoChartPictorialSymbol.Person,
-            PictorialColumns = 8
+            PictorialColumns = 8,
+            TitleBold = true,
+            TitleUnderline = true,
+            ValueBold = true,
+            ValueUnderline = true
         });
 
         BgInfoConfigurationJson.Save(configuration, path);
@@ -181,6 +201,10 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(0.4, chart.ProgressBarThicknessRatio);
         Assert.Equal(BgInfoChartPictorialSymbol.Person, chart.PictorialSymbol);
         Assert.Equal(8, chart.PictorialColumns);
+        Assert.True(chart.TitleBold);
+        Assert.True(chart.TitleUnderline);
+        Assert.True(chart.ValueBold);
+        Assert.True(chart.ValueUnderline);
     }
 
     [Fact]

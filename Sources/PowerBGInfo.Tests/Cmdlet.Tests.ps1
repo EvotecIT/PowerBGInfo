@@ -44,6 +44,15 @@ Describe 'New-BGInfoValue cmdlet' {
         $entry.Value | Should -Be 'X'
     }
 
+    It 'supports independent label and value font styles' {
+        $entry = New-BGInfoValue -Name 'Test' -Value 'X' -Bold -Underline -ValueBold:$false -ValueUnderline
+
+        $entry.Bold | Should -BeTrue
+        $entry.Underline | Should -BeTrue
+        $entry.ValueBold | Should -BeFalse
+        $entry.ValueUnderline | Should -BeTrue
+    }
+
     It 'resolves builtin values' {
         $entry = New-BGInfoValue -BuiltinValue 'HostName'
         $entry.Name | Should -Be 'HostName'
@@ -68,6 +77,13 @@ Describe 'New-BGInfoValue cmdlet' {
 }
 
 Describe 'New-BGInfoLabel cmdlet' {
+    It 'supports native font styles' {
+        $entry = New-BGInfoLabel -Name 'Test' -Bold -Underline
+
+        $entry.Bold | Should -BeTrue
+        $entry.Underline | Should -BeTrue
+    }
+
     It 'accepts bare RGB hex color strings' {
         $entry = New-BGInfoLabel -Name 'Test' -Color 'ffffff'
 
@@ -125,6 +141,26 @@ Describe 'New-BGInfo cmdlet parameters' {
     It 'supports ValueWrapWidth' {
         $command = Get-Command New-BGInfo
         $command.Parameters.Keys | Should -Contain 'ValueWrapWidth'
+    }
+
+    It 'supports label and value font style defaults' {
+        $config = New-BGInfo {
+            New-BGInfoValue -Name 'Test' -Value 'X'
+        } -ConfigurationDirectory $TestDrive -Target File -Bold -Underline -ValueBold -ValueUnderline -PassThru
+
+        $config.Bold | Should -BeTrue
+        $config.Underline | Should -BeTrue
+        $config.ValueBold | Should -BeTrue
+        $config.ValueUnderline | Should -BeTrue
+    }
+
+    It 'supports chart title and value font styles' {
+        $chart = New-BGInfoChart -Title 'CPU' -Value 42 -TitleBold -TitleUnderline -ValueBold -ValueUnderline
+
+        $chart.TitleBold | Should -BeTrue
+        $chart.TitleUnderline | Should -BeTrue
+        $chart.ValueBold | Should -BeTrue
+        $chart.ValueUnderline | Should -BeTrue
     }
 
     It 'supports JsonPath export' {
@@ -346,12 +382,16 @@ Describe 'Export-BGInfoConfiguration cmdlet' {
 
 Describe 'New-BGInfoConfiguration cmdlet' {
     It 'creates configuration with overrides' {
-        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock -DisableWallpaperSlideshow
+        $config = New-BGInfoConfiguration -Target File -MonitorIndex 1 -SpaceX 5 -SpaceY 7 -ValueWrapWidth 240 -Bold -Underline -ValueBold -ValueUnderline -ChartLayout Stack -ChartStackAlignToTextBlock -ChartStackOutsideTextBlock -DisableWallpaperSlideshow
         $config.Target.ToString() | Should -Be 'File'
         $config.MonitorIndex | Should -Be 1
         $config.SpaceX | Should -Be 5
         $config.SpaceY | Should -Be 7
         $config.ValueWrapWidth | Should -Be 240
+        $config.Bold | Should -BeTrue
+        $config.Underline | Should -BeTrue
+        $config.ValueBold | Should -BeTrue
+        $config.ValueUnderline | Should -BeTrue
         $config.ChartLayout.ToString() | Should -Be 'Stack'
         $config.ChartStackAlignToTextBlock | Should -BeTrue
         $config.ChartStackOutsideTextBlock | Should -BeTrue

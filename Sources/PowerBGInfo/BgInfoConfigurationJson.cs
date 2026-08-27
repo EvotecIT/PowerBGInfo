@@ -120,7 +120,11 @@ public static class BgInfoConfigurationJson {
         ApplyColor(model.BackgroundColor, value => configuration.BackgroundColor = value);
 
         if (model.FontSize.HasValue) configuration.FontSize = model.FontSize.Value;
+        if (model.Bold.HasValue) configuration.Bold = model.Bold.Value;
+        if (model.Underline.HasValue) configuration.Underline = model.Underline.Value;
         if (model.ValueFontSize.HasValue) configuration.ValueFontSize = model.ValueFontSize.Value;
+        if (model.ValueBold.HasValue) configuration.ValueBold = model.ValueBold.Value;
+        if (model.ValueUnderline.HasValue) configuration.ValueUnderline = model.ValueUnderline.Value;
         if (model.ValueWrapWidth.HasValue) configuration.ValueWrapWidth = model.ValueWrapWidth.Value;
         if (model.SpaceBetweenLines.HasValue) configuration.SpaceBetweenLines = model.SpaceBetweenLines.Value;
         if (model.SpaceBetweenColumns.HasValue) configuration.SpaceBetweenColumns = model.SpaceBetweenColumns.Value;
@@ -230,9 +234,13 @@ public static class BgInfoConfigurationJson {
             FontFamilyName = configuration.FontFamilyName,
             Color = BgInfoColorParser.ToHex(configuration.Color),
             FontSize = configuration.FontSize,
+            Bold = configuration.Bold,
+            Underline = configuration.Underline,
             ValueColor = BgInfoColorParser.ToHex(configuration.ValueColor),
             ValueFontSize = configuration.ValueFontSize,
             ValueFontFamilyName = configuration.ValueFontFamilyName,
+            ValueBold = configuration.ValueBold,
+            ValueUnderline = configuration.ValueUnderline,
             ValueWrapWidth = configuration.ValueWrapWidth,
             BackgroundColor = configuration.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(configuration.BackgroundColor.Value) : null,
             SpaceBetweenLines = configuration.SpaceBetweenLines,
@@ -272,9 +280,13 @@ public static class BgInfoConfigurationJson {
                     Color = entry.Color.HasValue ? BgInfoColorParser.ToHex(entry.Color.Value) : null,
                     FontSize = entry.FontSize,
                     FontFamilyName = entry.FontFamilyName,
+                    Bold = entry.Bold,
+                    Underline = entry.Underline,
                     ValueColor = entry.ValueColor.HasValue ? BgInfoColorParser.ToHex(entry.ValueColor.Value) : null,
                     ValueFontSize = entry.ValueFontSize,
-                    ValueFontFamilyName = entry.ValueFontFamilyName
+                    ValueFontFamilyName = entry.ValueFontFamilyName,
+                    ValueBold = entry.ValueBold,
+                    ValueUnderline = entry.ValueUnderline
                 });
             }
         }
@@ -319,6 +331,10 @@ public static class BgInfoConfigurationJson {
                     FontFamilyName = chart.FontFamilyName,
                     TitleFontSize = chart.TitleFontSize,
                     ValueFontSize = chart.ValueFontSize,
+                    TitleBold = chart.TitleBold,
+                    TitleUnderline = chart.TitleUnderline,
+                    ValueBold = chart.ValueBold,
+                    ValueUnderline = chart.ValueUnderline,
                     ShowLatestValue = chart.ShowLatestValue,
                     ValueFormat = chart.ValueFormat,
                     ValueSuffix = chart.ValueSuffix,
@@ -506,8 +522,12 @@ public static class BgInfoConfigurationJson {
         ApplyColor(model.ValueColor, value => entry.ValueColor = value);
         if (model.FontSize.HasValue) entry.FontSize = model.FontSize.Value;
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) entry.FontFamilyName = model.FontFamilyName;
+        if (model.Bold.HasValue) entry.Bold = model.Bold.Value;
+        if (model.Underline.HasValue) entry.Underline = model.Underline.Value;
         if (model.ValueFontSize.HasValue) entry.ValueFontSize = model.ValueFontSize.Value;
         if (!string.IsNullOrWhiteSpace(model.ValueFontFamilyName)) entry.ValueFontFamilyName = model.ValueFontFamilyName;
+        if (model.ValueBold.HasValue) entry.ValueBold = model.ValueBold.Value;
+        if (model.ValueUnderline.HasValue) entry.ValueUnderline = model.ValueUnderline.Value;
 
         return entry;
     }
@@ -587,6 +607,10 @@ public static class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) chart.FontFamilyName = model.FontFamilyName;
         if (model.TitleFontSize.HasValue) chart.TitleFontSize = model.TitleFontSize.Value;
         if (model.ValueFontSize.HasValue) chart.ValueFontSize = model.ValueFontSize.Value;
+        if (model.TitleBold.HasValue) chart.TitleBold = model.TitleBold.Value;
+        if (model.TitleUnderline.HasValue) chart.TitleUnderline = model.TitleUnderline.Value;
+        if (model.ValueBold.HasValue) chart.ValueBold = model.ValueBold.Value;
+        if (model.ValueUnderline.HasValue) chart.ValueUnderline = model.ValueUnderline.Value;
         if (model.ShowLatestValue.HasValue) chart.ShowLatestValue = model.ShowLatestValue.Value;
         if (!string.IsNullOrWhiteSpace(model.ValueFormat)) chart.ValueFormat = model.ValueFormat!;
         if (!string.IsNullOrWhiteSpace(model.ValueSuffix)) chart.ValueSuffix = model.ValueSuffix!;
@@ -1077,9 +1101,13 @@ public static class BgInfoConfigurationJson {
         public string? FontFamilyName { get; set; }
         public string? Color { get; set; }
         public float? FontSize { get; set; }
+        public bool? Bold { get; set; }
+        public bool? Underline { get; set; }
         public string? ValueColor { get; set; }
         public float? ValueFontSize { get; set; }
         public string? ValueFontFamilyName { get; set; }
+        public bool? ValueBold { get; set; }
+        public bool? ValueUnderline { get; set; }
         public int? ValueWrapWidth { get; set; }
         public string? BackgroundColor { get; set; }
         public int? SpaceBetweenLines { get; set; }
@@ -1128,9 +1156,13 @@ public static class BgInfoConfigurationJson {
         public string? Color { get; set; }
         public float? FontSize { get; set; }
         public string? FontFamilyName { get; set; }
+        public bool? Bold { get; set; }
+        public bool? Underline { get; set; }
         public string? ValueColor { get; set; }
         public float? ValueFontSize { get; set; }
         public string? ValueFontFamilyName { get; set; }
+        public bool? ValueBold { get; set; }
+        public bool? ValueUnderline { get; set; }
     }
 
     internal sealed class BgInfoChartFile {
@@ -1159,6 +1191,10 @@ public static class BgInfoConfigurationJson {
         public string? FontFamilyName { get; set; }
         public float? TitleFontSize { get; set; }
         public float? ValueFontSize { get; set; }
+        public bool? TitleBold { get; set; }
+        public bool? TitleUnderline { get; set; }
+        public bool? ValueBold { get; set; }
+        public bool? ValueUnderline { get; set; }
         public bool? ShowLatestValue { get; set; }
         public string? ValueFormat { get; set; }
         public string? ValueSuffix { get; set; }

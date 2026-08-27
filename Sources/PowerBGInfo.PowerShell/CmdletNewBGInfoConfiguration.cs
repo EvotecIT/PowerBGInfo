@@ -36,6 +36,14 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public float FontSize { get; set; } = 16;
 
+    /// <para>Render labels with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter Bold { get; set; }
+
+    /// <para>Underline labels by default.</para>
+    [Parameter]
+    public SwitchParameter Underline { get; set; }
+
     /// <para>Default value color.</para>
     [Parameter]
     public object? ValueColor { get; set; }
@@ -47,6 +55,14 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     /// <para>Default value font family.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
+
+    /// <para>Render values with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter ValueBold { get; set; }
+
+    /// <para>Underline values by default.</para>
+    [Parameter]
+    public SwitchParameter ValueUnderline { get; set; }
 
     /// <para>Maximum width used when wrapping value text. Set to 0 to disable wrapping.</para>
     [Parameter]
@@ -180,9 +196,13 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(Color))) config.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
         if (IsParameterBound(nameof(BackgroundColor))) config.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));
         if (IsParameterBound(nameof(FontSize))) config.FontSize = FontSize;
+        if (IsParameterBound(nameof(Bold))) config.Bold = Bold.IsPresent;
+        if (IsParameterBound(nameof(Underline))) config.Underline = Underline.IsPresent;
         if (IsParameterBound(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
         if (IsParameterBound(nameof(ValueFontSize))) config.ValueFontSize = ValueFontSize;
         if (IsParameterBound(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
+        if (IsParameterBound(nameof(ValueBold))) config.ValueBold = ValueBold.IsPresent;
+        if (IsParameterBound(nameof(ValueUnderline))) config.ValueUnderline = ValueUnderline.IsPresent;
         if (IsParameterBound(nameof(ValueWrapWidth))) config.ValueWrapWidth = ValueWrapWidth;
         if (IsParameterBound(nameof(SpaceBetweenLines))) config.SpaceBetweenLines = SpaceBetweenLines;
         if (IsParameterBound(nameof(SpaceBetweenColumns))) config.SpaceBetweenColumns = SpaceBetweenColumns;
