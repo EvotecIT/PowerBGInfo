@@ -11,7 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ChartForgeXVersion>1.1.0</ChartForgeXVersion>
+        <ChartForgeXVersion>1.7.0</ChartForgeXVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
