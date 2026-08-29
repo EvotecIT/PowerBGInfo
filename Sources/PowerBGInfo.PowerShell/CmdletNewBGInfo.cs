@@ -1,5 +1,6 @@
 using System.Collections;
 using Color = ChartForgeX.Primitives.ChartColor;
+using ChartForgeX.Typography;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation;
@@ -43,6 +44,39 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public int FontSize { get; set; } = 16;
 
+    /// <para>Render labels with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter Bold { get; set; }
+
+    /// <para>Default numeric label font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int FontWeight { get; set; } = 400;
+
+    /// <para>Render labels with italic text by default.</para>
+    [Parameter]
+    public SwitchParameter Italic { get; set; }
+
+    /// <para>Underline labels by default.</para>
+    [Parameter]
+    public SwitchParameter Underline { get; set; }
+
+    /// <para>Default label underline pattern.</para>
+    [Parameter]
+    public TextDecorationStyle UnderlineStyle { get; set; }
+
+    /// <para>Default label strikethrough pattern.</para>
+    [Parameter]
+    public TextDecorationStyle StrikethroughStyle { get; set; }
+
+    /// <para>Default label subscript or superscript placement.</para>
+    [Parameter]
+    public TextBaseline Baseline { get; set; }
+
+    /// <para>Default display-time label casing transform.</para>
+    [Parameter]
+    public TextCaseTransform TextCase { get; set; }
+
     /// <para>Default value color.</para>
     [Parameter]
     public object ValueColor { get; set; } = "Black";
@@ -54,6 +88,39 @@ public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Default value font family.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
+
+    /// <para>Render values with a bold font weight by default.</para>
+    [Parameter]
+    public SwitchParameter ValueBold { get; set; }
+
+    /// <para>Default numeric value font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int ValueFontWeight { get; set; } = 400;
+
+    /// <para>Render values with italic text by default.</para>
+    [Parameter]
+    public SwitchParameter ValueItalic { get; set; }
+
+    /// <para>Underline values by default.</para>
+    [Parameter]
+    public SwitchParameter ValueUnderline { get; set; }
+
+    /// <para>Default value underline pattern.</para>
+    [Parameter]
+    public TextDecorationStyle ValueUnderlineStyle { get; set; }
+
+    /// <para>Default value strikethrough pattern.</para>
+    [Parameter]
+    public TextDecorationStyle ValueStrikethroughStyle { get; set; }
+
+    /// <para>Default value subscript or superscript placement.</para>
+    [Parameter]
+    public TextBaseline ValueBaseline { get; set; }
+
+    /// <para>Default display-time value casing transform.</para>
+    [Parameter]
+    public TextCaseTransform ValueTextCase { get; set; }
 
     /// <para>Maximum width used when wrapping value text. Set to 0 to disable wrapping.</para>
     [Parameter]
@@ -190,9 +257,21 @@ public class CmdletNewBGInfo : PSCmdlet {
             Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color)),
             BackgroundColor = PowerShellColorConverter.ConvertOptional(BackgroundColor, nameof(BackgroundColor)),
             FontSize = FontSize,
+            FontWeight = MyInvocation.BoundParameters.ContainsKey(nameof(FontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(FontWeight, nameof(FontWeight)) : Bold.IsPresent ? 700 : 400,
+            Italic = Italic.IsPresent,
+            UnderlineStyle = MyInvocation.BoundParameters.ContainsKey(nameof(UnderlineStyle)) ? UnderlineStyle : Underline.IsPresent ? TextDecorationStyle.Single : TextDecorationStyle.None,
+            StrikethroughStyle = StrikethroughStyle,
+            Baseline = Baseline,
+            TextCase = TextCase,
             ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)),
             ValueFontFamilyName = ValueFontFamilyName,
             ValueFontSize = ValueFontSize,
+            ValueFontWeight = MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(ValueFontWeight, nameof(ValueFontWeight)) : ValueBold.IsPresent ? 700 : 400,
+            ValueItalic = ValueItalic.IsPresent,
+            ValueUnderlineStyle = MyInvocation.BoundParameters.ContainsKey(nameof(ValueUnderlineStyle)) ? ValueUnderlineStyle : ValueUnderline.IsPresent ? TextDecorationStyle.Single : TextDecorationStyle.None,
+            ValueStrikethroughStyle = ValueStrikethroughStyle,
+            ValueBaseline = ValueBaseline,
+            ValueTextCase = ValueTextCase,
             ValueWrapWidth = ValueWrapWidth,
             SpaceBetweenLines = SpaceBetweenLines,
             SpaceBetweenColumns = SpaceBetweenColumns,
@@ -323,9 +402,25 @@ public class CmdletNewBGInfo : PSCmdlet {
             Color = GetColor(item, "Color"),
             FontSize = GetSingle(item, "FontSize"),
             FontFamilyName = GetString(item, "FontFamilyName"),
+            Bold = GetBoolean(item, "Bold"),
+            FontWeight = GetFontWeight(item, "FontWeight"),
+            Italic = GetBoolean(item, "Italic"),
+            Underline = GetBoolean(item, "Underline"),
+            UnderlineStyle = GetEnum<TextDecorationStyle>(item, "UnderlineStyle"),
+            StrikethroughStyle = GetEnum<TextDecorationStyle>(item, "StrikethroughStyle"),
+            Baseline = GetEnum<TextBaseline>(item, "Baseline"),
+            TextCase = GetEnum<TextCaseTransform>(item, "TextCase"),
             ValueColor = GetColor(item, "ValueColor"),
             ValueFontSize = GetSingle(item, "ValueFontSize"),
-            ValueFontFamilyName = GetString(item, "ValueFontFamilyName")
+            ValueFontFamilyName = GetString(item, "ValueFontFamilyName"),
+            ValueBold = GetBoolean(item, "ValueBold"),
+            ValueFontWeight = GetFontWeight(item, "ValueFontWeight"),
+            ValueItalic = GetBoolean(item, "ValueItalic"),
+            ValueUnderline = GetBoolean(item, "ValueUnderline"),
+            ValueUnderlineStyle = GetEnum<TextDecorationStyle>(item, "ValueUnderlineStyle"),
+            ValueStrikethroughStyle = GetEnum<TextDecorationStyle>(item, "ValueStrikethroughStyle"),
+            ValueBaseline = GetEnum<TextBaseline>(item, "ValueBaseline"),
+            ValueTextCase = GetEnum<TextCaseTransform>(item, "ValueTextCase")
         };
 
         return true;
@@ -388,6 +483,31 @@ public class CmdletNewBGInfo : PSCmdlet {
     private static float? GetSingle(PSObject item, string name)
     {
         return ConvertToSingle(GetPropertyValue(item, name));
+    }
+
+    private static bool? GetBoolean(PSObject item, string name)
+    {
+        var value = GetPropertyValue(item, name);
+        if (value == null)
+        {
+            return null;
+        }
+
+        return LanguagePrimitives.TryConvertTo<bool>(value, out var result) ? result : null;
+    }
+
+    private static int? GetFontWeight(PSObject item, string name)
+    {
+        var value = GetPropertyValue(item, name);
+        if (value == null || !LanguagePrimitives.TryConvertTo<int>(value, out var result)) return null;
+        return PowerShellTextStyleValidator.ValidateFontWeight(result, name);
+    }
+
+    private static TEnum? GetEnum<TEnum>(PSObject item, string name) where TEnum : struct
+    {
+        var value = GetPropertyValue(item, name);
+        if (value == null || !LanguagePrimitives.TryConvertTo<TEnum>(value, out var result) || !Enum.IsDefined(typeof(TEnum), result)) return null;
+        return result;
     }
 
     private static float? ConvertToSingle(object? value)

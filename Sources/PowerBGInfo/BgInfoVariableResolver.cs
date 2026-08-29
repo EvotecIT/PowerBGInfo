@@ -94,9 +94,25 @@ internal static partial class BgInfoVariableResolver {
             Color = entry.Color,
             FontSize = entry.FontSize,
             FontFamilyName = entry.FontFamilyName,
+            Bold = entry.Bold,
+            FontWeight = entry.FontWeight,
+            Italic = entry.Italic,
+            Underline = entry.Underline,
+            UnderlineStyle = entry.UnderlineStyle,
+            StrikethroughStyle = entry.StrikethroughStyle,
+            Baseline = entry.Baseline,
+            TextCase = entry.TextCase,
             ValueColor = entry.ValueColor,
             ValueFontSize = entry.ValueFontSize,
-            ValueFontFamilyName = entry.ValueFontFamilyName
+            ValueFontFamilyName = entry.ValueFontFamilyName,
+            ValueBold = entry.ValueBold,
+            ValueFontWeight = entry.ValueFontWeight,
+            ValueItalic = entry.ValueItalic,
+            ValueUnderline = entry.ValueUnderline,
+            ValueUnderlineStyle = entry.ValueUnderlineStyle,
+            ValueStrikethroughStyle = entry.ValueStrikethroughStyle,
+            ValueBaseline = entry.ValueBaseline,
+            ValueTextCase = entry.ValueTextCase
         };
     }
 

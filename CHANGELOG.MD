@@ -1,5 +1,13 @@
 ## Unreleased
 
+### Added
+
+- Added independent bold and underline controls for labels, values, chart headers, global defaults, and JSON configurations.
+
+### Fixed
+
+- Honored global value color, font size, and font family defaults when an entry does not provide its own overrides.
+
 ### Breaking changes
 
 - Removed production `System.Drawing` usage. Public color values now use ChartForgeX colors and PowerShell color parameters accept names, design tokens, or hex strings.

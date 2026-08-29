@@ -2,12 +2,115 @@ using System.IO;
 using ChartForgeX.Primitives;
 using Color = ChartForgeX.Primitives.ChartColors;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace PowerBGInfo.Tests;
 
 public class BgInfoConfigurationJsonTests
 {
+    [Fact]
+    public void SaveAndLoadPreservesCompleteTextStyleContract()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+
+        var configuration = new BgInfoConfiguration {
+            ConfigurationDirectory = tempDirectory,
+            FontFamilyName = "Arial",
+            FontSize = 21,
+            Color = Color.Crimson,
+            FontWeight = 600,
+            Italic = true,
+            UnderlineStyle = TextDecorationStyle.Double,
+            StrikethroughStyle = TextDecorationStyle.Dashed,
+            Baseline = TextBaseline.Superscript,
+            TextCase = TextCaseTransform.TitleCase,
+            ValueFontFamilyName = "Consolas",
+            ValueFontSize = 15,
+            ValueColor = Color.RoyalBlue,
+            ValueFontWeight = 300,
+            ValueItalic = true,
+            ValueUnderlineStyle = TextDecorationStyle.Wavy,
+            ValueStrikethroughStyle = TextDecorationStyle.Dotted,
+            ValueBaseline = TextBaseline.Subscript,
+            ValueTextCase = TextCaseTransform.ToggleCase
+        };
+        configuration.Entries.Add(new BgInfoEntry {
+            Type = BgInfoEntryType.Value,
+            Name = "Label",
+            Value = "Value",
+            FontWeight = 800,
+            Italic = false,
+            UnderlineStyle = TextDecorationStyle.Dashed,
+            StrikethroughStyle = TextDecorationStyle.Single,
+            Baseline = TextBaseline.Subscript,
+            TextCase = TextCaseTransform.Uppercase,
+            ValueFontWeight = 200,
+            ValueItalic = false,
+            ValueUnderlineStyle = TextDecorationStyle.Dotted,
+            ValueStrikethroughStyle = TextDecorationStyle.Double,
+            ValueBaseline = TextBaseline.Superscript,
+            ValueTextCase = TextCaseTransform.Lowercase
+        });
+        configuration.Charts.Add(new BgInfoChart {
+            Title = "CPU",
+            Values = new[] { 42d },
+            TitleColor = Color.Gold,
+            ValueColor = Color.LimeGreen,
+            TitleFontWeight = 900,
+            TitleItalic = true,
+            TitleUnderlineStyle = TextDecorationStyle.Wavy,
+            TitleStrikethroughStyle = TextDecorationStyle.Dashed,
+            TitleBaseline = TextBaseline.Superscript,
+            TitleTextCase = TextCaseTransform.SentenceCase,
+            ValueFontWeight = 100,
+            ValueItalic = true,
+            ValueUnderlineStyle = TextDecorationStyle.Double,
+            ValueStrikethroughStyle = TextDecorationStyle.Dotted,
+            ValueBaseline = TextBaseline.Subscript,
+            ValueTextCase = TextCaseTransform.ToggleCase
+        });
+
+        BgInfoConfigurationJson.Save(configuration, path);
+
+        var json = File.ReadAllText(path);
+        Assert.Contains("\"UnderlineStyle\": \"Double\"", json);
+        Assert.Contains("\"ValueTextCase\": \"ToggleCase\"", json);
+        var loaded = BgInfoConfigurationJson.Load(path);
+        Assert.Equal(600, loaded.FontWeight);
+        Assert.True(loaded.Italic);
+        Assert.Equal(TextDecorationStyle.Double, loaded.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dashed, loaded.StrikethroughStyle);
+        Assert.Equal(TextBaseline.Superscript, loaded.Baseline);
+        Assert.Equal(TextCaseTransform.TitleCase, loaded.TextCase);
+        Assert.Equal(300, loaded.ValueFontWeight);
+        Assert.Equal(TextDecorationStyle.Wavy, loaded.ValueUnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dotted, loaded.ValueStrikethroughStyle);
+        Assert.Equal(TextBaseline.Subscript, loaded.ValueBaseline);
+        Assert.Equal(TextCaseTransform.ToggleCase, loaded.ValueTextCase);
+
+        var entry = Assert.Single(loaded.Entries);
+        Assert.Equal(800, entry.FontWeight);
+        Assert.Equal(TextDecorationStyle.Dashed, entry.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Double, entry.ValueStrikethroughStyle);
+        Assert.Equal(TextBaseline.Superscript, entry.ValueBaseline);
+        Assert.Equal(TextCaseTransform.Lowercase, entry.ValueTextCase);
+
+        var chart = Assert.Single(loaded.Charts);
+        Assert.Equal(Color.Gold, chart.TitleColor);
+        Assert.Equal(Color.LimeGreen, chart.ValueColor);
+        Assert.Equal(900, chart.TitleFontWeight);
+        Assert.Equal(TextDecorationStyle.Wavy, chart.TitleUnderlineStyle);
+        Assert.Equal(TextBaseline.Superscript, chart.TitleBaseline);
+        Assert.Equal(TextCaseTransform.SentenceCase, chart.TitleTextCase);
+        Assert.Equal(100, chart.ValueFontWeight);
+        Assert.Equal(TextDecorationStyle.Dotted, chart.ValueStrikethroughStyle);
+        Assert.Equal(TextBaseline.Subscript, chart.ValueBaseline);
+        Assert.Equal(TextCaseTransform.ToggleCase, chart.ValueTextCase);
+    }
+
     [Fact]
     public void SaveAndLoadPreservesBuiltinValueEntries()
     {
@@ -17,14 +120,22 @@ public class BgInfoConfigurationJsonTests
 
         var configuration = new BgInfoConfiguration
         {
-            ConfigurationDirectory = tempDirectory
+            ConfigurationDirectory = tempDirectory,
+            Bold = true,
+            Underline = true,
+            ValueBold = true,
+            ValueUnderline = true
         };
         configuration.Entries.Add(new BgInfoEntry
         {
             Type = BgInfoEntryType.Value,
             Name = "Host",
             BuiltinValue = "HostName",
-            Value = "stale-value"
+            Value = "stale-value",
+            Bold = true,
+            Underline = true,
+            ValueBold = false,
+            ValueUnderline = false
         });
 
         BgInfoConfigurationJson.Save(configuration, path);
@@ -34,9 +145,17 @@ public class BgInfoConfigurationJsonTests
         Assert.DoesNotContain("stale-value", json);
 
         var roundTripped = BgInfoConfigurationJson.Load(path);
+        Assert.True(roundTripped.Bold);
+        Assert.True(roundTripped.Underline);
+        Assert.True(roundTripped.ValueBold);
+        Assert.True(roundTripped.ValueUnderline);
         var entry = Assert.Single(roundTripped.Entries);
         Assert.Equal("HostName", entry.BuiltinValue);
         Assert.Null(entry.Value);
+        Assert.True(entry.Bold);
+        Assert.True(entry.Underline);
+        Assert.False(entry.ValueBold);
+        Assert.False(entry.ValueUnderline);
     }
 
     [Fact]
@@ -157,7 +276,11 @@ public class BgInfoConfigurationJsonTests
             DonutCenterLabel = "Used",
             ProgressBarThicknessRatio = 0.4,
             PictorialSymbol = BgInfoChartPictorialSymbol.Person,
-            PictorialColumns = 8
+            PictorialColumns = 8,
+            TitleBold = true,
+            TitleUnderline = true,
+            ValueBold = true,
+            ValueUnderline = true
         });
 
         BgInfoConfigurationJson.Save(configuration, path);
@@ -181,6 +304,10 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(0.4, chart.ProgressBarThicknessRatio);
         Assert.Equal(BgInfoChartPictorialSymbol.Person, chart.PictorialSymbol);
         Assert.Equal(8, chart.PictorialColumns);
+        Assert.True(chart.TitleBold);
+        Assert.True(chart.TitleUnderline);
+        Assert.True(chart.ValueBold);
+        Assert.True(chart.ValueUnderline);
     }
 
     [Fact]

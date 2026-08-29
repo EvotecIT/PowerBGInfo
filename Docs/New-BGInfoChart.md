@@ -11,12 +11,12 @@ Creates a BGInfo chart definition.
 ## SYNTAX
 ### Single (Default)
 ```powershell
-New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-Value <double>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-TextColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
+New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-Value <double>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
 ```
 
 ### Multiple
 ```powershell
-New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-Values <double[]>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-TextColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
+New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-Values <double[]>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -768,6 +768,54 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -TitleBaseline
+Subscript or superscript placement for the chart title.
+
+```yaml
+Type: TextBaseline
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: Normal, Superscript, Subscript
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleBold
+Render the chart title with a bold font weight.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleColor
+Independent chart title color.
+
+```yaml
+Type: Object
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -TitleFontSize
 Title font size.
 
@@ -776,6 +824,102 @@ Type: Single
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleFontWeight
+Numeric title font weight from 100 through 900.
+
+```yaml
+Type: Int32
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleItalic
+Render the chart title with italic text.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleStrikethroughStyle
+Strikethrough pattern for the chart title.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleTextCase
+Display-time casing transform for the chart title.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleUnderline
+Underline the chart title.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleUnderlineStyle
+Underline pattern for the chart title.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
 
 Required: False
 Position: named
@@ -800,11 +944,75 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ValueBaseline
+Subscript or superscript placement for the latest value.
+
+```yaml
+Type: TextBaseline
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: Normal, Superscript, Subscript
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueBold
+Render the latest value with a bold font weight.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueColor
+Independent latest-value color.
+
+```yaml
+Type: Object
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ValueFontSize
 Value font size.
 
 ```yaml
 Type: Single
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontWeight
+Numeric latest-value font weight from 100 through 900.
+
+```yaml
+Type: Int32
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values:
@@ -832,6 +1040,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ValueItalic
+Render the latest value with italic text.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Values
 Multiple values to append or replace.
 
@@ -848,6 +1072,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ValueStrikethroughStyle
+Strikethrough pattern for the latest value.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ValueSuffix
 Suffix appended to the latest value.
 
@@ -856,6 +1096,54 @@ Type: String
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueTextCase
+Display-time casing transform for the latest value.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueUnderline
+Underline the latest value.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueUnderlineStyle
+Underline pattern for the latest value.
+
+```yaml
+Type: TextDecorationStyle
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Single, Double, Dotted, Dashed, Wavy
 
 Required: False
 Position: named

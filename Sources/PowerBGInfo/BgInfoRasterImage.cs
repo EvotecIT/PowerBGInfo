@@ -77,20 +77,43 @@ public sealed class BgInfoRasterImage : IDisposable {
 
     /// <summary>Draws text using the shared ChartForgeX raster text path.</summary>
     public void AddText(double x, double y, string text, Color color, double fontSize, string fontFamilyName) {
-        if (string.IsNullOrEmpty(text) || color.A == 0) return;
-        var style = CreateTextStyle(fontSize, fontFamilyName, color);
+        AddText(x, y, text, color, fontSize, fontFamilyName, false, false);
+    }
+
+    /// <summary>Draws text using the requested font traits through the shared ChartForgeX raster text path.</summary>
+    public void AddText(double x, double y, string text, Color color, double fontSize, string fontFamilyName, bool bold, bool underline) {
+        var style = CreateTextStyle(fontSize, fontFamilyName, color, bold ? 700 : 400, false, underline ? TextDecorationStyle.Single : TextDecorationStyle.None, TextDecorationStyle.None, TextBaseline.Normal, TextCaseTransform.None);
+        AddText(x, y, text, style);
+    }
+
+    /// <summary>Draws text using a complete shared ChartForgeX text style.</summary>
+    public void AddText(double x, double y, string text, TextStyle style) {
+        if (style == null) throw new ArgumentNullException(nameof(style));
+        if (string.IsNullOrEmpty(text) || style.Color.A == 0) return;
         var size = TextLayoutEngine.Measure(text, style);
         _composition.DrawText(x, y, Math.Max(1, size.Width + 2), text, style, TextWrapMode.NoWrap, null, TextTrimming.None);
     }
 
     /// <summary>Measures text for layout and wrapping.</summary>
     public TextMetrics GetTextSize(string? text, double fontSize, string fontFamilyName) {
+        return GetTextSize(text, fontSize, fontFamilyName, false, false);
+    }
+
+    /// <summary>Measures styled text for layout and wrapping.</summary>
+    public TextMetrics GetTextSize(string? text, double fontSize, string fontFamilyName, bool bold, bool underline) {
+        var style = CreateTextStyle(fontSize, fontFamilyName, Color.Black, bold ? 700 : 400, false, underline ? TextDecorationStyle.Single : TextDecorationStyle.None, TextDecorationStyle.None, TextBaseline.Normal, TextCaseTransform.None);
+        return GetTextSize(text, style);
+    }
+
+    /// <summary>Measures text using a complete shared ChartForgeX text style.</summary>
+    public TextMetrics GetTextSize(string? text, TextStyle style) {
+        if (style == null) throw new ArgumentNullException(nameof(style));
         var normalized = text ?? string.Empty;
         if (normalized.Length == 0) return new TextMetrics(0, 0, 0);
-        var cacheKey = fontSize.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "\u001f" + (fontFamilyName ?? string.Empty) + "\u001f" + normalized;
+        var cacheKey = CreateTextCacheKey(normalized, style);
         if (_textSizeCache.TryGetValue(cacheKey, out var cached)) return cached;
 
-        var size = TextLayoutEngine.Measure(normalized, CreateTextStyle(fontSize, fontFamilyName, Color.Black));
+        var size = TextLayoutEngine.Measure(normalized, style);
         _textSizeCache[cacheKey] = size;
         return size;
     }
@@ -106,10 +129,28 @@ public sealed class BgInfoRasterImage : IDisposable {
         _composition = ImageComposition.FromImage(image)
     };
 
-    private static TextStyle CreateTextStyle(double fontSize, string? fontFamilyName, Color color) {
+    internal static TextStyle CreateTextStyle(double fontSize, string? fontFamilyName, Color color, int fontWeight, bool italic, TextDecorationStyle underlineStyle, TextDecorationStyle strikethroughStyle, TextBaseline baseline, TextCaseTransform textCase) {
         var style = TextStyle.Create(Math.Max(1, fontSize), color);
         style.Font = FontSpec.FromFamily(string.IsNullOrWhiteSpace(fontFamilyName) ? "Segoe UI, Arial, sans-serif" : fontFamilyName!);
+        style.Font.Weight = fontWeight;
+        style.Font.Italic = italic;
+        style.UnderlineStyle = underlineStyle;
+        style.StrikethroughStyle = strikethroughStyle;
+        style.Baseline = baseline;
+        style.TextCase = textCase;
         return style;
+    }
+
+    private static string CreateTextCacheKey(string text, TextStyle style) {
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+        return System.Globalization.CultureInfo.CurrentCulture.Name + "\u001f" +
+               style.FontSize.ToString("R", culture) + "\u001f" +
+               style.LineHeight.ToString("R", culture) + "\u001f" +
+               style.Font.Family + "\u001f" + (style.Font.FilePath ?? string.Empty) + "\u001f" +
+               (style.Font.CollectionIndex?.ToString(culture) ?? string.Empty) + "\u001f" + (style.Font.FaceName ?? string.Empty) + "\u001f" +
+               style.Font.Weight.ToString(culture) + "\u001f" + (style.Font.Italic ? "1" : "0") + "\u001f" +
+               ((int)style.UnderlineStyle).ToString(culture) + "\u001f" + ((int)style.StrikethroughStyle).ToString(culture) + "\u001f" +
+               ((int)style.Baseline).ToString(culture) + "\u001f" + ((int)style.TextCase).ToString(culture) + "\u001f" + text;
     }
 
     private static RasterImageFormat ResolveOutputFormat(string filePath) {

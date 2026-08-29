@@ -2,6 +2,7 @@ using DesktopManager;
 using PowerBGInfo;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 using Color = ChartForgeX.Primitives.ChartColors;
 using System.IO;
 using Xunit;
@@ -462,7 +463,7 @@ public class BgInfoGeneratorTests
     [InlineData(".jpeg", ".jpg")]
     [InlineData(".jpe", ".jpg")]
     [InlineData(".jfif", ".jpg")]
-    [InlineData(".gif", ".png")]
+    [InlineData(".gif", ".gif")]
     [InlineData(".dib", ".png")]
     [InlineData(".wdp", ".png")]
     [InlineData(".pnm", ".ppm")]
@@ -470,6 +471,30 @@ public class BgInfoGeneratorTests
     public void NormalizeOutputImageExtensionReturnsChartForgeXWritableExtension(string? extension, string expected)
     {
         Assert.Equal(expected, BgInfoGenerator.NormalizeOutputImageExtension(extension));
+    }
+
+    [Theory]
+    [InlineData(".png", ".png")]
+    [InlineData(".gif", ".png")]
+    [InlineData(".jpg", ".jpg")]
+    [InlineData(".bmp", ".bmp")]
+    [InlineData(".ppm", ".png")]
+    [InlineData(".tiff", ".png")]
+    public void NormalizeOutputImageExtensionKeepsDesktopTargetsWallpaperCompatible(string extension, string expected)
+    {
+        Assert.Equal(expected, BgInfoGenerator.NormalizeOutputImageExtension(extension, BgInfoTarget.Wallpaper));
+    }
+
+    [Theory]
+    [InlineData(".png")]
+    [InlineData(".gif")]
+    [InlineData(".jpg")]
+    [InlineData(".bmp")]
+    [InlineData(".ppm")]
+    [InlineData(".tiff")]
+    public void NormalizeOutputImageExtensionPreservesEverySupportedFileFormat(string extension)
+    {
+        Assert.Equal(extension, BgInfoGenerator.NormalizeOutputImageExtension(extension, BgInfoTarget.File));
     }
 
     [Fact]
@@ -555,6 +580,79 @@ public class BgInfoGeneratorTests
         Assert.True(new FileInfo(path).Length > 0);
     }
 
+    [Theory]
+    [InlineData(".png")]
+    [InlineData(".gif")]
+    [InlineData(".jpg")]
+    [InlineData(".bmp")]
+    [InlineData(".ppm")]
+    [InlineData(".tiff")]
+    public void RasterImageSavePreservesStyledTextAcrossEverySupportedFormat(string extension)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "styled" + extension);
+        var style = BgInfoRasterImage.CreateTextStyle(
+            26,
+            "Arial",
+            ChartColors.White,
+            700,
+            true,
+            TextDecorationStyle.Wavy,
+            TextDecorationStyle.Dashed,
+            TextBaseline.Superscript,
+            TextCaseTransform.ToggleCase);
+
+        using (var image = new BgInfoRasterImage())
+        {
+            image.Create(path, 260, 90, ChartColors.Navy);
+            image.AddText(8, 10, "Power BGInfo", style);
+            image.Save(path);
+        }
+
+        Assert.True(new FileInfo(path).Length > 0);
+        using var decoded = BgInfoRasterImage.Load(path);
+        Assert.Equal(260, decoded.Width);
+        Assert.Equal(90, decoded.Height);
+        Assert.False(decoded.ToRgbaImage().Pixels.All(pixel => pixel == 0));
+    }
+
+    [Fact]
+    public void CreateTextStylePreservesCompleteTypographyContract()
+    {
+        var style = BgInfoRasterImage.CreateTextStyle(
+            19,
+            "Consolas",
+            ChartColors.Gold,
+            600,
+            true,
+            TextDecorationStyle.Double,
+            TextDecorationStyle.Dotted,
+            TextBaseline.Subscript,
+            TextCaseTransform.SentenceCase);
+
+        Assert.Equal(19, style.FontSize);
+        Assert.Equal("Consolas", style.Font.Family);
+        Assert.Equal(ChartColors.Gold, style.Color);
+        Assert.Equal(600, style.Font.Weight);
+        Assert.True(style.Font.Italic);
+        Assert.Equal(TextDecorationStyle.Double, style.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dotted, style.StrikethroughStyle);
+        Assert.Equal(TextBaseline.Subscript, style.Baseline);
+        Assert.Equal(TextCaseTransform.SentenceCase, style.TextCase);
+    }
+
+    [Fact]
+    public void TextStyleModelsRejectInvalidWeightsAndEnumValues()
+    {
+        Assert.Equal(550, new BgInfoConfiguration { FontWeight = 550 }.FontWeight);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BgInfoEntry { ValueFontWeight = 99 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BgInfoChart { TitleFontWeight = 901 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BgInfoConfiguration { TextCase = (TextCaseTransform)999 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BgInfoEntry { UnderlineStyle = (TextDecorationStyle)999 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BgInfoChart { ValueBaseline = (TextBaseline)999 });
+    }
+
     [Fact]
     public void RasterImageLoadSupportsGifWithoutPlatformDrawing()
     {
@@ -587,6 +685,73 @@ public class BgInfoGeneratorTests
         }
 
         Assert.True(lowerLinePixels > 0);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void RasterImageRendersNativeFontStyles(bool bold, bool underline)
+    {
+        using var regular = new BgInfoRasterImage();
+        regular.Create(Path.Combine(Path.GetTempPath(), "bginfo-font-regular.png"), 220, 70, ChartColors.Transparent);
+        regular.AddText(4, 4, "PowerBGInfo", ChartColors.White, 28, "Arial", false, false);
+
+        using var styled = new BgInfoRasterImage();
+        styled.Create(Path.Combine(Path.GetTempPath(), "bginfo-font-styled.png"), 220, 70, ChartColors.Transparent);
+        styled.AddText(4, 4, "PowerBGInfo", ChartColors.White, 28, "Arial", bold, underline);
+
+        Assert.False(regular.ToRgbaImage().Pixels.SequenceEqual(styled.ToRgbaImage().Pixels));
+    }
+
+    [Fact]
+    public void ApplyEntryTextDefaultsKeepsLabelAndValueSettingsDistinct()
+    {
+        var entry = new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Label", Value = "Value" };
+        var config = new BgInfoConfiguration
+        {
+            Color = ChartColors.Red,
+            ValueColor = ChartColors.Blue,
+            FontSize = 24,
+            ValueFontSize = 13,
+            FontFamilyName = "Arial",
+            ValueFontFamilyName = "Consolas",
+            Bold = true,
+            Italic = true,
+            UnderlineStyle = TextDecorationStyle.Double,
+            StrikethroughStyle = TextDecorationStyle.Dashed,
+            Baseline = TextBaseline.Superscript,
+            TextCase = TextCaseTransform.Uppercase,
+            ValueFontWeight = 300,
+            ValueItalic = true,
+            ValueUnderline = true,
+            ValueStrikethroughStyle = TextDecorationStyle.Dotted,
+            ValueBaseline = TextBaseline.Subscript,
+            ValueTextCase = TextCaseTransform.ToggleCase,
+        };
+
+        BgInfoGenerator.ApplyEntryTextDefaults(entry, config);
+
+        Assert.Equal(ChartColors.Red, entry.Color);
+        Assert.Equal(ChartColors.Blue, entry.ValueColor);
+        Assert.Equal(24, entry.FontSize);
+        Assert.Equal(13, entry.ValueFontSize);
+        Assert.Equal("Arial", entry.FontFamilyName);
+        Assert.Equal("Consolas", entry.ValueFontFamilyName);
+        Assert.True(entry.Bold);
+        Assert.Equal(700, entry.FontWeight);
+        Assert.True(entry.Italic);
+        Assert.Equal(TextDecorationStyle.Double, entry.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dashed, entry.StrikethroughStyle);
+        Assert.Equal(TextBaseline.Superscript, entry.Baseline);
+        Assert.Equal(TextCaseTransform.Uppercase, entry.TextCase);
+        Assert.False(entry.ValueBold);
+        Assert.Equal(300, entry.ValueFontWeight);
+        Assert.True(entry.ValueItalic);
+        Assert.True(entry.ValueUnderline);
+        Assert.Equal(TextDecorationStyle.Single, entry.ValueUnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dotted, entry.ValueStrikethroughStyle);
+        Assert.Equal(TextBaseline.Subscript, entry.ValueBaseline);
+        Assert.Equal(TextCaseTransform.ToggleCase, entry.ValueTextCase);
     }
 
     [Fact]
