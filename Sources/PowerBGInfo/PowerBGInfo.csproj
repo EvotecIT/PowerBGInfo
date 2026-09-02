@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DesktopManager" Version="3.6.4" />
+        <PackageReference Include="DesktopManager" Version="4.4.0" />
     </ItemGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' != ''">
         <ProjectReference Include="$(ChartForgeXProjectPath)" />
