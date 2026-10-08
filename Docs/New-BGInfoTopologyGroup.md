@@ -21,7 +21,7 @@ Creates a BGInfo topology group definition.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoTopologyGroup -Color 'Value'
+New-BGInfoTopologyGroup -Id 'Value' -Label 'Value'
 ```
 
 

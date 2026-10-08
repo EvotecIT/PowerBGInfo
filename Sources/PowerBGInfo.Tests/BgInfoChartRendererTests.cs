@@ -6,6 +6,31 @@ namespace PowerBGInfo.Tests;
 
 public class BgInfoChartRendererTests
 {
+    [Theory]
+    [InlineData(BgInfoChartKind.Bar, 240, 48, 42)]
+    [InlineData(BgInfoChartKind.Line, 24, 80, 14)]
+    public void ShortChartTilesWithTallTitlesRenderAtTheirAuthoredDimensions(BgInfoChartKind kind, int width, int height, int titleFontSize)
+    {
+        var chart = new BgInfoChart {
+            Title = "CPU usage",
+            Kind = kind,
+            Values = new[] { 25d, 42d, 30d },
+            Width = width,
+            Height = height,
+            TitleFontSize = titleFontSize,
+            ValueFontSize = titleFontSize,
+            TitleColor = ChartColors.White,
+            ValueColor = ChartColors.Cyan
+        };
+
+        using var rendered = BgInfoChartRenderer.Render(chart, chart.Values, new BgInfoConfiguration());
+        var pixels = rendered.ToRgbaImage();
+
+        Assert.Equal(width, pixels.Width);
+        Assert.Equal(height, pixels.Height);
+        Assert.Contains(Enumerable.Range(0, width * height), index => pixels.Pixels[index * 4 + 3] > 0);
+    }
+
     [Fact]
     public void ChartTextStylesFlowToEveryChartForgeXTextRoleWithoutInflatingRoleDefaults()
     {

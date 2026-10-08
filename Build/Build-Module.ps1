@@ -83,6 +83,23 @@ Build-Module -ModuleName 'PowerBGInfo' {
         NETFramework                      = 'net8.0-windows', 'net472'
         NETHandleAssemblyWithSameName     = $true
         NETAssemblyLoadContext            = $true
+        NETAssemblyTypeAcceleratorMode    = 'Enums'
+        NETAssemblyTypeAcceleratorAssemblies = @('PowerBGInfo', 'DesktopManager', 'ChartForgeX', 'ChartForgeX.Visuals')
+        NETAssemblyTypeAccelerators       = @(
+            'PowerBGInfo.BgInfoConfiguration'
+            'PowerBGInfo.BgInfoChart'
+            'PowerBGInfo.BgInfoEntry'
+            'PowerBGInfo.BgInfoImage'
+            'PowerBGInfo.BgInfoTopology'
+            'PowerBGInfo.BgInfoVariable'
+            'PowerBGInfo.BgInfoVisualCanvas'
+            'PowerBGInfo.BgInfoVisualCanvasTile'
+            'PowerBGInfo.BgInfoVisualCanvasFeature'
+            'ChartForgeX.Primitives.ChartColor'
+            'ChartForgeX.Topology.TopologyNode'
+            'ChartForgeX.Topology.TopologyEdge'
+            'ChartForgeX.Topology.TopologyGroup'
+        )
         #NETMergeLibraryDebugging          = $true
         DotSourceLibraries                = $true
         DotSourceClasses                  = $true

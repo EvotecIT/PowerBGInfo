@@ -137,7 +137,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>Export-BGInfoConfiguration -InputObject 'Value'</dev:code>
+        <dev:code>Export-BGInfoConfiguration -Path 'C:\Path' -InputObject 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -1896,7 +1896,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfo -ConfigurationDirectory 'Value'</dev:code>
+        <dev:code>New-BGInfo -BGInfoContent { } -ConfigurationDirectory 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -7238,6 +7238,7 @@
             <command:parameterValue required="false" variableLength="false">ForceDirected</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RelationshipRadial</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">MindMap</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Swimlane</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>TopologyLayoutMode</maml:name>
@@ -7512,6 +7513,7 @@
           <command:parameterValue required="false" variableLength="false">ForceDirected</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RelationshipRadial</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">MindMap</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Swimlane</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>TopologyLayoutMode</maml:name>
@@ -7736,7 +7738,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopology -Anchor 'Value'</dev:code>
+        <dev:code>New-BGInfoTopology -TopologyDefinition { }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8091,7 +8093,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyEdge -Color 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyEdge -SourceNodeId 'Value' -TargetNodeId 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8298,7 +8300,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyGroup -Color 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyGroup -Id 'Value' -Label 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8667,7 +8669,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyNode -Badge 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyNode -Id 'Value' -Label 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>

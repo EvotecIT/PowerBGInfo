@@ -43,6 +43,11 @@ public sealed class BgInfoRasterImage : IDisposable {
     /// <summary>Saves the image to disk using the output extension to choose the raster format.</summary>
     public void Save(string filePath) {
         if (filePath == null) throw new ArgumentNullException(nameof(filePath));
+        if (Path.GetExtension(filePath).Equals(".gif", StringComparison.OrdinalIgnoreCase)) {
+            File.WriteAllBytes(filePath, _composition.ToImage().ToGif());
+            return;
+        }
+
         var format = ResolveOutputFormat(filePath);
         File.WriteAllBytes(filePath, _composition.ToRasterImage(format, new RasterImageOptions { Background = ChartColors.Black, JpegQuality = 95 }));
     }

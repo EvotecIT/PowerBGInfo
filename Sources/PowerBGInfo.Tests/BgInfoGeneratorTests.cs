@@ -2,6 +2,7 @@ using DesktopManager;
 using PowerBGInfo;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 using Color = ChartForgeX.Primitives.ChartColors;
 using System.IO;
@@ -9,7 +10,7 @@ using Xunit;
 
 namespace PowerBGInfo.Tests;
 
-public class BgInfoGeneratorTests
+public partial class BgInfoGeneratorTests
 {
     [Fact]
     public void GenerateCreatesFile()
@@ -659,7 +660,7 @@ public class BgInfoGeneratorTests
         var directory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "legacy.gif");
-        File.WriteAllBytes(path, ImageComposition.Create(6, 4, Color.DarkGreen).ToGif());
+        File.WriteAllBytes(path, ImageComposition.Create(6, 4, Color.DarkGreen).ToImage().ToGif());
 
         using var image = BgInfoRasterImage.Load(path);
 
@@ -760,7 +761,7 @@ public class BgInfoGeneratorTests
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
         var sourcePath = Path.Combine(tempDirectory, "legacy.gif");
-        File.WriteAllBytes(sourcePath, ImageComposition.Create(12, 8, Color.MidnightBlue).ToGif());
+        File.WriteAllBytes(sourcePath, ImageComposition.Create(12, 8, Color.MidnightBlue).ToImage().ToGif());
 
         var imageService = new ImageService();
         var wallpaperService = new FakeWallpaperService();

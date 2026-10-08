@@ -21,7 +21,7 @@ Creates a BGInfo topology node definition.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoTopologyNode -Badge 'Value'
+New-BGInfoTopologyNode -Id 'Value' -Label 'Value'
 ```
 
 

@@ -21,7 +21,7 @@ Use the script block to emit label/value entries.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfo -ConfigurationDirectory 'Value'
+New-BGInfo -BGInfoContent { } -ConfigurationDirectory 'Value'
 ```
 
 

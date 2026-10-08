@@ -21,7 +21,7 @@ Writes a JSON file compatible with Invoke-BGInfo and the CLI.
 
 ### EXAMPLE 1
 ```powershell
-Export-BGInfoConfiguration -InputObject 'Value'
+Export-BGInfoConfiguration -Path 'C:\Path' -InputObject 'Value'
 ```
 
 

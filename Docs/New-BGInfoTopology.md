@@ -21,7 +21,7 @@ Creates a BGInfo topology overlay definition.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoTopology -Anchor 'Value'
+New-BGInfoTopology -TopologyDefinition { }
 ```
 
 
@@ -82,7 +82,7 @@ Topology layout mode.
 Type: TopologyLayoutMode
 Parameter Sets: __AllParameterSets
 Aliases: None
-Possible values: Manual, GroupGrid, HubAndSpoke, Layered, Matrix, DenseGrouped, Geographic, ForceDirected, RelationshipRadial, MindMap
+Possible values: Manual, GroupGrid, HubAndSpoke, Layered, Matrix, DenseGrouped, Geographic, ForceDirected, RelationshipRadial, MindMap, Swimlane
 
 Required: False
 Position: named

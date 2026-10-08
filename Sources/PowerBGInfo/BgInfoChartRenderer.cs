@@ -86,6 +86,9 @@ internal static class BgInfoChartRenderer {
 
     internal static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
         var accent = chart.LineColor ?? config.ValueColor;
+        // Keep a positive native chart interior even when a tall header leaves a short plot.
+        // The host still owns the requested tile dimensions and clips its composed content.
+        var plotPadding = Math.Min(8d, (Math.Max(1, Math.Min(width, height)) - 1d) / 2d);
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
             .WithTheme(CreateOverlayTheme(chart, config, accent))
@@ -98,7 +101,7 @@ internal static class BgInfoChartRenderer {
             .WithAxisLines(false)
             .WithCard(false)
             .WithPlotBackground(false)
-            .WithPadding(8, 8, 8, 8)
+            .WithPadding(plotPadding, plotPadding, plotPadding, plotPadding)
             .WithPngSupersampling(2)
             .WithValueFormatter(value => FormatValue(value, chart));
 
