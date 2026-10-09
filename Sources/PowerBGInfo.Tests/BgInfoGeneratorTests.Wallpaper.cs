@@ -3,11 +3,69 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
+using DesktopManager;
 
 namespace PowerBGInfo.Tests;
 
 public partial class BgInfoGeneratorTests
 {
+    [Theory]
+    [InlineData(null, null, null)]
+    [InlineData("Calibri", "Consolas", null)]
+    [InlineData("Arial", "Consolas", "Calibri")]
+    public void SlideshowCompositionPreservesInheritedAndExplicitChartFonts(string? labelFont, string? valueFont, string? chartFont)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo-slideshow-fonts-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        try {
+            var sourcePath = Path.Combine(directory, "source.png");
+            using (var source = new BgInfoRasterImage()) {
+                source.Create(sourcePath, 380, 220, ChartColors.Black);
+                source.Save(sourcePath);
+            }
+            var chart = new BgInfoChart {
+                Title = "Memory working set",
+                Kind = BgInfoChartKind.Bar,
+                ThemeMode = VisualThemeMode.Dark,
+                FontFamilyName = chartFont,
+                Values = new[] { 42d, 65d },
+                ShowDataLabels = true,
+                UseHistory = false,
+                Width = 320,
+                Height = 180,
+                PositionX = 20,
+                PositionY = 20
+            };
+            var configuration = new BgInfoConfiguration {
+                ConfigurationDirectory = directory,
+                OutputFileName = "slideshow.png",
+                Target = BgInfoTarget.Wallpaper,
+                UseScreenCoordinates = false
+            };
+            if (labelFont != null) configuration.FontFamilyName = labelFont;
+            if (valueFont != null) configuration.ValueFontFamilyName = valueFont;
+            configuration.Charts.Add(chart);
+            using var expected = BgInfoRasterImage.Load(sourcePath);
+            using (var overlay = BgInfoChartRenderer.Render(chart, chart.Values, configuration)) {
+                expected.DrawImage(overlay, 20, 20);
+            }
+            var wallpaper = new FakeWallpaperService {
+                Slideshow = new DesktopWallpaperSlideshow {
+                    ImagePaths = new[] { sourcePath },
+                    State = DesktopSlideshowState.Enabled | DesktopSlideshowState.Slideshow
+                }
+            };
+            var outputPath = new BgInfoGenerator(new ImageService(), wallpaper).Generate(configuration);
+            using var actual = BgInfoRasterImage.Load(outputPath);
+            Assert.Equal(1, wallpaper.SlideshowCalls);
+            Assert.Equal(outputPath, Assert.Single(wallpaper.SlideshowPaths));
+            Assert.Equal(expected.ToRgbaImage().Pixels, actual.ToRgbaImage().Pixels);
+        } finally {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(".png")]
     [InlineData(".jpg")]

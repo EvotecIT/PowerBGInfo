@@ -38,7 +38,7 @@ Creates a BGInfo topology overlay definition.
 Creates a BGInfo topology edge definition.
 
 ### [New-BGInfoTopologyGroup](New-BGInfoTopologyGroup.md)
-Creates a BGInfo topology group definition.
+Creates a BGInfo topology group definition with bounds sized automatically around its members.
 
 ### [New-BGInfoTopologyNode](New-BGInfoTopologyNode.md)
 Creates a BGInfo topology node definition.

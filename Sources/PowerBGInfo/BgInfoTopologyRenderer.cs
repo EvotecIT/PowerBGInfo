@@ -1,6 +1,7 @@
 using System;
 using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Topology;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo;
 
@@ -61,12 +62,13 @@ internal static class BgInfoTopologyRenderer {
     }
 
     private static TopologyTheme CreateTheme(BgInfoTopology topology) {
-        var theme = topology.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase)
-            ? TopologyTheme.Light()
-            : TopologyTheme.Dark();
+        var tokens = string.Equals(topology.Theme, "Light", StringComparison.OrdinalIgnoreCase)
+            ? VisualDesignTokens.GraphiteLight()
+            : VisualDesignTokens.GraphiteDark();
+        var theme = tokens.ApplyTo(new TopologyTheme());
 
         if (topology.Transparent) {
-            theme.Background = topology.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase) ? "#FFFFFF00" : "#0B112000";
+            theme.Background = "#00000000";
         }
 
         return theme;

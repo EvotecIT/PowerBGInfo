@@ -6,7 +6,7 @@ schema: 2.0.0
 ---
 # New-BGInfoTopologyGroup
 ## SYNOPSIS
-Creates a BGInfo topology group definition.
+Creates a BGInfo topology group definition with bounds sized automatically around its members.
 
 ## SYNTAX
 ### __AllParameterSets
@@ -15,7 +15,7 @@ New-BGInfoTopologyGroup [-Id] <string> [-Label] <string> [-Subtitle <string>] [-
 ```
 
 ## DESCRIPTION
-Creates a BGInfo topology group definition.
+Creates a BGInfo topology group definition with bounds sized automatically around its members.
 
 ## EXAMPLES
 

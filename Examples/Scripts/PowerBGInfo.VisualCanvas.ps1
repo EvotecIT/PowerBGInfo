@@ -4,23 +4,6 @@ $examplesPath = (Resolve-Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).P
 $sampleImage = Join-Path -Path $examplesPath -ChildPath 'Samples\TapC-Evotec-2560x1080.jpg'
 $outputDirectory = Join-Path -Path $examplesPath -ChildPath 'Output'
 
-$palette = @{
-    Accent                 = '#2F80FF'
-    SecondaryAccent        = '#22A7FF'
-    TitleColor             = '#F8FAFC'
-    TitleAccentColor       = '#2F80FF'
-    SubtitleColor          = '#D8E3F4'
-    TileLabelColor         = '#C4D4EC'
-    TileValueColor         = '#F8FAFC'
-    TileDetailColor        = '#A8BAD4'
-    TileGlassTop           = '#E807152C'
-    TileGlassBottom        = '#DC030A17'
-    TileProgressTrackColor = '#EA18345D'
-    HeroBadgeTop           = '#0B1C3A'
-    HeroBadgeBottom        = '#051021'
-    HeroBadgeTextColor     = '#E8F1FF'
-}
-
 function New-VisualCanvasTiles {
     param(
         [ValidateSet('Glass', 'Outline', 'Raised')]
@@ -58,20 +41,6 @@ foreach ($variant in $variants) {
         New-BGInfoVisualCanvas `
             -Title 'PowerBGInfo' `
             -Subtitle 'Desktop background insights for Windows and PowerShell' `
-            -Accent $palette.Accent `
-            -SecondaryAccent $palette.SecondaryAccent `
-            -TitleColor $palette.TitleColor `
-            -TitleAccentColor $palette.TitleAccentColor `
-            -SubtitleColor $palette.SubtitleColor `
-            -TileLabelColor $palette.TileLabelColor `
-            -TileValueColor $palette.TileValueColor `
-            -TileDetailColor $palette.TileDetailColor `
-            -TileGlassTop $palette.TileGlassTop `
-            -TileGlassBottom $palette.TileGlassBottom `
-            -TileProgressTrackColor $palette.TileProgressTrackColor `
-            -HeroBadgeTop $palette.HeroBadgeTop `
-            -HeroBadgeBottom $palette.HeroBadgeBottom `
-            -HeroBadgeTextColor $palette.HeroBadgeTextColor `
             -Tile $variant.Tiles
     } -FilePath $sampleImage `
         -ConfigurationDirectory $outputDirectory `

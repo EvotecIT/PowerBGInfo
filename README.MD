@@ -325,7 +325,9 @@ New-BGInfo -MonitorIndex 0 {
 } -ConfigurationDirectory $PSScriptRoot\Output -BackgroundColor Black
 ```
 
-Charts are rendered by ChartForgeX into transparent overlays before PowerBGInfo composites them into the wallpaper. Supported kinds are `Sparkline`, `Line`, `Area`, `Bar`, `HorizontalBar`, `Gauge`, `Circle`, `RadialBar`, `Bullet`, `Pie`, `Donut`, `ProgressBar`, and `Pictorial`.
+Charts are rendered by ChartForgeX into transparent overlays before PowerBGInfo composites them into the wallpaper. Supported kinds are `Sparkline`, `Line`, `Area`, `Bar`, `HorizontalBar`, `Gauge`, `Circle`, `RadialBar`, `Bullet`, `Pie`, `Donut`, `ProgressBar`, and `Pictorial`. Long titles fit within their header row. If the latest value cannot share that row, it moves below the title; long values wrap without trimming. Give the chart enough height for its header and plot when using large fonts or long units.
+
+`-ShowGrid -GridLineCount 5` requests a denser value-axis grid than `-GridLineCount 3`. The shared axis uses readable numeric intervals, so the final count can differ from the requested density. Positive densities are bounded to 2–100; zero disables the grid. Value guides are horizontal for ordinary Cartesian charts and vertical for `HorizontalBar`.
 
 ## Visual canvases
 
@@ -362,37 +364,35 @@ New-BGInfo -Target File {
 
 Use `-CenterTileOffsetX` and `-CenterTileOffsetY` when the wallpaper needs the centered lane moved away from a logo or another focal point. `Examples\Scripts\PowerBGInfo.VisualCanvas.CenterRight.ps1` contains the complete example.
 
-The visual canvas palette is data-driven. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Use `-HeroBadgeText` for a text mark, `-HeroBadgeImagePath` for a logo inside the central badge, or `-NoHeroBadge` when the badge should be omitted entirely. Badge text, logo path, image fit, padding, opacity, colors, and visibility are preserved in JSON exports, so a consumer can brand the same reusable ChartForgeX template without changing renderer code. Standalone image overlays also accept `-Fit Stretch|Contain|Cover|Center|Tile`; `Stretch` remains the default for existing configurations.
+Visual canvases use ChartForgeX's shared dark theme by default. `-ThemeMode Light` switches the tile surfaces, text, accents, and font stack together. Chart overlays support the same option and default to Light; topology overlays use `-Theme Light|Dark` and default to Dark. Choose the mode for the part of the wallpaper behind the overlay. A transparent overlay cannot infer the contrast of an arbitrary photograph.
 
-For a high-contrast color box treatment, use a light translucent tile fill, dark tile text, the `Raised` surface style, and per-tile accents:
+Explicit colors take precedence over the selected theme. `New-BGInfoVisualCanvas` accepts color parameters for the hero title, subtitle, tile label/value/detail text, glass tile fill, progress track, badge fill, badge text, and primary/secondary accents. Chart title/value colors take precedence over the global `New-BGInfo -Color` and `-ValueColor` overrides. Unset colors remain inherited through JSON export and reload, so changing the mode changes the defaults together. Classic label/value entries retain their existing defaults.
+
+Chart titles, values, and native chart labels use the shared theme font stack when no font is assigned. An explicit chart `-FontFamilyName` overrides both global font settings; explicit `New-BGInfo -FontFamilyName` and `-ValueFontFamilyName` set the respective label and value roles, including an explicit choice of Calibri. JSON export and slideshow rendering preserve those choices while leaving unassigned chart fonts inherited. Classic label/value entries continue to default to Calibri.
+
+Use `-HeroBadgeText` for a text mark, `-HeroBadgeImagePath` for a logo inside the central badge, or `-NoHeroBadge` when the badge should be omitted entirely. Badge text, logo path, image fit, padding, opacity, colors, and visibility are preserved in JSON exports. Standalone image overlays also accept `-Fit Stretch|Contain|Cover|Center|Tile`; `Stretch` remains the default for existing configurations.
+
+For light contrast boxes over a dark wallpaper, select the Light mode with `Raised` tiles. Override only the hero text that sits directly on the dark photograph; use a status accent when a tile communicates a status:
 
 ![PowerBGInfo high-contrast visual canvas](Examples/Output/PowerBGInfo.VisualCanvas.ContrastBox.jpg)
 
 ```powershell
+$darkTokens = [ChartForgeX.Themes.VisualDesignTokens]::GraphiteDark()
+$lightTokens = [ChartForgeX.Themes.VisualDesignTokens]::GraphiteLight()
 $palette = @{
-    Accent                 = '#0F766EFF'
-    SecondaryAccent        = '#F97316FF'
-    TitleColor             = '#F8FAFCFF'
-    TitleAccentColor       = '#5EEAD4FF'
-    SubtitleColor          = '#E2E8F0FF'
-    TileLabelColor         = '#475569FF'
-    TileValueColor         = '#0F172AFF'
-    TileDetailColor        = '#334155FF'
-    TileGlassTop           = '#FFF7EDD9'
-    TileGlassBottom        = '#DBEAFECC'
-    TileProgressTrackColor = '#94A3B8A6'
-    HeroBadgeTop           = '#0F766EFF'
-    HeroBadgeBottom        = '#134E4AFF'
-    HeroBadgeTextColor     = '#FFF7EDFF'
+    ThemeMode        = 'Light'
+    TitleColor       = $darkTokens.Foreground
+    TitleAccentColor = $darkTokens.Accent
+    SubtitleColor    = $darkTokens.MutedForeground
 }
 
 $tiles = @(
-    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop' -Accent '#0F766EFF'
-    New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}' -Detail 'primary adapter' -Accent '#2563EBFF'
-    New-BGInfoVisualCanvasTile -Side Left -IconKind Shield -SurfaceStyle Raised -Label 'PATCH STATUS' -Value '94% compliant' -Progress 0.94 -Accent '#16A34AFF'
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31,42,38,34,31 -MiniChartMaximum 100 -Accent '#F97316FF'
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label 'MEMORY USE' -Value '11.8 GB used' -MiniChartKind Bars -MiniChartValues 36,38,42,41,45,43,39 -MiniChartMaximum 100 -Accent '#DB2777FF'
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Raised -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62 -Accent '#0EA5E9FF'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}' -Detail 'production desktop'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}' -Detail 'primary adapter'
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Shield -SurfaceStyle Raised -Label 'PATCH STATUS' -Value '94% compliant' -Progress 0.94 -Accent $lightTokens.Positive
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31,42,38,34,31 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Memory -SurfaceStyle Raised -Label 'MEMORY USE' -Value '11.8 GB used' -MiniChartKind Bars -MiniChartValues 36,38,42,41,45,43,39 -MiniChartMaximum 100
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Storage -SurfaceStyle Raised -Label 'SYSTEM DRIVE' -Value '62% free' -Progress 0.62
 )
 
 New-BGInfo -Target File {
@@ -402,19 +402,10 @@ New-BGInfo -Target File {
 
 Use `-FeatureAnchor BottomRight` with `-FeatureWidth`, `-FeatureOffsetX`, and `-FeatureOffsetY` when the bottom feature strip needs to move away from the centered Evotec logo or another wallpaper element.
 
-To generate a border-only icon overlay like the examples, start with explicit tile style, icon kind, and palette values:
+To generate a border-only icon overlay like the examples, select the tile style and icon kind; the shared dark palette supplies colors and fonts:
 
 ```powershell
-$palette = @{
-    Accent           = '#2F80FF'
-    SecondaryAccent  = '#22A7FF'
-    TitleColor       = '#F8FAFC'
-    TitleAccentColor = '#2F80FF'
-    SubtitleColor    = '#D8E3F4'
-    TileLabelColor   = '#C4D4EC'
-    TileValueColor   = '#F8FAFC'
-    TileDetailColor  = '#A8BAD4'
-}
+$palette = @{ ThemeMode = 'Dark' }
 
 $tiles = @(
     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Outline -Label HOSTNAME -Value '{{HostName}}'
@@ -431,16 +422,10 @@ New-BGInfo -Target File {
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.OutlineIcons.jpg' -WallpaperFit Fill
 ```
 
-For a heavier raised look on a black background, use the `Raised` surface style, a more opaque top/bottom tile palette, built-in icons, and `-Opaque -NoTechBackdrop`:
+For a heavier raised look on a dark background, use the `Raised` surface style, built-in icons, and `-Opaque -NoTechBackdrop`. The shared dark theme supplies the tile surfaces:
 
 ```powershell
-$palette = @{
-    Accent                 = '#38BDF8'
-    SecondaryAccent        = '#60A5FA'
-    TileGlassTop           = '#F3132444'
-    TileGlassBottom        = '#D9040A18'
-    TileProgressTrackColor = '#F0263A5E'
-}
+$palette = @{ ThemeMode = 'Dark' }
 
 $tiles = @(
     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
@@ -450,7 +435,7 @@ $tiles = @(
 )
 
 New-BGInfo -Target File {
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Raised sections on black background' -Opaque -NoTechBackdrop -Tile $tiles @palette
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'Raised sections on a dark background' -Opaque -NoTechBackdrop -Tile $tiles @palette
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.Raised3D.jpg' -WallpaperFit Fill
 ```
 
@@ -485,7 +470,7 @@ New-BGInfo {
 } -FilePath $PSScriptRoot\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory $PSScriptRoot\Examples\Output -OutputFileName 'PowerBGInfo.TopologyOverlay.jpg' -Target File -WallpaperFit Fill
 ```
 
-Topology overlays default to a transparent canvas so they sit on top of the selected wallpaper instead of covering it with a heavy panel. Use `-Opaque` on `New-BGInfoTopology` when you want ChartForgeX to render its normal canvas background.
+Topology overlays default to a transparent canvas so they sit on top of the selected wallpaper instead of covering it with a heavy panel. Use `-Opaque` on `New-BGInfoTopology` when you want ChartForgeX to render its normal canvas background. Groups created by `New-BGInfoTopologyGroup` size themselves around their members through the shared layout engine. JSON groups with omitted or zero dimensions use the same automatic bounds; explicitly assigned dimensions are preserved.
 
 Point-based charts can use `-Labels`, `-Palette`, `-ShowLegend`, `-ShowPointLegend`, `-LegendPosition`, and `-ShowDataLabels`. Gauge-like charts can use `-Minimum` and `-Maximum`; bullet charts add `-Target` and `-RangeEnds`; donut/progress/pictorial charts expose focused options such as `-DonutInnerRadiusRatio`, `-DonutCenterValue`, `-NoProgressHandles`, `-PictorialSymbol`, and `-PictorialColumns`.
 

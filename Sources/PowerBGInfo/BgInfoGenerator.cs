@@ -390,6 +390,7 @@ public class BgInfoGenerator
             Id = source.Id,
             Title = source.Title,
             Kind = source.Kind,
+            ThemeMode = source.ThemeMode,
             Width = source.Width,
             Height = source.Height,
             Anchor = source.Anchor,
@@ -474,8 +475,6 @@ public class BgInfoGenerator
             FilePath = filePath,
             OutputFileName = outputPath,
             ConfigurationDirectory = source.ConfigurationDirectory,
-            FontFamilyName = source.FontFamilyName,
-            Color = source.Color,
             FontSize = source.FontSize,
             Bold = source.Bold,
             FontWeight = source.FontWeight,
@@ -485,9 +484,7 @@ public class BgInfoGenerator
             StrikethroughStyle = source.StrikethroughStyle,
             Baseline = source.Baseline,
             TextCase = source.TextCase,
-            ValueColor = source.ValueColor,
             ValueFontSize = source.ValueFontSize,
-            ValueFontFamilyName = source.ValueFontFamilyName,
             ValueBold = source.ValueBold,
             ValueFontWeight = source.ValueFontWeight,
             ValueItalic = source.ValueItalic,
@@ -515,6 +512,10 @@ public class BgInfoGenerator
             UseScreenCoordinates = source.UseScreenCoordinates
         };
 
+        if (source.CustomColor.HasValue) clone.Color = source.CustomColor.Value;
+        if (source.CustomValueColor.HasValue) clone.ValueColor = source.CustomValueColor.Value;
+        if (source.CustomFontFamilyName != null) clone.FontFamilyName = source.CustomFontFamilyName;
+        if (source.CustomValueFontFamilyName != null) clone.ValueFontFamilyName = source.CustomValueFontFamilyName;
         clone.Variables.AddRange(source.Variables);
         clone.Entries.AddRange(source.Entries);
         clone.Charts.AddRange(charts);

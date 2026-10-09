@@ -96,6 +96,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
             'PowerBGInfo.BgInfoVisualCanvasTile'
             'PowerBGInfo.BgInfoVisualCanvasFeature'
             'ChartForgeX.Primitives.ChartColor'
+            'ChartForgeX.Themes.VisualDesignTokens'
             'ChartForgeX.Topology.TopologyNode'
             'ChartForgeX.Topology.TopologyEdge'
             'ChartForgeX.Topology.TopologyGroup'

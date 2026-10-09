@@ -4,7 +4,7 @@ using System.Management.Automation;
 
 namespace PowerBGInfo.PowerShell;
 
-/// <summary>Creates a BGInfo topology group definition.</summary>
+/// <summary>Creates a BGInfo topology group definition with bounds sized automatically around its members.</summary>
 [Cmdlet(VerbsCommon.New, "BGInfoTopologyGroup")]
 [OutputType(typeof(TopologyGroup))]
 public sealed class CmdletNewBGInfoTopologyGroup : PSCmdlet {
@@ -37,9 +37,7 @@ public sealed class CmdletNewBGInfoTopologyGroup : PSCmdlet {
         var group = new TopologyGroup {
             Id = Id,
             Label = Label,
-            Status = Status,
-            Width = 320,
-            Height = 220
+            Status = Status
         };
 
         if (!string.IsNullOrWhiteSpace(Subtitle)) {

@@ -26,30 +26,34 @@ foreach ($service in $services) {
     }
 }
 
-$serviceCount = if ($services.Count -gt 0) { $services.Count } else { 1 }
+$serviceCount = @($services).Count
 $stoppedServices = [Math]::Max(0, $serviceCount - $runningServices)
 
-$white = 'White'
-$muted = '#D2DCE8E6'
-$panel = '#0A101CAC'
-$cyan = '#2DD4BF'
-$blue = '#60A5FA'
-$green = '#34D399'
-$orange = '#FB923C'
-$red = '#F87171'
-$purple = '#A78BFA'
+$tokens = [ChartForgeX.Themes.VisualDesignTokens]::GraphiteDark()
+$white = $tokens.Foreground
+$muted = $tokens.MutedForeground
+$panel = $tokens.ElevatedSurface.WithOpacity(0.96)
+$cyan = $tokens.Accent
+$blue = $tokens.SecondaryAccent
+$green = $tokens.Positive
+$orange = $tokens.Warning
+$red = $tokens.Negative
 
 New-BGInfo -MonitorIndex 0 -Target File {
-    New-BGInfoValue -BuiltinValue HostName -Color LemonChiffon -ValueColor $white -FontSize 24 -ValueFontSize 18 -FontFamilyName 'Calibri'
+    New-BGInfoValue -BuiltinValue HostName -Color $muted -ValueColor $white -FontSize 24 -ValueFontSize 18 -FontFamilyName $tokens.FontFamily
     New-BGInfoValue -BuiltinValue FullUserName -Name 'User' -Color $muted -ValueColor $white
     New-BGInfoValue -BuiltinValue OSName -Name 'OS' -Color $muted -ValueColor $white
-    New-BGInfoValue -Name 'Chart mode' -Value 'live metrics + local status' -Color $muted -ValueColor $white
+    New-BGInfoValue -Name 'Chart mode' -Value 'live metrics, local status and a sample patch target' -Color $muted -ValueColor $white
 
-    New-BGInfoChart -Id 'ops-cpu-history' -Title 'CPU history' -Metric CpuPercent -Kind Area -ValueSuffix '%' -Width 360 -Height 145 -LineColor $cyan -FillColor $cyan -TextColor $white -BackgroundColor $panel -ShowGrid -GridColor $muted -GridLineCount 3 -MaxPoints 60
-    New-BGInfoChart -Id 'ops-memory-history' -Title 'Memory history' -Metric MemoryPercent -Kind Line -ValueSuffix '%' -Width 360 -Height 145 -LineColor $blue -TextColor $white -BackgroundColor $panel -ShowGrid -GridColor $muted -GridLineCount 3 -MaxPoints 60
-    New-BGInfoChart -Id 'ops-system-drive' -Title "$systemDrive used/free" -Kind Donut -Values $diskUsedPercent,$diskFreePercent -Labels 'Used','Free' -ValueSuffix '%' -Width 360 -Height 205 -Palette $red,$green -TextColor $white -BackgroundColor $panel -ShowLegend -ShowPointLegend -LegendPosition Right -ShowDataLabels -Maximum 100 -DonutCenterValue "$diskUsedPercent%" -DonutCenterLabel 'Used' -ShowLatestValue:$false -NoHistory
-    New-BGInfoChart -Id 'ops-patch-target' -Title 'Fleet patch compliance' -Kind Bullet -Values 89 -Target 95 -RangeEnds 70,85 -Width 360 -Height 150 -LineColor $orange -TextColor $white -BackgroundColor $panel -Maximum 100 -ShowLatestValue:$false -NoHistory
-    New-BGInfoChart -Id 'ops-services' -Title 'Core services' -Kind Pictorial -Values $runningServices,$stoppedServices -Labels 'Running','Other' -Width 360 -Height 145 -Palette $green,$orange -TextColor $white -BackgroundColor $panel -PictorialSymbol Person -PictorialColumns $serviceCount -ShowDataLabels -Maximum $serviceCount -ShowLatestValue:$false -NoHistory
+    New-BGInfoChart -ThemeMode Dark -Id 'ops-cpu-history' -Title 'CPU history' -Metric CpuPercent -Kind Area -ValueSuffix '%' -Width 360 -Height 145 -LineColor $cyan -FillColor $cyan -TextColor $white -BackgroundColor $panel -ShowGrid -GridColor $muted -GridLineCount 3 -MaxPoints 60
+    New-BGInfoChart -ThemeMode Dark -Id 'ops-memory-history' -Title 'Memory history' -Metric MemoryPercent -Kind Line -ValueSuffix '%' -Width 360 -Height 145 -LineColor $blue -TextColor $white -BackgroundColor $panel -ShowGrid -GridColor $muted -GridLineCount 3 -MaxPoints 60
+    New-BGInfoChart -ThemeMode Dark -Id 'ops-system-drive' -Title "$systemDrive used/free" -Kind Donut -Values $diskUsedPercent,$diskFreePercent -Labels 'Used','Free' -ValueSuffix '%' -Width 360 -Height 205 -Palette $red,$green -TextColor $white -BackgroundColor $panel -ShowLegend -ShowPointLegend -LegendPosition Right -ShowDataLabels -Maximum 100 -DonutCenterValue "$diskUsedPercent%" -DonutCenterLabel 'Used' -ShowLatestValue:$false -NoHistory
+    New-BGInfoChart -ThemeMode Dark -Id 'ops-patch-target' -Title 'Patch compliance (sample)' -Kind Bullet -Values 89 -Target 95 -RangeEnds 70,85 -Width 360 -Height 150 -LineColor $orange -TextColor $white -BackgroundColor $panel -Maximum 100 -ShowLatestValue:$false -NoHistory
+    if ($serviceCount -gt 0) {
+        New-BGInfoChart -ThemeMode Dark -Id 'ops-services' -Title 'Core services' -Kind Pictorial -Values $runningServices,$stoppedServices -Labels 'Running','Other' -Width 360 -Height 145 -Palette $green,$orange -TextColor $white -BackgroundColor $panel -PictorialSymbol Person -PictorialColumns $serviceCount -ShowDataLabels -Maximum $serviceCount -ShowLatestValue:$false -NoHistory
+    } else {
+        New-BGInfoValue -Name 'Core services' -Value 'No service observations available' -Color $muted -ValueColor $white
+    }
 } -FilePath $sampleImage `
     -ConfigurationDirectory $outputDirectory `
     -OutputFileName 'PowerBGInfo.OperationalCharts.jpg' `
