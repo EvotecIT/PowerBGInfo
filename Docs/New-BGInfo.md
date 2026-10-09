@@ -21,7 +21,7 @@ Use the script block to emit label/value entries.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfo -ConfigurationDirectory 'Value'
+New-BGInfo -BGInfoContent { } -ConfigurationDirectory 'Value'
 ```
 
 
@@ -348,7 +348,7 @@ Accept wildcard characters: False
 ```
 
 ### -FontFamilyName
-Default label font family.
+Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.
 
 ```yaml
 Type: String
@@ -732,7 +732,7 @@ Accept wildcard characters: False
 ```
 
 ### -ValueFontFamilyName
-Default value font family.
+Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.
 
 ```yaml
 Type: String

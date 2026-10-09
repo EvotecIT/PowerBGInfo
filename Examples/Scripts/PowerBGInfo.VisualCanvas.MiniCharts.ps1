@@ -5,23 +5,6 @@ $sampleImage = Join-Path -Path $examplesPath -ChildPath 'Samples\TapC-Evotec-256
 $logoImage = Join-Path -Path $examplesPath -ChildPath 'Samples\LogoEvotec.png'
 $outputDirectory = Join-Path -Path $examplesPath -ChildPath 'Output'
 
-$palette = @{
-    Accent                 = '#38BDF8'
-    SecondaryAccent        = '#60A5FA'
-    TitleColor             = '#F8FAFC'
-    TitleAccentColor       = '#38BDF8'
-    SubtitleColor          = '#E2E8F0'
-    TileLabelColor         = '#C7D2FE'
-    TileValueColor         = '#FFFFFF'
-    TileDetailColor        = '#B6C4DA'
-    TileGlassTop           = '#EE132444'
-    TileGlassBottom        = '#D9040A18'
-    TileProgressTrackColor = '#F0263A5E'
-    HeroBadgeTop           = '#F8FAFC'
-    HeroBadgeBottom        = '#CBD5E1'
-    HeroBadgeTextColor     = '#0F172A'
-}
-
 $tiles = @(
     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Glass -Label HOSTNAME -Value '{{HostName}}'
     New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Glass -Label 'IP ADDRESS' -Value '{{IPv4Address}}'
@@ -37,20 +20,6 @@ New-BGInfo -MonitorIndex 0 -Target File {
     New-BGInfoVisualCanvas `
         -Title 'PowerBGInfo' `
         -Subtitle 'Each section pairs the current value with a matching recent trend' `
-        -Accent $palette.Accent `
-        -SecondaryAccent $palette.SecondaryAccent `
-        -TitleColor $palette.TitleColor `
-        -TitleAccentColor $palette.TitleAccentColor `
-        -SubtitleColor $palette.SubtitleColor `
-        -TileLabelColor $palette.TileLabelColor `
-        -TileValueColor $palette.TileValueColor `
-        -TileDetailColor $palette.TileDetailColor `
-        -TileGlassTop $palette.TileGlassTop `
-        -TileGlassBottom $palette.TileGlassBottom `
-        -TileProgressTrackColor $palette.TileProgressTrackColor `
-        -HeroBadgeTop $palette.HeroBadgeTop `
-        -HeroBadgeBottom $palette.HeroBadgeBottom `
-        -HeroBadgeTextColor $palette.HeroBadgeTextColor `
         -HeroBadgeImagePath $logoImage `
         -HeroBadgeImageFit Contain `
         -HeroBadgeImagePadding 14 `

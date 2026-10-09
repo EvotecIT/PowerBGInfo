@@ -1,5 +1,6 @@
 using System.Management.Automation;
 using PowerBGInfo;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo.PowerShell;
 
@@ -13,7 +14,7 @@ namespace PowerBGInfo.PowerShell;
 /// )
 ///
 /// New-BGInfo -Target File {
-///     New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -Tile $tiles -TileGlassTop '#FFF7EDD9' -TileGlassBottom '#DBEAFECC' -TileValueColor '#0F172AFF'
+///     New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -ThemeMode Light -TitleColor White -SubtitleColor White -Tile $tiles
 /// } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill
 /// </code>
 /// </example>
@@ -32,6 +33,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     /// <para>Responsive side-rail sizing preset.</para>
     [Parameter]
     public BgInfoVisualCanvasLayoutPreset LayoutPreset { get; set; }
+
+    /// <para>Shared Light or Dark palette and font stack. Explicit canvas and tile colors take precedence.</para>
+    [Parameter]
+    public VisualThemeMode ThemeMode { get; set; } = VisualThemeMode.Dark;
 
     /// <para>Canvas title or brand text.</para>
     [Parameter]
@@ -252,15 +257,13 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         var visual = new BgInfoVisualCanvas {
             Template = Template,
             LayoutPreset = LayoutPreset,
+            ThemeMode = ThemeMode,
             Title = Title,
             Subtitle = Subtitle,
             Width = Width,
             Height = Height,
             PositionX = PositionX,
             PositionY = PositionY,
-            BackgroundTop = PowerShellColorConverter.ConvertOptional(BackgroundTop, nameof(BackgroundTop)) ?? ChartForgeX.Primitives.ChartColor.FromRgb(2, 7, 19),
-            BackgroundBottom = PowerShellColorConverter.ConvertOptional(BackgroundBottom, nameof(BackgroundBottom)) ?? ChartForgeX.Primitives.ChartColor.FromRgb(7, 26, 53),
-            Accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent)) ?? ChartForgeX.Primitives.ChartColor.FromRgb(47, 128, 255),
             SecondaryAccent = PowerShellColorConverter.ConvertOptional(SecondaryAccent, nameof(SecondaryAccent)),
             TitleColor = PowerShellColorConverter.ConvertOptional(TitleColor, nameof(TitleColor)),
             TitleAccentColor = PowerShellColorConverter.ConvertOptional(TitleAccentColor, nameof(TitleAccentColor)),
@@ -302,6 +305,12 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             Transparent = !Opaque.IsPresent,
             TechBackdrop = !NoTechBackdrop.IsPresent
         };
+        var backgroundTop = PowerShellColorConverter.ConvertOptional(BackgroundTop, nameof(BackgroundTop));
+        var backgroundBottom = PowerShellColorConverter.ConvertOptional(BackgroundBottom, nameof(BackgroundBottom));
+        var accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent));
+        if (backgroundTop.HasValue) visual.BackgroundTop = backgroundTop.Value;
+        if (backgroundBottom.HasValue) visual.BackgroundBottom = backgroundBottom.Value;
+        if (accent.HasValue) visual.Accent = accent.Value;
         foreach (var tile in Tile ?? Array.Empty<BgInfoVisualCanvasTile>()) if (tile != null) visual.Tiles.Add(tile);
         foreach (var feature in Feature ?? Array.Empty<BgInfoVisualCanvasFeature>()) if (feature != null) visual.Features.Add(feature);
         var hasCenterTiles = visual.Tiles.Exists(tile => tile.Side == BgInfoVisualCanvasSide.Center);

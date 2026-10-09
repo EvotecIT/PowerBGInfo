@@ -29,7 +29,7 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter(Mandatory = true)]
     public string ConfigurationDirectory { get; set; } = string.Empty;
 
-    /// <para>Default label font family.</para>
+    /// <para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</para>
     [Parameter]
     public string FontFamilyName { get; set; } = "Calibri";
 
@@ -85,7 +85,7 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public float ValueFontSize { get; set; } = 16;
 
-    /// <para>Default value font family.</para>
+    /// <para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
 
@@ -253,8 +253,6 @@ public class CmdletNewBGInfo : PSCmdlet {
             FilePath = FilePath,
             OutputFileName = OutputFileName,
             ConfigurationDirectory = ConfigurationDirectory,
-            FontFamilyName = FontFamilyName,
-            Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color)),
             BackgroundColor = PowerShellColorConverter.ConvertOptional(BackgroundColor, nameof(BackgroundColor)),
             FontSize = FontSize,
             FontWeight = MyInvocation.BoundParameters.ContainsKey(nameof(FontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(FontWeight, nameof(FontWeight)) : Bold.IsPresent ? 700 : 400,
@@ -263,8 +261,6 @@ public class CmdletNewBGInfo : PSCmdlet {
             StrikethroughStyle = StrikethroughStyle,
             Baseline = Baseline,
             TextCase = TextCase,
-            ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor)),
-            ValueFontFamilyName = ValueFontFamilyName,
             ValueFontSize = ValueFontSize,
             ValueFontWeight = MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(ValueFontWeight, nameof(ValueFontWeight)) : ValueBold.IsPresent ? 700 : 400,
             ValueItalic = ValueItalic.IsPresent,
@@ -297,6 +293,11 @@ public class CmdletNewBGInfo : PSCmdlet {
             ApplyToAllUsers = AllUsers.IsPresent,
             IncludeDefaultUserProfile = !ExcludeDefaultUserProfile.IsPresent
         };
+
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(Color))) config.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(FontFamilyName))) config.FontFamilyName = FontFamilyName;
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
 
         var results = BGInfoContent.Invoke();
         foreach (var item in results)

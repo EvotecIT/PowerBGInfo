@@ -6,6 +6,7 @@ using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 #if NET472
 using System.Web.Script.Serialization;
@@ -244,8 +245,8 @@ public static class BgInfoConfigurationJson {
             FilePath = configuration.FilePath,
             OutputFileName = configuration.OutputFileName,
             ConfigurationDirectory = configuration.ConfigurationDirectory,
-            FontFamilyName = configuration.FontFamilyName,
-            Color = BgInfoColorParser.ToHex(configuration.Color),
+            FontFamilyName = configuration.CustomFontFamilyName,
+            Color = configuration.CustomColor.HasValue ? BgInfoColorParser.ToHex(configuration.CustomColor.Value) : null,
             FontSize = configuration.FontSize,
             Bold = configuration.Bold,
             FontWeight = configuration.FontWeight,
@@ -255,9 +256,9 @@ public static class BgInfoConfigurationJson {
             StrikethroughStyle = configuration.StrikethroughStyle.ToString(),
             Baseline = configuration.Baseline.ToString(),
             TextCase = configuration.TextCase.ToString(),
-            ValueColor = BgInfoColorParser.ToHex(configuration.ValueColor),
+            ValueColor = configuration.CustomValueColor.HasValue ? BgInfoColorParser.ToHex(configuration.CustomValueColor.Value) : null,
             ValueFontSize = configuration.ValueFontSize,
-            ValueFontFamilyName = configuration.ValueFontFamilyName,
+            ValueFontFamilyName = configuration.CustomValueFontFamilyName,
             ValueBold = configuration.ValueBold,
             ValueFontWeight = configuration.ValueFontWeight,
             ValueItalic = configuration.ValueItalic,
@@ -346,6 +347,7 @@ public static class BgInfoConfigurationJson {
                     Id = chart.Id,
                     Title = chart.Title,
                     Kind = chart.Kind.ToString(),
+                    ThemeMode = chart.ThemeMode.ToString(),
                     Width = chart.Width,
                     Height = chart.Height,
                     Anchor = chart.Anchor.ToString(),
@@ -458,6 +460,7 @@ public static class BgInfoConfigurationJson {
                 }
                 model.VisualCanvases.Add(new BgInfoVisualCanvasFile {
                     Template = visual.Template.ToString(),
+                    ThemeMode = visual.ThemeMode.ToString(),
                     LayoutPreset = visual.LayoutPreset == BgInfoVisualCanvasLayoutPreset.Default ? null : visual.LayoutPreset.ToString(),
                     Title = visual.Title,
                     Subtitle = visual.Subtitle,
@@ -465,9 +468,9 @@ public static class BgInfoConfigurationJson {
                     Height = visual.Height,
                     PositionX = visual.PositionX,
                     PositionY = visual.PositionY,
-                    BackgroundTop = BgInfoColorParser.ToHex(visual.BackgroundTop),
-                    BackgroundBottom = BgInfoColorParser.ToHex(visual.BackgroundBottom),
-                    Accent = BgInfoColorParser.ToHex(visual.Accent),
+                    BackgroundTop = visual.CustomBackgroundTop.HasValue ? BgInfoColorParser.ToHex(visual.CustomBackgroundTop.Value) : null,
+                    BackgroundBottom = visual.CustomBackgroundBottom.HasValue ? BgInfoColorParser.ToHex(visual.CustomBackgroundBottom.Value) : null,
+                    Accent = visual.CustomAccent.HasValue ? BgInfoColorParser.ToHex(visual.CustomAccent.Value) : null,
                     SecondaryAccent = visual.SecondaryAccent.HasValue ? BgInfoColorParser.ToHex(visual.SecondaryAccent.Value) : null,
                     TitleColor = visual.TitleColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleColor.Value) : null,
                     TitleAccentColor = visual.TitleAccentColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleAccentColor.Value) : null,
@@ -620,6 +623,7 @@ public static class BgInfoConfigurationJson {
             Id = model.Id ?? string.Empty,
             Title = model.Title ?? string.Empty
         };
+        ApplyEnum<VisualThemeMode>(model.ThemeMode, value => chart.ThemeMode = value);
 
         if (!string.IsNullOrWhiteSpace(model.Kind) &&
             Enum.TryParse(model.Kind, true, out BgInfoChartKind kind)) {
@@ -818,8 +822,8 @@ public static class BgInfoConfigurationJson {
         var group = new TopologyGroup {
             Id = model.Id ?? string.Empty,
             Label = model.Label ?? string.Empty,
-            Width = model.Width ?? 320,
-            Height = model.Height ?? 220
+            Width = model.Width ?? 0,
+            Height = model.Height ?? 0
         };
         if (!string.IsNullOrWhiteSpace(model.Status) && Enum.TryParse(model.Status, true, out TopologyHealthStatus status)) {
             group.Status = status;
@@ -939,6 +943,7 @@ public static class BgInfoConfigurationJson {
             Title = model.Title ?? "PowerBGInfo",
             Subtitle = model.Subtitle ?? "Desktop background insights for Windows and PowerShell"
         };
+        ApplyEnum<VisualThemeMode>(model.ThemeMode, value => visual.ThemeMode = value);
 
         if (!string.IsNullOrWhiteSpace(model.Template) &&
             Enum.TryParse(model.Template, true, out BgInfoVisualCanvasTemplate template)) {
@@ -1272,6 +1277,7 @@ public static class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoChartFile {
+        public string? ThemeMode { get; set; }
         public string? Id { get; set; }
         public string? Title { get; set; }
         public string? Kind { get; set; }
@@ -1410,6 +1416,7 @@ public static class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasFile {
+        public string? ThemeMode { get; set; }
         public string? Template { get; set; }
         public string? LayoutPreset { get; set; }
         public string? Title { get; set; }

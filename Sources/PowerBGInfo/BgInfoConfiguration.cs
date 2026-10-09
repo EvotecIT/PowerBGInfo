@@ -9,6 +9,14 @@ namespace PowerBGInfo;
 /// Defines the configuration used to generate a BGInfo overlay image.
 /// </summary>
 public class BgInfoConfiguration {
+    private Color? _color;
+    private Color? _valueColor;
+    private string? _fontFamilyName;
+    private string? _valueFontFamilyName;
+    internal Color? CustomColor => _color;
+    internal Color? CustomValueColor => _valueColor;
+    internal string? CustomFontFamilyName => _fontFamilyName;
+    internal string? CustomValueFontFamilyName => _valueFontFamilyName;
     private int _fontWeight = 400;
     private int _valueFontWeight = 400;
     private TextDecorationStyle _underlineStyle;
@@ -64,13 +72,13 @@ public class BgInfoConfiguration {
     /// </summary>
     public string ConfigurationDirectory { get; set; } = string.Empty;
     /// <summary>
-    /// Gets or sets the default label font family.
+    /// Gets or sets the default label font family. Classic entries default to Calibri; charts inherit their shared theme unless a family is assigned.
     /// </summary>
-    public string FontFamilyName { get; set; } = "Calibri";
+    public string FontFamilyName { get => _fontFamilyName ?? "Calibri"; set => _fontFamilyName = value; }
     /// <summary>
     /// Gets or sets the default label color.
     /// </summary>
-    public Color Color { get; set; } = Color.Black;
+    public Color Color { get => _color ?? global::ChartForgeX.Primitives.ChartColor.Black; set => _color = value; }
     /// <summary>
     /// Gets or sets the default label font size.
     /// </summary>
@@ -131,15 +139,15 @@ public class BgInfoConfiguration {
     /// <summary>
     /// Gets or sets the default value color.
     /// </summary>
-    public Color ValueColor { get; set; } = Color.Black;
+    public Color ValueColor { get => _valueColor ?? global::ChartForgeX.Primitives.ChartColor.Black; set => _valueColor = value; }
     /// <summary>
     /// Gets or sets the default value font size.
     /// </summary>
     public float ValueFontSize { get; set; } = 16f;
     /// <summary>
-    /// Gets or sets the default value font family.
+    /// Gets or sets the default value font family. Classic entries default to Calibri; chart values inherit their shared theme unless a family is assigned.
     /// </summary>
-    public string ValueFontFamilyName { get; set; } = "Calibri";
+    public string ValueFontFamilyName { get => _valueFontFamilyName ?? "Calibri"; set => _valueFontFamilyName = value; }
     /// <summary>
     /// Gets or sets whether values use a bold font weight by default.
     /// </summary>

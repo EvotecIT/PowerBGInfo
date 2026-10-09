@@ -31,10 +31,10 @@ internal static class BgInfoChartRenderer {
         var showValue = chart.ShowLatestValue && values.Count > 0;
         var latestValueText = showValue ? FormatValue(values[values.Count - 1], chart) : string.Empty;
 
-        var titleColor = chart.TitleColor ?? chart.TextColor ?? config.Color;
-        var valueColor = chart.ValueColor ?? chart.TextColor ?? config.ValueColor;
-        var titleFontFamily = chart.FontFamilyName ?? config.FontFamilyName;
-        var valueFontFamily = chart.FontFamilyName ?? config.ValueFontFamilyName;
+        var titleColor = ResolveTitleColor(chart, config);
+        var valueColor = ResolveValueColor(chart, config);
+        var titleFontFamily = ResolveTitleFontFamily(chart, config);
+        var valueFontFamily = ResolveValueFontFamily(chart, config);
         var titleStyle = BgInfoRasterImage.CreateTextStyle(
             chart.TitleFontSize ?? config.FontSize,
             titleFontFamily,
@@ -61,17 +61,31 @@ internal static class BgInfoChartRenderer {
         var valueSize = !string.IsNullOrWhiteSpace(latestValueText)
             ? image.GetTextSize(latestValueText, valueStyle)
             : new TextMetrics(0, 0, 0);
-        var headerHeight = Math.Max(titleSize.Height, valueSize.Height);
+        var headerWidth = Math.Max(0, width - padding * 2d);
+        var titleLayout = headerWidth > 0 && titleSize.Width > 0
+            ? TextLayoutEngine.Layout(title, headerWidth, titleStyle, TextWrapMode.NoWrap, 1, TextTrimming.Ellipsis)
+            : null;
+        var valueLayout = headerWidth > 0 && valueSize.Width > 0
+            ? TextLayoutEngine.Layout(latestValueText, headerWidth, valueStyle, TextWrapMode.Word, null, TextTrimming.None)
+            : null;
+        const double headerGap = 12;
+        var separateValueRow = titleSize.Width > 0 && valueSize.Width > 0 &&
+            titleSize.Width + valueSize.Width + headerGap > headerWidth;
+        var titleHeight = titleLayout?.Metrics.Height ?? 0;
+        var valueHeight = valueLayout?.Metrics.Height ?? 0;
+        var headerHeight = separateValueRow
+            ? titleHeight + valueHeight + 4
+            : Math.Max(titleHeight, valueHeight);
         if (headerHeight > 0) {
             plotTop += headerHeight + 4;
             plotHeight = Math.Max(1, height - plotTop - padding);
-            if (!string.IsNullOrWhiteSpace(title)) {
-                image.AddText(padding, padding, title, titleStyle);
+            if (titleLayout != null) {
+                DrawHeaderLayout(image, titleLayout, titleStyle, padding, padding, headerWidth, false);
             }
 
-            if (!string.IsNullOrWhiteSpace(latestValueText)) {
-                var valueX = Math.Max(padding, width - padding - valueSize.Width);
-                image.AddText(valueX, padding, latestValueText, valueStyle);
+            if (valueLayout != null) {
+                var valueY = separateValueRow ? padding + titleHeight + 4 : padding;
+                DrawHeaderLayout(image, valueLayout, valueStyle, padding, valueY, headerWidth, true);
             }
         }
 
@@ -85,10 +99,13 @@ internal static class BgInfoChartRenderer {
     }
 
     internal static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
-        var accent = chart.LineColor ?? config.ValueColor;
+        var accent = chart.LineColor ?? config.CustomValueColor ?? ResolveTokens(chart).Accent;
+        // Keep a positive native chart interior even when a tall header leaves a short plot.
+        // The host still owns the requested tile dimensions and clips its composed content.
+        var plotPadding = Math.Min(8d, (Math.Max(1, Math.Min(width, height)) - 1d) / 2d);
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
-            .WithTheme(CreateOverlayTheme(chart, config, accent))
+            .WithTheme(CreateOverlayTheme(chart, config))
             .WithTransparentBackground()
             .WithHeader(false)
             .WithLegend(false)
@@ -98,7 +115,7 @@ internal static class BgInfoChartRenderer {
             .WithAxisLines(false)
             .WithCard(false)
             .WithPlotBackground(false)
-            .WithPadding(8, 8, 8, 8)
+            .WithPadding(plotPadding, plotPadding, plotPadding, plotPadding)
             .WithPngSupersampling(2)
             .WithValueFormatter(value => FormatValue(value, chart));
 
@@ -109,8 +126,21 @@ internal static class BgInfoChartRenderer {
         ApplyTextStyle(plot.Options.TickLabelStyle, valueStyle, chart.ValueFontSize);
         ApplyTextStyle(plot.Options.AxisTitleStyle, ResolveChartTitleStyle(chart, config), chart.TitleFontSize);
 
-        if (chart.ShowGrid && chart.GridLineCount > 0) {
-            plot.WithGrid();
+        var showGrid = chart.ShowGrid && chart.GridLineCount > 0;
+        plot.WithGrid(showGrid);
+        if (showGrid) {
+            var horizontal = chart.Kind == BgInfoChartKind.HorizontalBar;
+            plot.WithGridStyle(style => {
+                style.ShowHorizontalLines = !horizontal;
+                style.ShowVerticalLines = horizontal;
+            });
+            // The shared axes choose readable nice-number steps from a preferred density.
+            var gridTicks = Math.Max(2, Math.Min(100, chart.GridLineCount));
+            if (horizontal) {
+                plot.ConfigureXAxis(axis => axis.TickCount = gridTicks);
+            } else {
+                plot.ConfigureYAxis(axis => axis.TickCount = gridTicks);
+            }
         }
 
         ApplyChartOptions(plot, chart);
@@ -126,7 +156,7 @@ internal static class BgInfoChartRenderer {
                 AddTrendSeries(plot, chart.Title, values, width, accent, smooth: false, area: false);
                 break;
             case BgInfoChartKind.Area:
-                AddTrendSeries(plot, chart.Title, values, width, chart.FillColor ?? chart.LineColor ?? config.ValueColor, smooth: true, area: true);
+                AddTrendSeries(plot, chart.Title, values, width, chart.FillColor ?? accent, smooth: true, area: true);
                 break;
             case BgInfoChartKind.Gauge:
                 AddGauge(plot, chart, values, accent);
@@ -205,15 +235,13 @@ internal static class BgInfoChartRenderer {
         }
     }
 
-    private static ChartTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config, ChartColor accent) {
-        var text = chart.TextColor ?? config.Color;
-        var grid = chart.GridColor ?? chart.TextColor ?? config.ValueColor;
-        return ChartTheme.Minimal()
+    private static ChartTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config) {
+        var text = ResolveTitleColor(chart, config);
+        var grid = chart.GridColor ?? ResolveTokens(chart).Border;
+        return (chart.ThemeMode == VisualThemeMode.Dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent)
             .WithTextColors(text, text)
             .WithGuideColors(WithAlpha(grid, 90), WithAlpha(grid, 120))
-            .WithPalette(accent, WithAlpha(accent, 190), config.Color, config.ValueColor)
-            .WithTypography(18, 11, 10, 9, 9, 9)
             .WithStrokeWidth(2.2)
             .WithMarkerRadius(2.4);
     }
@@ -350,10 +378,20 @@ internal static class BgInfoChartRenderer {
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 
+    private static void DrawHeaderLayout(BgInfoRasterImage image, TextLayout layout, TextStyle style, double x, double y, double width, bool alignRight) {
+        // The shared layout already applied casing; applying ToggleCase twice would undo it.
+        var resolvedStyle = style.Clone();
+        resolvedStyle.TextCase = TextCaseTransform.None;
+        foreach (var line in layout.Lines) {
+            image.AddText(alignRight ? x + Math.Max(0, width - line.Width) : x, y, line.Text, resolvedStyle);
+            y += layout.Metrics.LineHeight;
+        }
+    }
+
     private static TextStyle ResolveChartTitleStyle(BgInfoChart chart, BgInfoConfiguration config) => BgInfoRasterImage.CreateTextStyle(
         chart.TitleFontSize ?? config.FontSize,
-        chart.FontFamilyName ?? config.FontFamilyName,
-        chart.TitleColor ?? chart.TextColor ?? config.Color,
+        ResolveTitleFontFamily(chart, config),
+        ResolveTitleColor(chart, config),
         chart.TitleFontWeight ?? ResolveWeight(chart.TitleBold) ?? config.FontWeight,
         chart.TitleItalic ?? config.Italic,
         chart.TitleUnderlineStyle ?? ResolveUnderline(chart.TitleUnderline) ?? config.UnderlineStyle,
@@ -363,8 +401,8 @@ internal static class BgInfoChartRenderer {
 
     private static TextStyle ResolveChartValueStyle(BgInfoChart chart, BgInfoConfiguration config) => BgInfoRasterImage.CreateTextStyle(
         chart.ValueFontSize ?? config.ValueFontSize,
-        chart.FontFamilyName ?? config.ValueFontFamilyName,
-        chart.ValueColor ?? chart.TextColor ?? config.ValueColor,
+        ResolveValueFontFamily(chart, config),
+        ResolveValueColor(chart, config),
         chart.ValueFontWeight ?? ResolveWeight(chart.ValueBold) ?? config.ValueFontWeight,
         chart.ValueItalic ?? config.ValueItalic,
         chart.ValueUnderlineStyle ?? ResolveUnderline(chart.ValueUnderline) ?? config.ValueUnderlineStyle,
@@ -373,6 +411,21 @@ internal static class BgInfoChartRenderer {
         chart.ValueTextCase ?? config.ValueTextCase);
 
     private static int? ResolveWeight(bool? bold) => bold.HasValue ? (bold.Value ? 700 : 400) : null;
+
+    private static VisualDesignTokens ResolveTokens(BgInfoChart chart) =>
+        chart.ThemeMode == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
+
+    private static string ResolveTitleFontFamily(BgInfoChart chart, BgInfoConfiguration config) =>
+        chart.FontFamilyName ?? config.CustomFontFamilyName ?? ResolveTokens(chart).FontFamily;
+
+    private static string ResolveValueFontFamily(BgInfoChart chart, BgInfoConfiguration config) =>
+        chart.FontFamilyName ?? config.CustomValueFontFamilyName ?? ResolveTokens(chart).FontFamily;
+
+    private static ChartColor ResolveTitleColor(BgInfoChart chart, BgInfoConfiguration config) =>
+        chart.TitleColor ?? chart.TextColor ?? config.CustomColor ?? ResolveTokens(chart).Foreground;
+
+    private static ChartColor ResolveValueColor(BgInfoChart chart, BgInfoConfiguration config) =>
+        chart.ValueColor ?? chart.TextColor ?? config.CustomValueColor ?? ResolveTokens(chart).Foreground;
 
     private static TextDecorationStyle? ResolveUnderline(bool? underline) => underline.HasValue ? (underline.Value ? TextDecorationStyle.Single : TextDecorationStyle.None) : null;
 

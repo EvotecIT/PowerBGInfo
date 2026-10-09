@@ -11,7 +11,7 @@ Creates a BGInfo visual canvas definition backed by ChartForgeX.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoVisualCanvas [-Template <BgInfoVisualCanvasTemplate>] [-LayoutPreset <BgInfoVisualCanvasLayoutPreset>] [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-PositionX <int>] [-PositionY <int>] [-BackgroundTop <Object>] [-BackgroundBottom <Object>] [-Accent <Object>] [-SecondaryAccent <Object>] [-TitleColor <Object>] [-TitleAccentColor <Object>] [-SubtitleColor <Object>] [-TileGlassTop <Object>] [-TileGlassBottom <Object>] [-TileLabelColor <Object>] [-TileValueColor <Object>] [-TileDetailColor <Object>] [-TileProgressTrackColor <Object>] [-HeroBadgeTop <Object>] [-HeroBadgeBottom <Object>] [-HeroBadgeTextColor <Object>] [-NoHeroBadge] [-NoHeroContent] [-HeroBadgeText <string>] [-HeroBadgeImagePath <string>] [-HeroBadgeImageFit <BgInfoImageFit>] [-HeroBadgeImagePadding <int>] [-HeroBadgeImageOpacity <double>] [-FeatureAnchor <BgInfoTextPosition>] [-FeatureWidth <int>] [-FeatureHeight <int>] [-TileWidth <int>] [-TileHeight <int>] [-TileGap <int>] [-LeftTileWidth <int>] [-RightTileWidth <int>] [-CenterTileWidth <int>] [-LeftTileOffsetX <int>] [-LeftTileOffsetY <int>] [-RightTileOffsetX <int>] [-RightTileOffsetY <int>] [-CenterTileOffsetX <int>] [-CenterTileOffsetY <int>] [-TileTextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-FeatureOffsetX <int>] [-FeatureOffsetY <int>] [-NoTechBackdrop] [-Opaque] [-Tile <BgInfoVisualCanvasTile[]>] [-Feature <BgInfoVisualCanvasFeature[]>] [<CommonParameters>]
+New-BGInfoVisualCanvas [-Template <BgInfoVisualCanvasTemplate>] [-LayoutPreset <BgInfoVisualCanvasLayoutPreset>] [-ThemeMode <VisualThemeMode>] [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-PositionX <int>] [-PositionY <int>] [-BackgroundTop <Object>] [-BackgroundBottom <Object>] [-Accent <Object>] [-SecondaryAccent <Object>] [-TitleColor <Object>] [-TitleAccentColor <Object>] [-SubtitleColor <Object>] [-TileGlassTop <Object>] [-TileGlassBottom <Object>] [-TileLabelColor <Object>] [-TileValueColor <Object>] [-TileDetailColor <Object>] [-TileProgressTrackColor <Object>] [-HeroBadgeTop <Object>] [-HeroBadgeBottom <Object>] [-HeroBadgeTextColor <Object>] [-NoHeroBadge] [-NoHeroContent] [-HeroBadgeText <string>] [-HeroBadgeImagePath <string>] [-HeroBadgeImageFit <BgInfoImageFit>] [-HeroBadgeImagePadding <int>] [-HeroBadgeImageOpacity <double>] [-FeatureAnchor <BgInfoTextPosition>] [-FeatureWidth <int>] [-FeatureHeight <int>] [-TileWidth <int>] [-TileHeight <int>] [-TileGap <int>] [-LeftTileWidth <int>] [-RightTileWidth <int>] [-CenterTileWidth <int>] [-LeftTileOffsetX <int>] [-LeftTileOffsetY <int>] [-RightTileOffsetX <int>] [-RightTileOffsetY <int>] [-CenterTileOffsetX <int>] [-CenterTileOffsetY <int>] [-TileTextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-FeatureOffsetX <int>] [-FeatureOffsetY <int>] [-NoTechBackdrop] [-Opaque] [-Tile <BgInfoVisualCanvasTile[]>] [-Feature <BgInfoVisualCanvasFeature[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,7 +27,7 @@ $tiles = @(
 )
 
 New-BGInfo -Target File {
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -Tile $tiles -TileGlassTop '#FFF7EDD9' -TileGlassBottom '#DBEAFECC' -TileValueColor '#0F172AFF'
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -ThemeMode Light -TitleColor White -SubtitleColor White -Tile $tiles
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill
 ```
 
@@ -640,6 +640,22 @@ Type: BgInfoVisualCanvasTemplate
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values: PowerBgInfoHero
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThemeMode
+Shared Light or Dark palette and font stack. Explicit canvas and tile colors take precedence.
+
+```yaml
+Type: VisualThemeMode
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Light, Dark
 
 Required: False
 Position: named

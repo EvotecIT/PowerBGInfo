@@ -137,7 +137,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>Export-BGInfoConfiguration -InputObject 'Value'</dev:code>
+        <dev:code>Export-BGInfoConfiguration -Path 'C:\Path' -InputObject 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -632,7 +632,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FontFamilyName</maml:name>
           <maml:description>
-            <maml:para>Default label font family.</maml:para>
+            <maml:para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -966,7 +966,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueFontFamilyName</maml:name>
           <maml:description>
-            <maml:para>Default value font family.</maml:para>
+            <maml:para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1385,7 +1385,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FontFamilyName</maml:name>
         <maml:description>
-          <maml:para>Default label font family.</maml:para>
+          <maml:para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1719,7 +1719,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueFontFamilyName</maml:name>
         <maml:description>
-          <maml:para>Default value font family.</maml:para>
+          <maml:para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1896,7 +1896,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfo -ConfigurationDirectory 'Value'</dev:code>
+        <dev:code>New-BGInfo -BGInfoContent { } -ConfigurationDirectory 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -2041,7 +2041,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>GridLineCount</maml:name>
           <maml:description>
-            <maml:para>Number of horizontal grid lines.</maml:para>
+            <maml:para>Preferred number of value-axis grid lines. Zero disables the grid; positive values use a density from two through one hundred, with readable spacing determining the actual count.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -2505,6 +2505,22 @@
           <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
           <dev:type>
             <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ThemeMode</maml:name>
+          <maml:description>
+            <maml:para>Shared Light or Dark chart palette and typography. Explicit chart colors and host text styles take precedence.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VisualThemeMode</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Light</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dark</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VisualThemeMode</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2992,7 +3008,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>GridLineCount</maml:name>
           <maml:description>
-            <maml:para>Number of horizontal grid lines.</maml:para>
+            <maml:para>Preferred number of value-axis grid lines. Zero disables the grid; positive values use a density from two through one hundred, with readable spacing determining the actual count.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -3456,6 +3472,22 @@
           <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
           <dev:type>
             <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ThemeMode</maml:name>
+          <maml:description>
+            <maml:para>Shared Light or Dark chart palette and typography. Explicit chart colors and host text styles take precedence.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VisualThemeMode</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Light</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dark</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VisualThemeMode</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -3943,7 +3975,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>GridLineCount</maml:name>
         <maml:description>
-          <maml:para>Number of horizontal grid lines.</maml:para>
+          <maml:para>Preferred number of value-axis grid lines. Zero disables the grid; positive values use a density from two through one hundred, with readable spacing determining the actual count.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4407,6 +4439,22 @@
         <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
         <dev:type>
           <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ThemeMode</maml:name>
+        <maml:description>
+          <maml:para>Shared Light or Dark chart palette and typography. Explicit chart colors and host text styles take precedence.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">VisualThemeMode</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Light</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dark</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>VisualThemeMode</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -5094,7 +5142,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FontFamilyName</maml:name>
           <maml:description>
-            <maml:para>Default label font family.</maml:para>
+            <maml:para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -5428,7 +5476,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ValueFontFamilyName</maml:name>
           <maml:description>
-            <maml:para>Default value font family.</maml:para>
+            <maml:para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -5871,7 +5919,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FontFamilyName</maml:name>
         <maml:description>
-          <maml:para>Default label font family.</maml:para>
+          <maml:para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -6205,7 +6253,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ValueFontFamilyName</maml:name>
         <maml:description>
-          <maml:para>Default value font family.</maml:para>
+          <maml:para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -7238,6 +7286,7 @@
             <command:parameterValue required="false" variableLength="false">ForceDirected</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RelationshipRadial</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">MindMap</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Swimlane</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>TopologyLayoutMode</maml:name>
@@ -7512,6 +7561,7 @@
           <command:parameterValue required="false" variableLength="false">ForceDirected</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RelationshipRadial</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">MindMap</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Swimlane</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>TopologyLayoutMode</maml:name>
@@ -7736,7 +7786,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopology -Anchor 'Value'</dev:code>
+        <dev:code>New-BGInfoTopology -TopologyDefinition { }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8091,7 +8141,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyEdge -Color 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyEdge -SourceNodeId 'Value' -TargetNodeId 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8105,11 +8155,11 @@
       <command:verb>New</command:verb>
       <command:noun>BGInfoTopologyGroup</command:noun>
       <maml:description>
-        <maml:para>Creates a BGInfo topology group definition.</maml:para>
+        <maml:para>Creates a BGInfo topology group definition with bounds sized automatically around its members.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Creates a BGInfo topology group definition.</maml:para>
+      <maml:para>Creates a BGInfo topology group definition with bounds sized automatically around its members.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem parameterSetName="__AllParameterSets">
@@ -8298,7 +8348,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyGroup -Color 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyGroup -Id 'Value' -Label 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -8667,7 +8717,7 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTopologyNode -Badge 'Value'</dev:code>
+        <dev:code>New-BGInfoTopologyNode -Id 'Value' -Label 'Value'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -10840,6 +10890,22 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ThemeMode</maml:name>
+          <maml:description>
+            <maml:para>Shared Light or Dark palette and font stack. Explicit canvas and tile colors take precedence.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VisualThemeMode</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Light</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dark</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VisualThemeMode</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Tile</maml:name>
           <maml:description>
@@ -11514,6 +11580,22 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ThemeMode</maml:name>
+        <maml:description>
+          <maml:para>Shared Light or Dark palette and font stack. Explicit canvas and tile colors take precedence.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">VisualThemeMode</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Light</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dark</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>VisualThemeMode</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Tile</maml:name>
         <maml:description>
@@ -11730,7 +11812,7 @@
 )&#xD;
 &#xD;
 New-BGInfo -Target File {&#xD;
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -Tile $tiles -TileGlassTop '#FFF7EDD9' -TileGlassBottom '#DBEAFECC' -TileValueColor '#0F172AFF'&#xD;
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -ThemeMode Light -TitleColor White -SubtitleColor White -Tile $tiles&#xD;
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill</dev:code>
         <dev:remarks>
           <maml:para></maml:para>

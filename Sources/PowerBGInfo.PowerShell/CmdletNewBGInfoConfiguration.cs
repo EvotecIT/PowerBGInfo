@@ -21,7 +21,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public string ConfigurationDirectory { get; set; } = string.Empty;
 
-    /// <para>Default label font family.</para>
+    /// <para>Explicit label font family. Unset classic entries use Calibri; charts use their shared theme font stack.</para>
     [Parameter]
     public string FontFamilyName { get; set; } = "Calibri";
 
@@ -78,7 +78,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Parameter]
     public float ValueFontSize { get; set; } = 16;
 
-    /// <para>Default value font family.</para>
+    /// <para>Explicit value font family. Unset classic entries use Calibri; chart values use their shared theme font stack.</para>
     [Parameter]
     public string ValueFontFamilyName { get; set; } = "Calibri";
 

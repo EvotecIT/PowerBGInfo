@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Color = ChartForgeX.Primitives.ChartColor;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo;
 
@@ -97,6 +98,22 @@ public enum BgInfoVisualCanvasTileTextFitPolicy {
 
 /// <summary>Defines a reusable ChartForgeX visual canvas overlay.</summary>
 public sealed class BgInfoVisualCanvas {
+    private Color? _backgroundTop;
+    private Color? _backgroundBottom;
+    private Color? _accent;
+    private VisualThemeMode _themeMode = VisualThemeMode.Dark;
+    /// <summary>Shared light or dark palette. Explicit canvas and tile colors take precedence.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set {
+            if (!System.Enum.IsDefined(typeof(VisualThemeMode), value)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Unknown theme mode.");
+            _themeMode = value;
+        }
+    }
+    internal VisualDesignTokens DesignTokens => ThemeMode == VisualThemeMode.Light ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark();
+    internal Color? CustomBackgroundTop => _backgroundTop;
+    internal Color? CustomBackgroundBottom => _backgroundBottom;
+    internal Color? CustomAccent => _accent;
     /// <summary>Template used to build the canvas.</summary>
     public BgInfoVisualCanvasTemplate Template { get; set; } = BgInfoVisualCanvasTemplate.PowerBgInfoHero;
     /// <summary>Responsive side-rail sizing preset.</summary>
@@ -114,11 +131,11 @@ public sealed class BgInfoVisualCanvas {
     /// <summary>Explicit Y position on the generated wallpaper.</summary>
     public int PositionY { get; set; }
     /// <summary>Top background color.</summary>
-    public Color BackgroundTop { get; set; } = Color.FromArgb(255, 2, 7, 19);
+    public Color BackgroundTop { get => _backgroundTop ?? DesignTokens.Background; set => _backgroundTop = value; }
     /// <summary>Bottom background color.</summary>
-    public Color BackgroundBottom { get; set; } = Color.FromArgb(255, 7, 26, 53);
+    public Color BackgroundBottom { get => _backgroundBottom ?? DesignTokens.Surface; set => _backgroundBottom = value; }
     /// <summary>Primary accent color.</summary>
-    public Color Accent { get; set; } = Color.FromArgb(255, 47, 128, 255);
+    public Color Accent { get => _accent ?? DesignTokens.Accent; set => _accent = value; }
     /// <summary>Secondary accent color for badge and backdrop highlights.</summary>
     public Color? SecondaryAccent { get; set; }
     /// <summary>Primary hero title color.</summary>

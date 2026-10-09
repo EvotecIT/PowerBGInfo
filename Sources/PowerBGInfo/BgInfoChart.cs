@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo;
 
@@ -100,6 +101,7 @@ public enum BgInfoChartMetric {
 
 /// <summary>Defines a chart block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoChart {
+    private VisualThemeMode _themeMode = VisualThemeMode.Light;
     private int? _titleFontWeight;
     private TextDecorationStyle? _titleUnderlineStyle;
     private TextDecorationStyle? _titleStrikethroughStyle;
@@ -116,6 +118,14 @@ public sealed class BgInfoChart {
     public string Title { get; set; } = string.Empty;
     /// <summary>Chart kind.</summary>
     public BgInfoChartKind Kind { get; set; } = BgInfoChartKind.Sparkline;
+    /// <summary>Shared light or dark theme used for chart geometry, palette, and typography. Explicit colors and host text styles take precedence.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set {
+            if (!System.Enum.IsDefined(typeof(VisualThemeMode), value)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Unknown theme mode.");
+            _themeMode = value;
+        }
+    }
     /// <summary>Chart width in pixels.</summary>
     public int Width { get; set; } = 240;
     /// <summary>Chart height in pixels.</summary>
@@ -162,7 +172,7 @@ public sealed class BgInfoChart {
     public Color? TitleColor { get; set; }
     /// <summary>Optional latest-value text color override.</summary>
     public Color? ValueColor { get; set; }
-    /// <summary>Font family for title and value.</summary>
+    /// <summary>Explicit font family for chart titles, values, and native labels. Unset families inherit the configured role font or shared theme.</summary>
     public string? FontFamilyName { get; set; }
     /// <summary>Title font size.</summary>
     public float? TitleFontSize { get; set; }
@@ -244,7 +254,7 @@ public sealed class BgInfoChart {
     public bool ShowGrid { get; set; }
     /// <summary>Grid line color.</summary>
     public Color? GridColor { get; set; }
-    /// <summary>Number of horizontal grid lines.</summary>
+    /// <summary>Preferred number of value-axis grid lines. Zero disables the grid; positive values use the shared axis density from two through one hundred, with readable spacing determining the actual count.</summary>
     public int GridLineCount { get; set; } = 4;
     /// <summary>Whether to show the chart legend.</summary>
     public bool ShowLegend { get; set; }

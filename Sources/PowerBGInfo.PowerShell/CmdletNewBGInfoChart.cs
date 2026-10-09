@@ -1,5 +1,6 @@
 using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 using System.Management.Automation;
 using PowerBGInfo;
 
@@ -20,6 +21,10 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     /// <para>Chart kind to render, such as Sparkline, Line, Area, Bar, HorizontalBar, Gauge, Circle, RadialBar, Bullet, Pie, Donut, ProgressBar, or Pictorial.</para>
     [Parameter]
     public BgInfoChartKind Kind { get; set; } = BgInfoChartKind.Sparkline;
+
+    /// <para>Shared Light or Dark chart palette and typography. Explicit chart colors and host text styles take precedence.</para>
+    [Parameter]
+    public VisualThemeMode ThemeMode { get; set; } = VisualThemeMode.Light;
 
     /// <para>Single value to append.</para>
     [Parameter(ParameterSetName = "Single")]
@@ -223,7 +228,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public object? GridColor { get; set; }
 
-    /// <para>Number of horizontal grid lines.</para>
+    /// <para>Preferred number of value-axis grid lines. Zero disables the grid; positive values use a density from two through one hundred, with readable spacing determining the actual count.</para>
     [Parameter]
     public int GridLineCount { get; set; } = 4;
 
@@ -301,6 +306,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
             Title = Title,
             Id = Id,
             Kind = Kind,
+            ThemeMode = ThemeMode,
             Width = Width,
             Height = Height,
             Anchor = Anchor,

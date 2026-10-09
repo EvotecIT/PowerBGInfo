@@ -21,7 +21,7 @@ Creates a BGInfo topology edge definition.
 
 ### EXAMPLE 1
 ```powershell
-New-BGInfoTopologyEdge -Color 'Value'
+New-BGInfoTopologyEdge -SourceNodeId 'Value' -TargetNodeId 'Value'
 ```
 
 

@@ -6,6 +6,7 @@ using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo;
 
@@ -373,11 +374,10 @@ internal static class BgInfoVisualCanvasRenderer {
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
     private static VisualCanvasTheme BuildTheme(BgInfoVisualCanvas visual) {
-        var theme = new VisualCanvasTheme {
-            Accent = visual.Accent,
-            HeroTitleAccentColor = visual.Accent,
-            ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34)
-        };
+        var theme = visual.DesignTokens.ApplyTo(new VisualCanvasTheme());
+        theme.Accent = visual.Accent;
+        theme.HeroTitleAccentColor = visual.Accent;
+        theme.ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34);
         ApplyColor(visual.SecondaryAccent, value => theme.SecondaryAccent = value);
         ApplyColor(visual.TitleColor, value => theme.HeroTitleColor = value);
         ApplyColor(visual.TitleAccentColor, value => theme.HeroTitleAccentColor = value);

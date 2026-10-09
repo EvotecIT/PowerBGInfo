@@ -11,7 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ChartForgeXVersion>1.7.0</ChartForgeXVersion>
+        <ChartForgeXVersion>2.0.0</ChartForgeXVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
@@ -20,11 +20,19 @@
     <ItemGroup>
         <PackageReference Include="DesktopManager" Version="4.4.0" />
     </ItemGroup>
+    <PropertyGroup Condition="'$(ChartForgeXProjectPath)' != ''">
+        <ChartForgeXVisualsProjectPath Condition="'$(ChartForgeXVisualsProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Visuals', 'ChartForgeX.Visuals.csproj'))</ChartForgeXVisualsProjectPath>
+        <ChartForgeXStoriesProjectPath Condition="'$(ChartForgeXStoriesProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Stories', 'ChartForgeX.Stories.csproj'))</ChartForgeXStoriesProjectPath>
+    </PropertyGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' != ''">
         <ProjectReference Include="$(ChartForgeXProjectPath)" />
+        <ProjectReference Include="$(ChartForgeXVisualsProjectPath)" />
+        <ProjectReference Include="$(ChartForgeXStoriesProjectPath)" />
     </ItemGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' == ''">
         <PackageReference Include="ChartForgeX" Version="$(ChartForgeXVersion)" />
+        <PackageReference Include="ChartForgeX.Visuals" Version="$(ChartForgeXVersion)" />
+        <PackageReference Include="ChartForgeX.Stories" Version="$(ChartForgeXVersion)" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

@@ -4,6 +4,7 @@ using Color = ChartForgeX.Primitives.ChartColors;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 using Xunit;
+using ChartForgeX.Themes;
 
 namespace PowerBGInfo.Tests;
 
@@ -41,6 +42,8 @@ public class BgInfoConfigurationJsonTests
             Type = BgInfoEntryType.Value,
             Name = "Label",
             Value = "Value",
+            FontFamilyName = "Georgia",
+            ValueFontFamilyName = "Tahoma",
             FontWeight = 800,
             Italic = false,
             UnderlineStyle = TextDecorationStyle.Dashed,
@@ -57,6 +60,7 @@ public class BgInfoConfigurationJsonTests
         configuration.Charts.Add(new BgInfoChart {
             Title = "CPU",
             Values = new[] { 42d },
+            FontFamilyName = "Calibri",
             TitleColor = Color.Gold,
             ValueColor = Color.LimeGreen,
             TitleFontWeight = 900,
@@ -79,6 +83,8 @@ public class BgInfoConfigurationJsonTests
         Assert.Contains("\"UnderlineStyle\": \"Double\"", json);
         Assert.Contains("\"ValueTextCase\": \"ToggleCase\"", json);
         var loaded = BgInfoConfigurationJson.Load(path);
+        Assert.Equal("Arial", loaded.FontFamilyName);
+        Assert.Equal("Consolas", loaded.ValueFontFamilyName);
         Assert.Equal(600, loaded.FontWeight);
         Assert.True(loaded.Italic);
         Assert.Equal(TextDecorationStyle.Double, loaded.UnderlineStyle);
@@ -92,6 +98,8 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(TextCaseTransform.ToggleCase, loaded.ValueTextCase);
 
         var entry = Assert.Single(loaded.Entries);
+        Assert.Equal("Georgia", entry.FontFamilyName);
+        Assert.Equal("Tahoma", entry.ValueFontFamilyName);
         Assert.Equal(800, entry.FontWeight);
         Assert.Equal(TextDecorationStyle.Dashed, entry.UnderlineStyle);
         Assert.Equal(TextDecorationStyle.Double, entry.ValueStrikethroughStyle);
@@ -99,6 +107,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(TextCaseTransform.Lowercase, entry.ValueTextCase);
 
         var chart = Assert.Single(loaded.Charts);
+        Assert.Equal("Calibri", chart.FontFamilyName);
         Assert.Equal(Color.Gold, chart.TitleColor);
         Assert.Equal(Color.LimeGreen, chart.ValueColor);
         Assert.Equal(900, chart.TitleFontWeight);
@@ -260,6 +269,7 @@ public class BgInfoConfigurationJsonTests
             Id = "usage",
             Title = "Usage",
             Kind = BgInfoChartKind.Donut,
+            ThemeMode = VisualThemeMode.Dark,
             Values = new[] { 72d, 28d },
             Labels = new[] { "Used", "Free" },
             Palette = new[] { Color.Red, Color.Green },
@@ -288,6 +298,7 @@ public class BgInfoConfigurationJsonTests
         var roundTripped = BgInfoConfigurationJson.Load(path);
         var chart = Assert.Single(roundTripped.Charts);
         Assert.Equal(BgInfoChartKind.Donut, chart.Kind);
+        Assert.Equal(VisualThemeMode.Dark, chart.ThemeMode);
         Assert.Equal(new[] { "Used", "Free" }, chart.Labels);
         Assert.Equal(2, chart.Palette.Count);
         Assert.True(chart.ShowLegend);
@@ -338,7 +349,9 @@ public class BgInfoConfigurationJsonTests
             Id = "lab",
             Label = "Lab Site",
             Status = TopologyHealthStatus.Healthy,
-            Symbol = "region"
+            Symbol = "region",
+            Width = 640,
+            Height = 240
         });
         topology.Nodes.Add(new TopologyNode {
             Id = "gateway",
@@ -383,7 +396,9 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(TopologyNodeDisplayMode.CompactCard, loaded.NodeDisplayMode);
         Assert.True(loaded.Transparent);
         Assert.True(loaded.ShowLegend);
-        Assert.Single(loaded.Groups);
+        var loadedGroup = Assert.Single(loaded.Groups);
+        Assert.Equal(640, loadedGroup.Width);
+        Assert.Equal(240, loadedGroup.Height);
         Assert.Equal(2, loaded.Nodes.Count);
         Assert.Single(loaded.Edges);
         Assert.Equal("gateway-api", loaded.Edges[0].Id);
@@ -400,6 +415,7 @@ public class BgInfoConfigurationJsonTests
             ConfigurationDirectory = tempDirectory
         };
         var visual = new BgInfoVisualCanvas {
+            ThemeMode = VisualThemeMode.Light,
             LayoutPreset = BgInfoVisualCanvasLayoutPreset.WideRails,
             Title = "PowerBGInfo",
             Subtitle = "Desktop background insights",
@@ -478,6 +494,7 @@ public class BgInfoConfigurationJsonTests
         var roundTripped = BgInfoConfigurationJson.Load(path);
         var loaded = Assert.Single(roundTripped.VisualCanvases);
         Assert.Equal(BgInfoVisualCanvasLayoutPreset.WideRails, loaded.LayoutPreset);
+        Assert.Equal(VisualThemeMode.Light, loaded.ThemeMode);
         Assert.Equal("PowerBGInfo", loaded.Title);
         Assert.Equal("Desktop background insights", loaded.Subtitle);
         Assert.Equal(1200, loaded.Width);
@@ -686,5 +703,49 @@ public class BgInfoConfigurationJsonTests
         var roundTripped = BgInfoConfigurationJson.Load(path);
         var visual = Assert.Single(roundTripped.VisualCanvases);
         Assert.Equal(string.Empty, visual.HeroBadgeText);
+    }
+
+    [Fact]
+    public void JsonRoundTripPreservesInheritedThemeRolesWithoutFreezingDefaults() {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-theme-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        try {
+            var path = Path.Combine(tempDirectory, "config.json");
+            var configuration = new BgInfoConfiguration();
+            configuration.VisualCanvases.Add(new BgInfoVisualCanvas { ThemeMode = VisualThemeMode.Light });
+            configuration.Charts.Add(new BgInfoChart { ThemeMode = VisualThemeMode.Dark });
+            BgInfoConfigurationJson.Save(configuration, path);
+            Assert.DoesNotContain("\"FontFamilyName\"", File.ReadAllText(path));
+            Assert.DoesNotContain("\"ValueFontFamilyName\"", File.ReadAllText(path));
+
+            var loaded = BgInfoConfigurationJson.Load(path);
+            var visual = Assert.Single(loaded.VisualCanvases);
+            visual.ThemeMode = VisualThemeMode.Dark;
+            var tokens = VisualDesignTokens.GraphiteDark();
+            Assert.Equal(tokens.Background, visual.BackgroundTop);
+            Assert.Equal(tokens.Accent, visual.Accent);
+            var chart = Assert.Single(loaded.Charts);
+            var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 42d }, loaded, 320, 180);
+            Assert.Equal(tokens.Foreground, rendered.Options.TitleStyle.Color);
+            Assert.Equal(tokens.Foreground, rendered.Options.DataLabelStyle.Color);
+            Assert.Equal(tokens.FontFamily, rendered.Options.TitleStyle.FontFamily);
+            Assert.Equal(tokens.FontFamily, rendered.Options.DataLabelStyle.FontFamily);
+
+            loaded.Color = Color.Black;
+            loaded.ValueColor = Color.Gold;
+            loaded.FontFamilyName = "Calibri";
+            loaded.ValueFontFamilyName = "Consolas";
+            visual.Accent = Color.Cyan;
+            BgInfoConfigurationJson.Save(loaded, path);
+            loaded = BgInfoConfigurationJson.Load(path);
+            rendered = BgInfoChartRenderer.BuildChartForgeXChart(Assert.Single(loaded.Charts), new[] { 42d }, loaded, 320, 180);
+            Assert.Equal(Color.Black, rendered.Options.TitleStyle.Color);
+            Assert.Equal(Color.Gold, rendered.Options.DataLabelStyle.Color);
+            Assert.Equal("Calibri", rendered.Options.TitleStyle.FontFamily);
+            Assert.Equal("Consolas", rendered.Options.DataLabelStyle.FontFamily);
+            Assert.Equal(Color.Cyan, Assert.Single(loaded.VisualCanvases).Accent);
+        } finally {
+            Directory.Delete(tempDirectory, true);
+        }
     }
 }

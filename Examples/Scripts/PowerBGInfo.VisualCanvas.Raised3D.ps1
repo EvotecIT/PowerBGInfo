@@ -4,25 +4,6 @@ $examplesPath = (Resolve-Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).P
 $sampleImage = Join-Path -Path $examplesPath -ChildPath 'Samples\TapC-Evotec-2560x1080.jpg'
 $outputDirectory = Join-Path -Path $examplesPath -ChildPath 'Output'
 
-$palette = @{
-    Accent                 = '#38BDF8'
-    SecondaryAccent        = '#7DD3FC'
-    BackgroundTop          = '#02040A'
-    BackgroundBottom       = '#050B16'
-    TitleColor             = '#F8FAFC'
-    TitleAccentColor       = '#38BDF8'
-    SubtitleColor          = '#CBD5E1'
-    TileLabelColor         = '#BFD7FF'
-    TileValueColor         = '#FFFFFF'
-    TileDetailColor        = '#9FB6D8'
-    TileGlassTop           = '#F30E2448'
-    TileGlassBottom        = '#EB020816'
-    TileProgressTrackColor = '#7A14213D'
-    HeroBadgeTop           = '#102A4B'
-    HeroBadgeBottom        = '#030A17'
-    HeroBadgeTextColor     = '#F8FBFF'
-}
-
 $tiles = @(
     New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
     New-BGInfoVisualCanvasTile -Side Left -IconKind Network -SurfaceStyle Raised -Label 'IP ADDRESS' -Value '{{IPv4Address}}'
@@ -37,25 +18,9 @@ $tiles = @(
 New-BGInfo -MonitorIndex 0 -Target File {
     New-BGInfoVisualCanvas `
         -Title 'PowerBGInfo' `
-        -Subtitle 'Raised sections on black background' `
+        -Subtitle 'Raised sections on a dark background' `
         -Opaque `
         -NoTechBackdrop `
-        -Accent $palette.Accent `
-        -SecondaryAccent $palette.SecondaryAccent `
-        -BackgroundTop $palette.BackgroundTop `
-        -BackgroundBottom $palette.BackgroundBottom `
-        -TitleColor $palette.TitleColor `
-        -TitleAccentColor $palette.TitleAccentColor `
-        -SubtitleColor $palette.SubtitleColor `
-        -TileLabelColor $palette.TileLabelColor `
-        -TileValueColor $palette.TileValueColor `
-        -TileDetailColor $palette.TileDetailColor `
-        -TileGlassTop $palette.TileGlassTop `
-        -TileGlassBottom $palette.TileGlassBottom `
-        -TileProgressTrackColor $palette.TileProgressTrackColor `
-        -HeroBadgeTop $palette.HeroBadgeTop `
-        -HeroBadgeBottom $palette.HeroBadgeBottom `
-        -HeroBadgeTextColor $palette.HeroBadgeTextColor `
         -Tile $tiles
 } -FilePath $sampleImage `
     -ConfigurationDirectory $outputDirectory `
