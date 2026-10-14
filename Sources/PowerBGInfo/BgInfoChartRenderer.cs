@@ -105,7 +105,7 @@ internal static class BgInfoChartRenderer {
         var plotPadding = Math.Min(8d, (Math.Max(1, Math.Min(width, height)) - 1d) / 2d);
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
-            .WithTheme(CreateOverlayTheme(chart, config))
+            .WithTheme(CreateOverlayTheme(chart, config), chart.ThemeMode)
             .WithTransparentBackground()
             .WithHeader(false)
             .WithLegend(false)
@@ -119,18 +119,18 @@ internal static class BgInfoChartRenderer {
             .WithPngSupersampling(2)
             .WithValueFormatter(value => FormatValue(value, chart));
 
-        ApplyTextStyle(plot.Options.TitleStyle, ResolveChartTitleStyle(chart, config), chart.TitleFontSize);
+        plot.ConfigureTitleStyle(style => ApplyTextStyle(style, ResolveChartTitleStyle(chart, config), chart.TitleFontSize));
         var valueStyle = ResolveChartValueStyle(chart, config);
-        ApplyTextStyle(plot.Options.DataLabelStyle, valueStyle, chart.ValueFontSize);
-        ApplyTextStyle(plot.Options.LegendStyle, valueStyle, chart.ValueFontSize);
-        ApplyTextStyle(plot.Options.TickLabelStyle, valueStyle, chart.ValueFontSize);
-        ApplyTextStyle(plot.Options.AxisTitleStyle, ResolveChartTitleStyle(chart, config), chart.TitleFontSize);
+        plot.ConfigureDataLabelStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
+        plot.ConfigureLegendStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
+        plot.ConfigureTickLabelStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
+        plot.ConfigureAxisTitleStyle(style => ApplyTextStyle(style, ResolveChartTitleStyle(chart, config), chart.TitleFontSize));
 
         var showGrid = chart.ShowGrid && chart.GridLineCount > 0;
         plot.WithGrid(showGrid);
         if (showGrid) {
             var horizontal = chart.Kind == BgInfoChartKind.HorizontalBar;
-            plot.WithGridStyle(style => {
+            plot.ConfigureGridStyle(style => {
                 style.ShowHorizontalLines = !horizontal;
                 style.ShowVerticalLines = horizontal;
             });
@@ -147,16 +147,16 @@ internal static class BgInfoChartRenderer {
 
         switch (chart.Kind) {
             case BgInfoChartKind.Bar:
-                plot.AddBar(chart.Title, BuildIndexedPoints(values), accent);
+                plot.AddSeries(ChartSeries.CreateBar(SeriesId(chart), chart.Title, BuildIndexedPoints(values), accent));
                 break;
             case BgInfoChartKind.HorizontalBar:
-                plot.AddHorizontalBar(chart.Title, BuildIndexedPoints(values), accent);
+                plot.AddSeries(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.HorizontalBar, BuildIndexedPoints(values)) { Color = accent });
                 break;
             case BgInfoChartKind.Line:
-                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: false, area: false);
+                AddTrendSeries(plot, chart, values, width, accent, smooth: false, area: false);
                 break;
             case BgInfoChartKind.Area:
-                AddTrendSeries(plot, chart.Title, values, width, chart.FillColor ?? accent, smooth: true, area: true);
+                AddTrendSeries(plot, chart, values, width, chart.FillColor ?? accent, smooth: true, area: true);
                 break;
             case BgInfoChartKind.Gauge:
                 AddGauge(plot, chart, values, accent);
@@ -165,41 +165,36 @@ internal static class BgInfoChartRenderer {
                 AddCircle(plot, chart, values, accent);
                 break;
             case BgInfoChartKind.RadialBar:
-                plot.AddRadialBar(chart.Title, BuildPercentPoints(values), accent);
+                plot.AddSeries(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.ProgressRing, BuildPercentPoints(values)) { Color = accent });
                 break;
             case BgInfoChartKind.Bullet:
                 AddBulletRows(plot, chart, values, accent);
                 break;
             case BgInfoChartKind.Pie:
-                plot.WithXLabels(BuildLabels(chart, values.Count)).AddPie(chart.Title, BuildIndexedPoints(values));
-                ApplyPointColors(plot, chart);
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Pie);
                 break;
             case BgInfoChartKind.Donut:
-                plot.WithXLabels(BuildLabels(chart, values.Count)).AddDonut(chart.Title, BuildIndexedPoints(values));
-                ApplyPointColors(plot, chart);
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Donut);
                 break;
             case BgInfoChartKind.ProgressBar:
-                plot.AddProgressBars(chart.Title, BuildProgressItems(chart, values), ResolveMaximum(chart, values, 100), accent);
+                plot.WithProgressMaximum(ResolveMaximum(chart, values, 100));
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.ProgressBar, accent);
                 break;
             case BgInfoChartKind.Pictorial:
-                plot.AddPictorial(chart.Title, BuildPictorialItems(chart, values), ResolvePictorialShape(chart.PictorialSymbol), accent);
+                AddCategoricalSeries(plot, chart, values.Select(value => Math.Max(0, value)).ToArray(), ChartSeriesKind.Pictorial, accent);
                 break;
             default:
-                AddTrendSeries(plot, chart.Title, values, width, accent, smooth: true, area: false);
+                AddTrendSeries(plot, chart, values, width, accent, smooth: true, area: false);
                 break;
         }
 
         return plot;
     }
 
-    private static void AddTrendSeries(Chart plot, string name, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {
-        var points = BuildIndexedPoints(values);
-        if (area) {
-            plot.AddAdaptiveArea(name, points, width, ChartResolutionPolicy.Trend(), color);
-        } else {
-            plot.AddAdaptiveLine(name, points, width, ChartResolutionPolicy.Trend(), color);
-        }
-        plot.Series[plot.Series.Count - 1].WithSmooth(smooth);
+    private static void AddTrendSeries(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {
+        var series = ChartSeries.CreateAdaptive(SeriesId(chart), chart.Title, area ? ChartSeriesKind.Area : ChartSeriesKind.Line,
+            BuildIndexedPoints(values), width, ChartResolutionPolicy.Trend(), color).WithSmooth(smooth);
+        plot.AddSeries(series);
     }
 
     private static void ApplyChartOptions(Chart plot, BgInfoChart chart) {
@@ -208,14 +203,14 @@ internal static class BgInfoChartRenderer {
             .WithLegendPosition(ResolveLegendPosition(chart.LegendPosition))
             .WithDataLabels(chart.ShowDataLabels)
             .WithDonutCenterLabel(chart.ShowDonutCenterLabel)
-            .WithRadialBarCenterLabel(chart.ShowRadialBarCenterLabel)
+            .WithProgressRingCenterLabel(chart.ShowRadialBarCenterLabel)
             .WithCircleStatusLabel(chart.ShowCircleStatusLabel)
             .WithProgressValues(chart.ShowProgressValues)
             .WithProgressHandles(chart.ShowProgressHandles)
             .WithPictorialShape(ResolvePictorialShape(chart.PictorialSymbol));
 
         if (chart.Palette.Count > 0) {
-            plot.WithPalette(chart.Palette.ToArray());
+            plot.WithTheme(plot.Options.Theme.WithPalette(chart.Palette.ToArray()));
         }
         if (chart.DonutInnerRadiusRatio.HasValue) {
             plot.WithDonutInnerRadiusRatio(chart.DonutInnerRadiusRatio.Value);
@@ -235,25 +230,35 @@ internal static class BgInfoChartRenderer {
         }
     }
 
-    private static ChartTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config) {
+    private static VisualTheme CreateOverlayTheme(BgInfoChart chart, BgInfoConfiguration config) {
         var text = ResolveTitleColor(chart, config);
         var grid = chart.GridColor ?? ResolveTokens(chart).Border;
-        return (chart.ThemeMode == VisualThemeMode.Dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent)
-            .WithTextColors(text, text)
-            .WithGuideColors(WithAlpha(grid, 90), WithAlpha(grid, 120))
-            .WithStrokeWidth(2.2)
-            .WithMarkerRadius(2.4);
+        return VisualTheme.Graphite().Configure(builder => {
+            var colors = builder.Colors(chart.ThemeMode);
+            colors.Background = ChartColor.Transparent;
+            colors.Surface = ChartColor.Transparent;
+            colors.ElevatedSurface = ChartColor.Transparent;
+            colors.Border = ChartColor.Transparent;
+            colors.PlotBorder = ChartColor.Transparent;
+            colors.Foreground = text;
+            colors.MutedForeground = text;
+            colors.Grid = WithAlpha(grid, 90);
+            colors.Axis = WithAlpha(grid, 120);
+            builder.SeriesStrokeWidth = 2.2;
+            builder.MarkerRadius = 2.4;
+        });
     }
 
     private static void AddGauge(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
         var latest = values[values.Count - 1];
-        plot.AddGauge(chart.Title, latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100), accent);
+        plot.AddSeries(ChartSeries.CreateGauge(SeriesId(chart), chart.Title,
+            new ChartGaugeValue(latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100)), accent));
     }
 
     private static void AddCircle(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
         var latest = values[values.Count - 1];
-        plot.AddCircle(chart.Title, latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100), accent);
+        plot.AddSeries(ChartSeries.CreateCircle(SeriesId(chart), chart.Title,
+            new ChartGaugeValue(latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100)), accent));
     }
 
     private static void AddBulletRows(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
@@ -263,8 +268,10 @@ internal static class BgInfoChartRenderer {
         var ranges = chart.RangeEnds.Count > 0 ? chart.RangeEnds : null;
 
         for (var i = 0; i < values.Count; i++) {
-            plot.AddBullet(LabelAt(chart, i), values[i], target, minimum, maximum, ranges, ColorAt(chart, i) ?? accent);
-            plot.Series[plot.Series.Count - 1].WithDataLabels(chart.ShowDataLabels);
+            var series = ChartSeries.CreateBullet(SeriesId(chart, "row:" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)), LabelAt(chart, i),
+                new ChartBulletValue(values[i], target, minimum, maximum, ranges), ColorAt(chart, i) ?? accent)
+                .WithDataLabels(chart.ShowDataLabels);
+            plot.AddSeries(series);
         }
     }
 
@@ -297,24 +304,6 @@ internal static class BgInfoChartRenderer {
         return labels;
     }
 
-    private static ChartProgressItem[] BuildProgressItems(BgInfoChart chart, IReadOnlyList<double> values) {
-        var items = new ChartProgressItem[values.Count];
-        for (var i = 0; i < values.Count; i++) {
-            items[i] = new ChartProgressItem(LabelAt(chart, i), values[i], ColorAt(chart, i));
-        }
-
-        return items;
-    }
-
-    private static ChartPictorialItem[] BuildPictorialItems(BgInfoChart chart, IReadOnlyList<double> values) {
-        var items = new ChartPictorialItem[values.Count];
-        for (var i = 0; i < values.Count; i++) {
-            items[i] = new ChartPictorialItem(LabelAt(chart, i), Math.Max(0, values[i]), ColorAt(chart, i));
-        }
-
-        return items;
-    }
-
     private static string LabelAt(BgInfoChart chart, int index) =>
         index < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[index])
             ? chart.Labels[index]
@@ -323,14 +312,15 @@ internal static class BgInfoChartRenderer {
     private static ChartColor? ColorAt(BgInfoChart chart, int index) =>
         index < chart.Palette.Count ? chart.Palette[index] : null;
 
-    private static void ApplyPointColors(Chart plot, BgInfoChart chart) {
-        if (plot.Series.Count == 0 || chart.Palette.Count == 0) {
-            return;
-        }
+    private static ChartSeriesId SeriesId(BgInfoChart chart, string suffix = "values") =>
+        new("bginfo:" + (string.IsNullOrWhiteSpace(chart.Id) ? "chart" : chart.Id.Trim()) + ":" + suffix);
 
-        for (var i = 0; i < chart.Palette.Count; i++) {
-            plot.Series[0].WithPointColor(i, chart.Palette[i]);
+    private static void AddCategoricalSeries(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartSeriesKind kind, ChartColor? color = null) {
+        var series = new ChartSeries(SeriesId(chart), chart.Title, kind, BuildIndexedPoints(values)) { Color = color };
+        for (var i = 0; i < Math.Min(chart.Palette.Count, values.Count); i++) {
+            series.WithPointColor(i, chart.Palette[i]);
         }
+        plot.WithXLabels(BuildLabels(chart, values.Count)).AddSeries(series);
     }
 
     private static double ResolveMaximum(BgInfoChart chart, IReadOnlyList<double> values, double fallback) {
@@ -416,10 +406,10 @@ internal static class BgInfoChartRenderer {
         chart.ThemeMode == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
 
     private static string ResolveTitleFontFamily(BgInfoChart chart, BgInfoConfiguration config) =>
-        chart.FontFamilyName ?? config.CustomFontFamilyName ?? ResolveTokens(chart).FontFamily;
+        chart.FontFamilyName ?? config.CustomFontFamilyName ?? VisualTheme.Graphite().Typography.Family;
 
     private static string ResolveValueFontFamily(BgInfoChart chart, BgInfoConfiguration config) =>
-        chart.FontFamilyName ?? config.CustomValueFontFamilyName ?? ResolveTokens(chart).FontFamily;
+        chart.FontFamilyName ?? config.CustomValueFontFamilyName ?? VisualTheme.Graphite().Typography.Family;
 
     private static ChartColor ResolveTitleColor(BgInfoChart chart, BgInfoConfiguration config) =>
         chart.TitleColor ?? chart.TextColor ?? config.CustomColor ?? ResolveTokens(chart).Foreground;

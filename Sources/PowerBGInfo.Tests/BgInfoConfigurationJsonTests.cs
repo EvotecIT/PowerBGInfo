@@ -728,8 +728,8 @@ public class BgInfoConfigurationJsonTests
             var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 42d }, loaded, 320, 180);
             Assert.Equal(tokens.Foreground, rendered.Options.TitleStyle.Color);
             Assert.Equal(tokens.Foreground, rendered.Options.DataLabelStyle.Color);
-            Assert.Equal(tokens.FontFamily, rendered.Options.TitleStyle.FontFamily);
-            Assert.Equal(tokens.FontFamily, rendered.Options.DataLabelStyle.FontFamily);
+            Assert.Equal(VisualTheme.Graphite().Typography.Family, rendered.Options.TitleStyle.FontFamily);
+            Assert.Equal(VisualTheme.Graphite().Typography.Family, rendered.Options.DataLabelStyle.FontFamily);
 
             loaded.Color = Color.Black;
             loaded.ValueColor = Color.Gold;

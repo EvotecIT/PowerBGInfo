@@ -48,7 +48,7 @@ jobs:
         env:
           RefreshPSD1Only: 'true'
         run: |
-          ./Build/Build-Module.ps1
+          ./Build/Build-Module.ps1 -SkipInstall
 
       - name: Upload refreshed manifest
         uses: actions/upload-artifact@v7
@@ -200,7 +200,7 @@ jobs:
         env:
           RefreshPSD1Only: 'false'
           SignModule: 'false'
-        run: ./Build/Build-Module.ps1
+        run: ./Build/Build-Module.ps1 -SkipInstall
         timeout-minutes: 15
 
       - name: Run packaged ALC smoke test

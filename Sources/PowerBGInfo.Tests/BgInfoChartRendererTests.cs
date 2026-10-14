@@ -48,16 +48,16 @@ public class BgInfoChartRendererTests
 
         var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, values, configuration, 320, 180);
 
-        Assert.Equal(tokens.Palette, rendered.Options.Theme.Palette);
+        Assert.Equal(tokens.Palette, rendered.Options.Theme.Resolve(mode).Palette);
         Assert.Equal(tokens.Foreground, rendered.Options.TitleStyle.Color);
         Assert.Equal(tokens.Foreground, rendered.Options.DataLabelStyle.Color);
-        Assert.Equal(VisualTheme.Graphite().Typography.LegendSize, rendered.Options.Theme.LegendFontSize);
+        Assert.Equal(VisualTheme.Graphite().Typography.LegendSize, rendered.Options.Theme.Typography.LegendSize);
 
         configuration.Color = ChartColors.Gold;
         configuration.ValueColor = ChartColors.Cyan;
         chart.Palette = new[] { ChartColors.Red, ChartColors.Green };
         rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, values, configuration, 320, 180);
-        Assert.Equal(chart.Palette, rendered.Options.Theme.Palette);
+        Assert.Equal(chart.Palette, rendered.Options.Theme.Resolve(mode).Palette);
         Assert.Equal(ChartColors.Gold, rendered.Options.TitleStyle.Color);
         Assert.Equal(ChartColors.Cyan, rendered.Options.DataLabelStyle.Color);
     }
@@ -83,12 +83,12 @@ public class BgInfoChartRendererTests
         var plot = BgInfoChartRenderer.BuildChartForgeXChart(chart, chart.Values, configuration, 320, 180);
         var labels = XDocument.Parse(plot.ToSvg()).Descendants().Where(node => node.Name.LocalName == "text").ToArray();
         Assert.NotEmpty(labels);
-        Assert.All(labels, label => Assert.Equal(tokens.FontFamily, (string?)label.Attribute("font-family")));
+        Assert.All(labels, label => Assert.Equal(VisualTheme.Graphite().Typography.Family, (string?)label.Attribute("font-family")));
 
         using var inherited = BgInfoChartRenderer.Render(chart, chart.Values, configuration);
         using var explicitTheme = BgInfoChartRenderer.Render(chart, chart.Values, new BgInfoConfiguration {
-            FontFamilyName = tokens.FontFamily,
-            ValueFontFamilyName = tokens.FontFamily
+            FontFamilyName = VisualTheme.Graphite().Typography.Family,
+            ValueFontFamilyName = VisualTheme.Graphite().Typography.Family
         });
         Assert.Equal(explicitTheme.ToRgbaImage().Pixels, inherited.ToRgbaImage().Pixels);
 

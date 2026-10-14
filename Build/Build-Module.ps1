@@ -1,5 +1,6 @@
 param(
-    [bool] $SignModule = $(if ([string]::IsNullOrWhiteSpace($Env:SignModule)) { $true } else { [bool]::Parse($Env:SignModule) })
+    [bool] $SignModule = $(if ([string]::IsNullOrWhiteSpace($Env:SignModule)) { $true } else { [bool]::Parse($Env:SignModule) }),
+    [switch] $SkipInstall
 )
 
 Import-Module PSPublishModule -Force -ErrorAction Stop
@@ -97,6 +98,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
             'PowerBGInfo.BgInfoVisualCanvasFeature'
             'ChartForgeX.Primitives.ChartColor'
             'ChartForgeX.Themes.VisualDesignTokens'
+            'ChartForgeX.Themes.VisualTheme'
             'ChartForgeX.Topology.TopologyNode'
             'ChartForgeX.Topology.TopologyEdge'
             'ChartForgeX.Topology.TopologyGroup'
@@ -118,4 +120,4 @@ Build-Module -ModuleName 'PowerBGInfo' {
     # options for publishing to github/psgallery
     #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled
     #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled -GenerateReleaseNotes
-}
+} -SkipInstall:$SkipInstall

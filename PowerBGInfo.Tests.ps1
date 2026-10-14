@@ -47,8 +47,11 @@ foreach ($Module in $PSDInformation.RequiredModules) {
 Write-Color
 
 Import-Module $PSScriptRoot\*.psd1 -Force
-$result = Invoke-Pester -Path "$PSScriptRoot\Tests" -Verbose -PassThru
+$result = Invoke-Pester -Path @(
+    "$PSScriptRoot\Tests"
+    "$PSScriptRoot\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1"
+) -Verbose -PassThru
 
-if ($result.FailedCount -gt 0) {
-    throw "$($result.FailedCount) tests failed."
+if ($result.Result -ne 'Passed' -or $result.FailedCount -gt 0 -or $result.FailedBlocksCount -gt 0 -or $result.FailedContainersCount -gt 0) {
+    throw "PowerBGInfo tests failed: $($result.FailedCount) tests, $($result.FailedBlocksCount) blocks, $($result.FailedContainersCount) containers."
 }
