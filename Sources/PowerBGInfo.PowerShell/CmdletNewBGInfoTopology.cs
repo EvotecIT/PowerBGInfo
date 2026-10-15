@@ -1,4 +1,5 @@
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using PowerBGInfo;
 using System.Management.Automation;
 
@@ -60,10 +61,16 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
     [Parameter]
     public TopologyNodeDisplayMode NodeDisplayMode { get; set; } = TopologyNodeDisplayMode.CompactCard;
 
-    /// <para>Theme name.</para>
+    /// <para>Theme name. ThemeMode is accepted as an alias to match charts and visual canvases.</para>
     [Parameter]
+    [Alias("ThemeMode")]
     [ValidateSet("Light", "Dark")]
     public string Theme { get; set; } = "Dark";
+
+    /// <para>Whole-number render scale from 1 to 4. Use 2 to enlarge nodes and text on high-resolution wallpapers.</para>
+    [Parameter]
+    [ValidateRange(1, 4)]
+    public int Scale { get; set; } = 1;
 
     /// <para>Use an opaque topology canvas.</para>
     [Parameter]
@@ -85,6 +92,41 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
     [Parameter]
     public SwitchParameter NoEdgeLabels { get; set; }
 
+    /// <para>Panel fill. A fill or border draws the diagram in the same panel style as New-BGInfoChart, with a matching header.</para>
+    [Parameter]
+    public object? BackgroundColor { get; set; }
+
+    /// <para>Optional one-pixel panel outline.</para>
+    [Parameter]
+    public object? BorderColor { get; set; }
+
+    /// <para>Panel corner radius in pixels.</para>
+    [Parameter]
+    [ValidateRange(0, 200)]
+    public double CornerRadius { get; set; }
+
+    /// <para>Space between the panel edge and its content.</para>
+    [Parameter]
+    [ValidateRange(0, 200)]
+    public int Padding { get; set; } = 20;
+
+    /// <para>Panel header color.</para>
+    [Parameter]
+    public object? TitleColor { get; set; }
+
+    /// <para>Panel header font size.</para>
+    [Parameter]
+    public float TitleFontSize { get; set; }
+
+    /// <para>Panel header font weight from 100 through 900.</para>
+    [Parameter]
+    [ValidateRange(100, 900)]
+    public int TitleFontWeight { get; set; } = 600;
+
+    /// <para>Panel header casing.</para>
+    [Parameter]
+    public TextCaseTransform TitleTextCase { get; set; }
+
     /// <summary>Emits a BGInfo topology overlay definition.</summary>
     protected override void EndProcessing() {
         var topology = new BgInfoTopology {
@@ -103,8 +145,30 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
             ShowTitle = !NoTitle.IsPresent,
             ShowLegend = ShowLegend.IsPresent,
             ShowGroups = !NoGroups.IsPresent,
-            ShowEdgeLabels = !NoEdgeLabels.IsPresent
+            ShowEdgeLabels = !NoEdgeLabels.IsPresent,
+            Scale = Scale,
+            CornerRadius = CornerRadius,
+            Padding = Padding
         };
+
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(BackgroundColor))) {
+            topology.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(BorderColor))) {
+            topology.BorderColor = PowerShellColorConverter.ConvertRequired(BorderColor, nameof(BorderColor));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleColor))) {
+            topology.TitleColor = PowerShellColorConverter.ConvertRequired(TitleColor, nameof(TitleColor));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleFontSize))) {
+            topology.TitleFontSize = TitleFontSize;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleFontWeight))) {
+            topology.TitleFontWeight = TitleFontWeight;
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(TitleTextCase))) {
+            topology.TitleTextCase = TitleTextCase;
+        }
 
         if (MyInvocation.BoundParameters.ContainsKey(nameof(PositionX)) &&
             MyInvocation.BoundParameters.ContainsKey(nameof(PositionY))) {

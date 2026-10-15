@@ -160,6 +160,10 @@ public sealed class BgInfoChart {
     public bool AppendValues { get; set; } = true;
     /// <summary>Optional background color override.</summary>
     public Color? BackgroundColor { get; set; }
+    /// <summary>Corner radius of the chart panel in pixels. Zero keeps square corners.</summary>
+    public double CornerRadius { get; set; }
+    /// <summary>Optional one-pixel panel outline.</summary>
+    public Color? BorderColor { get; set; }
     /// <summary>Line or bar color.</summary>
     public Color? LineColor { get; set; }
     /// <summary>Optional fill color for sparklines.</summary>

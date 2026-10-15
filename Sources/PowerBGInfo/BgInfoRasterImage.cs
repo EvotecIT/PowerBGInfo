@@ -23,6 +23,8 @@ public sealed class BgInfoRasterImage : IDisposable {
     /// <summary>Gets the image height in pixels.</summary>
     public int Height => _composition.Height;
 
+    internal ImageComposition Composition => _composition;
+
     /// <summary>Loads a raster image from disk.</summary>
     public static BgInfoRasterImage Load(string filePath) {
         if (filePath == null) throw new ArgumentNullException(nameof(filePath));

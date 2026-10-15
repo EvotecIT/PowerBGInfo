@@ -607,6 +607,65 @@ Describe 'New-BGInfo passthru' {
     }
 }
 
+Describe 'Generated backgrounds and shared panels' {
+    It 'collects a generated background from the New-BGInfo script block' {
+        $config = New-BGInfo {
+            New-BGInfoBackground -Width 1280 -Height 720 -Color '#05070F' `
+                -Gradient '#0B1022', '#05070F' -GradientAngle 90 `
+                -Pattern Dots -PatternSpacing 40 -Glow @(
+                    New-BGInfoBackgroundGlow -X 0.2 -Y 0.1 -Radius 0.5 -Color '#4F46E566'
+                )
+        } -ConfigurationDirectory $TestDrive -Target File -PassThru
+
+        $background = $config.Background
+        $background.Width | Should -Be 1280
+        $background.Height | Should -Be 720
+        $background.GradientStart.ToHexRgba() | Should -Be '#0B1022FF'
+        $background.GradientAngle | Should -Be 90
+        $background.Pattern.ToString() | Should -Be 'Dots'
+        $background.Glows.Count | Should -Be 1
+        $background.Glows[0].Color.ToHexRgba() | Should -Be '#4F46E566'
+    }
+
+    It 'renders a generated background to a file without a wallpaper image' {
+        $path = New-BGInfo {
+            New-BGInfoBackground -Width 320 -Height 200 -Gradient '#102030', '#203040'
+            New-BGInfoLabel -Name 'HOST-01' -Color White -FontSize 32
+        } -ConfigurationDirectory $TestDrive -OutputFileName 'generated.png' -Target File
+
+        Test-Path -LiteralPath $path | Should -BeTrue
+        $image = [PowerBGInfo.BgInfoRasterImage]::Load($path)
+        $image.Width | Should -Be 320
+        $image.Height | Should -Be 200
+    }
+
+    It 'rejects a gradient with other than two colors' {
+        { New-BGInfoBackground -Gradient '#000000' } | Should -Throw
+    }
+
+    It 'adds panel corners and borders to charts and topologies' {
+        $chart = New-BGInfoChart -Title 'CPU' -Values 1, 2 -CornerRadius 18 -BorderColor '#FFFFFF1F'
+        $chart.CornerRadius | Should -Be 18
+        $chart.BorderColor.ToHexRgba() | Should -Be '#FFFFFF1F'
+
+        $topology = New-BGInfoTopology -Title 'Path' -ThemeMode Light -Scale 2 `
+            -BackgroundColor '#FFFFFFC7' -BorderColor '#0F172A1A' -CornerRadius 18 `
+            -TitleFontSize 15 -TitleTextCase Uppercase -TopologyDefinition {
+                New-BGInfoTopologyNode -Id 'a' -Label 'A'
+            }
+        $topology.Theme | Should -Be 'Light'
+        $topology.Scale | Should -Be 2
+        $topology.HasPanel | Should -BeTrue
+        $topology.TitleTextCase.ToString() | Should -Be 'Uppercase'
+    }
+
+    It 'accepts a background in New-BGInfoConfiguration' {
+        $background = New-BGInfoBackground -Color '#101010'
+        $config = New-BGInfoConfiguration -Target File -Background $background
+        $config.Background.Color.ToHexRgba() | Should -Be '#101010FF'
+    }
+}
+
 Describe 'CLI interoperability' {
     It 'renders the same image from PowerShell-exported json' {
         $sampleImage = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Examples\Samples\TapC-Evotec-2560x1080.jpg'

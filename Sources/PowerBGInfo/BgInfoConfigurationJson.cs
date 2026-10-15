@@ -20,7 +20,7 @@ namespace PowerBGInfo;
 /// <summary>
 /// Loads and saves BGInfo configurations from JSON files.
 /// </summary>
-public static class BgInfoConfigurationJson {
+public static partial class BgInfoConfigurationJson {
     /// <summary>
     /// Loads a BGInfo configuration from JSON.
     /// </summary>
@@ -237,6 +237,7 @@ public static class BgInfoConfigurationJson {
             }
         }
 
+        configuration.Background = MapBackground(model.Background, baseDirectory);
         return configuration;
     }
 
@@ -363,6 +364,8 @@ public static class BgInfoConfigurationJson {
                     UseHistory = chart.UseHistory,
                     AppendValues = chart.AppendValues,
                     BackgroundColor = chart.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(chart.BackgroundColor.Value) : null,
+                    CornerRadius = chart.CornerRadius > 0 ? chart.CornerRadius : null,
+                    BorderColor = chart.BorderColor.HasValue ? BgInfoColorParser.ToHex(chart.BorderColor.Value) : null,
                     LineColor = chart.LineColor.HasValue ? BgInfoColorParser.ToHex(chart.LineColor.Value) : null,
                     FillColor = chart.FillColor.HasValue ? BgInfoColorParser.ToHex(chart.FillColor.Value) : null,
                     Palette = chart.Palette is null ? null : chart.Palette.Select(BgInfoColorParser.ToHex).ToArray(),
@@ -445,6 +448,15 @@ public static class BgInfoConfigurationJson {
                     ShowEdgeLabels = topology.ShowEdgeLabels,
                     ShowStatusBadges = topology.ShowStatusBadges,
                     FitContentToViewport = topology.FitContentToViewport,
+                    Scale = topology.Scale == 1 ? null : topology.Scale,
+                    BackgroundColor = topology.BackgroundColor.HasValue ? BgInfoColorParser.ToHex(topology.BackgroundColor.Value) : null,
+                    BorderColor = topology.BorderColor.HasValue ? BgInfoColorParser.ToHex(topology.BorderColor.Value) : null,
+                    CornerRadius = topology.CornerRadius > 0 ? topology.CornerRadius : null,
+                    Padding = topology.Padding == 20 ? null : topology.Padding,
+                    TitleColor = topology.TitleColor.HasValue ? BgInfoColorParser.ToHex(topology.TitleColor.Value) : null,
+                    TitleFontSize = topology.TitleFontSize,
+                    TitleFontWeight = topology.TitleFontWeight,
+                    TitleTextCase = topology.TitleTextCase?.ToString(),
                     Groups = topology.Groups.Select(MapGroupFile).ToList(),
                     Nodes = topology.Nodes.Select(MapNodeFile).ToList(),
                     Edges = topology.Edges.Select(MapEdgeFile).ToList()
@@ -538,6 +550,7 @@ public static class BgInfoConfigurationJson {
             }
         }
 
+        model.Background = MapBackgroundFile(configuration.Background);
         return model;
     }
 
@@ -657,6 +670,8 @@ public static class BgInfoConfigurationJson {
         if (model.AppendValues.HasValue) chart.AppendValues = model.AppendValues.Value;
 
         ApplyColor(model.BackgroundColor, value => chart.BackgroundColor = value);
+        if (model.CornerRadius.HasValue) chart.CornerRadius = Math.Max(0, model.CornerRadius.Value);
+        ApplyColor(model.BorderColor, value => chart.BorderColor = value);
         ApplyColor(model.LineColor, value => chart.LineColor = value);
         ApplyColor(model.FillColor, value => chart.FillColor = value);
         if (model.Palette != null) {
@@ -798,6 +813,17 @@ public static class BgInfoConfigurationJson {
         if (model.FitContentToViewport.HasValue) {
             topology.FitContentToViewport = model.FitContentToViewport.Value;
         }
+        if (model.Scale.HasValue) {
+            topology.Scale = BgInfoTopology.ValidateScale(model.Scale.Value);
+        }
+        ApplyColor(model.BackgroundColor, value => topology.BackgroundColor = value);
+        ApplyColor(model.BorderColor, value => topology.BorderColor = value);
+        if (model.CornerRadius.HasValue) topology.CornerRadius = Math.Max(0, model.CornerRadius.Value);
+        if (model.Padding.HasValue) topology.Padding = Math.Max(0, model.Padding.Value);
+        ApplyColor(model.TitleColor, value => topology.TitleColor = value);
+        if (model.TitleFontSize.HasValue) topology.TitleFontSize = model.TitleFontSize.Value;
+        if (model.TitleFontWeight.HasValue) topology.TitleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(model.TitleFontWeight.Value, "TitleFontWeight");
+        ApplyEnum<TextCaseTransform>(model.TitleTextCase, value => topology.TitleTextCase = value);
 
         if (model.Groups != null) {
             foreach (var item in model.Groups) {
@@ -1238,6 +1264,7 @@ public static class BgInfoConfigurationJson {
         public List<BgInfoTopologyFile>? Topologies { get; set; }
         public List<BgInfoVisualCanvasFile>? VisualCanvases { get; set; }
         public List<BgInfoImageFile>? Images { get; set; }
+        public BgInfoBackgroundFile? Background { get; set; }
     }
 
     internal sealed class BgInfoVariableFile {
@@ -1277,6 +1304,8 @@ public static class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoChartFile {
+        public double? CornerRadius { get; set; }
+        public string? BorderColor { get; set; }
         public string? ThemeMode { get; set; }
         public string? Id { get; set; }
         public string? Title { get; set; }
@@ -1373,6 +1402,15 @@ public static class BgInfoConfigurationJson {
         public bool? ShowEdgeLabels { get; set; }
         public bool? ShowStatusBadges { get; set; }
         public bool? FitContentToViewport { get; set; }
+        public int? Scale { get; set; }
+        public string? BackgroundColor { get; set; }
+        public string? BorderColor { get; set; }
+        public double? CornerRadius { get; set; }
+        public int? Padding { get; set; }
+        public string? TitleColor { get; set; }
+        public float? TitleFontSize { get; set; }
+        public int? TitleFontWeight { get; set; }
+        public string? TitleTextCase { get; set; }
         public List<BgInfoTopologyGroupFile>? Groups { get; set; }
         public List<BgInfoTopologyNodeFile>? Nodes { get; set; }
         public List<BgInfoTopologyEdgeFile>? Edges { get; set; }

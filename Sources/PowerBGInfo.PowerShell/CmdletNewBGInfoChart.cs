@@ -110,6 +110,15 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public object? BackgroundColor { get; set; }
 
+    /// <para>Corner radius of the chart panel in pixels. Zero keeps square corners.</para>
+    [Parameter]
+    [ValidateRange(0, 200)]
+    public double CornerRadius { get; set; }
+
+    /// <para>Optional one-pixel outline drawn around the chart panel.</para>
+    [Parameter]
+    public object? BorderColor { get; set; }
+
     /// <para>Text color for title/value.</para>
     [Parameter]
     public object? TextColor { get; set; }
@@ -321,6 +330,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
             ValueSuffix = ValueSuffix,
             BarGap = BarGap,
             Padding = Padding,
+            CornerRadius = CornerRadius,
             ShowGrid = ShowGrid.IsPresent,
             GridLineCount = GridLineCount,
             ShowLegend = ShowLegend.IsPresent,
@@ -352,6 +362,9 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(BackgroundColor))) {
             chart.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));
+        }
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(BorderColor))) {
+            chart.BorderColor = PowerShellColorConverter.ConvertRequired(BorderColor, nameof(BorderColor));
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(TextColor))) {
             chart.TextColor = PowerShellColorConverter.ConvertRequired(TextColor, nameof(TextColor));

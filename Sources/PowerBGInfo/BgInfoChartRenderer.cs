@@ -17,9 +17,7 @@ internal static class BgInfoChartRenderer {
 
         var width = Math.Max(1, chart.Width);
         var height = Math.Max(1, chart.Height);
-        var image = new BgInfoRasterImage();
-        var background = chart.BackgroundColor ?? Color.Transparent;
-        image.Create(string.Empty, width, height, background);
+        var image = BgInfoPanel.Create(width, height, chart.BackgroundColor, chart.BorderColor, chart.CornerRadius);
 
         var padding = Math.Max(0, chart.Padding);
         var plotLeft = (double)padding;
@@ -238,7 +236,9 @@ internal static class BgInfoChartRenderer {
             colors.Background = ChartColor.Transparent;
             colors.Surface = ChartColor.Transparent;
             colors.ElevatedSurface = ChartColor.Transparent;
-            colors.Border = ChartColor.Transparent;
+            // The panel owns the frame. Border still paints progress, gauge, circle and pictorial
+            // tracks, so keep it as translucent guide ink instead of hiding those tracks.
+            colors.Border = WithAlpha(grid, 84);
             colors.PlotBorder = ChartColor.Transparent;
             colors.Foreground = text;
             colors.MutedForeground = text;
