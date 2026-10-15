@@ -2,10 +2,16 @@
 
 ### Added
 
+- Added `New-BGInfoBackground` and `New-BGInfoBackgroundGlow` for generated backgrounds built from gradients, soft glows, dot or grid patterns, and an optional image with a scrim. A background replaces the wallpaper image and slideshow sources, and round-trips through JSON.
+- Added `-CornerRadius` and `-BorderColor` to `New-BGInfoChart`, plus the same panel parameters, header styling and `-Scale` to `New-BGInfoTopology`, so charts, diagrams and visual canvas tiles share one panel style.
+- Added four showcase scenarios (server status, help desk, lab or classroom, admin workstation) with a shared HUD theme and `Examples/Run.BGInfo.Showcase.ps1`, which renders all of them in light and dark with a manifest.
 - Added independent bold and underline controls for labels, values, chart headers, global defaults, and JSON configurations.
 
 ### Fixed
 
+- Section labels without a value span both text columns instead of widening the label column.
+- Progress, gauge, circle and pictorial chart tracks stay visible on transparent and panelled charts.
+- `New-BGInfoTopology` accepts `-ThemeMode` like charts and visual canvases.
 - Honored global value color, font size, and font family defaults when an entry does not provide its own overrides.
 
 ### Breaking changes
