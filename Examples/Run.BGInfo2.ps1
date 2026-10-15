@@ -1,6 +1,6 @@
 # Example using compiled cmdlets
 
-﻿Import-Module .\PowerBGInfo.psd1 -Force
+Import-Module $PSScriptRoot\..\PowerBGInfo.psd1 -Force
 
 New-BGInfo -MonitorIndex 0 {
     # Lets add computer name, but lets use builtin values for that
@@ -21,4 +21,4 @@ New-BGInfo -MonitorIndex 0 {
     New-BGInfoValue -BuiltinValue OSInstallDate -Color White
     New-BGInfoValue -BuiltinValue OSLastBootUpTime -Color White
 
-} -FilePath "C:\Support\GitHub\PowerBGInfo\Examples\Samples\TapN-Evotec-1600x900.jpg" -ConfigurationDirectory $PSScriptRoot\Output -PositionX 75 -PositionY 75 -WallpaperFit Fit
+} -FilePath "$PSScriptRoot\Samples\TapN-Evotec-1600x900.jpg" -ConfigurationDirectory $PSScriptRoot\Output -PositionX 75 -PositionY 75 -WallpaperFit Fit
