@@ -75,12 +75,21 @@ public partial class BgInfoGenerator
             return slideshowOutputPath;
         }
 
-        return GenerateImage(config, index => GetWallpaper(GetMonitors(), index), GetMonitors, applyTargets: true);
+        return GenerateImage(config, CurrentWallpaper ?? (index => GetWallpaper(GetMonitors(), index)), GetMonitors, applyTargets: true);
     }
 
     private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<Monitors?> getMonitors, bool applyTargets)
     {
-        var imagePath = config.Background == null ? ResolveBaseImagePath(config, getWallpaperPath) : null;
+        // Never draw on PowerBGInfo's own earlier output: that would stack the text on every run.
+        var plannedOutputPath = string.IsNullOrWhiteSpace(config.OutputFileName) ? null : BuildOutputPath(config, null, false);
+        var chosenBase = !string.IsNullOrWhiteSpace(config.FilePath);
+        var imagePath = config.Background == null
+            ? ResolveOriginalImage(ResolveBaseImagePath(config, getWallpaperPath), plannedOutputPath,
+                chosenBase ? "-FilePath" : "The current wallpaper", chosenByUser: chosenBase)
+            : null;
+        var backgroundImagePath = config.Background == null
+            ? null
+            : ResolveOriginalImage(config.Background.ImagePath, plannedOutputPath, "The New-BGInfoBackground image", chosenByUser: true);
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
@@ -91,7 +100,7 @@ public partial class BgInfoGenerator
         }
 
         using var image = config.Background != null
-            ? CreateBackgroundImage(config.Background, config, getMonitors)
+            ? CreateBackgroundImage(config.Background, backgroundImagePath, config, getMonitors)
             : hasBaseImage
                 ? LoadBaseImage(imagePath!)
                 : CreateBaseImage(config, getMonitors(), outputPath);
@@ -237,6 +246,7 @@ public partial class BgInfoGenerator
         RenderImages(image, config);
 
         _imageService.Save(image, outputPath);
+        BgInfoOutputRegistry.Record(outputPath, config.Background != null ? backgroundImagePath : hasBaseImage ? imagePath : null);
 
         if (applyTargets && config.Target.HasFlag(BgInfoTarget.Wallpaper))
         {
@@ -279,7 +289,13 @@ public partial class BgInfoGenerator
             return false;
         }
 
-        var sourcePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths);
+        // After the first run the slideshow shows the rendered copies; go back to the images they were drawn on.
+        var sourcePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths)
+            .Select(path => ResolveOriginalImage(path, null, "The slideshow image", chosenByUser: false))
+            .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            .Select(path => path!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         if (sourcePaths.Length == 0)
         {
             return false;
@@ -556,7 +572,7 @@ public partial class BgInfoGenerator
         return image;
     }
 
-    private static BgInfoRasterImage CreateBackgroundImage(BgInfoBackground background, BgInfoConfiguration config, Func<Monitors?> getMonitors)
+    private static BgInfoRasterImage CreateBackgroundImage(BgInfoBackground background, string? imagePath, BgInfoConfiguration config, Func<Monitors?> getMonitors)
     {
         var width = background.Width;
         var height = background.Height;
@@ -567,7 +583,7 @@ public partial class BgInfoGenerator
             if (height <= 0) height = monitorSize.Height;
         }
 
-        return BgInfoBackgroundRenderer.Render(background, width, height);
+        return BgInfoBackgroundRenderer.Render(background, width, height, imagePath);
     }
 
     internal static string? ResolveBaseImagePath(BgInfoConfiguration config, Func<int, string?> getWallpaper)

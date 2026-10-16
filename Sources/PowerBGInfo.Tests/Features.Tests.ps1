@@ -315,6 +315,44 @@ Describe 'Data helpers' {
     }
 }
 
+Describe 'Repeated runs' {
+    BeforeAll {
+        $folder = Join-Path ([System.IO.Path]::GetTempPath()) ('bginfo-repeat-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        $base = New-BGInfo -Target File -ConfigurationDirectory $folder -OutputFileName 'base.png' -BackgroundColor Navy {
+            New-BGInfoBackground -Width 320 -Height 180 -Color Navy
+        }
+        function Invoke-Render {
+            [CmdletBinding()]
+            param([string] $FilePath, [string] $OutputFileName)
+            New-BGInfo -Target File -FilePath $FilePath -ConfigurationDirectory $folder -OutputFileName $OutputFileName {
+                New-BGInfoValue -Name 'Host' -Value 'LAB-01' -Color White
+            }
+        }
+    }
+
+    AfterAll {
+        Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'draws on the original when -FilePath is the image the run overwrites' {
+        $first = Invoke-Render $base 'wallpaper.png'
+        $hash = (Get-FileHash -LiteralPath $first).Hash
+        $second = Invoke-Render $first 'wallpaper.png' -WarningVariable warnings
+        $second | Should -Be $first
+        (Get-FileHash -LiteralPath $second).Hash | Should -Be $hash
+        $warnings | Should -BeNullOrEmpty
+        Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
+    }
+
+    It 'warns instead of stacking when the original is not recorded' {
+        $first = Invoke-Render $base 'again.png'
+        Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
+        Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+        $warnings | Should -Match 'drawn twice'
+    }
+}
+
 Describe 'Get-BGInfoMonitor' {
     It 'returns plain monitor objects with the index New-BGInfo -MonitorIndex takes' {
         $monitors = @(Get-BGInfoMonitor)

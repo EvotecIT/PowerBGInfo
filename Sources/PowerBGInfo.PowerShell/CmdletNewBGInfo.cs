@@ -414,7 +414,7 @@ public class CmdletNewBGInfo : PSCmdlet {
             return;
         }
 
-        var path = BgInfoRunner.Run(config);
+        var path = BgInfoRunner.Run(config, WriteWarning);
         WriteObject(path);
     }
 
