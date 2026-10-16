@@ -1,4 +1,4 @@
-<#
+﻿<#
     Privileged access workstation. A dense, dark HUD for administrators:
     health tiles with recent trends, the tier 0 path this machine is allowed
     to reach, and the privileged activity worth a second look.

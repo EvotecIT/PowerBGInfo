@@ -1,4 +1,4 @@
-<#
+﻿<#
     Lab or classroom wallpaper. The seat name is readable from the back of
     the room, students see when the machine resets, and the instructor sees
     lab progress at a glance.
