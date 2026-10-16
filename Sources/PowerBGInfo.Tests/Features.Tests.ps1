@@ -284,6 +284,16 @@ Describe 'Data helpers' {
         , $facts.Disks | Should -Not -BeNullOrEmpty
     }
 
+    It 'reports the user of this session as LoggedOnUser' {
+        $session = (Get-Process -Id $PID).SessionId
+        if ($session -eq 0) {
+            Set-ItResult -Skipped -Because 'session 0 has no signed-in user to compare with'
+            return
+        }
+        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+        (New-BGInfoValue -BuiltinValue LoggedOnUser).Value | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+    }
+
     It 'resolves the new built-in value tokens' -ForEach @(
         @{ Token = 'Uptime' }, @{ Token = 'LastPatch' }, @{ Token = 'DefenderStatus' }, @{ Token = 'BitLockerStatus' },
         @{ Token = 'LoggedOnUser' }, @{ Token = 'Domain' }, @{ Token = 'DiskSummary' }

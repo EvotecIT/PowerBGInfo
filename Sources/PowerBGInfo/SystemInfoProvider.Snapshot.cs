@@ -10,7 +10,10 @@ public sealed class BgInfoSystemInfo {
     public string ComputerName { get; set; } = string.Empty;
     /// <summary>User running the script.</summary>
     public string UserName { get; set; } = string.Empty;
-    /// <summary>User signed in at the console, which differs from <see cref="UserName"/> when the script runs as SYSTEM.</summary>
+    /// <summary>
+    /// User signed in to the Windows session this process runs in, as DOMAIN\user. In session 0 (a SYSTEM task or a service) it is the
+    /// user of the active console session, so it differs from <see cref="UserName"/> there; Unknown when nobody is signed in.
+    /// </summary>
     public string LoggedOnUser { get; set; } = SystemInfoProvider.Unknown;
     /// <summary>DNS domain or workgroup.</summary>
     public string Domain { get; set; } = SystemInfoProvider.Unknown;
@@ -208,14 +211,16 @@ public static partial class SystemInfoProvider {
 
     private static string LoadLoggedOnUser() {
         if (!IsWindows()) return Unknown;
-        try {
-            foreach (var obj in Query(@"root\cimv2", "SELECT UserName FROM Win32_ComputerSystem")) {
-                return OrUnknown(obj["UserName"]?.ToString());
-            }
-        } catch {
-            return Unknown;
+        // The user of the session this process renders for, not only the console user: on a session host the
+        // console is usually empty or someone else. Win32_ComputerSystem.UserName stays as the last resort.
+        return SessionUser.Resolve(LoadConsoleUserFromWmi);
+    }
+
+    private static string? LoadConsoleUserFromWmi() {
+        foreach (var obj in Query(@"root\cimv2", "SELECT UserName FROM Win32_ComputerSystem")) {
+            return obj["UserName"]?.ToString();
         }
-        return Unknown;
+        return null;
     }
 
     private static List<ManagementBaseObject> Query(string scope, string query) {
