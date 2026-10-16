@@ -100,7 +100,8 @@ $scenarios = @(
         chartForgeX = @(
             'Treemap sized by memory and colored by CPU status bands'
             'Metric cards with status bars and a sparkline'
-            'Progress bars with threshold colors, a table and a list'
+            'Horizontal cluster memory bars with node labels and a palette'
+            'A table of live migrations and a list of old checkpoints'
         )
     }
     [ordered]@{

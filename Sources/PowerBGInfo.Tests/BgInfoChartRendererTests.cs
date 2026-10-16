@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
 using ChartForgeX.Themes;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace PowerBGInfo.Tests;
@@ -60,6 +61,50 @@ public class BgInfoChartRendererTests
         Assert.Equal(chart.Palette, rendered.Options.Theme.Resolve(mode).Palette);
         Assert.Equal(ChartColors.Gold, rendered.Options.TitleStyle.Color);
         Assert.Equal(ChartColors.Cyan, rendered.Options.DataLabelStyle.Color);
+    }
+
+    [Fact]
+    public void HorizontalBarsUseConfiguredPaletteAndCategoryCaptions()
+    {
+        var chart = new BgInfoChart {
+            Kind = BgInfoChartKind.HorizontalBar,
+            Labels = new[] { "Directory", "Database", "File service" },
+            Palette = new[] { ChartColors.Red, ChartColors.Green, ChartColors.Blue },
+            ShowDataLabels = true
+        };
+        var values = new[] { 68d, 52d, 37d };
+
+        var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, values, new BgInfoConfiguration(), 520, 220);
+        var nodes = XDocument.Parse(rendered.ToSvg()).Descendants().ToArray();
+        var bars = nodes.Where(node => (string?)node.Attribute("data-cfx-role") == "horizontal-bar").ToArray();
+
+        Assert.Equal(3, bars.Length);
+        Assert.Contains(nodes, node => node.Name.LocalName == "text" && node.Value == "Directory");
+        Assert.Contains(nodes, node => node.Name.LocalName == "text" && node.Value == "Database");
+        Assert.Contains(nodes, node => node.Name.LocalName == "text" && node.Value == "File service");
+        Assert.Contains(bars, node => ((string?)node.Attribute("fill"))?.Contains("#FF0000", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.Contains(bars, node => ((string?)node.Attribute("fill"))?.Contains("#008000", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.Contains(bars, node => ((string?)node.Attribute("fill"))?.Contains("#0000FF", StringComparison.OrdinalIgnoreCase) == true);
+    }
+
+    [Fact]
+    public void HorizontalBarsKeepEveryCaptionWhenRowsAreDense()
+    {
+        var labels = new[] { "HV-AMS-01", "HV-AMS-02", "HV-AMS-03", "HV-AMS-04", "HV-AMS-05", "HV-AMS-06" };
+        var chart = new BgInfoChart { Kind = BgInfoChartKind.HorizontalBar, Labels = labels };
+        var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 12d, 24, 36, 48, 60, 72 }, new BgInfoConfiguration(), 520, 220);
+        var captions = XDocument.Parse(rendered.ToSvg()).Descendants()
+            .Where(node => node.Name.LocalName == "text")
+            .ToArray();
+        var captionTexts = captions.Select(node => node.Value).ToArray();
+
+        Assert.Equal(ChartLabelDensity.All, rendered.Options.YAxis.LabelDensity);
+        foreach (var label in labels) Assert.Contains(label, captionTexts);
+        var categoryRows = captions.Where(node => labels.Contains(node.Value, StringComparer.Ordinal))
+            .Select(node => double.Parse((string)node.Attribute("y")!, CultureInfo.InvariantCulture))
+            .OrderBy(value => value)
+            .ToArray();
+        Assert.Equal(labels.Length, categoryRows.Distinct().Count());
     }
 
     [Theory]
