@@ -9,7 +9,7 @@ namespace PowerBGInfo;
 /// <summary>
 /// Provides built-in system values for BGInfo rendering.
 /// </summary>
-public static class SystemInfoProvider
+public static partial class SystemInfoProvider
 {
     private static readonly Lazy<CpuInfo> CpuInfoCache = new(LoadCpuInfo, true);
     private static readonly Lazy<MemoryInfo> MemoryInfoCache = new(LoadMemoryInfo, true);
@@ -42,7 +42,14 @@ public static class SystemInfoProvider
         ["UserDNSDomain"] = () => Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName,
         ["FQDN"] = () => FqdnCache.Value,
         ["IPv4Address"] = () => NetworkInfoCache.Value.IPv4,
-        ["IPv6Address"] = () => NetworkInfoCache.Value.IPv6
+        ["IPv6Address"] = () => NetworkInfoCache.Value.IPv6,
+        ["Uptime"] = () => FormatUptime(GetUptime()),
+        ["LastPatch"] = () => FormatPatch(GetLastPatch()),
+        ["DefenderStatus"] = () => GetDefender().Status,
+        ["BitLockerStatus"] = GetBitLockerStatus,
+        ["LoggedOnUser"] = GetLoggedOnUser,
+        ["Domain"] = () => OrUnknown(Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName),
+        ["DiskSummary"] = () => FormatDiskSummary(GetDisks())
     };
 
     /// <summary>

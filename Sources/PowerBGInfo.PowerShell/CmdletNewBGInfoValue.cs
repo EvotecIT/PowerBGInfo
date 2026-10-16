@@ -46,7 +46,14 @@ public class CmdletNewBGInfoValue : PSCmdlet {
         "UserDNSDomain",
         "FQDN",
         "IPv4Address",
-        "IPv6Address"
+        "IPv6Address",
+        "Uptime",
+        "LastPatch",
+        "DefenderStatus",
+        "BitLockerStatus",
+        "LoggedOnUser",
+        "Domain",
+        "DiskSummary"
     )]
     public string BuiltinValue { get; set; } = string.Empty;
 
