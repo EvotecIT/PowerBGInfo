@@ -151,8 +151,8 @@ script fits 1920x1080, 2560x1440, ultrawide and portrait screens.
 
 | Region | Behaviour |
 | --- | --- |
-| `Top`, `Bottom` | Full-width bands. Panels flow left to right. |
-| `Left`, `Right` | Columns between the bands. Panels stack top to bottom. |
+| `Top`, `Bottom` | Full-width bands. Panels flow left to right; unsized panels share the width, and a row of fixed widths is centered. If fixed panels and their gaps do not fit, their widths shrink proportionally to stay inside the band. |
+| `Left`, `Right` | Columns between the bands. Panels stack top to bottom; unsized panels share the height, up to 36 % of the screen each. |
 | `Center` | The space between the columns, stacked and centred. |
 
 ```powershell

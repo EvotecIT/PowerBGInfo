@@ -88,6 +88,21 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void MetricPanelRendersItsSharedHeaderAboveTheMetricBody()
+    {
+        var withoutHeader = BgInfoWidgetRenderer.Render(new BgInfoMetricWidget { Label = "CPU", Value = "38", BackgroundColor = Panel }, new BgInfoConfiguration(), 320, 200).ToRgbaImage();
+        var withHeader = BgInfoWidgetRenderer.Render(new BgInfoMetricWidget { Label = "CPU", Value = "38", Title = "System status", Note = "Updated just now", BackgroundColor = Panel }, new BgInfoConfiguration(), 320, 200).ToRgbaImage();
+
+        var differences = 0;
+        for (var y = 0; y < 70; y++) {
+            for (var x = 0; x < 320; x++) {
+                if (!Pixel(withoutHeader, x, y).Equals(Pixel(withHeader, x, y))) differences++;
+            }
+        }
+        Assert.True(differences > 100, "Title and note text should be rendered in the metric panel header.");
+    }
+
+    [Fact]
     public void InvalidWidgetDataIsReportedBeforeRendering()
     {
         var table = new BgInfoTableWidget();

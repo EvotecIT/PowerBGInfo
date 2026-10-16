@@ -78,7 +78,7 @@ public sealed class CmdletNewBGInfoMetric : BgInfoWidgetCmdlet {
         // Metric values are already large; only the theme scale applies by default.
         if (!IsBound(nameof(Scale))) widget.Scale = Math.Max(1d, Math.Min(4d, BgInfoThemeScope.Current?.Scale ?? 1d));
         var raw = BgInfoValueReader.Unwrap(Value);
-        var number = raw is string ? null : BgInfoValueReader.Number(raw);
+        var number = BgInfoValueReader.Number(raw);
         widget.Label = Label;
         widget.NumericValue = number;
         widget.Value = number.HasValue && !string.IsNullOrWhiteSpace(Format)

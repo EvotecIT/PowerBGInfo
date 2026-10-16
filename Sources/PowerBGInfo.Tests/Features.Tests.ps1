@@ -174,6 +174,11 @@ Describe 'Thresholds' {
         $metric = New-BGInfoMetric -Label 'Free' -Value 4 -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below
         $metric.ResolveStatus() | Should -Be 'Critical'
         $metric.NumericValue | Should -Be 4
+
+        $csvMetric = New-BGInfoMetric -Label 'CPU' -Value '91' -WarningThreshold 80 -CriticalThreshold 90
+        $csvMetric.Value | Should -Be '91'
+        $csvMetric.NumericValue | Should -Be 91
+        $csvMetric.ResolveStatus() | Should -Be 'Critical'
     }
 }
 
@@ -236,6 +241,8 @@ Describe 'Widget cmdlets' {
 
     It 'validates Mermaid source when the widget is created' {
         (New-BGInfoMermaid -Definition "flowchart LR`n  A --> B").Definition | Should -Match 'A --> B'
+        $piped = 'flowchart LR', '  A --> B' | New-BGInfoMermaid
+        $piped.Definition | Should -Match "flowchart LR`r?`n\s+A --> B"
         { New-BGInfoMermaid -Definition 'not a diagram' } | Should -Throw
     }
 
