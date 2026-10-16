@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <Company>Evotec</Company>
@@ -19,24 +19,31 @@
 
     <ItemGroup>
         <PackageReference Include="DesktopManager" Version="4.4.0" />
+        <PackageReference Include="CodeGlyphX" Version="3.0.0" />
     </ItemGroup>
     <PropertyGroup Condition="'$(ChartForgeXProjectPath)' != ''">
         <ChartForgeXVisualsProjectPath Condition="'$(ChartForgeXVisualsProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Visuals', 'ChartForgeX.Visuals.csproj'))</ChartForgeXVisualsProjectPath>
         <ChartForgeXStoriesProjectPath Condition="'$(ChartForgeXStoriesProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Stories', 'ChartForgeX.Stories.csproj'))</ChartForgeXStoriesProjectPath>
+        <ChartForgeXMermaidProjectPath Condition="'$(ChartForgeXMermaidProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Mermaid', 'ChartForgeX.Mermaid.csproj'))</ChartForgeXMermaidProjectPath>
     </PropertyGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' != ''">
         <ProjectReference Include="$(ChartForgeXProjectPath)" />
         <ProjectReference Include="$(ChartForgeXVisualsProjectPath)" />
         <ProjectReference Include="$(ChartForgeXStoriesProjectPath)" />
+        <ProjectReference Include="$(ChartForgeXMermaidProjectPath)" />
     </ItemGroup>
     <ItemGroup Condition="'$(ChartForgeXProjectPath)' == ''">
         <PackageReference Include="ChartForgeX" Version="$(ChartForgeXVersion)" />
         <PackageReference Include="ChartForgeX.Visuals" Version="$(ChartForgeXVersion)" />
         <PackageReference Include="ChartForgeX.Stories" Version="$(ChartForgeXVersion)" />
+        <PackageReference Include="ChartForgeX.Mermaid" Version="$(ChartForgeXVersion)" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>PowerBGInfo.Tests</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>PowerBGInfo.PowerShell</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
