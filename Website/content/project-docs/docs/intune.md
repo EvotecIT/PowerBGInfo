@@ -28,7 +28,9 @@ the Personalization CSP cover the cases around it.
 - Remediations: users licensed for Windows Enterprise E3 or E5 (included
   in Microsoft 365 F3, E3 or E5), Windows Education A3 or A5 (included in
   Microsoft 365 A3 or A5), or Windows Virtual Desktop Access per user.
-- Personalization CSP: Windows Enterprise or Education (see below).
+- Personalization settings: Windows Pro / Pro Education, Enterprise or
+  Education. For a custom OMA-URI profile, see the CSP documentation note
+  below because Microsoft's edition guidance conflicts.
 - The [Microsoft Win32 Content Prep Tool](https://go.microsoft.com/fwlink/?linkid=2065730)
   (`IntuneWinAppUtil.exe`).
 
@@ -231,11 +233,15 @@ URL settings map to the CSP nodes below.
 | `./Vendor/MSFT/Personalization/LockScreenImageUrl` | Same |
 | `DesktopImageStatus`, `LockScreenImageStatus` | `1` copied, `2` in progress, `3` failed, `4` unknown file type, `5` unsupported URL scheme, `6` max retry failed |
 
-Microsoft documents that the Personalization CSP is supported on Windows
-**Enterprise and Education**, and works on Pro only when `SetEduPolicies`
-in the SharedPC CSP is set or the device is in Shared PC mode with the
-`BootToCloudPCEnhanced` policy. The per-node tables on the same page list
-Pro as well; the edition note is the one that applies.
+Microsoft's current [background configuration matrix](https://learn.microsoft.com/en-us/windows/configuration/background/)
+lists Intune/CSP support for Pro and Pro Education for both settings. The
+dedicated [Personalization CSP reference](https://learn.microsoft.com/en-us/windows/client-management/mdm/personalization-csp)
+also lists Pro in its per-node tables, but its introductory note restricts
+Pro to devices with `SetEduPolicies` in SharedPC CSP or the
+`BootToCloudPCEnhanced` policy. Because those Microsoft pages conflict, use
+the Settings Catalog route above for ordinary Pro devices. Apply the Shared
+PC condition when creating a custom OMA-URI profile, and verify the edition
+requirements for the Windows version you manage.
 
 To show a PowerBGInfo image this way, render it on the device as SYSTEM
 with `Set-BGInfoMachineImage.ps1` from

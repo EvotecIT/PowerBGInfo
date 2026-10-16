@@ -174,6 +174,11 @@ Describe 'Thresholds' {
         $metric = New-BGInfoMetric -Label 'Free' -Value 4 -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below
         $metric.ResolveStatus() | Should -Be 'Critical'
         $metric.NumericValue | Should -Be 4
+
+        $csvMetric = New-BGInfoMetric -Label 'CPU' -Value '91' -WarningThreshold 80 -CriticalThreshold 90
+        $csvMetric.Value | Should -Be '91'
+        $csvMetric.NumericValue | Should -Be 91
+        $csvMetric.ResolveStatus() | Should -Be 'Critical'
     }
 }
 
@@ -268,6 +273,8 @@ Describe 'Widget cmdlets' {
 
     It 'validates Mermaid source when the widget is created' {
         (New-BGInfoMermaid -Definition "flowchart LR`n  A --> B").Definition | Should -Match 'A --> B'
+        $piped = 'flowchart LR', '  A --> B' | New-BGInfoMermaid
+        $piped.Definition | Should -Match "flowchart LR`r?`n\s+A --> B"
         { New-BGInfoMermaid -Definition 'not a diagram' } | Should -Throw
     }
 
@@ -304,6 +311,13 @@ Describe 'Widget cmdlets' {
         $text | Should -Match '"Widgets"'
         $text | Should -Match '"IconAreaWidth"'
         $text | Should -Match 'QrCode'
+    }
+}
+
+Describe 'Per-monitor example' {
+    It 'validates the requested output target before running' {
+        $example = Join-Path $PSScriptRoot '..\..\Examples\Run.BGInfo.PerMonitor.ps1'
+        { & $example -Target Invalid } | Should -Throw
     }
 }
 
@@ -388,11 +402,19 @@ Describe 'Repeated runs' {
         Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
     }
 
-    It 'warns instead of stacking when the original is not recorded' {
+    It 'keeps an explicit in-place image when its original record is missing' {
         $first = Invoke-Render $base 'again.png'
         Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
-        Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
-        $warnings | Should -Match 'drawn twice'
+        $second = Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue
+        $warnings | Should -BeNullOrEmpty
+        $record = Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Where-Object { $_.StartsWith('again.png|') }
+        $source = $record.Substring('again.png|'.Length)
+        $source | Should -Not -Be $second
+        Test-Path -LiteralPath $source | Should -BeTrue
+
+        $hash = (Get-FileHash -LiteralPath $second).Hash
+        $third = Invoke-Render $second 'again.png'
+        (Get-FileHash -LiteralPath $third).Hash | Should -Be $hash
     }
 }
 

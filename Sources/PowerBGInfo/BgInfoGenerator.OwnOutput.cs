@@ -20,14 +20,17 @@ public partial class BgInfoGenerator
     /// overwrites; any other image, even one PowerBGInfo rendered, is used as given. The current wallpaper and slideshow
     /// images are replaced whenever PowerBGInfo wrote them.
     /// </param>
-    internal string? ResolveOriginalImage(string? candidate, string? plannedOutputPath, string role, bool chosenByUser)
+    /// <param name="knownOutputPaths">Additional generated paths recognized by a caller, such as the current slideshow entries.</param>
+    internal string? ResolveOriginalImage(string? candidate, string? plannedOutputPath, string role, bool chosenByUser,
+        ISet<string>? knownOutputPaths = null)
     {
         if (string.IsNullOrWhiteSpace(candidate))
         {
             return candidate;
         }
 
-        if (chosenByUser && !IsSamePath(candidate!, plannedOutputPath))
+        var isPlannedOutput = IsSamePath(candidate!, plannedOutputPath);
+        if (chosenByUser && !isPlannedOutput)
         {
             return candidate;
         }
@@ -39,7 +42,13 @@ public partial class BgInfoGenerator
             return IsSamePath(source ?? string.Empty, candidate) ? null : source;
         }
 
-        if (!IsSamePath(candidate!, plannedOutputPath) && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
+        if (chosenByUser && isPlannedOutput && File.Exists(candidate))
+        {
+            return candidate;
+        }
+
+        var isKnownOutputPath = knownOutputPaths?.Contains(TryGetFullPath(candidate!)) == true;
+        if (!isPlannedOutput && !isKnownOutputPath && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
         {
             return candidate;
         }
@@ -47,6 +56,16 @@ public partial class BgInfoGenerator
         WriteWarning($"{role} '{candidate}' is an image PowerBGInfo wrote earlier, and the image it was drawn on is not recorded. "
             + "It is not used, so the text is not drawn twice. Pass -FilePath or New-BGInfoBackground to choose the base image.");
         return null;
+    }
+
+    private static string PreserveInPlaceBaseImage(string sourcePath, string outputPath)
+    {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
+        var name = Path.GetFileNameWithoutExtension(outputPath);
+        var extension = Path.GetExtension(outputPath);
+        var backupPath = Path.Combine(directory, $"{name}.PowerBGInfo-original-{Guid.NewGuid():N}{extension}");
+        File.Copy(sourcePath, backupPath);
+        return backupPath;
     }
 
     private void WriteWarning(string message) => Warning?.Invoke(message);

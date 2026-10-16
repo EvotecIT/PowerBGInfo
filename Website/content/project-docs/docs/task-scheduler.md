@@ -73,7 +73,8 @@ $unlock = New-CimInstance -CimClass $stateClass -ClientOnly -Property @{
 }
 
 $timer = New-ScheduledTaskTrigger -Once -At (Get-Date).Date `
-    -RepetitionInterval (New-TimeSpan -Minutes 30)
+    -RepetitionInterval (New-TimeSpan -Minutes 30) `
+    -RepetitionDuration (New-TimeSpan -Days 3650)
 
 $principal = New-ScheduledTaskPrincipal -GroupId 'S-1-5-32-545' `
     -RunLevel Limited
@@ -97,8 +98,9 @@ What the pieces do:
   no parameter for it, so the trigger is created from its CIM class. Other
   values: `1` console connect, `3` remote connect (useful on
   [Remote Desktop](../remote-desktop/) hosts), `7` lock.
-- A `-Once` trigger with `-RepetitionInterval` and no
-  `-RepetitionDuration` repeats indefinitely.
+- The trigger repeats every 30 minutes for ten years. Re-register it before
+  the duration expires. Older ScheduledTasks modules require a finite
+  `-RepetitionDuration` when `-RepetitionInterval` is supplied.
 - `New-ScheduledTaskSettingsSet` defaults to *not* starting on battery and
   stopping when the laptop unplugs, and to a 72-hour execution time limit.
   The switches above change both.

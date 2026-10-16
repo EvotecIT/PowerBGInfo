@@ -79,15 +79,6 @@ internal static partial class BgInfoWidgetRenderer {
         var image = BgInfoPanel.Create(width, height, widget.BackgroundColor, widget.BorderColor, widget.CornerRadius);
 
         var padding = Math.Min(Math.Max(0, widget.Padding), Math.Min(width, height) / 3);
-        if (widget is BgInfoMetricWidget metric) {
-            // Metric cards keep half the padding inside their own layout; compact cards without it
-            // fall back to label leader lines. The status bar then sits just inside the panel edge.
-            var inset = padding / 2d;
-            var cardWidth = (int)Math.Round(Math.Max(1, width - inset * 2));
-            var cardHeight = (int)Math.Round(Math.Max(1, height - inset * 2));
-            image.DrawImage(RenderMetric(metric, style, cardWidth, cardHeight, inset), inset, inset, cardWidth, cardHeight);
-            return image;
-        }
         double left = padding, top = padding, bodyWidth = Math.Max(1, width - padding * 2d);
         if (!string.IsNullOrWhiteSpace(widget.Title) || !string.IsNullOrWhiteSpace(widget.Note)) {
             var header = BgInfoPanel.DrawHeader(image, widget.Title, widget.Note, CreateHeaderStyle(widget, style, config), left, top, bodyWidth);
@@ -95,6 +86,14 @@ internal static partial class BgInfoWidgetRenderer {
         }
 
         var bodyHeight = Math.Max(1, height - top - padding);
+        if (widget is BgInfoMetricWidget metric) {
+            // Keep the metric's inset inside the remaining body area after its shared panel header.
+            var inset = padding / 2d;
+            var cardWidth = (int)Math.Round(Math.Max(1, bodyWidth - inset * 2));
+            var cardHeight = (int)Math.Round(Math.Max(1, bodyHeight - inset * 2));
+            image.DrawImage(RenderMetric(metric, style, cardWidth, cardHeight, inset), left + inset, top + inset, cardWidth, cardHeight);
+            return image;
+        }
         var body = RenderBody(widget, style, (int)Math.Round(bodyWidth), (int)Math.Round(bodyHeight), image, left, top);
         if (body is { } rendered) image.DrawImage(rendered, left, top, bodyWidth, bodyHeight);
         return image;

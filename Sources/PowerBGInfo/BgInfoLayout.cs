@@ -123,7 +123,13 @@ public static class BgInfoLayoutEngine {
         var columnTop = safe.Y + (top.Length > 0 ? topHeight + gap : 0);
         var columnBottom = safeBottom - (bottom.Length > 0 ? bottomHeight + gap : 0);
         var columnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : Clamp(width * 0.24, 340, 620);
-        var columnLimit = left.Length > 0 && right.Length > 0 ? (safe.Width - gap) / 2 : safe.Width;
+        var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
+        var centerGapCount = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
+        var centerReserve = center.Length > 0 && sideColumns > 0 ? Math.Min(120, safe.Width) : 0;
+        var centerGaps = centerGapCount * gap;
+        var columnLimit = sideColumns > 0
+            ? Math.Max(1, (safe.Width - centerReserve - centerGaps) / sideColumns)
+            : safe.Width;
         columnWidth = Math.Max(1, Math.Min(columnWidth, columnLimit));
 
         var leftX = safe.X;
@@ -158,16 +164,17 @@ public static class BgInfoLayoutEngine {
 
     private static void FlowRow(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double start, double end, double y, double height, double gap, bool alignBottom) {
         var available = Math.Max(1, end - start);
-        var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, gap);
+        var effectiveGap = FitGap(available, indexes.Length, gap);
+        var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, effectiveGap);
         // A row of fixed-width panels that does not fill the band is centered in it.
-        var used = widths.Sum() + gap * Math.Max(0, indexes.Length - 1);
+        var used = widths.Sum() + effectiveGap * Math.Max(0, indexes.Length - 1);
         var x = start + Math.Max(0, available - used) / 2;
         for (var n = 0; n < indexes.Length; n++) {
             var request = requests[indexes[n]];
             var itemHeight = request.Height > 0 ? Math.Min(request.Height, height) : height;
             var itemY = alignBottom ? y + height - itemHeight : y;
             result[indexes[n]] = Round(x, itemY, widths[n], itemHeight);
-            x += widths[n] + gap;
+            x += widths[n] + effectiveGap;
         }
     }
 
@@ -179,8 +186,9 @@ public static class BgInfoLayoutEngine {
         }
 
         var available = Math.Max(1, bottom - top);
-        var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, gap, maximumShare);
-        var gaps = gap * Math.Max(0, indexes.Length - 1);
+        var effectiveGap = FitGap(available, indexes.Length, gap);
+        var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, effectiveGap, maximumShare);
+        var gaps = effectiveGap * Math.Max(0, indexes.Length - 1);
         var total = heights.Sum();
         // Fixed and natural heights that add up to more than the column shrink together, so the stack
         // stays inside the safe area instead of running into the taskbar or off the image.
@@ -188,7 +196,7 @@ public static class BgInfoLayoutEngine {
             var fit = Math.Max(0, available - gaps) / total;
             for (var n = 0; n < heights.Length; n++) heights[n] = Math.Max(1, heights[n] * fit);
         }
-        var used = heights.Sum() + gaps;
+        var used = heights.Sum() + effectiveGap * Math.Max(0, indexes.Length - 1);
         var spare = Math.Max(0, available - used);
         var y = alignment switch {
             BgInfoColumnAlignment.Center => top + spare / 2,
@@ -204,20 +212,29 @@ public static class BgInfoLayoutEngine {
                 _ => x
             };
             result[indexes[n]] = Round(itemX, y, itemWidth, heights[n]);
-            y += heights[n] + gap;
+            y += heights[n] + effectiveGap;
         }
     }
 
-    /// <summary>Keeps fixed sizes and splits the remaining space among zero-size items.</summary>
+    /// <summary>Keeps fixed sizes when they fit, scales them proportionally when their combined size and gaps exceed the region, and splits remaining space among zero-size items.</summary>
     internal static double[] Share(double[] requested, double available, double gap, double maximumShare = double.MaxValue) {
         var sizes = new double[requested.Length];
         if (requested.Length == 0) return sizes;
+        gap = FitGap(available, requested.Length, gap);
         var fixedTotal = requested.Where(v => v > 0).Sum();
         var automatic = requested.Count(v => v <= 0);
-        var remaining = available - fixedTotal - gap * (requested.Length - 1);
+        var fixedBudget = Math.Max(0, available - gap * (requested.Length - 1) - automatic);
+        var fixedScale = fixedTotal > fixedBudget && fixedTotal > 0 ? fixedBudget / fixedTotal : 1;
+        var remaining = available - Math.Min(fixedTotal, fixedBudget) - gap * (requested.Length - 1);
         var share = automatic > 0 ? Math.Max(1, Math.Min(maximumShare, remaining / automatic)) : 0;
-        for (var i = 0; i < requested.Length; i++) sizes[i] = requested[i] > 0 ? Math.Min(requested[i], available) : share;
+        for (var i = 0; i < requested.Length; i++) sizes[i] = requested[i] > 0 ? Math.Min(requested[i] * fixedScale, available) : share;
         return sizes;
+    }
+
+    private static double FitGap(double available, int count, double requestedGap) {
+        if (count <= 1) return Math.Max(0, requestedGap);
+        var maximumGap = Math.Max(0, (Math.Max(1, available) - count) / (count - 1));
+        return Math.Min(Math.Max(0, requestedGap), maximumGap);
     }
 
     private static bool Overlaps(double start, double end, double otherStart, double otherEnd) => start < otherEnd && otherStart < end;

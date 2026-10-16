@@ -116,18 +116,109 @@ public class BgInfoOwnOutputTests
         var photo = folder.CreateImage("photo.png", ChartColors.Navy);
         var first = Render(folder, null, "wallpaper.png", out _, filePath: photo);
         var firstPixels = Pixels(first);
+        Assert.Equal(photo, ReadRecordedSource(first));
 
         var second = Render(folder, null, "wallpaper.png", out _, filePath: first);
-
         Assert.Equal(firstPixels, Pixels(second));
         Assert.Equal(photo, ReadRecordedSource(second));
+    }
+
+    [Fact]
+    public void UnrecordedChosenFileThatIsTheOutputItselfRemainsTheBase()
+    {
+        using var folder = new TempFolder();
+        var photo = folder.CreateImage("corporate.png", ChartColors.Navy);
+        var first = Render(folder, null, "wallpaper.png", out _, filePath: photo);
+        var firstPixels = Pixels(first);
+        File.Delete(Path.Combine(folder.Path, BgInfoOutputRegistry.FileName));
+
+        var second = Render(folder, null, "wallpaper.png", out _, filePath: first);
+        var secondPixels = Pixels(second);
+        var preservedSource = ReadRecordedSource(second);
+        var third = Render(folder, null, "wallpaper.png", out _, filePath: second);
+
+        Assert.NotEqual(firstPixels, secondPixels);
+        Assert.NotEqual(second, preservedSource);
+        Assert.True(File.Exists(preservedSource));
+        Assert.Equal(secondPixels, Pixels(third));
+    }
+
+    [Fact]
+    public void UnrecordedInPlaceOutputKeepsItsOriginalBaseOnLaterRuns()
+    {
+        using var folder = new TempFolder();
+        var original = folder.CreateImage("in-place.png", ChartColors.Navy);
+
+        var first = Render(folder, null, "in-place.png", out _, filePath: original);
+        var firstPixels = Pixels(first);
+        var preservedSource = ReadRecordedSource(first);
+
+        var second = Render(folder, null, "in-place.png", out _, filePath: first);
+
+        Assert.NotEqual(original, preservedSource);
+        Assert.True(File.Exists(preservedSource));
+        Assert.Equal(first, second);
+        Assert.Equal(firstPixels, Pixels(second));
+        Assert.Equal(preservedSource, ReadRecordedSource(second));
+    }
+
+    [Fact]
+    public void InPlaceBackupDoesNotOverwriteAnExistingAdjacentFile()
+    {
+        using var folder = new TempFolder();
+        var original = folder.CreateImage("in-place.png", ChartColors.Navy);
+        var originalPixels = Pixels(original);
+        var existing = folder.CreateImage("in-place.PowerBGInfo-original.png", ChartColors.DarkGreen);
+        var existingPixels = Pixels(existing);
+
+        var output = Render(folder, null, "in-place.png", out _, filePath: original);
+        var recordedSource = ReadRecordedSource(output);
+
+        Assert.NotEqual(existing, recordedSource);
+        Assert.Equal(existingPixels, Pixels(existing));
+        Assert.Equal(originalPixels, Pixels(recordedSource!));
+    }
+
+    [Fact]
+    public void UnrecordedCustomSlideshowOutputIsRecognizedFromItsPlannedPath()
+    {
+        using var folder = new TempFolder();
+        var output = folder.CreateImage("wallpaper_001.png", ChartColors.Navy);
+        var warnings = new List<string>();
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService()) {
+            Warning = warnings.Add
+        };
+        var knownOutputPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            Path.GetFullPath(output)
+        };
+
+        var original = generator.ResolveOriginalImage(output, null, "The slideshow image", chosenByUser: false, knownOutputPaths: knownOutputPaths);
+
+        Assert.Null(original);
+        Assert.Single(warnings);
+    }
+
+    [Fact]
+    public void RegistryRetainsMappingsForLargeSlideshows()
+    {
+        using var folder = new TempFolder();
+        for (var index = 0; index < 300; index++)
+        {
+            BgInfoOutputRegistry.Record(
+                Path.Combine(folder.Path, $"slide-{index:D3}.png"),
+                Path.Combine(folder.Path, $"source-{index:D3}.png"));
+        }
+
+        Assert.True(BgInfoOutputRegistry.TryGetSource(
+            Path.Combine(folder.Path, "slide-000.png"), out var source));
+        Assert.Equal(Path.Combine(folder.Path, "source-000.png"), source);
     }
 
     [Theory]
     [InlineData("img0_PowerBgInfo.jpg", true)]
     [InlineData("img0_powerbginfo_003.png", true)]
     [InlineData("wallpaper_refresh_0123456789abcdef0123456789abcdef.png", true)]
-    [InlineData("PowerBgInfo.png", false)]
+    [InlineData("PowerBgInfo.png", true)]
     [InlineData("corporate.jpg", false)]
     public void RecognizesTheDefaultOutputNames(string fileName, bool expected)
     {

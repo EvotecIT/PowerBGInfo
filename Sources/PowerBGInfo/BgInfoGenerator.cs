@@ -93,6 +93,11 @@ public partial class BgInfoGenerator
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
+        if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath, outputPath)) {
+            backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath, outputPath);
+        } else if (chosenBase && hasBaseImage && IsSamePath(imagePath!, outputPath)) {
+            imagePath = PreserveInPlaceBaseImage(imagePath!, outputPath);
+        }
         var outputDirectory = Path.GetDirectoryName(outputPath);
         if (!string.IsNullOrWhiteSpace(outputDirectory))
         {
@@ -290,8 +295,15 @@ public partial class BgInfoGenerator
         }
 
         // After the first run the slideshow shows the rendered copies; go back to the images they were drawn on.
-        var sourcePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths)
-            .Select(path => ResolveOriginalImage(path, null, "The slideshow image", chosenByUser: false))
+        var slideshowImagePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths);
+        var knownOutputPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var index = 0; index < slideshowImagePaths.Length; index++)
+        {
+            knownOutputPaths.Add(TryGetFullPath(BuildSlideshowOutputPath(config, slideshowImagePaths[index], index)));
+        }
+
+        var sourcePaths = slideshowImagePaths
+            .Select(path => ResolveOriginalImage(path, null, "The slideshow image", chosenByUser: false, knownOutputPaths))
             .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
             .Select(path => path!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
