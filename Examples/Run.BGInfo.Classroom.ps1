@@ -1,10 +1,10 @@
-﻿<#
+<#
     Lab or classroom wallpaper. The seat name is readable from the back of
     the room, students see when the machine resets, and the instructor sees
     lab progress at a glance.
 
-    Sample values keep the render reproducible. Replace them with your
-    lab schedule, timetable or LMS data.
+    The data block returns plain values; the presentation block only reads
+    them. Replace the samples with your lab schedule, timetable or LMS data.
 #>
 param(
     [ValidateSet('Light', 'Dark')]
@@ -15,64 +15,55 @@ param(
 )
 
 Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
-$hudTheme = Join-Path $PSScriptRoot 'Showcase\HudTheme.ps1'
-$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height
-$dark = $Theme -eq 'Dark'
-$accent = if ($dark) { '#FB923C' } else { '#EA580C' }
-$second = if ($dark) { '#F472B6' } else { '#DB2777' }
 
-$background = @{
-    Width         = $Width
-    Height        = $Height
-    Color         = if ($dark) { '#120A0A' } else { '#FFF7F0' }
-    Gradient      = if ($dark) { '#2A1208', '#0B0710' } else {
-        '#FFFBF5', '#FFE4E1'
+#region Data: your logic goes here
+function Get-ClassroomData {
+    [pscustomobject] @{
+        Course       = 'LAB B  ·  INTRODUCTION TO POWERSHELL'
+        Seat         = 'LAB-B-14'
+        Instructor   = 'Anna Novak'
+        Wifi         = 'CAMPUS-LAB, sign in with your ID'
+        MinutesLeft  = 35
+        SessionTotal = 90
+        Completed    = 3
+        Exercises    = 5
+        # Students who finished each exercise, from the LMS gradebook.
+        ClassDone    = @(26, 24, 19, 9, 2)
     }
-    GradientAngle = 120
-}
-$glows = if ($dark) { '#F9731655', '#DB277740', '#7C3AED33' } else {
-    '#FDBA7499', '#F9A8D488', '#C4B5FD66'
 }
 
-$text = $hud.Text.Clone()
-$text.SpaceY = 120
-$panel = $hud.Panel
-$row = @{ Height = 250; Anchor = 'BottomCenter'; OffsetY = $hud.MarginY }
+$lab = Invoke-BGInfoDataSource -Name 'Classroom data' -TimeoutSeconds 10 -ScriptBlock ${function:Get-ClassroomData} -Default ([pscustomobject] @{
+        Course = 'LAB'; Seat = $env:COMPUTERNAME; Instructor = 'unknown'; Wifi = 'unknown'
+        MinutesLeft = 0; SessionTotal = 90; Completed = 0; Exercises = 5; ClassDone = @(0)
+    })
+#endregion
 
-New-BGInfo -Target File {
-    New-BGInfoBackground @background -Glow @(
-        New-BGInfoBackgroundGlow -X 0.1 -Y 0.1 -Radius 0.5 -Color $glows[0]
-        New-BGInfoBackgroundGlow -X 0.95 -Y 0.3 -Radius 0.45 -Color $glows[1]
-        New-BGInfoBackgroundGlow -X 0.5 -Y 1.1 -Radius 0.6 -Color $glows[2]
-    )
+#region Presentation: reads only $lab
+$scale = [Math]::Round($Height / 1080, 2)
+$second = (New-BGInfoTheme Ember -Mode $Theme).SecondaryAccent
 
-    New-BGInfoLabel -Name 'LAB B  ·  INTRODUCTION TO POWERSHELL' `
-        -Color $accent -FontSize 18 -FontWeight 700
-    New-BGInfoLabel -Name 'LAB-B-14' -Color $hud.Ink -FontSize 150 `
-        -FontWeight 700
-    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' `
-        -Color $hud.Ink -FontSize 30 -FontWeight 600
-    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' `
-        -Color $hud.Muted -FontSize 24
-    New-BGInfoLabel -Name ' ' -FontSize 10
-    New-BGInfoValue -Name 'Instructor' -Value 'Anna Novak'
-    New-BGInfoValue -Name 'Wi-Fi' -Value 'CAMPUS-LAB, sign in with your ID'
+New-BGInfo -Theme (New-BGInfoTheme Ember -Mode $Theme -Scale $scale) -TextPosition TopCenter -SpaceY ([int](120 * $scale)) -Target File {
+    New-BGInfoBackground -Width $Width -Height $Height
+
+    New-BGInfoLabel -Name $lab.Course -Accent -FontSize ([int](18 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name $lab.Seat -FontSize ([int](150 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' -FontSize ([int](30 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' -Muted -FontSize ([int](24 * $scale))
+    New-BGInfoLabel -Name ' ' -FontSize ([int](10 * $scale))
+    New-BGInfoValue -Name 'Instructor' -Value $lab.Instructor
+    New-BGInfoValue -Name 'Wi-Fi' -Value $lab.Wifi
     New-BGInfoValue -Name 'Need a hand?' -Value 'Raise your hand or call 4357'
 
-    New-BGInfoChart @panel @row -Id 'time' -Title 'Session time left' `
-        -Kind Gauge -Values 35 -Maximum 90 -ValueSuffix ' min' `
-        -LineColor $accent -ShowLatestValue:$false `
-        -Width 360 -OffsetX -416
-    New-BGInfoChart @panel @row -Id 'exercises' -Title 'Your exercises' `
-        -Kind Pictorial -Values 3 -Labels 'Completed' -Palette $second `
-        -PictorialSymbol Star -PictorialColumns 5 -Maximum 5 `
-        -ShowDataLabels -ShowLatestValue:$false `
-        -Width 420 -OffsetX 0
-    # Students who finished each exercise, from the LMS gradebook.
-    New-BGInfoChart @panel @row -Id 'class' -Title 'Class · exercises 1–5' `
-        -Kind Bar -Values 26, 24, 19, 9, 2 -LineColor $second `
-        -ShowGrid -GridLineCount 3 -ShowLatestValue:$false `
-        -Width 360 -OffsetX 416
-} @text -TextPosition TopCenter `
-    -ConfigurationDirectory $OutputDirectory `
+    # Three fixed-width panels sit centered in the bottom band; the gauge turns amber in the last 15 minutes.
+    $band = @{ Region = 'Bottom'; Height = [int](250 * $scale); NoHistory = $true }
+    New-BGInfoChart @band -Id 'time' -Width ([int](360 * $scale)) -Title 'Session time left' -Kind Gauge -Values $lab.MinutesLeft `
+        -Maximum $lab.SessionTotal -ValueSuffix ' min' -ShowLatestValue:$false `
+        -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below
+    New-BGInfoChart @band -Id 'exercises' -Width ([int](420 * $scale)) -Title 'Your exercises' -Kind Pictorial -Values $lab.Completed `
+        -Labels 'Completed' -Palette $second -PictorialSymbol Star -PictorialColumns $lab.Exercises `
+        -Maximum $lab.Exercises -ShowDataLabels -ShowLatestValue:$false
+    New-BGInfoChart @band -Id 'class' -Width ([int](360 * $scale)) -Title "Class · exercises 1–$($lab.Exercises)" -Kind Bar -Values $lab.ClassDone `
+        -LineColor $second -ShowGrid -GridLineCount 3 -ShowLatestValue:$false
+} -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "classroom-$($Theme.ToLower()).png"
+#endregion

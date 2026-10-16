@@ -1,9 +1,10 @@
-﻿<#
+<#
     Help-desk wallpaper for shared or front-desk PCs. It tells people how
     to get help and shows the details the service desk asks for first.
 
-    Sample values keep the render reproducible. Each one notes the command
-    that supplies it on a real machine.
+    The data block returns plain values; the presentation block only reads
+    them. Sample values keep the render reproducible, and each one notes the
+    command that supplies it on a real machine.
 #>
 param(
     [ValidateSet('Light', 'Dark')]
@@ -14,80 +15,67 @@ param(
 )
 
 Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
-$hudTheme = Join-Path $PSScriptRoot 'Showcase\HudTheme.ps1'
-$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height
-$dark = $Theme -eq 'Dark'
-$ok, $warn = $hud.Status.Ok, $hud.Status.Warn
-$accent = if ($dark) { '#A78BFA' } else { '#7C3AED' }
 
-$background = @{
-    Width    = $Width
-    Height   = $Height
-    Color    = if ($dark) { '#0E0A1A' } else { '#FBF7FF' }
-    Gradient = if ($dark) { '#1E1438', '#0A0712' } else {
-        '#FFFFFF', '#F1E9FF'
+#region Data: your logic goes here
+function Get-HelpDeskFacts {
+    [pscustomobject] @{
+        # (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag
+        AssetTag     = 'CT-04217'
+        ComputerName = 'FRONTDESK-07'
+        Location     = 'Reception, B1'
+        # (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
+        IPAddress    = '10.20.4.37'
+        Network      = 'Wired · VLAN 120'
+        SignedInAs   = 'Reception (shared)'
+        # (Get-CimInstance Win32_OperatingSystem).Caption and .BuildNumber
+        Windows      = '11 Enterprise 24H2'
+        Build        = '26100'
+        # Your monitoring or status-page API
+        Services     = @(
+            @{ Text = 'Email, Teams, Wi-Fi and VPN are working'; Status = 'Ok' }
+            @{ Text = 'Floor 2 printers are offline until 14:00'; Status = 'Warning' }
+        )
     }
-    GradientAngle = 160
-    Pattern  = 'Dots'
-    PatternColor = if ($dark) { '#FFFFFF12' } else { '#4C1D9512' }
-    PatternSpacing = 36
-}
-$glows = if ($dark) { '#7C3AED55', '#EC489940' } else {
-    '#C4B5FD99', '#FBCFE899'
 }
 
-$tile = @{ Side = 'Right'; SurfaceStyle = 'Glass'; Accent = $accent }
+$facts = Invoke-BGInfoDataSource -Name 'Help-desk facts' -TimeoutSeconds 10 -ScriptBlock ${function:Get-HelpDeskFacts} -Default ([pscustomobject] @{
+        AssetTag = 'unknown'; ComputerName = $env:COMPUTERNAME; Location = 'unknown'; IPAddress = 'unknown'; Network = ''
+        SignedInAs = 'unknown'; Windows = 'unknown'; Build = ''; Services = @(@{ Text = 'Service status is unavailable'; Status = 'Info' })
+    })
+#endregion
+
+#region Presentation: reads only $facts
+$scale = [Math]::Round($Height / 1080, 2)
+$tile = @{ SurfaceStyle = 'Glass' }
 $tiles = @(
-    # Asset tags usually come from the BIOS:
-    # (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag
-    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'ASSET TAG' `
-        -Value 'CT-04217' -Detail 'Sticker under the keyboard'
-    New-BGInfoVisualCanvasTile @tile -IconKind Computer `
-        -Label 'COMPUTER NAME' -Value 'FRONTDESK-07' -Detail 'Reception, B1'
-    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'IP ADDRESS' `
-        -Value '10.20.4.37' -Detail 'Wired · VLAN 120'
-    New-BGInfoVisualCanvasTile @tile -IconKind User -Label 'SIGNED IN AS' `
-        -Value 'Reception (shared)' -Detail 'Resets at sign-out'
-    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem `
-        -Label 'WINDOWS' -Value '11 Enterprise 24H2' -Detail 'Build 26100'
+    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'ASSET TAG' -Value $facts.AssetTag -Detail 'Sticker under the keyboard'
+    New-BGInfoVisualCanvasTile @tile -IconKind Computer -Label 'COMPUTER NAME' -Value $facts.ComputerName -Detail $facts.Location
+    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'IP ADDRESS' -Value $facts.IPAddress -Detail $facts.Network
+    New-BGInfoVisualCanvasTile @tile -IconKind User -Label 'SIGNED IN AS' -Value $facts.SignedInAs -Detail 'Resets at sign-out'
+    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'WINDOWS' -Value $facts.Windows -Detail "Build $($facts.Build)"
 )
 
-$text = $hud.Text
-$canvas = $hud.Canvas.Clone()
-# Center the tile column beside the vertically centered text.
-$step = $canvas.TileHeight + $canvas.TileGap
-$column = $tiles.Count * $step - $canvas.TileGap
-$canvas.RightTileOffsetY += ($Height - $column) / 2 - $hud.MarginY
+New-BGInfo -Theme (New-BGInfoTheme Orchid -Mode $Theme -Scale $scale) -TextPosition MiddleLeft -Target File {
+    New-BGInfoBackground -Width $Width -Height $Height
+    # The tile column sits vertically centered beside the centered text.
+    New-BGInfoLayout -ColumnAlignment Center
 
-New-BGInfo -Target File {
-    New-BGInfoBackground @background -Glow @(
-        New-BGInfoBackgroundGlow -X 0 -Y 0 -Radius 0.6 -Color $glows[0]
-        New-BGInfoBackgroundGlow -X 0.75 -Y 1.05 -Radius 0.55 -Color $glows[1]
-    )
-
-    New-BGInfoLabel -Name 'IT SERVICE DESK' -Color $accent -FontSize 16 `
-        -FontWeight 700
-    New-BGInfoLabel -Name 'Need help?' -Color $hud.Ink -FontSize 88 `
-        -FontWeight 600
-    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' `
-        -Color $accent -FontSize 40 -FontWeight 600
-    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' `
-        -Color $hud.Muted -FontSize 22
+    New-BGInfoLabel -Name 'IT SERVICE DESK' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name 'Need help?' -FontSize ([int](88 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' -Accent -FontSize ([int](40 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' -Muted -FontSize ([int](22 * $scale))
     New-BGInfoValue -Name 'Portal' -Value 'help.contoso.com'
     New-BGInfoValue -Name 'Teams' -Value '#it-help'
     New-BGInfoValue -Name 'Walk-in' -Value 'Building B, room 012'
     New-BGInfoValue -Name 'Hours' -Value 'Monday–Friday, 07:00–19:00'
 
-    # Health from your monitoring or status page API.
-    New-BGInfoLabel -Name ' ' -FontSize 12
-    New-BGInfoLabel -Name 'SERVICE STATUS' -Color $accent -FontSize 16 `
-        -FontWeight 700
-    New-BGInfoLabel -Name '●  Email, Teams, Wi-Fi and VPN are working' `
-        -Color $ok -FontSize 19 -FontWeight 600
-    New-BGInfoLabel -Name '●  Floor 2 printers are offline until 14:00' `
-        -Color $warn -FontSize 19 -FontWeight 600
+    New-BGInfoLabel -Name ' ' -FontSize ([int](12 * $scale))
+    New-BGInfoLabel -Name 'SERVICE STATUS' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700
+    foreach ($service in $facts.Services) {
+        New-BGInfoLabel -Name "●  $($service.Text)" -Status $service.Status -FontSize ([int](19 * $scale)) -FontWeight 600
+    }
 
-    New-BGInfoVisualCanvas @canvas -Tile $tiles -RightTileWidth 460
-} @text -TextPosition MiddleLeft `
-    -ConfigurationDirectory $OutputDirectory `
+    New-BGInfoVisualCanvas -Region Right -Tile $tiles
+} -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "helpdesk-$($Theme.ToLower()).png"
+#endregion
