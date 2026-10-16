@@ -13,10 +13,16 @@ namespace PowerBGInfo;
 internal static class BgInfoChartRenderer {
     public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return Render(chart, values, config, chart.Width, chart.Height);
+    }
+
+    /// <summary>Renders the chart panel at a resolved size, for example a layout region slot.</summary>
+    public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int requestedWidth, int requestedHeight) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
 
-        var width = Math.Max(1, chart.Width);
-        var height = Math.Max(1, chart.Height);
+        var width = Math.Max(1, requestedWidth);
+        var height = Math.Max(1, requestedHeight);
         var image = BgInfoPanel.Create(width, height, chart.BackgroundColor, chart.BorderColor, chart.CornerRadius);
 
         var padding = Math.Max(0, chart.Padding);
@@ -97,7 +103,8 @@ internal static class BgInfoChartRenderer {
     }
 
     internal static Chart BuildChartForgeXChart(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int width, int height) {
-        var accent = chart.LineColor ?? config.CustomValueColor ?? ResolveTokens(chart).Accent;
+        var accent = chart.LineColor ?? (values.Count > 0 ? ResolveThresholdColor(chart, values[values.Count - 1]) : null) ?? config.CustomValueColor ?? ResolveTokens(chart).Accent;
+        var palette = ResolvePalette(chart, values);
         // Keep a positive native chart interior even when a tall header leaves a short plot.
         // The host still owns the requested tile dimensions and clips its composed content.
         var plotPadding = Math.Min(8d, (Math.Max(1, Math.Min(width, height)) - 1d) / 2d);
@@ -145,10 +152,10 @@ internal static class BgInfoChartRenderer {
 
         switch (chart.Kind) {
             case BgInfoChartKind.Bar:
-                plot.AddSeries(ChartSeries.CreateBar(SeriesId(chart), chart.Title, BuildIndexedPoints(values), accent));
+                plot.AddSeries(WithPointColors(ChartSeries.CreateBar(SeriesId(chart), chart.Title, BuildIndexedPoints(values), accent), palette, values.Count));
                 break;
             case BgInfoChartKind.HorizontalBar:
-                plot.AddSeries(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.HorizontalBar, BuildIndexedPoints(values)) { Color = accent });
+                plot.AddSeries(WithPointColors(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.HorizontalBar, BuildIndexedPoints(values)) { Color = accent }, palette, values.Count));
                 break;
             case BgInfoChartKind.Line:
                 AddTrendSeries(plot, chart, values, width, accent, smooth: false, area: false);
@@ -166,20 +173,20 @@ internal static class BgInfoChartRenderer {
                 plot.AddSeries(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.ProgressRing, BuildPercentPoints(values)) { Color = accent });
                 break;
             case BgInfoChartKind.Bullet:
-                AddBulletRows(plot, chart, values, accent);
+                AddBulletRows(plot, chart, values, accent, palette);
                 break;
             case BgInfoChartKind.Pie:
-                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Pie);
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Pie, palette);
                 break;
             case BgInfoChartKind.Donut:
-                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Donut);
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.Donut, palette);
                 break;
             case BgInfoChartKind.ProgressBar:
                 plot.WithProgressMaximum(ResolveMaximum(chart, values, 100));
-                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.ProgressBar, accent);
+                AddCategoricalSeries(plot, chart, values, ChartSeriesKind.ProgressBar, palette, accent);
                 break;
             case BgInfoChartKind.Pictorial:
-                AddCategoricalSeries(plot, chart, values.Select(value => Math.Max(0, value)).ToArray(), ChartSeriesKind.Pictorial, accent);
+                AddCategoricalSeries(plot, chart, values.Select(value => Math.Max(0, value)).ToArray(), ChartSeriesKind.Pictorial, palette, accent);
                 break;
             default:
                 AddTrendSeries(plot, chart, values, width, accent, smooth: true, area: false);
@@ -261,7 +268,28 @@ internal static class BgInfoChartRenderer {
             new ChartGaugeValue(latest, chart.Minimum ?? 0, ResolveMaximum(chart, values, 100)), accent));
     }
 
-    private static void AddBulletRows(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent) {
+    /// <summary>Explicit palette first; otherwise per-point threshold colors for row-based kinds.</summary>
+    internal static IReadOnlyList<ChartColor> ResolvePalette(BgInfoChart chart, IReadOnlyList<double> values) {
+        if (chart.Palette.Count > 0 || chart.Threshold is not { IsDefined: true } || !IsPerPointKind(chart.Kind)) return chart.Palette;
+        var colors = new ChartColor[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            colors[i] = ResolveThresholdColor(chart, values[i]) ?? ResolveTokens(chart).Accent;
+        }
+        return colors;
+    }
+
+    internal static ChartColor? ResolveThresholdColor(BgInfoChart chart, double value) =>
+        chart.Threshold is { IsDefined: true } threshold ? threshold.ResolveColor(value, chart.ThemeMode) : null;
+
+    private static bool IsPerPointKind(BgInfoChartKind kind) => kind is BgInfoChartKind.Bar or BgInfoChartKind.HorizontalBar
+        or BgInfoChartKind.ProgressBar or BgInfoChartKind.Bullet or BgInfoChartKind.Pictorial;
+
+    private static ChartSeries WithPointColors(ChartSeries series, IReadOnlyList<ChartColor> palette, int count) {
+        for (var i = 0; i < Math.Min(palette.Count, count); i++) series.WithPointColor(i, palette[i]);
+        return series;
+    }
+
+    private static void AddBulletRows(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartColor accent, IReadOnlyList<ChartColor> palette) {
         var maximum = ResolveMaximum(chart, values, 100);
         var minimum = chart.Minimum ?? 0;
         var target = chart.Target ?? maximum;
@@ -269,7 +297,7 @@ internal static class BgInfoChartRenderer {
 
         for (var i = 0; i < values.Count; i++) {
             var series = ChartSeries.CreateBullet(SeriesId(chart, "row:" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)), LabelAt(chart, i),
-                new ChartBulletValue(values[i], target, minimum, maximum, ranges), ColorAt(chart, i) ?? accent)
+                new ChartBulletValue(values[i], target, minimum, maximum, ranges), (i < palette.Count ? palette[i] : (ChartColor?)null) ?? accent)
                 .WithDataLabels(chart.ShowDataLabels);
             plot.AddSeries(series);
         }
@@ -309,17 +337,12 @@ internal static class BgInfoChartRenderer {
             ? chart.Labels[index]
             : (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-    private static ChartColor? ColorAt(BgInfoChart chart, int index) =>
-        index < chart.Palette.Count ? chart.Palette[index] : null;
 
     private static ChartSeriesId SeriesId(BgInfoChart chart, string suffix = "values") =>
         new("bginfo:" + (string.IsNullOrWhiteSpace(chart.Id) ? "chart" : chart.Id.Trim()) + ":" + suffix);
 
-    private static void AddCategoricalSeries(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartSeriesKind kind, ChartColor? color = null) {
-        var series = new ChartSeries(SeriesId(chart), chart.Title, kind, BuildIndexedPoints(values)) { Color = color };
-        for (var i = 0; i < Math.Min(chart.Palette.Count, values.Count); i++) {
-            series.WithPointColor(i, chart.Palette[i]);
-        }
+    private static void AddCategoricalSeries(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, ChartSeriesKind kind, IReadOnlyList<ChartColor> palette, ChartColor? color = null) {
+        var series = WithPointColors(new ChartSeries(SeriesId(chart), chart.Title, kind, BuildIndexedPoints(values)) { Color = color }, palette, values.Count);
         plot.WithXLabels(BuildLabels(chart, values.Count)).AddSeries(series);
     }
 

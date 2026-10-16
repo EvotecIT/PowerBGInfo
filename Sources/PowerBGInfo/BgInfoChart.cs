@@ -132,6 +132,12 @@ public sealed class BgInfoChart {
     public int Height { get; set; } = 90;
     /// <summary>Anchor position used for placement.</summary>
     public BgInfoTextPosition Anchor { get; set; } = BgInfoTextPosition.BottomLeft;
+    /// <summary>Region the chart flows into. A zero width or height then shares the region. <see cref="BgInfoRegion.None"/> keeps anchor placement.</summary>
+    public BgInfoRegion Region { get; set; }
+    /// <summary>Position in the region's flow. New-BGInfo numbers items in the order they are emitted; equal values keep chart, diagram, canvas, widget order.</summary>
+    public int RegionOrder { get; set; }
+    /// <summary>Optional thresholds. The latest value, or each row for bar, progress and bullet charts, takes the matching status color unless an explicit color is set.</summary>
+    public BgInfoThreshold? Threshold { get; set; }
     /// <summary>Horizontal offset from the anchor.</summary>
     public int OffsetX { get; set; } = 10;
     /// <summary>Vertical offset from the anchor.</summary>

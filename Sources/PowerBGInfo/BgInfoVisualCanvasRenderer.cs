@@ -10,7 +10,7 @@ using ChartForgeX.Themes;
 
 namespace PowerBGInfo;
 
-internal static class BgInfoVisualCanvasRenderer {
+internal static partial class BgInfoVisualCanvasRenderer {
     public static BgInfoRasterImage Render(BgInfoVisualCanvas visual, BgInfoConfiguration config, int targetWidth, int targetHeight) {
         if (visual == null) throw new ArgumentNullException(nameof(visual));
         var width = visual.Width > 0 ? visual.Width : Math.Max(1, targetWidth);
@@ -243,12 +243,12 @@ internal static class BgInfoVisualCanvasRenderer {
     }
 
     private static OverlayRailLayout ResolveOverlayRailLayout(BgInfoVisualCanvas visual, int width, int height) {
-        var marginX = Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
+        var marginX = visual.RailMarginX.HasValue ? Math.Max(0, visual.RailMarginX.Value) : Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
         var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
         var templateTileWidth = Math.Min(Clamp(ApplyTileWidthPreset(visual.LayoutPreset, width * 0.18), Math.Min(180, railBudget), Math.Min(560, railBudget)), railBudget);
         var tileHeight = Clamp(ApplyTileHeightPreset(visual.LayoutPreset, height * 0.092), Math.Min(56, height * 0.18), Math.Min(140, height * 0.26));
         var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
-        var railY = Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
+        var railY = visual.RailMarginY.HasValue ? Math.Max(0, visual.RailMarginY.Value) : Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
         var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
         var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);

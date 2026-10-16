@@ -309,6 +309,22 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public int PictorialColumns { get; set; }
 
+    /// <para>Region to flow into: Left, Right, Top, Bottom or Center. Without -Width or -Height the chart shares the region.</para>
+    [Parameter]
+    public BgInfoRegion Region { get; set; }
+
+    /// <para>Value at which the latest value (or each bar, progress or bullet row) turns the warning color.</para>
+    [Parameter]
+    public double WarningThreshold { get; set; }
+
+    /// <para>Value at which the latest value (or each row) turns the critical color.</para>
+    [Parameter]
+    public double CriticalThreshold { get; set; }
+
+    /// <para>Above: higher values are worse (CPU, disk used). Below: lower values are worse (free space).</para>
+    [Parameter]
+    public BgInfoThresholdDirection ThresholdDirection { get; set; }
+
     /// <summary>Emits a BGInfo chart definition.</summary>
     protected override void EndProcessing() {
         var chart = new BgInfoChart {
@@ -482,6 +498,37 @@ public class CmdletNewBGInfoChart : PSCmdlet {
             chart.MetricArgument = MetricArgument;
         }
 
+        chart.Region = Region;
+        if (Region != BgInfoRegion.None) {
+            if (!IsBound(nameof(Width))) chart.Width = 0;
+            if (!IsBound(nameof(Height))) chart.Height = 0;
+        }
+        chart.Threshold = BgInfoThemeDefaults.Threshold(this, WarningThreshold, CriticalThreshold, ThresholdDirection);
+        ApplyTheme(chart);
+
         WriteObject(chart);
+    }
+
+    private bool IsBound(string name) => MyInvocation.BoundParameters.ContainsKey(name);
+
+    /// <summary>Fills unbound panel and text settings from the New-BGInfo theme.</summary>
+    private void ApplyTheme(BgInfoChart chart) {
+        var theme = BgInfoThemeScope.Current;
+        if (theme == null) return;
+        if (!IsBound(nameof(ThemeMode))) chart.ThemeMode = theme.Mode;
+        if (!IsBound(nameof(BackgroundColor))) chart.BackgroundColor = theme.Surface;
+        if (!IsBound(nameof(BorderColor))) chart.BorderColor = theme.SurfaceBorder;
+        if (!IsBound(nameof(CornerRadius))) chart.CornerRadius = theme.CornerRadius;
+        if (!IsBound(nameof(Padding))) chart.Padding = theme.Padding;
+        if (!IsBound(nameof(TitleColor)) && !IsBound(nameof(TextColor))) chart.TitleColor = theme.Muted;
+        if (!IsBound(nameof(ValueColor)) && !IsBound(nameof(TextColor))) chart.ValueColor = theme.Ink;
+        if (!IsBound(nameof(TitleFontSize))) chart.TitleFontSize = theme.TitleFontSize;
+        if (!IsBound(nameof(ValueFontSize))) chart.ValueFontSize = theme.TitleFontSize;
+        if (!IsBound(nameof(TitleFontWeight)) && !IsBound(nameof(TitleBold))) chart.TitleFontWeight = theme.TitleFontWeight;
+        if (!IsBound(nameof(TitleTextCase))) chart.TitleTextCase = theme.TitleTextCase;
+        if (!IsBound(nameof(GridColor))) chart.GridColor = theme.GridColor;
+        if (!IsBound(nameof(FontFamilyName))) chart.FontFamilyName = theme.FontFamilyName;
+        // Thresholds pick the series color, so the theme accent only fills in without them.
+        if (!IsBound(nameof(LineColor)) && chart.Threshold == null) chart.LineColor = theme.Accent;
     }
 }

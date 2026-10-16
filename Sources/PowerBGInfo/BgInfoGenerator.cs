@@ -11,7 +11,7 @@ namespace PowerBGInfo;
 /// <summary>
 /// Generates BGInfo overlays and applies them to the configured target.
 /// </summary>
-public class BgInfoGenerator
+public partial class BgInfoGenerator
 {
     private readonly ImageService _imageService;
     private readonly IWallpaperService _wallpaperService;
@@ -223,9 +223,11 @@ public class BgInfoGenerator
 
         var textBlock = new ChartRect(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
 
-        RenderCharts(image, config, textBlock);
-        RenderTopologies(image, config);
-        RenderVisualCanvases(image, config);
+        var placements = ResolveRegionPlacements(image.Width, image.Height, config, textBlock);
+        RenderCharts(image, config, textBlock, placements);
+        RenderTopologies(image, config, placements);
+        RenderVisualCanvases(image, config, placements);
+        RenderWidgets(image, config, placements);
         RenderImages(image, config);
 
         _imageService.Save(image, outputPath);
@@ -396,6 +398,9 @@ public class BgInfoGenerator
             Width = source.Width,
             Height = source.Height,
             Anchor = source.Anchor,
+            Region = source.Region,
+            RegionOrder = source.RegionOrder,
+            Threshold = source.Threshold,
             OffsetX = source.OffsetX,
             OffsetY = source.OffsetY,
             PositionX = source.PositionX,
@@ -526,6 +531,8 @@ public class BgInfoGenerator
         clone.Topologies.AddRange(source.Topologies);
         clone.VisualCanvases.AddRange(source.VisualCanvases);
         clone.Images.AddRange(source.Images);
+        clone.Widgets.AddRange(source.Widgets);
+        clone.Layout = source.Layout;
         return clone;
     }
 
@@ -796,7 +803,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock)
+    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, RegionPlacements placements)
     {
         if (config.Charts.Count == 0)
         {
@@ -804,6 +811,24 @@ public class BgInfoGenerator
         }
 
         var now = DateTimeOffset.UtcNow;
+        for (int i = 0; i < config.Charts.Count; i++)
+        {
+            var chart = config.Charts[i];
+            if (!placements.TryGet(chart, out var slot))
+            {
+                continue;
+            }
+
+            var values = ResolveChartValues(config, chart, now, i);
+            if (values.Count == 0)
+            {
+                continue;
+            }
+
+            using var regionImage = BgInfoChartRenderer.Render(chart, values, config, (int)slot.Width, (int)slot.Height);
+            image.DrawImage(regionImage, slot.X, slot.Y);
+        }
+
         if (config.ChartLayout == BgInfoChartLayoutMode.Stack)
         {
             RenderStackedCharts(image, config, textBlock, now);
@@ -813,6 +838,11 @@ public class BgInfoGenerator
         for (int i = 0; i < config.Charts.Count; i++)
         {
             var chart = config.Charts[i];
+            if (chart.Region != BgInfoRegion.None)
+            {
+                continue;
+            }
+
             var values = ResolveChartValues(config, chart, now, i);
             if (values.Count == 0)
             {
@@ -825,7 +855,7 @@ public class BgInfoGenerator
         }
     }
 
-    private static void RenderTopologies(BgInfoRasterImage image, BgInfoConfiguration config)
+    private static void RenderTopologies(BgInfoRasterImage image, BgInfoConfiguration config, RegionPlacements placements)
     {
         if (config.Topologies.Count == 0)
         {
@@ -840,13 +870,20 @@ public class BgInfoGenerator
                 continue;
             }
 
+            if (placements.TryGet(topology, out var slot))
+            {
+                using var regionImage = BgInfoTopologyRenderer.Render(topology, config, (int)slot.Width, (int)slot.Height);
+                image.DrawImage(regionImage, slot.X, slot.Y);
+                continue;
+            }
+
             using var topologyImage = BgInfoTopologyRenderer.Render(topology, config);
             var position = ResolveTopologyPosition(image, topology);
             image.DrawImage(topologyImage, position.X, position.Y);
         }
     }
 
-    private static void RenderVisualCanvases(BgInfoRasterImage image, BgInfoConfiguration config)
+    private static void RenderVisualCanvases(BgInfoRasterImage image, BgInfoConfiguration config, RegionPlacements placements)
     {
         if (config.VisualCanvases.Count == 0)
         {
@@ -856,6 +893,13 @@ public class BgInfoGenerator
         for (int i = 0; i < config.VisualCanvases.Count; i++)
         {
             var visual = config.VisualCanvases[i];
+            if (placements.TryGet(visual, out var slot))
+            {
+                using var regionImage = BgInfoVisualCanvasRenderer.RenderRegion(visual, (int)slot.Width, (int)slot.Height, image.Height);
+                image.DrawImage(regionImage, slot.X, slot.Y);
+                continue;
+            }
+
             using var visualImage = BgInfoVisualCanvasRenderer.Render(visual, config, image.Width, image.Height);
             image.DrawImage(visualImage, visual.PositionX, visual.PositionY);
         }
@@ -904,6 +948,11 @@ public class BgInfoGenerator
         for (int i = 0; i < config.Charts.Count; i++)
         {
             var chart = config.Charts[i];
+            if (chart.Region != BgInfoRegion.None)
+            {
+                continue;
+            }
+
             var values = ResolveChartValues(config, chart, now, i);
             if (values.Count == 0)
             {

@@ -130,6 +130,14 @@ public sealed class BgInfoVisualCanvas {
     public int PositionX { get; set; }
     /// <summary>Explicit Y position on the generated wallpaper.</summary>
     public int PositionY { get; set; }
+    /// <summary>Region the tiles stack into, top to bottom at the region width. <see cref="BgInfoRegion.None"/> keeps the canvas rails.</summary>
+    public BgInfoRegion Region { get; set; }
+    /// <summary>Distance of the tile rails from the left and right edges of a transparent canvas. Unset uses 4.5 % of the width.</summary>
+    public int? RailMarginX { get; set; }
+    /// <summary>Distance of the tile rails from the top edge of a transparent canvas. Unset uses 16 % of the height.</summary>
+    public int? RailMarginY { get; set; }
+    /// <summary>Position in the region's flow. New-BGInfo numbers items in the order they are emitted; equal values keep chart, diagram, canvas, widget order.</summary>
+    public int RegionOrder { get; set; }
     /// <summary>Top background color.</summary>
     public Color BackgroundTop { get => _backgroundTop ?? DesignTokens.Background; set => _backgroundTop = value; }
     /// <summary>Bottom background color.</summary>

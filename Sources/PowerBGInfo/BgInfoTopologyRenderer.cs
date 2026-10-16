@@ -7,6 +7,12 @@ namespace PowerBGInfo;
 
 internal static class BgInfoTopologyRenderer {
     public static BgInfoRasterImage Render(BgInfoTopology topology, BgInfoConfiguration config) {
+        if (topology == null) throw new ArgumentNullException(nameof(topology));
+        return Render(topology, config, topology.Width, topology.Height);
+    }
+
+    /// <summary>Renders the diagram at a resolved size, for example a layout region slot.</summary>
+    public static BgInfoRasterImage Render(BgInfoTopology topology, BgInfoConfiguration config, int requestedWidth, int requestedHeight) {
         if (topology == null) {
             throw new ArgumentNullException(nameof(topology));
         }
@@ -14,8 +20,8 @@ internal static class BgInfoTopologyRenderer {
             throw new ArgumentNullException(nameof(config));
         }
 
-        var width = Math.Max(1, topology.Width);
-        var height = Math.Max(1, topology.Height);
+        var width = Math.Max(1, requestedWidth);
+        var height = Math.Max(1, requestedHeight);
         var scale = BgInfoTopology.ValidateScale(topology.Scale);
         var image = BgInfoPanel.Create(width, height, topology.BackgroundColor, topology.BorderColor, topology.CornerRadius);
 

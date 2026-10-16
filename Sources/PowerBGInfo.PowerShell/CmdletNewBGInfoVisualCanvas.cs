@@ -243,6 +243,20 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasFeature[] Feature { get; set; } = Array.Empty<BgInfoVisualCanvasFeature>();
 
+    /// <para>Region the tiles stack into (Left, Right, Top, Bottom or Center). The tiles then form one column at the region width; sides and rail offsets are ignored.</para>
+    [Parameter]
+    public BgInfoRegion Region { get; set; }
+
+    /// <para>Distance of the tile rails from the left and right edges. Unset uses 4.5 % of the width, or the theme margin.</para>
+    [Parameter]
+    [ValidateRange(0, 4096)]
+    public int RailMarginX { get; set; }
+
+    /// <para>Distance of the tile rails from the top edge. Unset uses 16 % of the height, or the theme margin.</para>
+    [Parameter]
+    [ValidateRange(0, 4096)]
+    public int RailMarginY { get; set; }
+
     /// <summary>Emits a visual canvas definition.</summary>
     protected override void EndProcessing() {
         if (HeroBadgeImagePadding < 0) {
@@ -319,7 +333,33 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (hasCenterTiles && hasVisibleHeroContent) {
             WriteWarning("Centered tiles can overlap the hero badge, title, or subtitle. Use -NoHeroContent for a tile-only layout, or move the lane with -CenterTileOffsetX and -CenterTileOffsetY.");
         }
+        visual.Region = Region;
+        if (IsBound(nameof(RailMarginX))) visual.RailMarginX = RailMarginX;
+        if (IsBound(nameof(RailMarginY))) visual.RailMarginY = RailMarginY;
+        ApplyTheme(visual);
         WriteObject(visual);
+    }
+
+    private bool IsBound(string name) => MyInvocation.BoundParameters.ContainsKey(name);
+
+    /// <summary>Fills unbound tile settings from the New-BGInfo theme. A themed canvas hides the demo hero and backdrop unless asked for.</summary>
+    private void ApplyTheme(BgInfoVisualCanvas visual) {
+        var theme = BgInfoThemeScope.Current;
+        if (theme == null) return;
+        if (!IsBound(nameof(ThemeMode))) visual.ThemeMode = theme.Mode;
+        if (!IsBound(nameof(Accent))) visual.Accent = theme.Accent;
+        if (!IsBound(nameof(SecondaryAccent))) visual.SecondaryAccent = theme.SecondaryAccent;
+        if (!IsBound(nameof(TileGlassTop))) visual.TileGlassTop = theme.TileGlassTop;
+        if (!IsBound(nameof(TileGlassBottom))) visual.TileGlassBottom = theme.TileGlassBottom;
+        if (!IsBound(nameof(TileLabelColor))) visual.TileLabelColor = theme.Muted;
+        if (!IsBound(nameof(TileValueColor))) visual.TileValueColor = theme.Ink;
+        if (!IsBound(nameof(TileDetailColor))) visual.TileDetailColor = theme.Muted;
+        if (!IsBound(nameof(TileHeight))) visual.TileHeight = theme.TileHeight;
+        if (!IsBound(nameof(TileGap))) visual.TileGap = theme.TileGap;
+        if (!IsBound(nameof(RailMarginX))) visual.RailMarginX = theme.MarginX;
+        if (!IsBound(nameof(RailMarginY))) visual.RailMarginY = theme.MarginY;
+        if (!IsBound(nameof(NoHeroContent))) visual.HeroContentVisible = false;
+        if (!IsBound(nameof(NoTechBackdrop))) visual.TechBackdrop = false;
     }
 
 }

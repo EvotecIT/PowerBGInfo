@@ -71,16 +71,25 @@ public sealed class CmdletNewBGInfoBackground : PSCmdlet {
     public int PatternSpacing { get; set; } = 48;
 
     /// <summary>Emits the background definition.</summary>
+    /// <remarks>Inside New-BGInfo -Theme, a background without -Color, -Gradient or -ImagePath paints the theme backdrop; other parameters still override it.</remarks>
     protected override void EndProcessing() {
-        var background = new BgInfoBackground {
+        var theme = BgInfoThemeScope.Current;
+        var useTheme = theme != null && !IsBound(nameof(Color)) && !IsBound(nameof(Gradient)) && !IsBound(nameof(ImagePath));
+        var background = useTheme ? theme!.CreateBackground(Width, Height) : new BgInfoBackground {
             Width = Width,
             Height = Height,
             GradientAngle = GradientAngle,
-            ImageFit = ImageFit,
-            ImageOpacity = ImageOpacity,
             Pattern = Pattern,
             PatternSpacing = PatternSpacing
         };
+        background.ImageFit = ImageFit;
+        background.ImageOpacity = ImageOpacity;
+        if (useTheme) {
+            if (IsBound(nameof(GradientAngle))) background.GradientAngle = GradientAngle;
+            if (IsBound(nameof(Pattern))) background.Pattern = Pattern;
+            if (IsBound(nameof(PatternSpacing))) background.PatternSpacing = PatternSpacing;
+            if (IsBound(nameof(Glow))) background.Glows.Clear();
+        }
 
         if (MyInvocation.BoundParameters.ContainsKey(nameof(Color))) {
             background.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
@@ -101,4 +110,6 @@ public sealed class CmdletNewBGInfoBackground : PSCmdlet {
 
         WriteObject(background);
     }
+
+    private bool IsBound(string name) => MyInvocation.BoundParameters.ContainsKey(name);
 }
