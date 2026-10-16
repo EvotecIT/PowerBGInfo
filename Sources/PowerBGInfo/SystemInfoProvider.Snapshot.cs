@@ -63,26 +63,21 @@ public static partial class SystemInfoProvider {
     public const string Unknown = "Unknown";
 
     private static readonly TimeSpan QueryTimeout = TimeSpan.FromSeconds(5);
-    private static readonly Lazy<(string Id, DateTime? Date)> LastPatchCache = new(LoadLastPatch, true);
-    private static readonly Lazy<(string Status, TimeSpan? SignatureAge)> DefenderCache = new(LoadDefender, true);
-    private static readonly Lazy<string> BitLockerCache = new(LoadBitLocker, true);
-    private static readonly Lazy<string> LoggedOnUserCache = new(LoadLoggedOnUser, true);
-
-    private static (string Id, DateTime? Date) GetLastPatch() => LastPatchCache.Value;
-    private static (string Status, TimeSpan? SignatureAge) GetDefender() => DefenderCache.Value;
-    private static string GetBitLockerStatus() => BitLockerCache.Value;
-    private static string GetLoggedOnUser() => LoggedOnUserCache.Value;
+    private static (string Id, DateTime? Date) GetLastPatch() => LoadLastPatch();
+    private static (string Status, TimeSpan? SignatureAge) GetDefender() => LoadDefender();
+    private static string GetBitLockerStatus() => LoadBitLocker();
+    private static string GetLoggedOnUser() => LoadLoggedOnUser();
 
     /// <summary>Collects every fact. Each probe fails on its own; the snapshot is always returned.</summary>
     public static BgInfoSystemInfo GetSnapshot() {
         var uptime = GetUptime();
         var lastBoot = OsInfoCache.Value.LastBootUpTime;
-        var patch = LastPatchCache.Value;
-        var defender = DefenderCache.Value;
+        var patch = GetLastPatch();
+        var defender = GetDefender();
         return new BgInfoSystemInfo {
             ComputerName = Environment.MachineName,
             UserName = Environment.UserName,
-            LoggedOnUser = LoggedOnUserCache.Value,
+            LoggedOnUser = GetLoggedOnUser(),
             Domain = OrUnknown(Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName),
             OSName = OrUnknown(OsInfoCache.Value.Name),
             OSVersion = OrUnknown(OsInfoCache.Value.Version),
@@ -96,7 +91,7 @@ public static partial class SystemInfoProvider {
             LastPatchDate = patch.Date,
             DefenderStatus = defender.Status,
             DefenderSignatureAge = defender.SignatureAge,
-            BitLockerStatus = BitLockerCache.Value
+            BitLockerStatus = GetBitLockerStatus()
         };
     }
 

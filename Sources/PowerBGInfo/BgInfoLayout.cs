@@ -75,11 +75,13 @@ public static class BgInfoLayoutEngine {
     /// <summary>Returns the safe area: the image minus margins, the taskbar reserve and the icon area.</summary>
     public static ChartRect GetSafeArea(int width, int height, BgInfoLayout layout) {
         if (layout == null) throw new ArgumentNullException(nameof(layout));
+        width = Math.Max(1, width);
+        height = Math.Max(1, height);
         var taskbar = layout.TaskbarReserve >= 0 ? layout.TaskbarReserve : (int)Math.Round(height * 0.0444);
-        var left = Math.Max(0, layout.MarginX) + Math.Max(0, layout.IconAreaWidth);
-        var top = Math.Max(0, layout.MarginY);
-        var right = Math.Max(0, layout.MarginX);
-        var bottom = Math.Max(Math.Max(0, layout.MarginY), taskbar > 0 ? taskbar + 16 : 0);
+        var left = (int)Math.Min(width - 1L, (long)Math.Max(0, layout.MarginX) + Math.Max(0, layout.IconAreaWidth));
+        var top = Math.Min(height - 1, Math.Max(0, layout.MarginY));
+        var right = Math.Min(width - left - 1, Math.Max(0, layout.MarginX));
+        var bottom = (int)Math.Min(height - top - 1L, Math.Max((long)Math.Max(0, layout.MarginY), taskbar > 0 ? (long)taskbar + 16 : 0));
         return new ChartRect(left, top, Math.Max(1, width - left - right), Math.Max(1, height - top - bottom));
     }
 
@@ -244,6 +246,11 @@ public static class BgInfoLayoutEngine {
 
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 
-    private static ChartRect Round(double x, double y, double width, double height) =>
-        new(Math.Round(x), Math.Round(y), Math.Max(1, Math.Round(width)), Math.Max(1, Math.Round(height)));
+    private static ChartRect Round(double x, double y, double width, double height) {
+        var left = Math.Round(x);
+        var top = Math.Round(y);
+        var right = Math.Round(x + width);
+        var bottom = Math.Round(y + height);
+        return new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+    }
 }

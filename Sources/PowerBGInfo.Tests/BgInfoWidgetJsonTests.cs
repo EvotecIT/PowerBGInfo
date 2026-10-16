@@ -6,6 +6,42 @@ namespace PowerBGInfo.Tests;
 public class BgInfoWidgetJsonTests
 {
     [Fact]
+    public void PartialStatusPaletteUsesTheConfiguredLightModeDefaults()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo-partial-status-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "config.json");
+        File.WriteAllText(path, """
+            {
+              "Widgets": [{
+                "Kind": "Metric",
+                "ThemeMode": "Light",
+                "StatusCritical": "#123456",
+                "Threshold": { "Warning": 70, "Critical": 90, "CriticalColor": "#123456" }
+              }]
+            }
+            """);
+
+        try
+        {
+            var loaded = BgInfoConfigurationJson.Load(path);
+            var widget = Assert.IsType<BgInfoMetricWidget>(Assert.Single(loaded.Widgets));
+            var light = BgInfoStatusColors.Default(VisualThemeMode.Light);
+
+            Assert.Equal(light.Warning, widget.StatusColors!.Warning);
+            Assert.Equal(light.Ok, widget.StatusColors.Ok);
+            Assert.Equal(ChartColor.FromHex("#123456"), widget.StatusColors.Critical);
+            Assert.Equal(light.Warning, widget.Threshold!.Colors!.Warning);
+            Assert.Equal(light.Ok, widget.Threshold.Colors.Ok);
+            Assert.Equal(ChartColor.FromHex("#123456"), widget.Threshold.Colors.Critical);
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public void LayoutWidgetsRegionsAndThresholdsRoundTripThroughJson()
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-widgets-json-" + Path.GetRandomFileName());

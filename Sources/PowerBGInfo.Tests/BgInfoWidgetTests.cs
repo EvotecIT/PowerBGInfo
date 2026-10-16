@@ -155,6 +155,29 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void ExplicitLineColorSuppressesGeneratedThresholdPalette()
+    {
+        var chart = new BgInfoChart {
+            Kind = BgInfoChartKind.Bar,
+            LineColor = ChartColor.FromHex("#0000FF"),
+            Threshold = new BgInfoThreshold { Warning = 80 }
+        };
+
+        Assert.Empty(BgInfoChartRenderer.ResolvePalette(chart, new double[] { 50, 90 }));
+    }
+
+    [Fact]
+    public void QrWidgetRejectsASlotThatCannotFitItsQuietZoneAndModules()
+    {
+        var widget = new BgInfoQrCodeWidget { Text = "https://help.contoso.com" };
+
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            BgInfoWidgetRenderer.Render(widget, new BgInfoConfiguration(), 20, 20));
+
+        Assert.Contains("needs at least", error.Message);
+    }
+
+    [Fact]
     public void ContentScaleRendersAtALowerLogicalSize()
     {
         var widget = new BgInfoListWidget { Scale = 2 };

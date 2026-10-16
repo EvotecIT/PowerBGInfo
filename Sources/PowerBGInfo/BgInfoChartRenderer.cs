@@ -270,7 +270,7 @@ internal static class BgInfoChartRenderer {
 
     /// <summary>Explicit palette first; otherwise per-point threshold colors for row-based kinds.</summary>
     internal static IReadOnlyList<ChartColor> ResolvePalette(BgInfoChart chart, IReadOnlyList<double> values) {
-        if (chart.Palette.Count > 0 || chart.Threshold is not { IsDefined: true } || !IsPerPointKind(chart.Kind)) return chart.Palette;
+        if (chart.Palette.Count > 0 || chart.LineColor.HasValue || chart.Threshold is not { IsDefined: true } || !IsPerPointKind(chart.Kind)) return chart.Palette;
         var colors = new ChartColor[values.Count];
         for (var i = 0; i < values.Count; i++) {
             colors[i] = ResolveThresholdColor(chart, values[i]) ?? ResolveTokens(chart).Accent;

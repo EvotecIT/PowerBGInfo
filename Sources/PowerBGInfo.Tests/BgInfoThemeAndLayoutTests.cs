@@ -96,6 +96,21 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void SafeAreaClampsItsOriginAndSizeInsideTheImageWhenReservesConsumeIt()
+    {
+        var safe = BgInfoLayoutEngine.GetSafeArea(640, 480, new BgInfoLayout {
+            MarginX = int.MaxValue, MarginY = int.MaxValue, TaskbarReserve = int.MaxValue, IconAreaWidth = int.MaxValue
+        });
+
+        Assert.Equal(639, safe.X);
+        Assert.Equal(479, safe.Y);
+        Assert.Equal(1, safe.Width);
+        Assert.Equal(1, safe.Height);
+        Assert.True(safe.X + safe.Width <= 640);
+        Assert.True(safe.Y + safe.Height <= 480);
+    }
+
+    [Fact]
     public void TaskbarReserveIsEstimatedFromTheImageHeight()
     {
         var hd = BgInfoLayoutEngine.GetSafeArea(1920, 1080, new BgInfoLayout { MarginY = 0 });
@@ -189,6 +204,22 @@ public class BgInfoThemeAndLayoutTests
         Assert.Equal(100, sizes[0]);
         Assert.Equal(200, sizes[1]);
         Assert.Equal(200, sizes[2]);
+    }
+
+    [Fact]
+    public void RoundedSharedEdgesKeepFractionalRowSlotsDisjoint()
+    {
+        var slots = BgInfoLayoutEngine.Resolve(101, 40,
+            new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, BandHeight = 10, Gap = 0 }, null, new[] {
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10)
+            });
+
+        Assert.Equal(0, slots[0].X);
+        Assert.Equal(101, slots[2].X + slots[2].Width);
+        Assert.True(slots[0].X + slots[0].Width <= slots[1].X);
+        Assert.True(slots[1].X + slots[1].Width <= slots[2].X);
     }
 
     [Fact]

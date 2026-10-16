@@ -51,7 +51,7 @@ public static partial class BgInfoConfigurationJson {
     private static void MapPlacement(BgInfoChartFile model, BgInfoChart chart) {
         chart.Region = ParseRegion(model.Region);
         chart.RegionOrder = model.RegionOrder ?? 0;
-        chart.Threshold = MapThreshold(model.Threshold);
+        chart.Threshold = MapThreshold(model.Threshold, chart.ThemeMode);
     }
 
     private static BgInfoRegion ParseRegion(string? text) =>
@@ -82,11 +82,11 @@ public static partial class BgInfoConfigurationJson {
         ColumnAlignment = layout.ColumnAlignment == BgInfoColumnAlignment.Top ? null : layout.ColumnAlignment.ToString()
     };
 
-    private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model) {
+    private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model, VisualThemeMode mode) {
         if (model == null || (!model.Warning.HasValue && !model.Critical.HasValue)) return null;
         var threshold = new BgInfoThreshold { Warning = model.Warning, Critical = model.Critical };
         ApplyEnum<BgInfoThresholdDirection>(model.Direction, value => threshold.Direction = value);
-        threshold.Colors = MapStatusColors(model.Ok, model.WarningColor, model.CriticalColor, model.Info);
+        threshold.Colors = MapStatusColors(model.Ok, model.WarningColor, model.CriticalColor, model.Info, mode);
         threshold.Validate();
         return threshold;
     }
@@ -101,9 +101,9 @@ public static partial class BgInfoConfigurationJson {
         Info = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Info)
     };
 
-    private static BgInfoStatusColors? MapStatusColors(string? ok, string? warning, string? critical, string? info) {
+    private static BgInfoStatusColors? MapStatusColors(string? ok, string? warning, string? critical, string? info, VisualThemeMode mode) {
         if (ok == null && warning == null && critical == null && info == null) return null;
-        var colors = BgInfoStatusColors.Default(VisualThemeMode.Dark);
+        var colors = BgInfoStatusColors.Default(mode);
         ApplyColor(ok, value => colors.Ok = value);
         ApplyColor(warning, value => colors.Warning = value);
         ApplyColor(critical, value => colors.Critical = value);
@@ -113,8 +113,11 @@ public static partial class BgInfoConfigurationJson {
 
     private static BgInfoWidget? MapWidget(BgInfoWidgetFile model) {
         if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) return null;
+        var themeMode = TryParseDefinedEnumName<VisualThemeMode>(model.ThemeMode, out var configuredMode)
+            ? configuredMode
+            : VisualThemeMode.Dark;
         BgInfoWidget widget = kind switch {
-            BgInfoWidgetKind.Metric => MapMetric(model),
+            BgInfoWidgetKind.Metric => MapMetric(model, themeMode),
             BgInfoWidgetKind.Table => MapTable(model),
             BgInfoWidgetKind.List => MapList(model),
             BgInfoWidgetKind.CalendarHeatmap => MapCalendar(model),
@@ -136,7 +139,7 @@ public static partial class BgInfoConfigurationJson {
         if (model.OffsetY.HasValue) widget.OffsetY = model.OffsetY.Value;
         widget.PositionX = model.PositionX;
         widget.PositionY = model.PositionY;
-        if (TryParseDefinedEnumName<VisualThemeMode>(model.ThemeMode, out var mode)) widget.ThemeMode = mode;
+        widget.ThemeMode = themeMode;
         ApplyColor(model.BackgroundColor, value => widget.BackgroundColor = value);
         ApplyColor(model.BorderColor, value => widget.BorderColor = value);
         if (model.CornerRadius.HasValue) widget.CornerRadius = Math.Max(0, model.CornerRadius.Value);
@@ -151,11 +154,11 @@ public static partial class BgInfoConfigurationJson {
         ApplyColor(model.SecondaryAccent, value => widget.SecondaryAccent = value);
         widget.FontFamilyName = string.IsNullOrWhiteSpace(model.FontFamilyName) ? null : model.FontFamilyName;
         if (model.Scale.HasValue) widget.Scale = Math.Max(1, Math.Min(4, model.Scale.Value));
-        widget.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo);
+        widget.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo, themeMode);
         return widget;
     }
 
-    private static BgInfoMetricWidget MapMetric(BgInfoWidgetFile model) {
+    private static BgInfoMetricWidget MapMetric(BgInfoWidgetFile model, VisualThemeMode themeMode) {
         var metric = new BgInfoMetricWidget {
             Label = model.Label ?? string.Empty,
             Value = model.Value ?? string.Empty,
@@ -164,7 +167,7 @@ public static partial class BgInfoConfigurationJson {
             Caption = model.Caption ?? string.Empty,
             Symbol = model.Symbol ?? string.Empty,
             NumericValue = model.NumericValue,
-            Threshold = MapThreshold(model.Threshold),
+            Threshold = MapThreshold(model.Threshold, themeMode),
             History = model.History ?? Array.Empty<double>(),
             HistoryMaximum = model.HistoryMaximum
         };
