@@ -314,3 +314,40 @@ Describe 'Data helpers' {
         $watch.Elapsed.TotalSeconds | Should -BeLessThan 10
     }
 }
+
+Describe 'Get-BGInfoMonitor' {
+    It 'returns plain monitor objects with the index New-BGInfo -MonitorIndex takes' {
+        $monitors = @(Get-BGInfoMonitor)
+        foreach ($monitor in $monitors) {
+            $monitor.Index | Should -BeGreaterOrEqual 0
+            $monitor.Width | Should -BeGreaterThan 0
+            $monitor.Height | Should -BeGreaterThan 0
+            $monitor.PSObject.Properties.Name | Should -Contain 'DeviceName'
+            $monitor.PSObject.Properties.Name | Should -Contain 'Scale'
+        }
+        @($monitors | Where-Object Primary).Count | Should -BeLessOrEqual 1
+        @($monitors.Index | Sort-Object -Unique).Count | Should -Be $monitors.Count
+    }
+
+    It 'filters to the primary monitor' {
+        @(Get-BGInfoMonitor -Primary | Where-Object { -not $_.Primary }).Count | Should -Be 0
+    }
+
+    It 'works from a script in Constrained Language Mode, where DesktopManager types do not' {
+        $module = (Get-Command Get-BGInfoMonitor).Module.Path
+        $shell = (Get-Process -Id $PID).Path
+        $script = @"
+Import-Module -Name '$module'
+`$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+`$count = @(Get-BGInfoMonitor | ForEach-Object { `$_.Width }).Count
+try { [DesktopManager.Monitors]::new() | Out-Null; `$typed = 'allowed' } catch { `$typed = 'blocked' }
+"`$(`$ExecutionContext.SessionState.LanguageMode)|`$count|`$typed"
+"@
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+        $result = & $shell -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+        $parts = "$(@($result)[-1])".Trim().Split('|')
+        $parts[0] | Should -Be 'ConstrainedLanguage'
+        [int] $parts[1] | Should -Be @(Get-BGInfoMonitor).Count
+        $parts[2] | Should -Be 'blocked'
+    }
+}
