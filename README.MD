@@ -38,6 +38,11 @@ You can read about this project on this [blog post](https://evotec.xyz/powerbgin
 - Preserve the current Windows wallpaper slideshow by rendering one BGInfo image per slideshow source.
 - Handle solid-color desktops when Windows has no wallpaper file.
 - Add transparent ChartForgeX charts and topology diagrams on top of real wallpapers.
+- Pick a complete look with one parameter: `New-BGInfo -Theme Aurora` (six presets, light and dark).
+- Flow panels into Left, Right, Top, Bottom and Center regions that keep the taskbar and desktop icons free, on any screen size.
+- Add metric cards, tables, lists, calendar heatmaps, timelines, treemaps, Mermaid diagrams and QR codes as small cmdlets.
+- Turn values amber or red automatically with warning and critical thresholds.
+- Keep data collection apart from rendering: time-boxed data sources with fallbacks, and a read-only system snapshot.
 - Render and compose wallpaper content without a production dependency on `System.Drawing`.
 - Export JSON configurations when you need a portable deployment artifact.
 
@@ -107,7 +112,7 @@ New-BGInfo -MonitorIndex 0 -Target Both {
 
 ## Showcase
 
-Four wallpapers, each built for one job. They share one HUD: the same margins, glass panels, type scale and status colours, defined once in `Examples/Showcase/HudTheme.ps1`. Every scenario renders in light and dark at any resolution, uses a generated background, and writes a file without touching the desktop.
+Four wallpapers, each built for one job. They share one HUD through `New-BGInfo -Theme`: the same margins, glass panels, type scale and status colours. Every scenario starts with a data block, renders in light and dark at any resolution, uses a generated background, and writes a file without touching the desktop. `Examples/Showcase/HudTheme.ps1` still returns the splat tables for older scripts.
 
 | Scenario | What it answers | Script |
 | --- | --- | --- |
@@ -150,6 +155,126 @@ New-BGInfo -Target File {
 Glow positions are fractions of the backdrop, so the same definition works at 1920x1080 and 2560x1440. With no `-Width` or `-Height`, the backdrop uses the target monitor size. A background also replaces wallpaper slideshow sources, and it round-trips through JSON export.
 
 Charts and topology diagrams share one panel style. Give them `-BackgroundColor`, `-BorderColor` and `-CornerRadius` so charts, topology and visual canvas tiles look like parts of the same HUD. Topology panels also take `-Padding` and header settings (`-TitleColor`, `-TitleFontSize`, `-TitleFontWeight`, `-TitleTextCase`). `New-BGInfoTopology -Scale 2` renders nodes and labels twice as large for high-resolution screens. Labels created with `New-BGInfoLabel` span both text columns, so a large heading such as a host name no longer pushes the value column to the right.
+
+## Themes
+
+`-Theme` gives text, panels, charts, diagrams, tiles, widgets and the backdrop one look. Every PowerBGInfo cmdlet inside the script block uses the theme for the parameters you leave out; parameters you set always win, and nothing is themed without `-Theme`.
+
+```powershell
+New-BGInfo -Theme Aurora -ThemeMode Light -Target File {
+    New-BGInfoBackground -Width 1920 -Height 1080          # paints the theme backdrop
+    New-BGInfoLabel -Name 'SQL-PROD-01' -FontSize 64        # headings use the theme ink
+    New-BGInfoLabel -Name 'PRODUCTION' -Accent              # -Accent, -Muted or -Status Warning
+    New-BGInfoValue -Name 'Owner' -Value 'Data Platform'
+    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values 12, 30, 22 -NoHistory
+} -ConfigurationDirectory C:\Temp -OutputFileName 'themed.png'
+```
+
+Presets: `Graphite`, `Midnight`, `Aurora`, `Ember`, `Orchid` and `Corporate`, each light and dark. `New-BGInfoTheme` customizes one: `-Accent`, `-SecondaryAccent`, `-Surface`, `-CornerRadius`, `-FontFamilyName`, and `-Scale` for high-DPI screens (about 1.33 at 2560x1440, 2 at 3840x2160).
+
+![Theme presets, dark and light](Examples/Features/Images/themes-presets.jpg)
+
+## Layout regions
+
+Panels flow into named regions instead of hand-placed coordinates, so one script lays out correctly at 1920x1080, 2560x1440, ultrawide and portrait. PowerBGInfo renders one image per `-MonitorIndex`, and regions resolve against that image, so a script run per monitor fits each one.
+
+| Region | Behaviour |
+| --- | --- |
+| `Top`, `Bottom` | Full-width bands. Panels flow left to right; unsized panels share the width, a row of fixed widths is centered. |
+| `Left`, `Right` | Columns between the bands. Panels stack top to bottom; unsized panels share the height, up to 36 % of the screen each. |
+| `Center` | The space between the columns, stacked and centered. |
+
+```powershell
+New-BGInfo -Theme Graphite -Target File {
+    New-BGInfoLayout -IconAreaWidth 96 -ColumnWidth 480     # optional: margins, gap, taskbar, icon area
+    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME
+    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values 12, 30, 22 -NoHistory
+    New-BGInfoMetric -Region Right -Label 'Memory' -Value 71 -Unit '%'
+    New-BGInfoChart -Region Bottom -Title 'Network' -Kind Line -Values 120, 180, 160 -NoHistory
+} -ConfigurationDirectory C:\Temp -OutputFileName 'regions.png'
+```
+
+The safe area keeps the taskbar free (estimated from the height, 48 px at 1080 and 64 px at 1440; `-TaskbarReserve` overrides it) and, with `-IconAreaWidth`, the desktop icons and the text block. The text block reserves its rectangle, so a column next to it starts below it. Items without `-Region` keep `-Anchor`, `-OffsetX`, `-OffsetY` and `-PositionX`/`-PositionY`. `New-BGInfoVisualCanvas -Region Right` stacks its tiles in the region.
+
+![Regions at 1920x1080](Examples/Features/Images/regions-1920x1080-dark.jpg)
+
+![Regions at 3440x1440](Examples/Features/Images/regions-3440x1440-dark.jpg)
+
+## Widgets
+
+Each widget is a small cmdlet over a ChartForgeX producer and shares the panel, header (`-Title`, `-Note`), placement (`-Region` or `-Anchor`) and theme of the other panels. `-Scale` enlarges the content inside the same panel.
+
+| Cmdlet | Shows | Input |
+| --- | --- | --- |
+| `New-BGInfoMetric` | One KPI with trend, caption, history and status | `-Label -Value -Unit -Trend -Caption -History` |
+| `New-BGInfoTable` | Rows and columns, status dots | Piped objects with `-Property` (calculated columns too), or `-Column` and `-Row` |
+| `New-BGInfoList` | Bullets, numbers, checklist, status rows | Strings, or hashtables/objects with Text, Value, Status, Checked |
+| `New-BGInfoCalendarHeatmap` | One cell per day | Objects with Date and Value, plain dates, or `-Data @{ date = value }` |
+| `New-BGInfoTimeline` | Ranges on lanes with a Now marker | `New-BGInfoTimelineItem`, or hashtables with Lane, Label, Start, End, Category |
+| `New-BGInfoTreemap` | Sizes as nested rectangles | Objects with Name, Value, Group, or `-Data @{ name = size }` |
+| `New-BGInfoMermaid` | A diagram from Mermaid text | `-Definition` |
+| `New-BGInfoQRCode` | A scannable link | `-Url`, `-Caption` |
+
+```powershell
+Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
+    New-BGInfoTable -Region Right -Title 'Top processes' -Property Name, Id, @{ Name = 'CPU s'; Expression = { [Math]::Round($_.CPU) } }
+New-BGInfoQRCode -Region Right -Url 'https://help.contoso.com/new?asset=CT-04217' -Title 'Scan for help' -Caption 'help.contoso.com'
+New-BGInfoMermaid -Region Bottom -Title 'Escalation' -Definition "flowchart LR`n  A[Service desk] --> B[On call] --> C[Major incident]"
+```
+
+Gauges and radials stay `New-BGInfoChart -Kind Gauge`, `Circle` or `RadialBar`. QR codes are encoded by [CodeGlyphX](https://github.com/EvotecIT/CodeGlyphX) and drawn with whole-pixel modules on a light field; Mermaid diagrams are parsed and rendered by ChartForgeX.Mermaid without a browser.
+
+| | |
+| --- | --- |
+| ![Metric cards](Examples/Features/Images/metrics-dark.jpg) | ![Tables](Examples/Features/Images/tables-dark.jpg) |
+| ![Calendar heatmap](Examples/Features/Images/calendar-heatmap-dark.jpg) | ![Timeline](Examples/Features/Images/timeline-dark.jpg) |
+| ![Mermaid](Examples/Features/Images/mermaid-dark.jpg) | ![QR code](Examples/Features/Images/qrcode-light.jpg) |
+
+## Status thresholds
+
+`-WarningThreshold`, `-CriticalThreshold` and `-ThresholdDirection Above|Below` pick ok, warning or critical colors from the value, so scripts no longer hand-pick colors. Bar, progress, bullet and pictorial charts color each row; gauges, circles and lines take the color of the latest value; `New-BGInfoMetric` and `New-BGInfoVisualCanvasTile -StatusValue` set their status. Colors come from the theme, or from light and dark defaults without one. An explicit `-LineColor`, `-Palette` or `-Accent` still wins.
+
+```powershell
+New-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar -Values 61, 88, 96 -Labels 'C:', 'D:', 'L:' `
+    -Maximum 100 -ValueSuffix ' %' -WarningThreshold 80 -CriticalThreshold 90 -NoHistory
+New-BGInfoMetric -Label 'Free memory' -Value 9 -Unit '%' -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below
+```
+
+## Your data, then the wallpaper
+
+Collecting the data is usually the hard part, so keep it apart from the layout. Every example starts with a data function that returns plain values, and the `New-BGInfo` block only reads them. `Examples/Run.BGInfo.Template.ps1` is a copy-and-fill starting point.
+
+```powershell
+function Get-MyWallpaperData {
+    # your logic: CIM, registry, Active Directory, a REST API or a monitoring export
+    [pscustomobject] @{ Heading = $env:COMPUTERNAME; DiskUsed = 63; Cpu = 12, 18, 25 }
+}
+
+# A wallpaper must never fail or block logon because one source is slow or down.
+$data = Invoke-BGInfoDataSource -Name 'Wallpaper data' -TimeoutSeconds 15 -ScriptBlock ${function:Get-MyWallpaperData} `
+    -Default ([pscustomobject] @{ Heading = $env:COMPUTERNAME; DiskUsed = 0; Cpu = @(0) })
+
+New-BGInfo -Theme Graphite -Target File {
+    New-BGInfoBackground
+    New-BGInfoLabel -Name $data.Heading -FontSize 56
+    New-BGInfoMetric -Region Right -Label 'System drive' -Value $data.DiskUsed -Unit '%' -WarningThreshold 80
+    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values $data.Cpu -NoHistory
+} -ConfigurationDirectory C:\ProgramData\PowerBGInfo -OutputFileName 'wallpaper.png'
+```
+
+`Invoke-BGInfoDataSource` runs the script block in its own runspace. When it throws, returns nothing or exceeds `-TimeoutSeconds`, it writes a warning and returns `-Default`. Variables of the calling script are not visible inside it; pass them with `-ArgumentList`.
+
+`Get-BGInfoSystemInfo` returns the facts support asks for first as one plain object: computer, user and console user, domain, OS name, version and build, last boot and uptime, IPv4, fixed disks (size, free, used %), last installed update, Defender state and signature age, and BitLocker state of the system drive. Every probe is read-only; the update, Defender, BitLocker, disk and console-user queries have a five-second WMI time limit, and a missing class, a timeout or a lack of elevation (BitLocker usually needs it) leaves that field `Unknown`. Wrap the call in `Invoke-BGInfoDataSource` for a hard limit on the whole snapshot. Replace it with your own function that returns the same property names and the presentation code keeps working.
+
+## Running on a schedule
+
+PowerBGInfo renders, and with a wallpaper or logon target applies, once per run. It does not install a scheduled task or keep running; schedule the script with Task Scheduler, Intune or your RMM tool.
+
+- Wallpaper targets change the desktop of the account that runs the command, so run per-user wallpapers in the user's session, for example a logon task or a task that runs only when the user is logged on. Run it again to refresh the values.
+- `-AllUsers`, `-Target LogonScreen` and `-Target Both` write system-level settings and need elevation.
+- When a script runs as SYSTEM, built-in values such as `UserName` describe SYSTEM; `LoggedOnUser` (and `Get-BGInfoSystemInfo`) read the user at the console.
+- Charts keep their history between runs in `<ConfigurationDirectory>\Charts`, keyed by `-Id`, so repeated runs build rolling trends (`-MaxPoints`, `-NoHistory`, `-ReplaceHistory`).
+- `PowerBGInfo.Cli.exe --config <file.json>` renders a saved JSON configuration without PowerShell, and `--script` runs a PowerShell script that returns a configuration.
 
 ## Example outputs
 
@@ -566,7 +691,7 @@ Invoke-BGInfo -Path .\Examples\Configuration\PowerBGInfo.ChartForgeX.Showcase.js
 
 ## Built-in values
 
-You can build useful wallpapers with only built-in values:
+You can build useful wallpapers with only built-in values. Besides host, user, CPU, RAM, BIOS, OS and IP tokens, `Uptime`, `LastPatch`, `DefenderStatus`, `BitLockerStatus`, `LoggedOnUser`, `Domain` and `DiskSummary` resolve the facts support asks for first; values that cannot be read show `Unknown`.
 
 ```powershell
 New-BGInfo -MonitorIndex 0 {

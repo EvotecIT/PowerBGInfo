@@ -2,6 +2,14 @@
 
 ### Added
 
+- Added wallpaper themes: `New-BGInfoTheme` and `New-BGInfo -Theme` / `-ThemeMode` with six presets (Graphite, Midnight, Aurora, Ember, Orchid, Corporate) in light and dark. Cmdlets inside a themed script block use the theme for every parameter you leave out, including the `New-BGInfoBackground` backdrop.
+- Added layout regions: `-Region Left|Right|Top|Bottom|Center` on charts, topology, visual canvases and widgets, and `New-BGInfoLayout` for margins, gap, column width, band height, taskbar reserve, desktop-icon area, panel height cap and column alignment.
+- Added widget cmdlets on ChartForgeX: `New-BGInfoMetric`, `New-BGInfoTable`, `New-BGInfoList`, `New-BGInfoCalendarHeatmap`, `New-BGInfoTimeline` with `New-BGInfoTimelineItem`, `New-BGInfoTreemap`, `New-BGInfoMermaid` (ChartForgeX.Mermaid) and `New-BGInfoQRCode` (CodeGlyphX).
+- Added status thresholds: `-WarningThreshold`, `-CriticalThreshold` and `-ThresholdDirection` on `New-BGInfoChart`, `New-BGInfoMetric` and `New-BGInfoVisualCanvasTile` (with `-StatusValue`), and `-Status`, `-Accent` and `-Muted` color roles on `New-BGInfoLabel`.
+- Added `Get-BGInfoSystemInfo`, a read-only snapshot of uptime, OS, IPv4, disks, last update, Defender, BitLocker and console user, and the built-in value tokens `Uptime`, `LastPatch`, `DefenderStatus`, `BitLockerStatus`, `LoggedOnUser`, `Domain` and `DiskSummary`.
+- Added `Invoke-BGInfoDataSource`, which runs data-collection code with a time limit and a fallback value.
+- Added one example per feature under `Examples/Features`, `Examples/Run.BGInfo.Features.ps1` to render them all, and the fill-in template `Examples/Run.BGInfo.Template.ps1`.
+- JSON configurations now carry `Layout`, `Widgets`, regions, region order and thresholds.
 - Added `New-BGInfoBackground` and `New-BGInfoBackgroundGlow` for generated backgrounds built from gradients, soft glows, dot or grid patterns, and an optional image with a scrim. A background replaces the wallpaper image and slideshow sources, and round-trips through JSON.
 - Added `-CornerRadius` and `-BorderColor` to `New-BGInfoChart`, plus the same panel parameters, header styling and `-Scale` to `New-BGInfoTopology`, so charts, diagrams and visual canvas tiles share one panel style.
 - Added four showcase scenarios (server status, help desk, lab or classroom, admin workstation) with a shared HUD theme and `Examples/Run.BGInfo.Showcase.ps1`, which renders all of them in light and dark with a manifest.
@@ -24,6 +32,8 @@
 
 - Routed text measurement, image composition, GIF input, chart placement, topology placement, and visual-canvas overlays through reusable ChartForgeX primitives.
 - Kept PowerBGInfo as a wallpaper-specific consumer while ChartForgeX owns rendering, typography, color, raster, and topology behavior.
+- The showcase scenarios use `-Theme`, `-Region` and thresholds, and start with a data block. `Examples/Showcase/HudTheme.ps1` reads its values from `New-BGInfoTheme`, so scripts that splat it keep working.
+- PowerBGInfo now depends on `ChartForgeX.Mermaid` and `CodeGlyphX`. No existing parameter or default changed; every new behavior is opt-in.
 
 ### 0.0.5 - 2024.11.19
 #### What's new
