@@ -28,7 +28,8 @@ Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
 function Get-MyWallpaperData {
     # your logic: replace these sample values with real lookups, for example
     #   $os = Get-CimInstance Win32_OperatingSystem
-    #   $tickets = (Invoke-RestMethod -Uri 'https://help.contoso.com/api/open' -TimeoutSec 5).count
+    #   $open = 'https://help.contoso.com/api/open'
+    #   $tickets = (Invoke-RestMethod -Uri $open -TimeoutSec 5).count
     [pscustomobject] @{
         Title    = 'FINANCE  ·  FLOOR 3'
         Heading  = 'WS-FIN-0042'          # $env:COMPUTERNAME
@@ -47,26 +48,41 @@ function Get-MyWallpaperData {
 
 # What the wallpaper shows when the data source fails.
 $fallback = [pscustomobject] @{
-    Title = 'STATUS UNAVAILABLE'; Heading = $env:COMPUTERNAME; Facts = [ordered] @{ 'Support' = 'ext. 4357' }
-    Cpu = @(0); DiskUsed = 0; Tasks = @(@{ Text = 'unknown'; Checked = $false })
+    Title    = 'STATUS UNAVAILABLE'
+    Heading  = $env:COMPUTERNAME
+    Facts    = [ordered] @{ 'Support' = 'ext. 4357' }
+    Cpu      = @(0)
+    DiskUsed = 0
+    Tasks    = @(@{ Text = 'unknown'; Checked = $false })
 }
-$data = Invoke-BGInfoDataSource -Name 'Wallpaper data' -TimeoutSeconds 15 -ScriptBlock ${function:Get-MyWallpaperData} -Default $fallback
+$source = @{
+    Name           = 'Wallpaper data'
+    TimeoutSeconds = 15
+    ScriptBlock    = ${function:Get-MyWallpaperData}
+    Default        = $fallback
+}
+$data = Invoke-BGInfoDataSource @source
 #endregion
 
 #region 2. Presentation: reads only $data
 $scale = [Math]::Round([Math]::Min($Width, $Height) / 1080, 2)
-New-BGInfo -Theme (New-BGInfoTheme Graphite -Mode $Theme -Scale $scale) -Target File {
+$look = New-BGInfoTheme Graphite -Mode $Theme -Scale $scale
+New-BGInfo -Theme $look -Target File {
     New-BGInfoBackground -Width $Width -Height $Height
 
     New-BGInfoLabel -Name $data.Title -Accent -FontWeight 700
-    New-BGInfoLabel -Name $data.Heading -FontSize ([int](56 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name $data.Heading -FontSize ([int](56 * $scale)) `
+        -FontWeight 600
     foreach ($fact in $data.Facts.GetEnumerator()) {
         New-BGInfoValue -Name $fact.Key -Value $fact.Value
     }
 
-    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values $data.Cpu -ValueSuffix ' %' -NoHistory
-    New-BGInfoMetric -Region Right -Label 'System drive' -Value $data.DiskUsed -Unit '%' -Caption 'used' `
-        -WarningThreshold 80 -CriticalThreshold 90 -Height ([int](150 * $scale))
+    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values $data.Cpu `
+        -ValueSuffix ' %' -NoHistory
+    New-BGInfoMetric -Region Right -Label 'System drive' -Value $data.DiskUsed `
+        -Unit '%' -Caption 'used' -WarningThreshold 80 -CriticalThreshold 90 `
+        -Height ([int](150 * $scale))
     New-BGInfoList -Region Right -Title 'This week' -Item $data.Tasks
-} -ConfigurationDirectory $OutputDirectory -OutputFileName "template-$($Theme.ToLower()).png"
+} -ConfigurationDirectory $OutputDirectory `
+    -OutputFileName "template-$($Theme.ToLower()).png"
 #endregion
