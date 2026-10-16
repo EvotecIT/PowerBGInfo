@@ -160,34 +160,113 @@ public class BgInfoWidgetTests
     [Fact]
     public void RegionVisualCanvasHonorsPerTileTextScale()
     {
-        var defaultPixels = RenderRegionTypography(textScale: null, valueFontSize: null);
-        var scaledPixels = RenderRegionTypography(textScale: 1.5, valueFontSize: null);
+        var baseline = RenderRegionTypography(scale: 1);
+        foreach (var scale in new[] { 1.25, 1.5 })
+        {
+            var scaled = RenderRegionTypography(scale);
+            Assert.InRange(scaled.Height / (double)baseline.Height,
+                scale - 0.01, scale + 0.01);
+            var baselineGlyphs = MeasureBrightGlyphRows(baseline.Image);
+            var scaledGlyphs = MeasureBrightGlyphRows(scaled.Image);
+            Assert.Equal(3, baselineGlyphs.Count);
+            Assert.Equal(3, scaledGlyphs.Count);
+            for (var index = 0; index < 3; index++)
+            {
+                Assert.True(scaledGlyphs[index] > baselineGlyphs[index],
+                    $"Glyph row {index} did not grow at scale {scale}: " +
+                    $"{baselineGlyphs[index]}px to {scaledGlyphs[index]}px.");
+                Assert.InRange(Math.Abs(scaledGlyphs[index] - baselineGlyphs[index] * scale),
+                    0, 2);
+            }
+        }
+    }
 
-        Assert.False(defaultPixels.SequenceEqual(scaledPixels));
+    [Fact]
+    public void CanvasDefaultTileScaleGrowsMeasuredGlyphAndTileHeight()
+    {
+        var baseline = RenderRegionTypography(scale: 1, useCanvasScale: true);
+        foreach (var scale in new[] { 1.25, 1.5 })
+        {
+            var scaled = RenderRegionTypography(scale, useCanvasScale: true);
+            Assert.InRange(scaled.Height / (double)baseline.Height,
+                scale - 0.01, scale + 0.01);
+            var baselineGlyphs = MeasureBrightGlyphRows(baseline.Image);
+            var scaledGlyphs = MeasureBrightGlyphRows(scaled.Image);
+            Assert.Equal(3, baselineGlyphs.Count);
+            Assert.Equal(3, scaledGlyphs.Count);
+            for (var index = 0; index < 3; index++)
+            {
+                Assert.True(scaledGlyphs[index] > baselineGlyphs[index]);
+                Assert.InRange(Math.Abs(scaledGlyphs[index] - baselineGlyphs[index] * scale),
+                    0, 2);
+            }
+        }
     }
 
     [Fact]
     public void RegionVisualCanvasHonorsPerTileValueFontSize()
     {
-        var defaultPixels = RenderRegionTypography(textScale: null, valueFontSize: null);
-        var sizedPixels = RenderRegionTypography(textScale: null, valueFontSize: 30);
+        var defaultPixels = RenderRegionTypography(scale: 1).Image.Pixels;
+        var sizedPixels = RenderRegionTypography(scale: 1, valueFontSize: 30).Image.Pixels;
 
         Assert.False(defaultPixels.SequenceEqual(sizedPixels));
     }
 
-    private static byte[] RenderRegionTypography(double? textScale, double? valueFontSize)
+    private static (RgbaImage Image, int Height) RenderRegionTypography(
+        double scale, double? valueFontSize = null, bool useCanvasScale = false)
     {
-        var visual = new BgInfoVisualCanvas { TileHeight = 140, Transparent = true };
+        var visual = new BgInfoVisualCanvas {
+            Transparent = true,
+            TileTextScale = useCanvasScale ? scale : 1
+        };
         visual.Tiles.Add(new BgInfoVisualCanvasTile {
             Label = "HOSTNAME",
             Value = "WORKSTATION-01",
             Detail = "Windows desktop",
-            TextScale = textScale,
+            TextScale = useCanvasScale ? null : scale,
             ValueFontSize = valueFontSize
         });
 
-        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 480, 140, 1080);
-        return rendered.ToRgbaImage().Pixels.ToArray();
+        var height = BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080);
+        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 480, height, 1080);
+        return (rendered.ToRgbaImage(), height);
+    }
+
+    private static List<int> MeasureBrightGlyphRows(RgbaImage image)
+    {
+        var runs = new List<(int Start, int End)>();
+        var firstInkRow = -1;
+        var lastInkRow = -1;
+        for (var y = 0; y < image.Height; y++)
+        {
+            var pixels = 0;
+            for (var x = 50; x < image.Width - 16; x++)
+            {
+                var index = (y * image.Width + x) * 4;
+                if (image.Pixels[index + 3] > 0 &&
+                    image.Pixels[index] > 170 &&
+                    image.Pixels[index + 1] > 170 &&
+                    image.Pixels[index + 2] > 170)
+                {
+                    pixels++;
+                }
+            }
+
+            if (pixels >= 2)
+            {
+                if (firstInkRow < 0) firstInkRow = y;
+                lastInkRow = y;
+            }
+            else if (firstInkRow >= 0 && y - lastInkRow > 3)
+            {
+                runs.Add((firstInkRow, lastInkRow));
+                firstInkRow = -1;
+                lastInkRow = -1;
+            }
+        }
+
+        if (firstInkRow >= 0) runs.Add((firstInkRow, lastInkRow));
+        return runs.Select(run => run.End - run.Start + 1).ToList();
     }
 
     private static int CountDistinctFromPanel(RgbaImage pixels)

@@ -377,9 +377,11 @@ overlays with icon tiles, progress rails and mini charts. The scripts in
 `Examples/Scripts` show complete layouts:
 
 Use `-TextScale` on a tile or `-TileTextScale` on the canvas to adjust tile
-text. `New-BGInfoTheme -Scale` sets the default. For individual roles, use
-`-LabelFontSize`, `-ValueFontSize`, or `-DetailFontSize`. See
-`Examples/Run.BGInfo.TileText.ps1` for a file-only example.
+text. `New-BGInfoTheme -Scale` sets the default. Unset tile dimensions grow
+with the text; explicit dimensions stay fixed and may trigger fit diagnostics.
+For individual roles, use `-LabelFontSize`, `-ValueFontSize`, or
+`-DetailFontSize`. See `Examples/Run.BGInfo.TileText.ps1` for a file-only
+example.
 
 ![Operational charts over a wallpaper](Examples/Output/PowerBGInfo.OperationalCharts.jpg)
 

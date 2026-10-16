@@ -26,6 +26,15 @@ function Get-BGInfoTestCliPath {
     return $path
 }
 
+function Get-BGInfoTestPowerShellPath {
+    $executable = if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        'powershell.exe'
+    } else {
+        'pwsh.exe'
+    }
+    return Join-Path -Path $PSHOME -ChildPath $executable
+}
+
 function Get-ImagePixelHash {
     param(
         [string] $Path
@@ -447,6 +456,22 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $themeJson = Get-Content -LiteralPath $themePath -Raw | ConvertFrom-Json
         $themeJson.VisualCanvases[0].TileTextScale | Should -Be 1.5
 
+        $baselineTheme = New-BGInfoTheme Graphite -Mode Dark -Scale 1
+        $renderTile = New-BGInfoVisualCanvasTile -Icon PC `
+            -IconKind Computer -Label HOST -Value WK01
+        New-BGInfo {
+                New-BGInfoVisualCanvas -Tile $renderTile
+            } -Theme $baselineTheme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'theme-tile-scale-default.png' | Out-Null
+        New-BGInfo {
+                New-BGInfoVisualCanvas -Tile $renderTile
+            } -Theme $theme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'theme-tile-scale-large.png' | Out-Null
+        $baselineRender = Join-Path $TestDrive 'theme-tile-scale-default.png'
+        $scaledRender = Join-Path $TestDrive 'theme-tile-scale-large.png'
+        (Get-ImagePixelHash -Path $scaledRender) | Should -Not -Be `
+            (Get-ImagePixelHash -Path $baselineRender)
+
         $explicitTile = New-BGInfoVisualCanvasTile -Label HOST -Value WK01 `
             -TextScale 1.75
         $explicitPath = Join-Path $TestDrive 'explicit-tile-scale.json'
@@ -794,7 +819,8 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --no-apply | Out-Null
+        & $cliPath --script $scriptPath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli.png') | Should -BeTrue
     }
 
@@ -814,7 +840,8 @@ New-BGInfo {
 } -ConfigurationDirectory '$($TestDrive.Replace("'", "''"))' -Target File -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        $result = & $cliPath --script $scriptPath --export-json $exportPath --export-only
+        $result = & $cliPath --script $scriptPath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --export-json $exportPath --export-only
 
         $result | Should -Be $exportPath
         Test-Path -LiteralPath $exportPath | Should -BeTrue
@@ -841,7 +868,8 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli-module.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --module $modulePath --no-apply | Out-Null
+        & $cliPath --script $scriptPath --module $modulePath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli-module.png') | Should -BeTrue
     }
 }

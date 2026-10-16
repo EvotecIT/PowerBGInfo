@@ -20,12 +20,15 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var (tileHeight, gap) = ResolveRegionTileMetrics(visual, imageHeight);
         double total = 0;
         var count = 0;
+        BgInfoVisualCanvasTile? previous = null;
         foreach (var tile in visual.Tiles) {
-            total += tile.Height > 0 ? tile.Height : tileHeight;
+            if (previous != null) total += ResolveTileGap(visual, previous, gap);
+            total += ResolveTileHeight(visual, tile, tileHeight);
+            previous = tile;
             count++;
         }
         if (count == 0) return 1;
-        return (int)Math.Ceiling(total + gap * (count - 1));
+        return (int)Math.Ceiling(total);
     }
 
     /// <summary>Renders the tiles as one column that fills the region slot, ignoring tile sides and rail offsets.</summary>
@@ -42,7 +45,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
         var y = 0d;
         foreach (var tile in visual.Tiles) {
-            var itemHeight = tile.Height > 0 ? tile.Height : tileHeight;
+            var itemHeight = ResolveTileHeight(visual, tile, tileHeight);
             var itemWidth = tile.Width > 0 ? Math.Min(tile.Width, width) : width;
             canvas.AddInfoTileWithTextOptions(0, y, itemWidth, itemHeight,
                 Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value),
@@ -55,7 +58,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
                 MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues,
                 tile.MiniChartMaximum, ResolveTextFitPolicy(visual, tile));
-            y += itemHeight + gap;
+            y += itemHeight + ResolveTileGap(visual, tile, gap);
         }
 
         var image = new BgInfoRasterImage();

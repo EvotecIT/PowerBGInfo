@@ -169,14 +169,16 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 tile.MiniChartValues,
                 tile.MiniChartMaximum,
                 ResolveTextFitPolicy(visual, tile));
-            cursorY += tileHeight + gap;
+            cursorY += tileHeight + ResolveTileGap(visual, tile, gap);
         }
     }
 
     private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
         var width = ResolveSideTileWidth(visual, side, defaultWidth);
         foreach (var tile in visual.Tiles) {
-            if (tile.Side == side && tile.Width > width) width = tile.Width;
+            if (tile.Side != side) continue;
+            var tileWidth = ResolveTileWidth(visual, tile, defaultWidth);
+            if (tileWidth > width) width = tileWidth;
         }
 
         return width;
@@ -184,13 +186,29 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
     private static double ResolveTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultWidth) {
         if (tile.Width > 0) return tile.Width;
-        return ResolveSideTileWidth(visual, tile.Side, defaultWidth);
+        if (HasExplicitSideTileWidth(visual, tile.Side)) {
+            return ResolveSideTileWidth(visual, tile.Side, defaultWidth);
+        }
+
+        return defaultWidth * ResolveTileTextScale(visual, tile);
     }
 
     private static double ResolveTileHeight(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultHeight) {
         if (tile.Height > 0) return tile.Height;
-        return visual.TileHeight > 0 ? visual.TileHeight : defaultHeight;
+        return visual.TileHeight > 0 ? visual.TileHeight : defaultHeight * ResolveTileTextScale(visual, tile);
     }
+
+    private static bool HasExplicitSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side) =>
+        visual.TileWidth > 0 ||
+        (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) ||
+        (side == BgInfoVisualCanvasSide.Right && visual.RightTileWidth > 0) ||
+        (side == BgInfoVisualCanvasSide.Center && visual.CenterTileWidth > 0);
+
+    private static double ResolveTileTextScale(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile) =>
+        tile.TextScale ?? visual.TileTextScale;
+
+    private static double ResolveTileGap(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultGap) =>
+        visual.TileGap > 0 ? visual.TileGap : defaultGap * ResolveTileTextScale(visual, tile);
 
     private static double ResolveSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
         if (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) return visual.LeftTileWidth;

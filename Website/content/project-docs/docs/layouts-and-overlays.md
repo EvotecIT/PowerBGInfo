@@ -34,12 +34,19 @@ Tile text follows the `New-BGInfoTheme -Scale` value. Set
 `-TileTextScale` on `New-BGInfoVisualCanvas` to change every tile, or set
 `-TextScale` on one `New-BGInfoVisualCanvasTile`. Per-role
 `-LabelFontSize`, `-ValueFontSize`, and `-DetailFontSize` set individual
-sizes. For example:
+sizes. When tile dimensions are omitted, their default width, height and gap
+grow or shrink with the text. Explicit dimensions stay fixed; the fit policy
+can then reduce text or trim detail and report the adjustment. For example:
 
 ```powershell
+$data = [pscustomobject] @{
+    Processor = 'Intel Core i7'
+    Detail = 'Average load 23%'
+}
 $tile = New-BGInfoVisualCanvasTile -Side Right -Label 'PROCESSOR' `
-    -Value 'Intel Core i7' -Detail 'Average load 23%' -TextScale 1.25
-New-BGInfo -Theme (New-BGInfoTheme Graphite -Scale 1.25) -Target File {
+    -Value $data.Processor -Detail $data.Detail -TextScale 1.25
+$theme = New-BGInfoTheme Graphite -Scale 1.25
+New-BGInfo -Theme $theme -Target File {
     New-BGInfoVisualCanvas -Tile $tile
 }
 ```

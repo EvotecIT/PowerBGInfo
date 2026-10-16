@@ -15,7 +15,7 @@ param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+Import-Module PowerBGInfo -Force
 
 $data = [pscustomobject] @{
     HostName = 'DEV-WKS-01'
@@ -40,6 +40,6 @@ $tiles = @(
 
 New-BGInfo -Theme $look -Target File -FilePath $BackgroundPath {
     New-BGInfoVisualCanvas -Width $Width -Height $Height `
-        -TileWidth 520 -Tile $tiles
+        -Tile $tiles
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName $outputName
