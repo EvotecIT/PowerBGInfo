@@ -6,8 +6,12 @@
 param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output\Showcase'),
     [int] $Width = 1920,
-    [int] $Height = 1080
+    [int] $Height = 1080,
+    [string] $SourceCommit = ''
 )
+
+if (-not $SourceCommit) { $SourceCommit = (git -C $PSScriptRoot rev-parse HEAD).Trim() }
+if ($LASTEXITCODE -ne 0 -or $SourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'SourceCommit must be the full Git commit SHA used to render the showcase.' }
 
 $scenarios = @(
     [ordered]@{
@@ -87,8 +91,9 @@ $renders = foreach ($scenario in $scenarios) {
 }
 
 $manifest = [ordered]@{
-    generator = 'PowerBGInfo'
-    renders   = @($renders)
+    generator    = 'PowerBGInfo'
+    sourceCommit = $SourceCommit
+    renders      = @($renders)
 }
 $manifestPath = Join-Path $OutputDirectory 'manifest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath
