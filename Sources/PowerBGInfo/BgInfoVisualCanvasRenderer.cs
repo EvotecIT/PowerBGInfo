@@ -147,7 +147,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                     tileX = x;
                     break;
             }
-            canvas.AddInfoTile(
+            canvas.AddInfoTileWithTextOptions(
                 tileX,
                 cursorY,
                 tileWidth,
@@ -155,12 +155,12 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Icon),
                 Resolve(tile.Label),
                 Resolve(tile.Value),
-                Resolve(tile.Detail),
                 new VisualCanvasInfoTileTextOptions(
                     textScale: tile.TextScale ?? visual.TileTextScale,
                     labelFontSize: tile.LabelFontSize,
                     valueFontSize: tile.ValueFontSize,
                     detailFontSize: tile.DetailFontSize),
+                Resolve(tile.Detail),
                 tile.Accent,
                 tile.Progress,
                 MapSurfaceStyle(tile.SurfaceStyle),
