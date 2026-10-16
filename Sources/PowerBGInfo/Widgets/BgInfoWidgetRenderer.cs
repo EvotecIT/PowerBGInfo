@@ -52,6 +52,7 @@ internal sealed class BgInfoWidgetStyle {
         colors.MutedForeground = Muted;
         colors.Accent = Accent;
         colors.SecondaryAccent = SecondaryAccent;
+        colors.Info = Status.Info;
         colors.Positive = Status.Ok;
         colors.Warning = Status.Warning;
         colors.Negative = Status.Critical;
