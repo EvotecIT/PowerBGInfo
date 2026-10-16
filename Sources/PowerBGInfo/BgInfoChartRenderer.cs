@@ -210,7 +210,7 @@ internal static class BgInfoChartRenderer {
             .WithPictorialShape(ResolvePictorialShape(chart.PictorialSymbol));
 
         if (chart.Palette.Count > 0) {
-            plot.WithTheme(plot.Options.Theme.WithPalette(chart.Palette.ToArray()));
+            plot.WithTheme(plot.Options.Theme.WithPalette(chart.Palette.ToArray()), chart.ThemeMode);
         }
         if (chart.DonutInnerRadiusRatio.HasValue) {
             plot.WithDonutInnerRadiusRatio(chart.DonutInnerRadiusRatio.Value);

@@ -52,6 +52,10 @@ $result = Invoke-Pester -Path @(
     "$PSScriptRoot\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1"
 ) -Verbose -PassThru
 
-if ($result.Result -ne 'Passed' -or $result.FailedCount -gt 0 -or $result.FailedBlocksCount -gt 0 -or $result.FailedContainersCount -gt 0) {
-    throw "PowerBGInfo tests failed: $($result.FailedCount) tests, $($result.FailedBlocksCount) blocks, $($result.FailedContainersCount) containers."
+$failedCount = if ($result.PSObject.Properties.Name -contains 'FailedCount') { [int]$result.FailedCount } else { 0 }
+$failedBlocksCount = if ($result.PSObject.Properties.Name -contains 'FailedBlocksCount') { [int]$result.FailedBlocksCount } else { 0 }
+$failedContainersCount = if ($result.PSObject.Properties.Name -contains 'FailedContainersCount') { [int]$result.FailedContainersCount } else { 0 }
+$failedResult = $result.PSObject.Properties.Name -contains 'Result' -and $result.Result -ne 'Passed'
+if ($failedResult -or $failedCount -gt 0 -or $failedBlocksCount -gt 0 -or $failedContainersCount -gt 0) {
+    throw "PowerBGInfo tests failed: $failedCount tests, $failedBlocksCount blocks, $failedContainersCount containers."
 }
