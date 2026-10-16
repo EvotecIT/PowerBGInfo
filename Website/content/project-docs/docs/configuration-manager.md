@@ -1,8 +1,12 @@
-# Deploying PowerBGInfo with Configuration Manager
+---
+title: "Deploy PowerBGInfo with Configuration Manager"
+description: "Install PowerBGInfo and register its refresh task with a Configuration Manager application, a package and program, or Run Scripts."
+layout: docs
+---
 
 Configuration Manager installs the module and the script and registers the
 scheduled task. It does not run the wallpaper itself at every sign-in;
-the task from [TaskScheduler.md](TaskScheduler.md) does that.
+the task from [Task Scheduler](../task-scheduler/) does that.
 
 ## When to use this route
 
@@ -11,7 +15,7 @@ the task from [TaskScheduler.md](TaskScheduler.md) does that.
 
 ## Prerequisites
 
-- The source folder from [Intune.md](Intune.md), step 1: `Install.ps1`,
+- The source folder from [Microsoft Intune](../intune/#step-1-build-the-win32-app), step 1: `Install.ps1`,
   `Uninstall.ps1`, `Register-BGInfoTask.ps1`, the saved module and the
   scripts. The same files work for both tools.
 - A content source share that the site server's computer account can read.
@@ -30,7 +34,8 @@ the task from [TaskScheduler.md](TaskScheduler.md) does that.
 
    **Uninstall program**: the same with `.\Uninstall.ps1`.
 4. **Detection method**: the folder
-   `C:\Program Files\WindowsPowerShell\Modules\PowerBGInfo\2.1.0` exists
+   `C:\Program Files\WindowsPowerShell\Modules\PowerBGInfo\<version>`, the
+   version folder you packaged, exists
    and the file `C:\Program Files\PowerBGInfo\Set-BGInfoWallpaper.ps1`
    exists. Clear **This file or folder is associated with a 32-bit
    application on 64-bit systems**.
@@ -78,7 +83,7 @@ On a client, in `C:\Windows\CCM\Logs`:
 | `AppDiscovery.log` | Detection results |
 | `Scripts.log` | Run Scripts executions |
 
-Then run the checks from [TaskScheduler.md](TaskScheduler.md).
+Then run the checks from [Task Scheduler](../task-scheduler/).
 
 ## Pitfalls
 

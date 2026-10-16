@@ -1,4 +1,8 @@
-# Running PowerBGInfo with Task Scheduler
+---
+title: "Run PowerBGInfo with Task Scheduler"
+description: "Refresh the PowerBGInfo wallpaper at sign-in, at unlock and on a timer with a scheduled task for every user, and render machine images as SYSTEM."
+layout: docs
+---
 
 Task Scheduler is the most direct way to refresh a wallpaper: it can start
 the script at sign-in, at unlock and on a timer, in the user's own session.
@@ -14,7 +18,7 @@ task.
 ## Prerequisites
 
 - The module installed for all users and `Set-BGInfoWallpaper.ps1` from
-  [Production.md](Production.md) in `C:\Program Files\PowerBGInfo`.
+  [Run in production](../deployment/) in `C:\Program Files\PowerBGInfo`.
 - An elevated session to register a task for all users. The task itself
   runs without elevation.
 - Windows PowerShell 5.1 or PowerShell 7. The examples use
@@ -92,7 +96,7 @@ What the pieces do:
   `StateChange = 8` (`TASK_SESSION_UNLOCK`). `New-ScheduledTaskTrigger` has
   no parameter for it, so the trigger is created from its CIM class. Other
   values: `1` console connect, `3` remote connect (useful on
-  [Remote Desktop](RemoteDesktop.md) hosts), `7` lock.
+  [Remote Desktop](../remote-desktop/) hosts), `7` lock.
 - A `-Once` trigger with `-RepetitionInterval` and no
   `-RepetitionDuration` repeats indefinitely.
 - `New-ScheduledTaskSettingsSet` defaults to *not* starting on battery and
@@ -100,7 +104,8 @@ What the pieces do:
   The switches above change both.
 - `-ExecutionPolicy Bypass` on the command line does not override an
   execution policy set by Group Policy. In an `AllSigned` environment, sign
-  the script and the module instead (see [Security.md](Security.md)).
+  your scripts and trust the module's publisher (see
+  [Security and operations](../security/#script-signing-and-allsigned)).
 - `-WindowStyle Hidden` hides the console once PowerShell starts; a window
   can still flash briefly.
 
@@ -113,8 +118,8 @@ $shell = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
 ## Step 2 (optional): a machine-level task as SYSTEM
 
 Use this for images that are not per-user: a lock screen image that a
-policy points at (see [GroupPolicy.md](GroupPolicy.md) and
-[Intune.md](Intune.md)), or a staged default wallpaper. Save this as
+policy points at (see [Group Policy](../group-policy/) and
+[Microsoft Intune](../intune/)), or a staged default wallpaper. Save this as
 `C:\Program Files\PowerBGInfo\Set-BGInfoMachineImage.ps1`:
 
 ```powershell
@@ -132,7 +137,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module -Name PowerBGInfo
 $facts = Get-BGInfoSystemInfo
-$scale = [Math]::Round($Height / 1080, 2)
+$scale = [int]($Height / 10.8) / 100
 
 New-BGInfo -Theme (New-BGInfoTheme -Preset Corporate -Scale $scale) `
     -Target File -ConfigurationDirectory $OutputDirectory `

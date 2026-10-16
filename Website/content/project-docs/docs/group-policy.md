@@ -1,4 +1,8 @@
-# Deploying PowerBGInfo with Group Policy
+---
+title: "Deploy PowerBGInfo with Group Policy"
+description: "Install PowerBGInfo with a startup script, refresh it with a Group Policy Preferences scheduled task or a logon script, and set the execution policy, wallpaper and lock screen policies."
+layout: docs
+---
 
 Group Policy can install the module, register the refresh task, set the
 PowerShell execution policy and, on Enterprise and Education editions,
@@ -15,7 +19,7 @@ force a lock screen image that PowerBGInfo renders.
 - Group Policy Management Console and rights to edit and link a GPO.
 - A share that computer accounts can read (for example under `SYSVOL` or
   `NETLOGON`) holding a saved copy of the module (`Save-Module`, see
-  [Production.md](Production.md)) and `Set-BGInfoWallpaper.ps1`.
+  [Run in production](../deployment/)) and `Set-BGInfoWallpaper.ps1`.
 - For the lock screen policy: Windows Enterprise, Education or Server.
 
 ## Step 1: install the module and the script
@@ -26,9 +30,11 @@ Use your software distribution tool, or a computer startup script
 as the computer account, before anyone signs in.
 
 ```powershell
-# Startup script: installs a pinned PowerBGInfo and the wallpaper script.
-$version = '2.1.0'   # replace with the version you tested
+# Startup script: installs the staged PowerBGInfo and the wallpaper script.
 $share = '\\contoso.com\NETLOGON\PowerBGInfo'
+# The share holds one tested version, saved with Save-Module.
+$version = (Get-ChildItem "$share\Module\PowerBGInfo" -Directory |
+    Select-Object -First 1).Name
 $programFiles = if ($env:ProgramW6432) { $env:ProgramW6432 } else {
     $env:ProgramFiles
 }
@@ -52,7 +58,7 @@ script writes to the right place whichever PowerShell runs it.
 ## Step 2, option A (recommended): a Preferences scheduled task
 
 A Group Policy Preferences scheduled task gives you the logon and unlock
-triggers from [TaskScheduler.md](TaskScheduler.md) without a registration
+triggers from [Task Scheduler](../task-scheduler/) without a registration
 script.
 
 1. Edit the GPO linked to the computers. Go to **Computer Configuration >
@@ -87,7 +93,7 @@ script.
    and deletes the task when the GPO no longer applies.
 
 The task editor in the Group Policy Management Editor is the Task Scheduler
-editor, so the options match [TaskScheduler.md](TaskScheduler.md).
+editor, so the options match [Task Scheduler](../task-scheduler/).
 
 An **Immediate Task (At least Windows 7)** runs once when Group Policy
 refreshes and is then removed. That suits a one-off machine render as
@@ -135,9 +141,12 @@ PowerShell 7 setting can defer to the Windows PowerShell one.
 
 A policy set here overrides every other scope, including
 `-ExecutionPolicy Bypass` on the task's command line. With **Allow only
-signed scripts**, sign `Set-BGInfoWallpaper.ps1` and check that the module
-files are signed by a publisher the machines trust (see
-[Security.md](Security.md)).
+signed scripts**, sign `Set-BGInfoWallpaper.ps1` and your other scripts.
+PowerBGInfo itself is signed by Evotec; add its publisher certificate to
+**Computer Configuration > Policies > Windows Settings > Security Settings >
+Public Key Policies > Trusted Publishers** in the same GPO, so tasks never
+stop at the untrusted-publisher prompt (see
+[Security and operations](../security/#script-signing-and-allsigned)).
 
 ## The Desktop Wallpaper policy
 
@@ -156,7 +165,7 @@ applied again at the latest at the next sign-in. If you need an enforced
 wallpaper, let PowerBGInfo produce the file and let the policy show it:
 
 1. Run `Set-BGInfoMachineImage.ps1` from
-   [TaskScheduler.md](TaskScheduler.md) as SYSTEM with
+   [Task Scheduler](../task-scheduler/) as SYSTEM with
    `-OutputFileName Wallpaper.jpg`.
 2. Point the policy at `C:\ProgramData\PowerBGInfo\Wallpaper.jpg`.
 
@@ -172,15 +181,17 @@ and the sign-in screen. Microsoft documents that it **only applies to
 Enterprise, Education and Server editions**. Pair it with **Prevent
 changing lock screen and logon image** so users keep that image.
 
-1. Register the SYSTEM task from [TaskScheduler.md](TaskScheduler.md)
+1. Register the SYSTEM task from [Task Scheduler](../task-scheduler/)
    (startup and daily) to render `C:\ProgramData\PowerBGInfo\LockScreen.jpg`
    with `-Target File`.
 2. Set the policy to `C:\ProgramData\PowerBGInfo\LockScreen.jpg`.
 
 PowerBGInfo's own `-Target LogonScreen` writes the same registry value
 (`HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization\LockScreenImage`)
-in its fallback path. Do not use both: the GPO owns that value and
-overwrites it.
+whenever it runs in PowerShell 7, and in Windows PowerShell 5.1 when the
+lock screen API fails (see
+[Run in production](../deployment/#lock-screen)). Do not use both: the GPO
+owns that value and overwrites it.
 
 An archived Microsoft support blog (2018) describes how the sign-in screen
 caches this image: it reloads the file only when its last-modified time is
@@ -209,7 +220,7 @@ Then sign in as a test user and check
 - **Two wallpaper owners.** The Desktop Wallpaper policy, a Personalization
   CSP from Intune or a theme from another tool all override PowerBGInfo.
 - **The lock screen policy on Pro.** It is ignored; see
-  [Troubleshooting.md](Troubleshooting.md).
+  [Troubleshooting](../troubleshooting/).
 
 ## Further reading
 

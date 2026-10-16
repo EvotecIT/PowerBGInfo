@@ -1,9 +1,13 @@
-# Deploying PowerBGInfo with Microsoft Intune
+---
+title: "Deploy PowerBGInfo with Microsoft Intune"
+description: "Package PowerBGInfo as a Win32 app that installs the module and registers the refresh task, and use platform scripts, Remediations and the Personalization CSP around it."
+layout: docs
+---
 
 Intune has no setting that runs a script at every sign-in and unlock, so
 the dependable pattern is a Win32 app: it installs the module and the
 script, and registers the scheduled task from
-[TaskScheduler.md](TaskScheduler.md). Platform scripts, Remediations and
+[Task Scheduler](../task-scheduler/). Platform scripts, Remediations and
 the Personalization CSP cover the cases around it.
 
 ## When to use this route
@@ -11,7 +15,7 @@ the Personalization CSP cover the cases around it.
 - Microsoft Entra joined or hybrid joined Windows devices enrolled in
   Intune.
 - Azure Virtual Desktop multi-session and Windows 365 Cloud PCs managed by
-  Intune (see [RemoteDesktop.md](RemoteDesktop.md)).
+  Intune (see [Remote Desktop](../remote-desktop/)).
 
 ## Prerequisites
 
@@ -48,10 +52,10 @@ Lay out a source folder:
 C:\Packages\PowerBGInfo\
     Install.ps1
     Uninstall.ps1
-    Register-BGInfoTask.ps1        from TaskScheduler.md, step 1
-    Modules\PowerBGInfo\2.1.0\...  from Save-Module
-    Scripts\Set-BGInfoWallpaper.ps1  from Production.md
-    Scripts\Corporate.jpg          optional base image
+    Register-BGInfoTask.ps1            the Task Scheduler guide, step 1
+    Modules\PowerBGInfo\<version>\...  Save-Module of the tested version
+    Scripts\Set-BGInfoWallpaper.ps1    the reference script
+    Scripts\Corporate.jpg              optional base image
 ```
 
 `Install.ps1`:
@@ -59,12 +63,14 @@ C:\Packages\PowerBGInfo\
 ```powershell
 # Install.ps1: runs as SYSTEM from the Win32 app, in 64-bit PowerShell.
 $ErrorActionPreference = 'Stop'
-$version = '2.1.0'   # the version saved under .\Modules
+# The one version saved under .\Modules\PowerBGInfo.
+$saved = Join-Path $PSScriptRoot 'Modules\PowerBGInfo'
+$version = (Get-ChildItem $saved -Directory | Select-Object -First 1).Name
 
 $modules = Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'
 $moduleTarget = Join-Path $modules 'PowerBGInfo'
 New-Item -ItemType Directory -Path $moduleTarget -Force | Out-Null
-$moduleSource = Join-Path $PSScriptRoot "Modules\PowerBGInfo\$version"
+$moduleSource = Join-Path $saved $version
 Copy-Item -Path $moduleSource -Destination $moduleTarget -Recurse -Force
 
 $scriptTarget = Join-Path $env:ProgramFiles 'PowerBGInfo'
@@ -80,7 +86,8 @@ exit 0
 
 ```powershell
 # Uninstall.ps1: removes the task, the script folder and this version.
-$version = '2.1.0'
+$saved = Join-Path $PSScriptRoot 'Modules\PowerBGInfo'
+$version = (Get-ChildItem $saved -Directory | Select-Object -First 1).Name
 Get-ScheduledTask -TaskPath '\PowerBGInfo\' -ErrorAction SilentlyContinue |
     Unregister-ScheduledTask -Confirm:$false
 $scriptFolder = Join-Path $env:ProgramFiles 'PowerBGInfo'
@@ -130,7 +137,8 @@ IntuneWinAppUtil.exe -c 'C:\Packages\PowerBGInfo' `
 - **Install behavior**: **System**.
 - **Detection rules**: manually configure, rule type **File**:
   - Path: `C:\Program Files\WindowsPowerShell\Modules\PowerBGInfo`
-  - File or folder: `2.1.0`
+  - File or folder: the version folder you packaged (the name under
+    `Modules\PowerBGInfo`)
   - Detection method: **File or folder exists**
   - Associated with a 32-bit app on 64-bit clients: **No**
 
@@ -140,8 +148,9 @@ IntuneWinAppUtil.exe -c 'C:\Packages\PowerBGInfo' `
 - **Assignments**: **Required** to device groups.
 
 When you ship a new module version or script, create a new app with the
-new version in `Install.ps1` and the detection rule, and use
-**Supersedence** to replace the old one.
+new version folder and a matching detection rule, and use
+**Supersedence** to replace the old one. `Install.ps1` picks up whichever
+version folder the package holds.
 
 ## Alternative: platform scripts
 
@@ -230,7 +239,7 @@ Pro as well; the edition note is the one that applies.
 
 To show a PowerBGInfo image this way, render it on the device as SYSTEM
 with `Set-BGInfoMachineImage.ps1` from
-[TaskScheduler.md](TaskScheduler.md) and point the URL at the file, for
+[Task Scheduler](../task-scheduler/) and point the URL at the file, for
 example `file:///C:/ProgramData/PowerBGInfo/LockScreen.jpg`. Microsoft does
 not show the exact file URL format, and the status values say the CSP
 downloads or copies the image; it does not document whether it copies the
@@ -244,7 +253,7 @@ its image.
 
 ## Settings catalog equivalents of the Group Policy settings
 
-These Administrative Template settings from [GroupPolicy.md](GroupPolicy.md)
+These Administrative Template settings from [Group Policy](../group-policy/)
 are ADMX-backed policies that the settings catalog exposes:
 
 | Group Policy setting | Policy CSP | Scope |

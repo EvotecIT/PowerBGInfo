@@ -4,7 +4,7 @@ description: "Add compact ChartForgeX visuals to a PowerBGInfo wallpaper."
 layout: docs
 ---
 
-PowerBGInfo 2.x can composite ChartForgeX-backed charts and topology into the generated wallpaper. This works well for a small CPU or capacity trend, service ownership, a lab route, or a build target.
+PowerBGInfo composites ChartForgeX-backed charts and topology into the generated wallpaper. This works well for a small CPU or capacity trend, service ownership, a lab route, or a build target.
 
 Start from the maintained repository examples:
 

@@ -1,14 +1,30 @@
 ---
-title: "Layouts, charts, and topology"
-description: "Compose PowerBGInfo values, visual-canvas tiles, charts, and topology on Windows backgrounds."
+title: "Layouts, themes, widgets and charts"
+description: "Compose PowerBGInfo values, themes, layout regions, widgets, charts and topology on Windows backgrounds."
 layout: docs
 ---
 
 Start with the information a person needs while looking at the desktop. A useful background answers identity, ownership, purpose, support, or current-state questions at a glance; it does not need to become a full dashboard.
 
+## Data first
+
+Collect the data in one place and only draw it in the `New-BGInfo` block. `Get-BGInfoSystemInfo` returns the facts support asks for first as one plain object, and `Invoke-BGInfoDataSource` runs your own collection code with a time limit and a fallback value, so a slow or broken source never blocks sign-in. `Examples/Run.BGInfo.Template.ps1` is a copy-and-fill starting point.
+
 ## Text and sections
 
 Use `New-BGInfoValue` for built-in or custom data and `New-BGInfoLabel` for section headings. Parent settings on `New-BGInfo` provide consistent font, color, spacing, and wrapping defaults, while individual values can override them.
+
+## Themes and backgrounds
+
+`New-BGInfo -Theme` gives text, panels, charts, diagrams, tiles, widgets and the backdrop one look; parameters you set yourself always win. There are six presets in light and dark, and `New-BGInfoTheme` customizes accent, surface, corner radius, font and scale. `New-BGInfoBackground` paints a generated backdrop at the monitor size, optionally over a corporate image with a scrim.
+
+## Layout regions
+
+`-Region Left`, `Right`, `Top`, `Bottom` and `Center` flow panels into named areas instead of fixed coordinates, so one script fits 1920x1080, 2560x1440, ultrawide and portrait screens. `New-BGInfoLayout` sets margins, gaps, column width, the taskbar reserve and the desktop-icon area.
+
+## Widgets
+
+`New-BGInfoMetric`, `New-BGInfoTable`, `New-BGInfoList`, `New-BGInfoCalendarHeatmap`, `New-BGInfoTimeline`, `New-BGInfoTreemap`, `New-BGInfoMermaid` and `New-BGInfoQRCode` share the panel, header, placement and theme of the other panels. `-WarningThreshold` and `-CriticalThreshold` colour values by status.
 
 ## Images and tiles
 
