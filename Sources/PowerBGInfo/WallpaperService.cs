@@ -1,5 +1,4 @@
 using DesktopManager;
-using Microsoft.Win32;
 
 #if NET5_0_OR_GREATER
 using System.Runtime.Versioning;
@@ -55,6 +54,9 @@ public class WallpaperService : IWallpaperService
 
     private Monitors Monitors => _monitors ??= new Monitors();
 
+    /// <summary>Receives warnings, for example when the lock screen fallback is used on an edition that ignores it.</summary>
+    public Action<string>? Warning { get; set; }
+
     /// <summary>
     /// Sets the wallpaper for a monitor with the specified position mode.
     /// </summary>
@@ -76,10 +78,13 @@ public class WallpaperService : IWallpaperService
 #endif
     public void SetLogonWallpaper(string filePath)
     {
-        try {
-            Monitors.SetLogonWallpaper(filePath);
-        } catch (InvalidOperationException ex) when (IsWinRtMissing(ex)) {
-            SetLogonWallpaperFallback(filePath);
+        // DesktopManager tries the WinRT lock screen API and, when it is not reachable, writes the policy value
+        // itself. Under PowerShell 7 it never is: the module loads DesktopManager's netstandard2.0 build.
+        var usesPolicyValue = !LockScreenPolicy.IsLockScreenApiAvailable();
+        Monitors.SetLogonWallpaper(filePath);
+        if (usesPolicyValue) {
+            var warning = LockScreenPolicy.GetEditionWarning(LockScreenPolicy.ReadEditionId());
+            if (warning != null) Warning?.Invoke(warning);
         }
     }
 
@@ -116,21 +121,4 @@ public class WallpaperService : IWallpaperService
         Monitors.StartWallpaperSlideshow(filePaths, options, slideshowTick);
     }
 
-    private static bool IsWinRtMissing(InvalidOperationException ex)
-    {
-        return ex.Message.Contains("LockScreen type not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("StorageFile type not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("GetFileFromPathAsync method not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("SetImageFileAsync method not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("AsTask method not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("GetImageStream method not found", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("AsStreamForRead method not found", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static void SetLogonWallpaperFallback(string filePath)
-    {
-        using RegistryKey? key = Registry.LocalMachine.CreateSubKey(
-            @"SOFTWARE\Policies\Microsoft\Windows\Personalization");
-        key?.SetValue("LockScreenImage", filePath, RegistryValueKind.String);
-    }
 }

@@ -23,7 +23,7 @@ public static class BgInfoRunner {
         if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
         var imageService = new ImageService();
-        var wallpaperService = new WallpaperService();
+        var wallpaperService = new WallpaperService { Warning = warning };
         var generator = new BgInfoGenerator(imageService, wallpaperService) { Warning = warning };
         return generator.Generate(configuration);
     }
