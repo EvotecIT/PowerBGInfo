@@ -274,6 +274,13 @@ Describe 'Widget cmdlets' {
     }
 }
 
+Describe 'Per-monitor example' {
+    It 'validates the requested output target before running' {
+        $example = Join-Path $PSScriptRoot '..\..\Examples\Run.BGInfo.PerMonitor.ps1'
+        { & $example -Target Invalid } | Should -Throw
+    }
+}
+
 Describe 'Data helpers' {
     It 'returns system facts as one plain object without throwing' {
         $facts = Get-BGInfoSystemInfo
@@ -355,11 +362,19 @@ Describe 'Repeated runs' {
         Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
     }
 
-    It 'warns instead of stacking when the original is not recorded' {
+    It 'keeps an explicit in-place image when its original record is missing' {
         $first = Invoke-Render $base 'again.png'
         Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
-        Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
-        $warnings | Should -Match 'drawn twice'
+        $second = Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue
+        $warnings | Should -BeNullOrEmpty
+        $record = Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Where-Object { $_.StartsWith('again.png|') }
+        $source = $record.Substring('again.png|'.Length)
+        $source | Should -Not -Be $second
+        Test-Path -LiteralPath $source | Should -BeTrue
+
+        $hash = (Get-FileHash -LiteralPath $second).Hash
+        $third = Invoke-Render $second 'again.png'
+        (Get-FileHash -LiteralPath $third).Hash | Should -Be $hash
     }
 }
 

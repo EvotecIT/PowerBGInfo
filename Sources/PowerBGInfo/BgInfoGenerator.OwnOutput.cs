@@ -20,6 +20,7 @@ public partial class BgInfoGenerator
     /// overwrites; any other image, even one PowerBGInfo rendered, is used as given. The current wallpaper and slideshow
     /// images are replaced whenever PowerBGInfo wrote them.
     /// </param>
+    /// <param name="knownOutputPaths">Additional generated paths recognized by a caller, such as the current slideshow entries.</param>
     internal string? ResolveOriginalImage(string? candidate, string? plannedOutputPath, string role, bool chosenByUser,
         ISet<string>? knownOutputPaths = null)
     {
@@ -55,6 +56,16 @@ public partial class BgInfoGenerator
         WriteWarning($"{role} '{candidate}' is an image PowerBGInfo wrote earlier, and the image it was drawn on is not recorded. "
             + "It is not used, so the text is not drawn twice. Pass -FilePath or New-BGInfoBackground to choose the base image.");
         return null;
+    }
+
+    private static string PreserveInPlaceBaseImage(string sourcePath, string outputPath)
+    {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
+        var name = Path.GetFileNameWithoutExtension(outputPath);
+        var extension = Path.GetExtension(outputPath);
+        var backupPath = Path.Combine(directory, $"{name}.PowerBGInfo-original-{Guid.NewGuid():N}{extension}");
+        File.Copy(sourcePath, backupPath);
+        return backupPath;
     }
 
     private void WriteWarning(string message) => Warning?.Invoke(message);

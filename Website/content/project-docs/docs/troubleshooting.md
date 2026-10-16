@@ -129,6 +129,8 @@ Behaviour differences:
   later runs on the original it recorded, not on its own output. A fixed
   base is still the predictable choice (see
   [Run in production](../deployment/#the-image-size-and-the-base-image)).
+  When `-FilePath` and `-OutputFileName` point to the same image, PowerBGInfo
+  keeps an adjacent copy of the original as the base for later runs.
 
 ## Does it work on Server Core?
 

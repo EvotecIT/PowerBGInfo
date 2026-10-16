@@ -116,9 +116,9 @@ public class BgInfoOwnOutputTests
         var photo = folder.CreateImage("photo.png", ChartColors.Navy);
         var first = Render(folder, null, "wallpaper.png", out _, filePath: photo);
         var firstPixels = Pixels(first);
+        Assert.Equal(photo, ReadRecordedSource(first));
 
         var second = Render(folder, null, "wallpaper.png", out _, filePath: first);
-
         Assert.Equal(firstPixels, Pixels(second));
         Assert.Equal(photo, ReadRecordedSource(second));
     }
@@ -133,8 +133,50 @@ public class BgInfoOwnOutputTests
         File.Delete(Path.Combine(folder.Path, BgInfoOutputRegistry.FileName));
 
         var second = Render(folder, null, "wallpaper.png", out _, filePath: first);
+        var secondPixels = Pixels(second);
+        var preservedSource = ReadRecordedSource(second);
+        var third = Render(folder, null, "wallpaper.png", out _, filePath: second);
 
+        Assert.NotEqual(firstPixels, secondPixels);
+        Assert.NotEqual(second, preservedSource);
+        Assert.True(File.Exists(preservedSource));
+        Assert.Equal(secondPixels, Pixels(third));
+    }
+
+    [Fact]
+    public void UnrecordedInPlaceOutputKeepsItsOriginalBaseOnLaterRuns()
+    {
+        using var folder = new TempFolder();
+        var original = folder.CreateImage("in-place.png", ChartColors.Navy);
+
+        var first = Render(folder, null, "in-place.png", out _, filePath: original);
+        var firstPixels = Pixels(first);
+        var preservedSource = ReadRecordedSource(first);
+
+        var second = Render(folder, null, "in-place.png", out _, filePath: first);
+
+        Assert.NotEqual(original, preservedSource);
+        Assert.True(File.Exists(preservedSource));
+        Assert.Equal(first, second);
         Assert.Equal(firstPixels, Pixels(second));
+        Assert.Equal(preservedSource, ReadRecordedSource(second));
+    }
+
+    [Fact]
+    public void InPlaceBackupDoesNotOverwriteAnExistingAdjacentFile()
+    {
+        using var folder = new TempFolder();
+        var original = folder.CreateImage("in-place.png", ChartColors.Navy);
+        var originalPixels = Pixels(original);
+        var existing = folder.CreateImage("in-place.PowerBGInfo-original.png", ChartColors.DarkGreen);
+        var existingPixels = Pixels(existing);
+
+        var output = Render(folder, null, "in-place.png", out _, filePath: original);
+        var recordedSource = ReadRecordedSource(output);
+
+        Assert.NotEqual(existing, recordedSource);
+        Assert.Equal(existingPixels, Pixels(existing));
+        Assert.Equal(originalPixels, Pixels(recordedSource!));
     }
 
     [Fact]

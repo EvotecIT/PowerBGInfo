@@ -9,6 +9,8 @@
 param(
     [ValidateSet('Light', 'Dark')]
     [string] $Theme = 'Dark',
+    [ValidateSet('File', 'Wallpaper')]
+    [string] $Target = 'File',
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output\PerMonitor')
 )
 
@@ -29,7 +31,7 @@ foreach ($monitor in $monitors) {
     }
     $render = @{
         Theme                  = New-BGInfoTheme Graphite -Mode $Theme -Scale $scale
-        Target                 = 'File'
+        Target                 = $Target
         MonitorIndex           = $monitor.Index
         WallpaperFit           = 'Fill'
         ConfigurationDirectory = $OutputDirectory
