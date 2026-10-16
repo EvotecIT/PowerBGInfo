@@ -14,8 +14,12 @@ param(
     [string[]] $Scenario = @(),
     [switch] $NoExtraSizes,
     # Renders use one culture so day names and numbers match the website.
-    [string] $Culture = 'en-US'
+    [string] $Culture = 'en-US',
+    [string] $SourceCommit = ''
 )
+
+if (-not $SourceCommit) { $SourceCommit = (git -C $PSScriptRoot rev-parse HEAD).Trim() }
+if ($LASTEXITCODE -ne 0 -or $SourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'SourceCommit must be the full Git commit SHA used to render the showcase.' }
 
 $scenarios = @(
     [ordered]@{
@@ -267,8 +271,9 @@ try {
 }
 
 $manifest = [ordered]@{
-    generator = 'PowerBGInfo'
-    renders   = @($renders)
+    generator    = 'PowerBGInfo'
+    sourceCommit = $SourceCommit
+    renders      = @($renders)
 }
 $manifestPath = Join-Path $OutputDirectory 'manifest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath
