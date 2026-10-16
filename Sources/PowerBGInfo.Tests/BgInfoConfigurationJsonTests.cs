@@ -574,6 +574,48 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal("LIGHTWEIGHT", feature.Label);
     }
 
+    [Theory]
+    [InlineData("TileTextScale", 4.01)]
+    [InlineData("TextScale", 0.49)]
+    [InlineData("LabelFontSize", 0.99)]
+    [InlineData("ValueFontSize", 256.01)]
+    [InlineData("DetailFontSize", double.NaN)]
+    public void SaveRejectsInvalidVisualCanvasTileTypography(string property, double value) {
+        var configuration = new BgInfoConfiguration();
+        var visual = new BgInfoVisualCanvas();
+        var tile = new BgInfoVisualCanvasTile();
+        visual.Tiles.Add(tile);
+        configuration.VisualCanvases.Add(visual);
+        switch (property) {
+            case "TileTextScale":
+                visual.TileTextScale = value;
+                break;
+            case "TextScale":
+                tile.TextScale = value;
+                break;
+            case "LabelFontSize":
+                tile.LabelFontSize = value;
+                break;
+            case "ValueFontSize":
+                tile.ValueFontSize = value;
+                break;
+            case "DetailFontSize":
+                tile.DetailFontSize = value;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(property), property, null);
+        }
+
+        var path = Path.Combine(Path.GetTempPath(),
+            "bginfo-invalid-" + Guid.NewGuid().ToString("N") + ".json");
+        try {
+            Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Save(configuration, path));
+            Assert.False(File.Exists(path));
+        } finally {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
     [Fact]
     public void LoadSkipsNullVisualCanvasChildren() {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());

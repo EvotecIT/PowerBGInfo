@@ -520,7 +520,7 @@ public static partial class BgInfoConfigurationJson {
                     CenterTileOffsetX = visual.CenterTileOffsetX == 0 ? null : visual.CenterTileOffsetX,
                     CenterTileOffsetY = visual.CenterTileOffsetY == 0 ? null : visual.CenterTileOffsetY,
                     TileTextFitPolicy = visual.TileTextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : visual.TileTextFitPolicy.ToString(),
-                    TileTextScale = visual.TileTextScale == 1 ? null : visual.TileTextScale,
+                    TileTextScale = visual.TileTextScale == 1 ? null : ValidateTileTextScale(visual.TileTextScale),
                     FeatureOffsetX = visual.FeatureOffsetX == 0 ? null : visual.FeatureOffsetX,
                     FeatureOffsetY = visual.FeatureOffsetY == 0 ? null : visual.FeatureOffsetY,
                     Transparent = visual.Transparent,
@@ -1139,10 +1139,10 @@ public static partial class BgInfoConfigurationJson {
         IconKind = tile.IconKind.ToString(),
         MiniChartKind = tile.MiniChartKind.ToString(),
         TextFitPolicy = tile.TextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : tile.TextFitPolicy.ToString(),
-        TextScale = tile.TextScale,
-        LabelFontSize = tile.LabelFontSize,
-        ValueFontSize = tile.ValueFontSize,
-        DetailFontSize = tile.DetailFontSize,
+        TextScale = tile.TextScale.HasValue ? ValidateTileTextScale(tile.TextScale.Value) : null,
+        LabelFontSize = tile.LabelFontSize.HasValue ? ValidateTileFontSize(tile.LabelFontSize.Value) : null,
+        ValueFontSize = tile.ValueFontSize.HasValue ? ValidateTileFontSize(tile.ValueFontSize.Value) : null,
+        DetailFontSize = tile.DetailFontSize.HasValue ? ValidateTileFontSize(tile.DetailFontSize.Value) : null,
         MiniChartValues = tile.MiniChartValues is null ? null : new List<double>(tile.MiniChartValues).ToArray(),
         MiniChartMaximum = tile.MiniChartMaximum
     };
