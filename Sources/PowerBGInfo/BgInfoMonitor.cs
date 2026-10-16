@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using DesktopManager;
 
 namespace PowerBGInfo;
@@ -26,18 +25,19 @@ public sealed class BgInfoMonitor {
 /// <summary>Reads the monitors that PowerBGInfo renders for.</summary>
 public static class BgInfoMonitorProvider {
     /// <summary>Returns the monitors Windows reports with a size, ordered by index. Empty when none can be read, for example without a desktop.</summary>
-    public static BgInfoMonitor[] GetMonitors() {
-        List<DesktopManager.Monitor> monitors;
+    public static BgInfoMonitor[] GetMonitors() => GetMonitors(new Monitors());
+
+    internal static BgInfoMonitor[] GetMonitors(Monitors source) {
+        IReadOnlyList<MonitorSnapshot> monitors;
         try {
-            monitors = new Monitors().GetMonitors();
+            monitors = source.GetMonitorSnapshots();
         } catch {
             return Array.Empty<BgInfoMonitor>();
         }
 
         return monitors
             .Select(monitor => Create(monitor.Index, monitor.DeviceName, monitor.IsPrimary,
-                monitor.PositionLeft, monitor.PositionTop, monitor.PositionRight, monitor.PositionBottom,
-                ReadScale(monitor.PositionLeft, monitor.PositionTop, monitor.PositionRight, monitor.PositionBottom)))
+                monitor.Left, monitor.Top, monitor.Right, monitor.Bottom, monitor.Scale))
             .Where(monitor => monitor.Width > 0 && monitor.Height > 0)
             .OrderBy(monitor => monitor.Index)
             .ToArray();
@@ -56,53 +56,4 @@ public static class BgInfoMonitorProvider {
         };
     }
 
-    private static double? ReadScale(int left, int top, int right, int bottom) {
-        if (right <= left || bottom <= top) return null;
-        // The bounds are physical pixels. A PowerShell host is usually not DPI aware, and Windows then reports
-        // 96 DPI for every monitor, so the query runs per-monitor aware on this thread only and is restored.
-        var previous = TrySetThreadDpiAwareness(PerMonitorAwareV2);
-        try {
-            var rect = new NativeRect { Left = left, Top = top, Right = right, Bottom = bottom };
-            var handle = MonitorFromRect(ref rect, MonitorDefaultToNull);
-            if (handle == IntPtr.Zero) return null;
-            return GetDpiForMonitor(handle, MonitorDpiTypeEffective, out var dpiX, out _) == 0 && dpiX > 0
-                ? dpiX / 96d
-                : null;
-        } catch (Exception exception) when (exception is DllNotFoundException or EntryPointNotFoundException) {
-            // GetDpiForMonitor needs Windows 8.1 or later.
-            return null;
-        } finally {
-            if (previous != IntPtr.Zero) TrySetThreadDpiAwareness(previous);
-        }
-    }
-
-    private static IntPtr TrySetThreadDpiAwareness(IntPtr context) {
-        try {
-            return SetThreadDpiAwarenessContext(context);
-        } catch (EntryPointNotFoundException) {
-            // Windows 10 1607 and later only; older systems keep the process awareness.
-            return IntPtr.Zero;
-        }
-    }
-
-    private const uint MonitorDefaultToNull = 0;
-    private const int MonitorDpiTypeEffective = 0;
-    private static readonly IntPtr PerMonitorAwareV2 = new(-4);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeRect {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromRect(ref NativeRect rect, uint flags);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
-
-    [DllImport("shcore.dll")]
-    private static extern int GetDpiForMonitor(IntPtr monitor, int dpiType, out uint dpiX, out uint dpiY);
 }

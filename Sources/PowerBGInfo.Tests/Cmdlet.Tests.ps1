@@ -634,9 +634,14 @@ Describe 'Generated backgrounds and shared panels' {
         } -ConfigurationDirectory $TestDrive -OutputFileName 'generated.png' -Target File
 
         Test-Path -LiteralPath $path | Should -BeTrue
-        $image = [PowerBGInfo.BgInfoRasterImage]::Load($path)
-        $image.Width | Should -Be 320
-        $image.Height | Should -Be 200
+        Add-Type -AssemblyName System.Drawing
+        $image = [System.Drawing.Image]::FromFile($path)
+        try {
+            $image.Width | Should -Be 320
+            $image.Height | Should -Be 200
+        } finally {
+            $image.Dispose()
+        }
     }
 
     It 'rejects a gradient with other than two colors' {

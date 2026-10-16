@@ -27,15 +27,25 @@ public class LockScreenPolicyTests
         Assert.NotNull(warning);
         Assert.Contains("'Professional'", warning);
         Assert.Contains(@"HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization\LockScreenImage", warning);
-        Assert.Contains("Windows PowerShell 5.1", warning);
+        Assert.Contains("-Target File", warning);
         Assert.Null(LockScreenPolicy.GetEditionWarning("Enterprise"));
     }
 
-    [Fact]
-    public void LockScreenApiIsNotReachableOnDotNet8()
+    [Theory]
+    [InlineData(DesktopManager.LogonWallpaperMechanism.WindowsRuntime)]
+    [InlineData(DesktopManager.LogonWallpaperMechanism.None)]
+    public void DoesNotReadOrWarnAboutEditionsWithoutAPolicyWrite(DesktopManager.LogonWallpaperMechanism mechanism)
     {
-        // The test host runs on .NET 8, like PowerShell 7: the lock screen always goes through the policy value there.
-        Assert.False(LockScreenPolicy.IsLockScreenApiAvailable());
+        Assert.Null(LockScreenPolicy.GetFallbackWarning(mechanism,
+            () => throw new InvalidOperationException("No policy was written, so edition information is irrelevant.")));
+    }
+
+    [Fact]
+    public void ReportsEditionLimitsForTheMechanismDesktopManagerActuallyUsed()
+    {
+        var mechanism = DesktopManager.LogonWallpaperMechanism.PersonalizationPolicy;
+        Assert.NotNull(LockScreenPolicy.GetFallbackWarning(mechanism, () => "Professional"));
+        Assert.Null(LockScreenPolicy.GetFallbackWarning(mechanism, () => "Enterprise"));
     }
 
     [Fact]

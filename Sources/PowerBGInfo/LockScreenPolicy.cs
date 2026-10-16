@@ -1,10 +1,11 @@
 using Microsoft.Win32;
+using DesktopManager;
 
 namespace PowerBGInfo;
 
 /// <summary>
-/// The fallback DesktopManager uses for the lock screen when the Windows lock screen API is not reachable, which is always the
-/// case under PowerShell 7: it writes the value of the "Force a specific default lock screen and logon image" policy.
+/// Describes the policy fallback DesktopManager reports when its per-user lock screen operation fails.
+/// It writes the value of the "Force a specific default lock screen and logon image" policy.
 /// Windows applies that policy only on Enterprise, Education and Server editions.
 /// </summary>
 internal static class LockScreenPolicy {
@@ -12,6 +13,13 @@ internal static class LockScreenPolicy {
     public const string ValueName = "LockScreenImage";
 
     private static readonly string[] PolicyEditionPrefixes = { "Enterprise", "Education", "Server", "IoTEnterprise" };
+
+    /// <summary>Reads edition policy limits only when DesktopManager reports a completed machine policy write.</summary>
+    internal static string? GetFallbackWarning(LogonWallpaperMechanism mechanism, Func<string?> readEditionId) {
+        return mechanism == LogonWallpaperMechanism.PersonalizationPolicy
+            ? GetEditionWarning(readEditionId())
+            : null;
+    }
 
     /// <summary>True when the EditionID is one the lock screen policy applies to. Multi-session hosts report ServerRdsh.</summary>
     public static bool IsPolicyEdition(string? editionId) {
@@ -34,23 +42,10 @@ internal static class LockScreenPolicy {
     public static string? GetEditionWarning(string? editionId) {
         if (IsPolicyEdition(editionId)) return null;
         var edition = string.IsNullOrWhiteSpace(editionId) ? "an edition that could not be read" : $"'{editionId!.Trim()}'";
-        return "The Windows lock screen API is not available in this PowerShell host, so PowerBGInfo wrote the image path to "
+        return "The per-user Windows lock screen API did not complete, so PowerBGInfo wrote the image path to "
             + $@"HKLM\{KeyPath}\{ValueName}, the value of the policy 'Force a specific default lock screen and logon image'. "
             + $"Windows applies that policy only on Enterprise, Education and Server editions, and this is {edition}, so the lock screen "
-            + "probably does not change. Run -Target LogonScreen from Windows PowerShell 5.1, which uses the lock screen API, or render "
-            + "with -Target File and deliver the image with your management tool.";
-    }
-
-    /// <summary>
-    /// True when the WinRT lock screen API can be reached from this process, which is the check DesktopManager makes before it
-    /// falls back to the policy value. Windows PowerShell 5.1 (.NET Framework) can; PowerShell 7 (.NET 8) cannot.
-    /// </summary>
-    public static bool IsLockScreenApiAvailable() {
-        try {
-            return Type.GetType("Windows.System.UserProfile.LockScreen, Windows, ContentType=WindowsRuntime") != null
-                && Type.GetType("Windows.Storage.StorageFile, Windows, ContentType=WindowsRuntime") != null;
-        } catch {
-            return false;
-        }
+            + "probably does not change. Run in the intended user's session and check that account's profile and applicable policies, "
+            + "or render with -Target File and deliver the image with your management tool.";
     }
 }

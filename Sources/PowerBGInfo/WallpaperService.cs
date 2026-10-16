@@ -78,14 +78,12 @@ public class WallpaperService : IWallpaperService
 #endif
     public void SetLogonWallpaper(string filePath)
     {
-        // DesktopManager tries the WinRT lock screen API and, when it is not reachable, writes the policy value
-        // itself. Under PowerShell 7 it never is: the module loads DesktopManager's netstandard2.0 build.
-        var usesPolicyValue = !LockScreenPolicy.IsLockScreenApiAvailable();
-        Monitors.SetLogonWallpaper(filePath);
-        if (usesPolicyValue) {
-            var warning = LockScreenPolicy.GetEditionWarning(LockScreenPolicy.ReadEditionId());
-            if (warning != null) Warning?.Invoke(warning);
+        var result = Monitors.SetLogonWallpaperWithResult(filePath, allowPolicyFallback: true);
+        if (!result.Succeeded) {
+            throw new InvalidOperationException($"The lock screen image could not be set: {result.ErrorMessage}");
         }
+        var warning = LockScreenPolicy.GetFallbackWarning(result.Mechanism, LockScreenPolicy.ReadEditionId);
+        if (warning != null) Warning?.Invoke(warning);
     }
 
     /// <summary>

@@ -30,8 +30,8 @@ Manager or your RMM tool.
 | --- | --- | --- |
 | `Wallpaper` (default) | Sets the desktop wallpaper of the account that runs the command | No |
 | `File` | Writes the image only | No |
-| `LogonScreen` | Sets the lock screen image (see below) | Yes |
-| `Both` | `Wallpaper` and `LogonScreen` | Yes |
+| `LogonScreen` | Attempts the running account's lock screen, with a machine-policy fallback if that fails (see below) | Only for the policy fallback |
+| `Both` | `Wallpaper` and `LogonScreen` | Only for the lock screen policy fallback |
 | `Wallpaper` with `-AllUsers` | Also writes the wallpaper path into every local profile | Yes |
 
 Author and test every layout with `-Target File` first: it writes an
@@ -76,6 +76,13 @@ library that ships inside the module and talks to Windows.
   the size of the monitor that `-MonitorIndex` points to. When the module
   cannot read the monitors, for example in a session without a desktop, it
   uses 1920 x 1080.
+- Monitor sizes come from DesktopManager's `GetMonitorSnapshots()` in
+  physical pixels. Its per-monitor DPI and scale query is independent of
+  the PowerShell host's DPI awareness; it temporarily changes only the
+  calling thread's context and restores it afterwards. Missing DPI leaves
+  `Scale` empty without discarding the monitor's geometry.
+  Snapshot queries require Windows 10 version 1607 / Windows Server 2016 or
+  later; unavailable monitor information uses the rendering fallback above.
 - PowerBGInfo never draws on its own earlier output. It records every image
   it writes, with the base it was drawn on, in `PowerBgInfo.outputs.txt` next
   to the image. When the current wallpaper or a slideshow image is one of
@@ -120,26 +127,29 @@ user can read, such as `C:\ProgramData\PowerBGInfo`.
 
 ### Lock screen
 
-`-Target LogonScreen` and `-Target Both` stop with "Operation requires
-administrative privileges" unless the process is elevated. What happens next
-depends on the PowerShell host, because the module loads a different
-DesktopManager build in each:
+Both Windows PowerShell 5.1 and PowerShell 7 first attempt the running
+account's WinRT lock screen API. PowerBGInfo uses DesktopManager's
+`SetLogonWallpaperWithResult()` and inspects the completed operation's
+result; it does not infer API availability from the host or a managed-type
+probe.
 
-| Host | Mechanism | Whose lock screen | Editions |
+| Attempt | Mechanism | Whose lock screen | Requirements |
 | --- | --- | --- | --- |
-| Windows PowerShell 5.1 | WinRT `Windows.System.UserProfile.LockScreen.SetImageFileAsync` | The account that runs the command | All |
-| PowerShell 7 | The policy value `HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization\LockScreenImage` | The device | Enterprise, Education and Server only |
+| First, in either host | WinRT `Windows.System.UserProfile.LockScreen.SetImageStreamAsync` | The account that runs the command | No elevation; Windows configuration, policy and the account's profile must allow it |
+| If WinRT fails | The policy value `HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization\LockScreenImage` (`PersonalizationPolicy`) | The device | Elevation; Enterprise, Education or Server, including relevant IoT Enterprise editions |
 
-- **Windows PowerShell 5.1** uses the lock screen API. In an elevated
-  session started by another administrator account, that is the
-  administrator's lock screen, not the user's. If the API call fails,
-  DesktopManager falls back to the policy value.
-- **PowerShell 7** cannot reach the WinRT API from the build the module
-  uses, so it always writes the policy value. That is the registry value of
-  the Group Policy setting "Force a specific default lock screen and logon
-  image", which Microsoft documents as applying only to Enterprise,
-  Education and Server editions. On other editions PowerBGInfo writes a
-  warning that the lock screen probably does not change.
+- An elevated session started by another administrator account still
+  targets that administrator's per-user lock screen. It does not select the
+  user whose desktop is visible. A SYSTEM task is not a substitute for a
+  per-user lock screen task.
+- PowerBGInfo opts into the policy fallback. Only that fallback needs
+  elevation; a denied write is reported as a failure. When the result shows
+  `PersonalizationPolicy`, PowerBGInfo checks the edition and warns if the
+  policy is unsupported or the edition cannot be read. Pro and Home do not
+  gain policy support merely because an administrator writes the value.
+- A failed result is exposed to the caller. A completed WinRT action or a
+  successful policy write still does not prove that Windows visibly changed
+  the lock screen; policy and Windows configuration can prevent it.
 
 For a managed fleet, the documented route is more predictable: render the
 image with `-Target File` and deliver it with the policy or the
@@ -154,11 +164,16 @@ sees. Per-user wallpapers have to run in the user's own session.
 
 The `LoggedOnUser` token and `Get-BGInfoSystemInfo.LoggedOnUser` return the
 user signed in to the Windows session the script runs in, as
-`DOMAIN\user`, read with `WTSQuerySessionInformation`. A task that runs in
-the user's session, including a remote session on a session host, gets that
-user. A SYSTEM task runs in session 0, which has no user; there it reports
-the user of the active console session, then `Win32_ComputerSystem.UserName`,
-and `Unknown` when nobody is at the console.
+`DOMAIN\user` (or just the user name if no domain is available).
+PowerBGInfo delegates the session lookup to DesktopManager's read-only
+`DesktopSessionService.GetSessionUser()`, which uses
+`WTSQuerySessionInformation` and needs no elevation for the current session.
+A task in the user's session, including a remote session on a session host,
+gets that user. A SYSTEM task runs in session 0, which has no user; there it
+reports the user of the active console session. If session information is unavailable,
+PowerBGInfo retains `Win32_ComputerSystem.UserName` as its last-resort console
+lookup, and returns `Unknown` when neither source supplies a user. That
+fallback cannot identify the intended remote user for a SYSTEM task.
 
 ## Choosing a route
 
@@ -350,9 +365,11 @@ Notes on the script:
 
 - `Get-BGInfoMonitor` returns each monitor's `Index` (the value
   `-MonitorIndex` takes), `DeviceName`, `Primary`, bounds (`Left`, `Top`,
-  `Width`, `Height`) and the Windows display `Scale`. It returns nothing
-  when no monitor can be read; the script then renders once at the
-  fallback size.
+  `Width`, `Height`) in physical pixels and the Windows display `Scale`
+  from DesktopManager's monitor snapshots. `Scale` is empty when DPI cannot
+  be read. Re-query after docking or reconnecting; indexes are not permanent
+  display identities. It returns nothing when no monitor can be read; the
+  script then renders once at the fallback size.
 - Each monitor gets its own `-OutputFileName`. Two monitors that share one
   file both show whichever image was written last.
 - Charts keep history per `-Id`. If you add `New-BGInfoChart` to a
