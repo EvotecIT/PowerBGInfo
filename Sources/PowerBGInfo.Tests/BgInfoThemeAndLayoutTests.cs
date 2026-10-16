@@ -176,6 +176,53 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void ShareScalesFixedPanelsWhenTheirCombinedSizeExceedsTheRegion()
+    {
+        var sizes = BgInfoLayoutEngine.Share(new double[] { 500, 500 }, 800, 24);
+
+        Assert.Equal(388, sizes[0]);
+        Assert.Equal(388, sizes[1]);
+        Assert.Equal(800, sizes.Sum() + 24);
+    }
+
+    [Fact]
+    public void ShareReducesGapsWhenMinimumPanelsWouldOtherwiseOverflow()
+    {
+        var sizes = BgInfoLayoutEngine.Share(new double[] { 4, 4, 4 }, 10, 4);
+
+        Assert.Equal(new double[] { 1, 1, 1 }, sizes);
+        Assert.Equal(10, sizes.Sum() + 2 * 3.5);
+    }
+
+    [Fact]
+    public void TopBandReducesGapsWhenMinimumPanelsWouldOtherwiseOverflow()
+    {
+        var slots = BgInfoLayoutEngine.Resolve(10, 10,
+            new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, BandHeight = 1, Gap = 4 }, null, new[] {
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 4, 1),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 4, 1),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 4, 1)
+            });
+
+        Assert.All(slots, slot => Assert.True(slot.Width >= 1 && slot.X >= 0 && slot.X + slot.Width <= 10));
+        Assert.Equal(10, slots[^1].X + slots[^1].Width);
+    }
+
+    [Fact]
+    public void CenterColumnRetainsRoomWhenBothSideColumnsArePresent()
+    {
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, new BgInfoLayout { MarginX = 64, MarginY = 24, Gap = 24 }, null, new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Left, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Center, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Right, 0, 100)
+        });
+
+        Assert.True(slots[1].X >= slots[0].X + slots[0].Width + 24);
+        Assert.True(slots[1].X + slots[1].Width + 24 <= slots[2].X);
+        Assert.True(slots[1].Width >= 120);
+    }
+
+    [Fact]
     public void GeneratorDrawsRegionChartsInTheirSlot()
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-region-" + Path.GetRandomFileName());

@@ -287,7 +287,7 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
     }
 }
 
-/// <summary>Creates a diagram panel from Mermaid text, for example an escalation path or a network flow.</summary>
+/// <summary>Creates a diagram panel from Mermaid text, for example an escalation path or a network flow. Pipeline lines are joined before rendering.</summary>
 /// <para>Flowcharts and other topology-backed families take the panel theme. Rendering uses ChartForgeX.Mermaid; no browser or JavaScript is involved.</para>
 /// <example>
 /// <code>
@@ -297,29 +297,39 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
 ///     B -- No --> C[On-call engineer]
 ///     C --> D[Major incident]
 /// '@
+/// Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalation'
 /// </code>
 /// </example>
 [Cmdlet(VerbsCommon.New, "BGInfoMermaid")]
 [OutputType(typeof(BgInfoMermaidWidget))]
 public sealed class CmdletNewBGInfoMermaid : BgInfoWidgetCmdlet {
+    private readonly System.Text.StringBuilder _definition = new();
+
     /// <para>Mermaid source.</para>
     [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
     public string Definition { get; set; } = string.Empty;
 
+    /// <summary>Collects pipeline lines into one Mermaid definition.</summary>
+    protected override void ProcessRecord() {
+        if (_definition.Length > 0) _definition.AppendLine();
+        _definition.Append(Definition);
+    }
+
     /// <summary>Checks the source and emits the widget.</summary>
     protected override void EndProcessing() {
-        var result = ChartForgeX.Mermaid.MermaidRenderer.Render(Definition);
+        var definition = _definition.ToString();
+        var result = ChartForgeX.Mermaid.MermaidRenderer.Render(definition);
         if (result.HasErrors || result.Artifact == null) {
             var error = result.Diagnostics.FirstOrDefault(d => d.Severity == ChartForgeX.Diagnostics.VisualDiagnosticSeverity.Error) ?? result.Diagnostics.FirstOrDefault();
             var message = error == null ? "The Mermaid diagram family is not supported." : $"Mermaid line {error.Span.Line}: {error.Message}";
-            ThrowTerminatingError(new ErrorRecord(new ArgumentException(message, nameof(Definition)), "BGInfoMermaidInvalid", ErrorCategory.InvalidData, Definition));
+            ThrowTerminatingError(new ErrorRecord(new ArgumentException(message, nameof(Definition)), "BGInfoMermaidInvalid", ErrorCategory.InvalidData, definition));
             return;
         }
         foreach (var warning in result.Diagnostics.Where(d => d.Severity == ChartForgeX.Diagnostics.VisualDiagnosticSeverity.Warning)) {
             WriteVerbose($"Mermaid line {warning.Span.Line}: {warning.Message}");
         }
         var widget = Configure(new BgInfoMermaidWidget());
-        widget.Definition = Definition;
+        widget.Definition = definition;
         Emit(widget);
     }
 }
