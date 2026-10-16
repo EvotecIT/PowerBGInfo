@@ -187,7 +187,7 @@ placement (`-Region` or `-Anchor`) and theme of the other panels.
 | `New-BGInfoList` | Bullets, numbers, a checklist or status rows |
 | `New-BGInfoCalendarHeatmap` | One cell per day |
 | `New-BGInfoTimeline` | Ranges on lanes with a Now marker |
-| `New-BGInfoTreemap` | Sizes as nested rectangles |
+| `New-BGInfoTreemap` | Sizes as nested rectangles, optionally colored by a second measure (`-ColorProperty`) |
 | `New-BGInfoMermaid` | A diagram from Mermaid text, rendered without a browser |
 | `New-BGInfoQRCode` | A scannable link, for example to open a ticket |
 
@@ -314,8 +314,10 @@ Built-in value tokens such as `HostName`, `LoggedOnUser`, `OSName`,
 
 ## Showcase
 
-Four wallpapers, each built for one job, share one theme and start with a
-data block. Every scenario renders in light and dark at any resolution and
+Twelve wallpapers, each built for one job and one question from the person
+at that screen. They share the theme presets and start with a data block:
+replace the sample function with your own source and the layout keeps
+working. Every scenario renders in light and dark at any resolution and
 writes a file without touching the desktop.
 
 | Scenario | What it answers | Script |
@@ -324,16 +326,29 @@ writes a file without touching the desktop.
 | Help desk | How do I get help, and what do I tell them? | `Examples/Run.BGInfo.HelpDesk.ps1` |
 | Lab or classroom | Which seat is this, and when does it reset? | `Examples/Run.BGInfo.Classroom.ps1` |
 | Admin workstation | Is this privileged machine healthy, and where may it connect? | `Examples/Run.BGInfo.AdminWorkstation.ps1` |
+| Domain controller | Is the directory replicating, who holds the roles, is the clock right? | `Examples/Run.BGInfo.DomainController.ps1` |
+| Hyper-V host | Is there room for another VM, and which VMs use this host? | `Examples/Run.BGInfo.HyperVHost.ps1` |
+| NOC and on call | Who is on call now, and how does an incident escalate? | `Examples/Run.BGInfo.OnCall.ps1` |
+| Branch office PC | Where am I, is the link up, and how do I get help? | `Examples/Run.BGInfo.BranchOffice.ps1` |
+| Meeting room | Which room is this, is it free, and how do I share my screen? | `Examples/Run.BGInfo.MeetingRoom.ps1` |
+| Build agent | Is this agent busy or broken, and is there disk left? | `Examples/Run.BGInfo.BuildAgent.ps1` |
+| Patch day | When does this PC restart, and is the rollout on track? | `Examples/Run.BGInfo.PatchDay.ps1` |
+| Kiosk or signage | One message from across the room, and a code for the details. | `Examples/Run.BGInfo.Signage.ps1` |
 
 | | |
 | --- | --- |
-| ![Admin workstation, dark](Examples/Showcase/Images/admin-workstation-dark.jpg) | ![Help desk, light](Examples/Showcase/Images/helpdesk-light.jpg) |
+| ![Hyper-V host: a treemap of VM memory colored by CPU](Examples/Showcase/Images/hyperv-host-dark.jpg) | ![Domain controller: replication, FSMO roles and failed sign-ins](Examples/Showcase/Images/domain-controller-light.jpg) |
+| ![Patch day: restart countdown and update rings](Examples/Showcase/Images/patch-day-dark.jpg) | ![Meeting room: today's bookings and guest Wi-Fi](Examples/Showcase/Images/meeting-room-dark.jpg) |
+
+![NOC and on call on an ultrawide wall display](Examples/Showcase/Images/on-call-dark-3440x1440.jpg)
+
+Light and dark renders of every scenario are in `Examples/Showcase/Images`.
 
 ```powershell
-.\Examples\Run.BGInfo.ServerStatus.ps1 -Theme Light -Width 2560 -Height 1440
+.\Examples\Run.BGInfo.HyperVHost.ps1 -Theme Light -Width 2560 -Height 1440
 .\Examples\Run.BGInfo.Showcase.ps1 -OutputDirectory "$env:TEMP\Showcase"
+.\Examples\Run.BGInfo.Showcase.ps1 -Scenario on-call, signage -Size 1920x1080
 ```
-
 `Examples/Features` has one script per feature, and
 `Examples/Run.BGInfo.Features.ps1` renders them all.
 
