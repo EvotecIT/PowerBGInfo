@@ -155,6 +155,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Icon),
                 Resolve(tile.Label),
                 Resolve(tile.Value),
+                new VisualCanvasInfoTileTextOptions(
+                    textScale: tile.TextScale ?? visual.TileTextScale,
+                    labelFontSize: tile.LabelFontSize,
+                    valueFontSize: tile.ValueFontSize,
+                    detailFontSize: tile.DetailFontSize),
                 Resolve(tile.Detail),
                 tile.Accent,
                 tile.Progress,
@@ -163,11 +168,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 MapMiniChartKind(tile.MiniChartKind),
                 tile.MiniChartValues,
                 tile.MiniChartMaximum,
-                ResolveTextFitPolicy(visual, tile),
-                tile.TextScale ?? visual.TileTextScale,
-                tile.LabelFontSize,
-                tile.ValueFontSize,
-                tile.DetailFontSize);
+                ResolveTextFitPolicy(visual, tile));
             cursorY += tileHeight + gap;
         }
     }

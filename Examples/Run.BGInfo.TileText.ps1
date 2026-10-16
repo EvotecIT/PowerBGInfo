@@ -39,6 +39,7 @@ $tiles = @(
 )
 
 New-BGInfo -Theme $look -Target File -FilePath $BackgroundPath {
-    New-BGInfoVisualCanvas -Width $Width -Height $Height -Tile $tiles
+    New-BGInfoVisualCanvas -Width $Width -Height $Height `
+        -TileWidth 520 -Tile $tiles
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName $outputName
