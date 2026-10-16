@@ -44,11 +44,17 @@ internal static partial class BgInfoVisualCanvasRenderer {
         foreach (var tile in visual.Tiles) {
             var itemHeight = tile.Height > 0 ? tile.Height : tileHeight;
             var itemWidth = tile.Width > 0 ? Math.Min(tile.Width, width) : width;
-            canvas.AddInfoTile(0, y, itemWidth, itemHeight,
-                Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value), Resolve(tile.Detail),
-                tile.Accent, tile.Progress, MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
-                MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues, tile.MiniChartMaximum,
-                ResolveTextFitPolicy(visual, tile));
+            canvas.AddInfoTileWithTextOptions(0, y, itemWidth, itemHeight,
+                Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value),
+                new VisualCanvasInfoTileTextOptions(
+                    textScale: tile.TextScale ?? visual.TileTextScale,
+                    labelFontSize: tile.LabelFontSize,
+                    valueFontSize: tile.ValueFontSize,
+                    detailFontSize: tile.DetailFontSize),
+                Resolve(tile.Detail), tile.Accent, tile.Progress,
+                MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
+                MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues,
+                tile.MiniChartMaximum, ResolveTextFitPolicy(visual, tile));
             y += itemHeight + gap;
         }
 

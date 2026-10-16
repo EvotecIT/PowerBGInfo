@@ -157,6 +157,39 @@ public class BgInfoWidgetTests
         Assert.Equal(300, rendered.Width);
     }
 
+    [Fact]
+    public void RegionVisualCanvasHonorsPerTileTextScale()
+    {
+        var defaultPixels = RenderRegionTypography(textScale: null, valueFontSize: null);
+        var scaledPixels = RenderRegionTypography(textScale: 1.5, valueFontSize: null);
+
+        Assert.False(defaultPixels.SequenceEqual(scaledPixels));
+    }
+
+    [Fact]
+    public void RegionVisualCanvasHonorsPerTileValueFontSize()
+    {
+        var defaultPixels = RenderRegionTypography(textScale: null, valueFontSize: null);
+        var sizedPixels = RenderRegionTypography(textScale: null, valueFontSize: 30);
+
+        Assert.False(defaultPixels.SequenceEqual(sizedPixels));
+    }
+
+    private static byte[] RenderRegionTypography(double? textScale, double? valueFontSize)
+    {
+        var visual = new BgInfoVisualCanvas { TileHeight = 140, Transparent = true };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Label = "HOSTNAME",
+            Value = "WORKSTATION-01",
+            Detail = "Windows desktop",
+            TextScale = textScale,
+            ValueFontSize = valueFontSize
+        });
+
+        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 480, 140, 1080);
+        return rendered.ToRgbaImage().Pixels.ToArray();
+    }
+
     private static int CountDistinctFromPanel(RgbaImage pixels)
     {
         var count = 0;
