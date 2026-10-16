@@ -30,6 +30,20 @@ Use `New-BGInfoValue` for built-in or custom data and `New-BGInfoLabel` for sect
 
 `New-BGInfoImage` places a reusable image asset. Visual canvas commands arrange exact-value tiles, sections, and compact visual blocks when plain text needs more structure.
 
+Tile text follows the `New-BGInfoTheme -Scale` value. Set
+`-TileTextScale` on `New-BGInfoVisualCanvas` to change every tile, or set
+`-TextScale` on one `New-BGInfoVisualCanvasTile`. Per-role
+`-LabelFontSize`, `-ValueFontSize`, and `-DetailFontSize` set individual
+sizes. For example:
+
+```powershell
+$tile = New-BGInfoVisualCanvasTile -Side Right -Label 'PROCESSOR' `
+    -Value 'Intel Core i7' -Detail 'Average load 23%' -TextScale 1.25
+New-BGInfo -Theme (New-BGInfoTheme Graphite -Scale 1.25) -Target File {
+    New-BGInfoVisualCanvas -Tile $tile
+}
+```
+
 ## Charts
 
 `New-BGInfoChart` renders ChartForgeX charts as transparent overlays. Small trends, targets, capacity, or service-state summaries work best. Keep labels readable against the selected wallpaper and test the output at the actual monitor resolution.

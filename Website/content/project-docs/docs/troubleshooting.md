@@ -93,6 +93,9 @@ Get-BGInfoMonitor | Select-Object Index, Width, Height, Scale
 - Small fonts on a 4K screen look thin rather than blurry. Scale the theme
   with the screen, as the reference script does (`-Scale` of height divided
   by 1080).
+- **Make tile text bigger or smaller:** set `-TextScale` on a tile, or set
+  `-TileTextScale` on its canvas. The theme `-Scale` is the default. If a
+  tile is too small, text may shrink to fit and the layout reports it.
 - A small corporate image scaled up to 4K stays soft. Use a source image at
   least as large as the biggest screen.
 

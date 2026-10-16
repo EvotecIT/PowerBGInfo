@@ -163,7 +163,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 MapMiniChartKind(tile.MiniChartKind),
                 tile.MiniChartValues,
                 tile.MiniChartMaximum,
-                ResolveTextFitPolicy(visual, tile));
+                ResolveTextFitPolicy(visual, tile),
+                tile.TextScale ?? visual.TileTextScale,
+                tile.LabelFontSize,
+                tile.ValueFontSize,
+                tile.DetailFontSize);
             cursorY += tileHeight + gap;
         }
     }
@@ -382,6 +386,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
     });
 
     private static void ApplyStyle(VisualCanvasStyleOptions style, BgInfoVisualCanvas visual) {
+        style.TileTextScale = visual.TileTextScale;
         style.ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34);
         style.TileGlassTop = visual.TileGlassTop;
         style.TileGlassBottom = visual.TileGlassBottom;

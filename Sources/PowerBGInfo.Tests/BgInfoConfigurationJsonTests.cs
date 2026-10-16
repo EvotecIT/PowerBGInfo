@@ -462,6 +462,7 @@ public class BgInfoConfigurationJsonTests
             CenterTileOffsetX = -18,
             CenterTileOffsetY = 16,
             TileTextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink,
+            TileTextScale = 1.35,
             FeatureOffsetX = 165,
             FeatureOffsetY = 120,
             TechBackdrop = false
@@ -480,6 +481,10 @@ public class BgInfoConfigurationJsonTests
             IconKind = BgInfoVisualCanvasTileIconKind.Computer,
             MiniChartKind = BgInfoVisualCanvasTileMiniChartKind.Area,
             TextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis,
+            TextScale = 1.5,
+            LabelFontSize = 17,
+            ValueFontSize = 26,
+            DetailFontSize = 14,
             MiniChartValues = new[] { 18d, 26d, 22d, 37d },
             MiniChartMaximum = 100
         });
@@ -538,6 +543,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(-18, loaded.CenterTileOffsetX);
         Assert.Equal(16, loaded.CenterTileOffsetY);
         Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink, loaded.TileTextFitPolicy);
+        Assert.Equal(1.35, loaded.TileTextScale);
         Assert.Equal(165, loaded.FeatureOffsetX);
         Assert.Equal(120, loaded.FeatureOffsetY);
         Assert.False(loaded.TechBackdrop);
@@ -556,6 +562,10 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
         Assert.Equal(BgInfoVisualCanvasTileMiniChartKind.Area, tile.MiniChartKind);
         Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis, tile.TextFitPolicy);
+        Assert.Equal(1.5, tile.TextScale);
+        Assert.Equal(17, tile.LabelFontSize);
+        Assert.Equal(26, tile.ValueFontSize);
+        Assert.Equal(14, tile.DetailFontSize);
         Assert.Equal(new[] { 18d, 26d, 22d, 37d }, tile.MiniChartValues);
         Assert.Equal(100, tile.MiniChartMaximum);
 

@@ -376,6 +376,11 @@ New-BGInfo -Target File -ConfigurationDirectory "$env:TEMP\PowerBGInfo" `
 overlays with icon tiles, progress rails and mini charts. The scripts in
 `Examples/Scripts` show complete layouts:
 
+Use `-TextScale` on a tile or `-TileTextScale` on the canvas to adjust tile
+text. `New-BGInfoTheme -Scale` sets the default. For individual roles, use
+`-LabelFontSize`, `-ValueFontSize`, or `-DetailFontSize`. See
+`Examples/Run.BGInfo.TileText.ps1` for a file-only example.
+
 ![Operational charts over a wallpaper](Examples/Output/PowerBGInfo.OperationalCharts.jpg)
 
 Colour parameters accept ChartForgeX colour names, design tokens such as

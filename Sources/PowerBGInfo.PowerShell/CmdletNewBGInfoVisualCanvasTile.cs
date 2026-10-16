@@ -72,6 +72,26 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasTileTextFitPolicy TextFitPolicy { get; set; }
 
+    /// <para>Scales tile text and its supporting layout. The canvas setting applies when omitted.</para>
+    [Parameter]
+    [ValidateRange(0.5, 4)]
+    public double? TextScale { get; set; }
+
+    /// <para>Optional label font size in logical pixels.</para>
+    [Parameter]
+    [ValidateRange(1, 256)]
+    public double? LabelFontSize { get; set; }
+
+    /// <para>Optional value font size in logical pixels.</para>
+    [Parameter]
+    [ValidateRange(1, 256)]
+    public double? ValueFontSize { get; set; }
+
+    /// <para>Optional detail font size in logical pixels.</para>
+    [Parameter]
+    [ValidateRange(1, 256)]
+    public double? DetailFontSize { get; set; }
+
     /// <para>Compact chart values rendered inside the tile.</para>
     [Parameter]
     public double[] MiniChartValues { get; set; } = Array.Empty<double>();
@@ -131,6 +151,10 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             IconKind = IconKind,
             MiniChartKind = MiniChartKind,
             TextFitPolicy = TextFitPolicy,
+            TextScale = TextScale,
+            LabelFontSize = LabelFontSize,
+            ValueFontSize = ValueFontSize,
+            DetailFontSize = DetailFontSize,
             MiniChartValues = MiniChartValues ?? Array.Empty<double>(),
             MiniChartMaximum = MiniChartMaximum
         });
