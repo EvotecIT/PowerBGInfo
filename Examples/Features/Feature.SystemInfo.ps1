@@ -44,8 +44,15 @@ function Get-SampleSystemInfo {
 }
 
 # Your own function plugs in here; the time box keeps a slow probe from blocking logon.
-$source = if ($Live) { { Get-BGInfoSystemInfo } } else { ${function:Get-SampleSystemInfo} }
-$facts = Invoke-BGInfoDataSource -Name 'System facts' -TimeoutSeconds 20 -ScriptBlock $source -Default (Get-SampleSystemInfo)
+$source = if ($Live) {
+    {
+        param($modulePath)
+        Import-Module -Name $modulePath -Force
+        Get-BGInfoSystemInfo
+    }
+} else { ${function:Get-SampleSystemInfo} }
+$arguments = if ($Live) { Join-Path $PSScriptRoot '..\..\PowerBGInfo.psd1' } else { @() }
+$facts = Invoke-BGInfoDataSource -Name 'System facts' -TimeoutSeconds 20 -ScriptBlock $source -ArgumentList $arguments -Default (Get-SampleSystemInfo)
 # Values that a helper could not read come back as 'Unknown'; show them as such.
 $patch = if ($facts.LastPatchDate) { "$($facts.LastPatchId) · $($facts.LastPatchDate.ToString('d MMM yyyy'))" } else { $facts.LastPatchId }
 #endregion

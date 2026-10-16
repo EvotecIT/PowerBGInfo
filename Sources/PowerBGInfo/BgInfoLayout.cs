@@ -107,6 +107,17 @@ public static class BgInfoLayoutEngine {
         var autoBand = layout.BandHeight > 0 ? layout.BandHeight : Clamp(height * 0.26, 200, 340);
         var topHeight = BandHeight(requests, top, autoBand, safe.Height);
         var bottomHeight = BandHeight(requests, bottom, autoBand, safe.Height);
+        var hasMiddleRegions = left.Length > 0 || right.Length > 0 || center.Length > 0;
+        var separatorCount = hasMiddleRegions
+            ? (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0)
+            : top.Length > 0 && bottom.Length > 0 ? 1 : 0;
+        var bandBudget = Math.Max(0, safe.Height - gap * separatorCount);
+        var bandTotal = topHeight + bottomHeight;
+        if (bandTotal > bandBudget && bandTotal > 0) {
+            var bandScale = bandBudget / bandTotal;
+            topHeight *= bandScale;
+            bottomHeight *= bandScale;
+        }
         var safeRight = safe.X + safe.Width;
         var safeBottom = safe.Y + safe.Height;
 

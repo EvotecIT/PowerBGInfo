@@ -229,8 +229,9 @@ public partial class BgInfoGenerator
 
         var textBlock = new ChartRect(textStartX, textStartY, totalWidth, Math.Max(0f, textBlockHeight));
 
-        var placements = ResolveRegionPlacements(image.Width, image.Height, config, textBlock);
-        RenderCharts(image, config, textBlock, placements);
+        var chartValues = ResolveAllChartValues(config, DateTimeOffset.UtcNow);
+        var placements = ResolveRegionPlacements(image.Width, image.Height, config, textBlock, chartValues);
+        RenderCharts(image, config, textBlock, placements, chartValues);
         RenderTopologies(image, config, placements);
         RenderVisualCanvases(image, config, placements);
         RenderWidgets(image, config, placements);
@@ -809,14 +810,13 @@ public partial class BgInfoGenerator
         }
     }
 
-    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, RegionPlacements placements)
+    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, RegionPlacements placements, IReadOnlyDictionary<BgInfoChart, IReadOnlyList<double>> chartValues)
     {
         if (config.Charts.Count == 0)
         {
             return;
         }
 
-        var now = DateTimeOffset.UtcNow;
         for (int i = 0; i < config.Charts.Count; i++)
         {
             var chart = config.Charts[i];
@@ -825,7 +825,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            var values = ResolveChartValues(config, chart, now, i);
+            var values = chartValues[chart];
             if (values.Count == 0)
             {
                 continue;
@@ -837,7 +837,7 @@ public partial class BgInfoGenerator
 
         if (config.ChartLayout == BgInfoChartLayoutMode.Stack)
         {
-            RenderStackedCharts(image, config, textBlock, now);
+            RenderStackedCharts(image, config, textBlock, chartValues);
             return;
         }
 
@@ -849,7 +849,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            var values = ResolveChartValues(config, chart, now, i);
+            var values = chartValues[chart];
             if (values.Count == 0)
             {
                 continue;
@@ -936,7 +936,7 @@ public partial class BgInfoGenerator
         }
     }
 
-    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, DateTimeOffset now)
+    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, IReadOnlyDictionary<BgInfoChart, IReadOnlyList<double>> chartValues)
     {
         var area = ResolveChartStackArea(image, config, textBlock);
         if (area.Width <= 0 || area.Height <= 0)
@@ -959,7 +959,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            var values = ResolveChartValues(config, chart, now, i);
+            var values = chartValues[chart];
             if (values.Count == 0)
             {
                 continue;
@@ -1150,6 +1150,17 @@ public partial class BgInfoGenerator
 
         ChartHistoryStore.Save(historyPath, samples);
         return samples.Select(s => s.Value).ToList();
+    }
+
+    private static Dictionary<BgInfoChart, IReadOnlyList<double>> ResolveAllChartValues(BgInfoConfiguration config, DateTimeOffset now)
+    {
+        var values = new Dictionary<BgInfoChart, IReadOnlyList<double>>();
+        for (var i = 0; i < config.Charts.Count; i++)
+        {
+            var chart = config.Charts[i];
+            values[chart] = ResolveChartValues(config, chart, now, i);
+        }
+        return values;
     }
 
     private static IReadOnlyList<double> ResolveChartInputValues(BgInfoChart chart)

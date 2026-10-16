@@ -25,19 +25,23 @@ public partial class BgInfoGenerator {
     }
 
     /// <summary>Resolves every item that asked for a <see cref="BgInfoRegion"/> into a rectangle.</summary>
-    internal static RegionPlacements ResolveRegionPlacements(int width, int height, BgInfoConfiguration config, ChartRect textBlock) {
+    internal static RegionPlacements ResolveRegionPlacements(int width, int height, BgInfoConfiguration config, ChartRect textBlock,
+        IReadOnlyDictionary<BgInfoChart, IReadOnlyList<double>>? chartValues = null) {
         var placements = new RegionPlacements();
         var items = new List<(object Item, BgInfoRegion Region, int Order, int Rank, int Width, int Height)>();
         var rank = 0;
         foreach (var chart in config.Charts) {
-            if (chart.Region != BgInfoRegion.None) items.Add((chart, chart.Region, chart.RegionOrder, rank++, chart.Width, chart.Height));
+            if (chart.Region != BgInfoRegion.None && (chartValues == null || chartValues.TryGetValue(chart, out var values) && values.Count > 0)) {
+                items.Add((chart, chart.Region, chart.RegionOrder, rank++, chart.Width, chart.Height));
+            }
         }
         foreach (var topology in config.Topologies) {
             if (topology.Region != BgInfoRegion.None) items.Add((topology, topology.Region, topology.RegionOrder, rank++, topology.Width, topology.Height));
         }
         foreach (var visual in config.VisualCanvases) {
             if (visual.Region != BgInfoRegion.None) {
-                items.Add((visual, visual.Region, visual.RegionOrder, rank++, visual.Width, BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, height)));
+                var visualHeight = visual.Height > 0 ? visual.Height : BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, height);
+                items.Add((visual, visual.Region, visual.RegionOrder, rank++, visual.Width, visualHeight));
             }
         }
         foreach (var widget in config.Widgets) {

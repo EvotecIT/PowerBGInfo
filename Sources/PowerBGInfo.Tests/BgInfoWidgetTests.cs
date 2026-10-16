@@ -88,6 +88,27 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void MetricThresholdColorsOverrideTheDefaultStatusPalette()
+    {
+        var colors = new BgInfoStatusColors {
+            Ok = ChartColor.FromHex("#112233"),
+            Warning = ChartColor.FromHex("#445566"),
+            Critical = ChartColor.FromHex("#778899"),
+            Info = ChartColor.FromHex("#AABBCC")
+        };
+        var metric = new BgInfoMetricWidget {
+            NumericValue = 95,
+            Threshold = new BgInfoThreshold { Warning = 80, Critical = 90, Colors = colors }
+        };
+
+        var style = new BgInfoWidgetStyle(metric, new BgInfoConfiguration());
+
+        Assert.Equal(colors.Critical, style.Status.Critical);
+        Assert.Equal(colors.Warning, style.Status.Warning);
+        Assert.Equal(colors.Ok, style.Status.Ok);
+    }
+
+    [Fact]
     public void MetricPanelRendersItsSharedHeaderAboveTheMetricBody()
     {
         var withoutHeader = BgInfoWidgetRenderer.Render(new BgInfoMetricWidget { Label = "CPU", Value = "38", BackgroundColor = Panel }, new BgInfoConfiguration(), 320, 200).ToRgbaImage();

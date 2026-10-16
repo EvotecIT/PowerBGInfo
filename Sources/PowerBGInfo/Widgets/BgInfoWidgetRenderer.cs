@@ -16,7 +16,10 @@ internal sealed class BgInfoWidgetStyle {
         Muted = widget.MutedColor ?? tokens.MutedForeground;
         Accent = widget.Accent ?? tokens.Accent;
         SecondaryAccent = widget.SecondaryAccent ?? tokens.SecondaryAccent;
-        Status = widget.ResolveStatusColors();
+        Status = widget is BgInfoMetricWidget metric && metric.NumericValue.HasValue
+            && metric.Threshold is { IsDefined: true, Colors: { } thresholdColors }
+                ? thresholdColors
+                : widget.ResolveStatusColors();
         Grid = widget.BorderColor.HasValue ? WithAlpha(widget.BorderColor.Value, 255) : tokens.Border;
         FontFamily = widget.FontFamilyName ?? config.CustomFontFamilyName ?? VisualTheme.Graphite().Typography.Family;
     }

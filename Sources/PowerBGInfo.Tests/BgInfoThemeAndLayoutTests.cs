@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -142,6 +143,21 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void TopAndBottomBandsShareTheHeightLeftAfterTheirGaps()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, Gap = 24 };
+        var safe = BgInfoLayoutEngine.GetSafeArea(800, 800, layout);
+        var slots = BgInfoLayoutEngine.Resolve(800, 800, layout, null, new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 500),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 0, 500)
+        });
+
+        Assert.True(slots[0].Y + slots[0].Height <= slots[1].Y);
+        Assert.Equal(24, slots[1].Y - (slots[0].Y + slots[0].Height));
+        Assert.Equal(safe.Y + safe.Height, slots[1].Y + slots[1].Height);
+    }
+
+    [Fact]
     public void ColumnsStartBelowTheTextBlockTheyShare()
     {
         var text = new ChartRect(64, 56, 500, 300);
@@ -220,6 +236,36 @@ public class BgInfoThemeAndLayoutTests
         Assert.True(slots[1].X >= slots[0].X + slots[0].Width + 24);
         Assert.True(slots[1].X + slots[1].Width + 24 <= slots[2].X);
         Assert.True(slots[1].Width >= 120);
+    }
+
+    [Fact]
+    public void EmptyRegionChartsDoNotReserveSpaceForOtherPanels()
+    {
+        var chart = new BgInfoChart { Region = BgInfoRegion.Right, Values = System.Array.Empty<double>(), UseHistory = false };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration();
+        config.Charts.Add(chart);
+        config.Widgets.Add(metric);
+        var values = new Dictionary<BgInfoChart, IReadOnlyList<double>> { [chart] = System.Array.Empty<double>() };
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default, values);
+
+        Assert.False(placements.TryGet(chart, out _));
+        Assert.True(placements.TryGet(metric, out _));
+    }
+
+    [Fact]
+    public void VisualCanvasUsesItsExplicitRegionHeight()
+    {
+        var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Width = 280, Height = 80, TileHeight = 100 };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "Health", Value = "OK" });
+        var config = new BgInfoConfiguration();
+        config.VisualCanvases.Add(visual);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default);
+
+        Assert.True(placements.TryGet(visual, out var slot));
+        Assert.Equal(80, slot.Height);
     }
 
     [Fact]
