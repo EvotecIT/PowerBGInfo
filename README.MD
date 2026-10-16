@@ -276,6 +276,15 @@ PowerBGInfo renders, and with a wallpaper or logon target applies, once per run.
 - Charts keep their history between runs in `<ConfigurationDirectory>\Charts`, keyed by `-Id`, so repeated runs build rolling trends (`-MaxPoints`, `-NoHistory`, `-ReplaceHistory`).
 - `PowerBGInfo.Cli.exe --config <file.json>` renders a saved JSON configuration without PowerShell, and `--script` runs a PowerShell script that returns a configuration.
 
+## Production deployment guides
+
+Step-by-step guides for running PowerBGInfo across many machines are in [Docs/Guides](Docs/Guides/Production.md):
+
+- [Production overview](Docs/Guides/Production.md): what one run does, which route fits which environment, installing the module, and the reference script the other guides use.
+- [Task Scheduler](Docs/Guides/TaskScheduler.md), [Group Policy](Docs/Guides/GroupPolicy.md), [Microsoft Intune](Docs/Guides/Intune.md) and [Configuration Manager](Docs/Guides/ConfigurationManager.md).
+- [Remote Desktop Services, Azure Virtual Desktop and Windows 365](Docs/Guides/RemoteDesktop.md).
+- [Security and operations](Docs/Guides/Security.md) and [troubleshooting and FAQ](Docs/Guides/Troubleshooting.md).
+
 ## Example outputs
 
 ![PowerBGInfo](https://raw.githubusercontent.com/EvotecIT/PowerBGInfo/master/Examples/Output/PrzemyslawKlysAndKulkozaurr.jpg)
