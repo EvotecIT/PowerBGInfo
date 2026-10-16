@@ -57,6 +57,15 @@ public sealed class CmdletNewBGInfoLayout : PSCmdlet {
     [ValidateRange(0, 4096)]
     public int IconAreaWidth { get; set; }
 
+    /// <para>Largest height an unsized panel takes when it shares a column or the center. Zero uses 36 % of the image height.</para>
+    [Parameter]
+    [ValidateRange(0, 16384)]
+    public int MaximumPanelHeight { get; set; }
+
+    /// <para>Where Left and Right stacks sit when their panels do not fill the column: Top, Center or Bottom.</para>
+    [Parameter]
+    public BgInfoColumnAlignment ColumnAlignment { get; set; }
+
     /// <summary>Emits the layout.</summary>
     protected override void EndProcessing() {
         var layout = BgInfoThemeScope.Current?.CreateLayout() ?? new BgInfoLayout();
@@ -71,6 +80,8 @@ public sealed class CmdletNewBGInfoLayout : PSCmdlet {
         if (IsBound(nameof(BandHeight))) layout.BandHeight = BandHeight;
         if (IsBound(nameof(TaskbarReserve))) layout.TaskbarReserve = TaskbarReserve;
         if (IsBound(nameof(IconAreaWidth))) layout.IconAreaWidth = IconAreaWidth;
+        if (IsBound(nameof(MaximumPanelHeight))) layout.MaximumPanelHeight = MaximumPanelHeight;
+        if (IsBound(nameof(ColumnAlignment))) layout.ColumnAlignment = ColumnAlignment;
         WriteObject(layout);
     }
 

@@ -14,6 +14,12 @@ using ChartForgeX.VisualBlocks;
 namespace PowerBGInfo;
 
 internal static partial class BgInfoWidgetRenderer {
+    /// <summary>
+    /// Inner padding of table and list blocks. With zero padding the static label-placement pass moves
+    /// edge labels inward and draws leader lines (see design.md), so the blocks keep a small inset.
+    /// </summary>
+    private const double BlockInset = 6;
+
     private static RgbaImage RenderMetric(BgInfoMetricWidget widget, BgInfoWidgetStyle style, int width, int height, double padding) {
         var (w, h, scale) = Density(widget, width, height);
         var status = widget.ResolveStatus();
@@ -54,7 +60,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithTransparentBackground()
             .WithCard(false)
             .WithSize(w, h)
-            .WithPadding(0)
+            .WithPadding(BlockInset)
             .WithPngOutputScale(scale)
             .WithDenseMode(widget.Dense)
             .WithHeader(widget.ShowHeader)
@@ -72,7 +78,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithTransparentBackground()
             .WithCard(false)
             .WithSize(w, h)
-            .WithPadding(0)
+            .WithPadding(BlockInset)
             .WithPngOutputScale(scale)
             .WithDenseMode(widget.Dense);
         foreach (var item in widget.Items) {

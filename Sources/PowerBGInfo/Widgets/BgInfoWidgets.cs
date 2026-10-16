@@ -78,6 +78,9 @@ public sealed class BgInfoTableWidget : BgInfoWidget {
     /// <summary>Shade every other row.</summary>
     public bool RowStriping { get; set; } = true;
 
+    // ChartForgeX table rows are 31 px (24 dense) under a 32 px (26 dense) header.
+    internal override double NaturalBodyHeight => (ShowHeader ? (Dense ? 30 : 36) : 0) + Rows.Count * (Dense ? 24 : 31) + 16;
+
     /// <inheritdoc />
     public override void Validate() {
         base.Validate();
@@ -135,6 +138,9 @@ public sealed class BgInfoListWidget : BgInfoWidget {
     public BgInfoListMarker Marker { get; set; }
     /// <summary>Use compact rows.</summary>
     public bool Dense { get; set; }
+
+    // ChartForgeX list rows are 33 px (25 dense).
+    internal override double NaturalBodyHeight => Items.Count * (Dense ? 25 : 33) + 16;
 }
 
 /// <summary>One dated value.</summary>

@@ -41,7 +41,7 @@ public partial class BgInfoGenerator {
             }
         }
         foreach (var widget in config.Widgets) {
-            if (widget.Region != BgInfoRegion.None) items.Add((widget, widget.Region, widget.RegionOrder, rank++, widget.Width, widget.Height));
+            if (widget.Region != BgInfoRegion.None) items.Add((widget, widget.Region, widget.RegionOrder, rank++, widget.Width, ResolveWidgetHeight(widget, config)));
         }
         if (items.Count == 0) return placements;
 
@@ -51,6 +51,16 @@ public partial class BgInfoGenerator {
         var slots = BgInfoLayoutEngine.Resolve(width, height, config.Layout ?? new BgInfoLayout(), reserved, requests);
         for (var i = 0; i < ordered.Count; i++) placements.Set(ordered[i].Item, slots[i]);
         return placements;
+    }
+
+    /// <summary>Unsized tables and lists in a column take their natural height instead of sharing the column.</summary>
+    internal static int ResolveWidgetHeight(BgInfoWidget widget, BgInfoConfiguration config) {
+        if (widget.Height > 0 || widget.NaturalBodyHeight <= 0) return widget.Height;
+        if (widget.Region is BgInfoRegion.Top or BgInfoRegion.Bottom) return 0;
+        var header = string.IsNullOrWhiteSpace(widget.Title) && string.IsNullOrWhiteSpace(widget.Note)
+            ? 0
+            : (widget.TitleFontSize ?? config.FontSize) * 1.35 + Math.Max(6, widget.Padding / 2d);
+        return (int)Math.Ceiling(widget.NaturalBodyHeight * widget.Scale + header + widget.Padding * 2);
     }
 
     private static void RenderWidgets(BgInfoRasterImage image, BgInfoConfiguration config, RegionPlacements placements) {

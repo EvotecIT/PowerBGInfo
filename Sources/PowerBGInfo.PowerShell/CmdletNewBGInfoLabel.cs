@@ -68,6 +68,10 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
     [Parameter]
     public SwitchParameter Accent { get; set; }
 
+    /// <para>Colors the label with the theme's secondary ink, for supporting lines. -Color wins.</para>
+    [Parameter]
+    public SwitchParameter Muted { get; set; }
+
     /// <summary>Emits a BGInfo label entry.</summary>
     protected override void EndProcessing() {
         var theme = BgInfoThemeScope.Current;
@@ -76,8 +80,13 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
             roleColor = (theme?.StatusColors ?? BgInfoStatusColors.Default(theme?.Mode ?? ChartForgeX.Themes.VisualThemeMode.Dark)).Resolve(Status);
         } else if (Accent.IsPresent && theme != null) {
             roleColor = theme.Accent;
-        } else if (Accent.IsPresent) {
-            WriteWarning("-Accent uses the New-BGInfo -Theme accent; no theme is active.");
+        } else if (Muted.IsPresent && theme != null) {
+            roleColor = theme.Muted;
+        } else if (Accent.IsPresent || Muted.IsPresent) {
+            WriteWarning("-Accent and -Muted use the New-BGInfo -Theme colors; no theme is active.");
+        } else if (theme != null) {
+            // Under a theme, standalone labels are headings and use the primary ink; value names stay muted.
+            roleColor = theme.Ink;
         }
         var entry = new BgInfoEntry
         {

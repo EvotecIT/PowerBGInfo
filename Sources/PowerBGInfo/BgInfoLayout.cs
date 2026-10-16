@@ -21,6 +21,16 @@ public enum BgInfoRegion {
     Center
 }
 
+/// <summary>Where a stack sits inside a column when its panels do not fill it.</summary>
+public enum BgInfoColumnAlignment {
+    /// <summary>Stack from the top.</summary>
+    Top,
+    /// <summary>Center the stack vertically.</summary>
+    Center,
+    /// <summary>Stack against the bottom.</summary>
+    Bottom
+}
+
 /// <summary>Safe-area margins and region sizes for <see cref="BgInfoRegion"/> placement.</summary>
 public sealed class BgInfoLayout {
     /// <summary>Distance from the left and right screen edges.</summary>
@@ -35,13 +45,12 @@ public sealed class BgInfoLayout {
     public int BandHeight { get; set; }
     /// <summary>Height kept free for the taskbar. A negative value estimates it from the image height (48 px at 1080, 64 px at 1440).</summary>
     public int TaskbarReserve { get; set; } = -1;
-    /// <summary>Width kept free on the left for desktop icons.</summary>
+    /// <summary>Width kept free on the left for desktop icons. It also moves a left-aligned text block.</summary>
     public int IconAreaWidth { get; set; }
-
-    internal BgInfoLayout Clone() => new() {
-        MarginX = MarginX, MarginY = MarginY, Gap = Gap, ColumnWidth = ColumnWidth, BandHeight = BandHeight,
-        TaskbarReserve = TaskbarReserve, IconAreaWidth = IconAreaWidth
-    };
+    /// <summary>Largest height an unsized panel takes when it shares a column. Zero uses 36 % of the image height, which keeps panels readable on portrait screens.</summary>
+    public int MaximumPanelHeight { get; set; }
+    /// <summary>Where Left and Right stacks sit when their panels do not fill the column. Center stacks are always centered.</summary>
+    public BgInfoColumnAlignment ColumnAlignment { get; set; }
 }
 
 /// <summary>One item that asks for a place in a region.</summary>
@@ -119,12 +128,13 @@ public static class BgInfoLayoutEngine {
 
         var leftX = safe.X;
         var rightX = safeRight - columnWidth;
-        if (left.Length > 0) FlowColumn(requests, left, result, leftX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.Start, center: false);
-        if (right.Length > 0) FlowColumn(requests, right, result, rightX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.End, center: false);
+        var maximumShare = layout.MaximumPanelHeight > 0 ? layout.MaximumPanelHeight : height * 0.36;
+        if (left.Length > 0) FlowColumn(requests, left, result, leftX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.Start, layout.ColumnAlignment, maximumShare);
+        if (right.Length > 0) FlowColumn(requests, right, result, rightX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.End, layout.ColumnAlignment, maximumShare);
         if (center.Length > 0) {
             var centerLeft = left.Length > 0 ? leftX + columnWidth + gap : safe.X;
             var centerRight = right.Length > 0 ? rightX - gap : safeRight;
-            FlowColumn(requests, center, result, centerLeft, Math.Max(1, centerRight - centerLeft), columnTop, columnBottom, text, gap, CrossAlign.Middle, center: true);
+            FlowColumn(requests, center, result, centerLeft, Math.Max(1, centerRight - centerLeft), columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
         }
 
         return result;
@@ -149,7 +159,9 @@ public static class BgInfoLayoutEngine {
     private static void FlowRow(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double start, double end, double y, double height, double gap, bool alignBottom) {
         var available = Math.Max(1, end - start);
         var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, gap);
-        var x = start;
+        // A row of fixed-width panels that does not fill the band is centered in it.
+        var used = widths.Sum() + gap * Math.Max(0, indexes.Length - 1);
+        var x = start + Math.Max(0, available - used) / 2;
         for (var n = 0; n < indexes.Length; n++) {
             var request = requests[indexes[n]];
             var itemHeight = request.Height > 0 ? Math.Min(request.Height, height) : height;
@@ -159,7 +171,7 @@ public static class BgInfoLayoutEngine {
         }
     }
 
-    private static void FlowColumn(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double x, double width, double top, double bottom, ChartRect? text, double gap, CrossAlign align, bool center) {
+    private static void FlowColumn(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double x, double width, double top, double bottom, ChartRect? text, double gap, CrossAlign align, BgInfoColumnAlignment alignment, double maximumShare) {
         if (text is { } block && Overlaps(x, x + width, block.X, block.X + block.Width) && Overlaps(top, bottom, block.Y, block.Y + block.Height)) {
             var middle = (top + bottom) / 2;
             if (block.Y + block.Height / 2 <= middle) top = Math.Max(top, block.Y + block.Height + gap);
@@ -167,9 +179,14 @@ public static class BgInfoLayoutEngine {
         }
 
         var available = Math.Max(1, bottom - top);
-        var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, gap);
+        var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, gap, maximumShare);
         var used = heights.Sum() + gap * Math.Max(0, indexes.Length - 1);
-        var y = center && used < available ? top + (available - used) / 2 : top;
+        var spare = Math.Max(0, available - used);
+        var y = alignment switch {
+            BgInfoColumnAlignment.Center => top + spare / 2,
+            BgInfoColumnAlignment.Bottom => top + spare,
+            _ => top
+        };
         for (var n = 0; n < indexes.Length; n++) {
             var request = requests[indexes[n]];
             var itemWidth = request.Width > 0 ? Math.Min(request.Width, width) : width;
@@ -184,13 +201,13 @@ public static class BgInfoLayoutEngine {
     }
 
     /// <summary>Keeps fixed sizes and splits the remaining space among zero-size items.</summary>
-    internal static double[] Share(double[] requested, double available, double gap) {
+    internal static double[] Share(double[] requested, double available, double gap, double maximumShare = double.MaxValue) {
         var sizes = new double[requested.Length];
         if (requested.Length == 0) return sizes;
         var fixedTotal = requested.Where(v => v > 0).Sum();
         var automatic = requested.Count(v => v <= 0);
         var remaining = available - fixedTotal - gap * (requested.Length - 1);
-        var share = automatic > 0 ? Math.Max(1, remaining / automatic) : 0;
+        var share = automatic > 0 ? Math.Max(1, Math.Min(maximumShare, remaining / automatic)) : 0;
         for (var i = 0; i < requested.Length; i++) sizes[i] = requested[i] > 0 ? Math.Min(requested[i], available) : share;
         return sizes;
     }

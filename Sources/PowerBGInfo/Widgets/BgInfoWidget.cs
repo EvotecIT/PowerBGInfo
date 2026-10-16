@@ -103,6 +103,10 @@ public abstract class BgInfoWidget {
         }
     }
 
+    /// <summary>Height of the body content in logical pixels when it has a natural size, or zero when the widget fills any height.</summary>
+    /// <remarks>Region layout uses it for unsized widgets in columns, so a short table does not stretch to half the screen.</remarks>
+    internal virtual double NaturalBodyHeight => 0;
+
     /// <summary>Resolved status colors.</summary>
     public BgInfoStatusColors ResolveStatusColors() => StatusColors ?? BgInfoStatusColors.Default(ThemeMode);
 

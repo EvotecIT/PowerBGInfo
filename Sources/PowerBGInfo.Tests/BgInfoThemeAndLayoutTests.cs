@@ -198,10 +198,12 @@ public class BgInfoThemeAndLayoutTests
             using var output = BgInfoRasterImage.Load(path);
             var pixels = output.ToRgbaImage();
 
-            // Right column: 24 % of 1280 clamped to 340, from x = 900 to 1240.
+            // Right column: 24 % of 1280 clamped to 340, from x = 900 to 1240. An unsized panel
+            // takes at most 36 % of the image height (259 px), so it ends at y = 299.
             BgInfoBackgroundTests.AssertNear(fill, BgInfoBackgroundTests.Pixel(pixels, 905, 45));
-            BgInfoBackgroundTests.AssertNear(fill, BgInfoBackgroundTests.Pixel(pixels, 1235, 675));
-            BgInfoBackgroundTests.AssertNear(ChartColor.Black, BgInfoBackgroundTests.Pixel(pixels, 880, 360));
+            BgInfoBackgroundTests.AssertNear(fill, BgInfoBackgroundTests.Pixel(pixels, 1235, 290));
+            BgInfoBackgroundTests.AssertNear(ChartColor.Black, BgInfoBackgroundTests.Pixel(pixels, 1235, 320));
+            BgInfoBackgroundTests.AssertNear(ChartColor.Black, BgInfoBackgroundTests.Pixel(pixels, 880, 200));
         }
         finally
         {

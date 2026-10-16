@@ -67,6 +67,8 @@ public static partial class BgInfoConfigurationJson {
         if (model.BandHeight.HasValue) layout.BandHeight = Math.Max(0, model.BandHeight.Value);
         if (model.TaskbarReserve.HasValue) layout.TaskbarReserve = model.TaskbarReserve.Value;
         if (model.IconAreaWidth.HasValue) layout.IconAreaWidth = Math.Max(0, model.IconAreaWidth.Value);
+        if (model.MaximumPanelHeight.HasValue) layout.MaximumPanelHeight = Math.Max(0, model.MaximumPanelHeight.Value);
+        ApplyEnum<BgInfoColumnAlignment>(model.ColumnAlignment, value => layout.ColumnAlignment = value);
         return layout;
     }
 
@@ -75,7 +77,9 @@ public static partial class BgInfoConfigurationJson {
         ColumnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : null,
         BandHeight = layout.BandHeight > 0 ? layout.BandHeight : null,
         TaskbarReserve = layout.TaskbarReserve >= 0 ? layout.TaskbarReserve : null,
-        IconAreaWidth = layout.IconAreaWidth > 0 ? layout.IconAreaWidth : null
+        IconAreaWidth = layout.IconAreaWidth > 0 ? layout.IconAreaWidth : null,
+        MaximumPanelHeight = layout.MaximumPanelHeight > 0 ? layout.MaximumPanelHeight : null,
+        ColumnAlignment = layout.ColumnAlignment == BgInfoColumnAlignment.Top ? null : layout.ColumnAlignment.ToString()
     };
 
     private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model) {
@@ -355,6 +359,8 @@ public static partial class BgInfoConfigurationJson {
         public int? BandHeight { get; set; }
         public int? TaskbarReserve { get; set; }
         public int? IconAreaWidth { get; set; }
+        public int? MaximumPanelHeight { get; set; }
+        public string? ColumnAlignment { get; set; }
     }
 
     internal sealed class BgInfoThresholdFile {
