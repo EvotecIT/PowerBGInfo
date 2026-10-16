@@ -238,6 +238,7 @@ public static partial class BgInfoConfigurationJson {
         }
 
         configuration.Background = MapBackground(model.Background, baseDirectory);
+        MapExtensions(model, configuration);
         return configuration;
     }
 
@@ -551,6 +552,7 @@ public static partial class BgInfoConfigurationJson {
         }
 
         model.Background = MapBackgroundFile(configuration.Background);
+        WriteExtensions(configuration, model);
         return model;
     }
 
@@ -741,6 +743,7 @@ public static partial class BgInfoConfigurationJson {
         }
         if (model.PictorialColumns.HasValue) chart.PictorialColumns = model.PictorialColumns.Value;
         if (!string.IsNullOrWhiteSpace(model.MetricArgument)) chart.MetricArgument = model.MetricArgument;
+        MapPlacement(model, chart);
 
         return chart;
     }
@@ -840,6 +843,8 @@ public static partial class BgInfoConfigurationJson {
                 topology.Edges.Add(MapEdge(item));
             }
         }
+        topology.Region = ParseRegion(model.Region);
+        topology.RegionOrder = model.RegionOrder ?? 0;
 
         return topology;
     }
@@ -1046,6 +1051,10 @@ public static partial class BgInfoConfigurationJson {
                 if (item != null) visual.Features.Add(MapVisualCanvasFeature(item));
             }
         }
+        visual.Region = ParseRegion(model.Region);
+        visual.RegionOrder = model.RegionOrder ?? 0;
+        visual.RailMarginX = model.RailMarginX;
+        visual.RailMarginY = model.RailMarginY;
 
         return visual;
     }
@@ -1265,6 +1274,8 @@ public static partial class BgInfoConfigurationJson {
         public List<BgInfoVisualCanvasFile>? VisualCanvases { get; set; }
         public List<BgInfoImageFile>? Images { get; set; }
         public BgInfoBackgroundFile? Background { get; set; }
+        public BgInfoLayoutFile? Layout { get; set; }
+        public List<BgInfoWidgetFile>? Widgets { get; set; }
     }
 
     internal sealed class BgInfoVariableFile {
@@ -1304,6 +1315,9 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoChartFile {
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
+        public BgInfoThresholdFile? Threshold { get; set; }
         public double? CornerRadius { get; set; }
         public string? BorderColor { get; set; }
         public string? ThemeMode { get; set; }
@@ -1380,6 +1394,8 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoTopologyFile {
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
         public string? Title { get; set; }
         public string? Subtitle { get; set; }
         public int? Width { get; set; }
@@ -1454,6 +1470,10 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasFile {
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
+        public int? RailMarginX { get; set; }
+        public int? RailMarginY { get; set; }
         public string? ThemeMode { get; set; }
         public string? Template { get; set; }
         public string? LayoutPreset { get; set; }
