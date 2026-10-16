@@ -12,12 +12,11 @@ internal static class BgInfoOutputRegistry {
     public const string FileName = "PowerBgInfo.outputs.txt";
 
     private const char Separator = '|';
-    private const int MaxEntries = 256;
     private const string Header = "# Images written by PowerBGInfo and the image each was drawn on (empty: a generated or plain background).";
 
     // Default output names: <name>_PowerBgInfo.<ext>, slideshow copies <name>_PowerBgInfo_001.<ext>,
     // and the temporary refresh copy <name>_refresh_<guid>.<ext>.
-    private static readonly Regex OwnName = new(@"(_PowerBgInfo(_\d{3})?|_refresh_[0-9a-f]{32})$",
+    private static readonly Regex OwnName = new(@"^(?:PowerBgInfo$|.*(?:_PowerBgInfo(?:_\d{3})?|_refresh_[0-9a-f]{32})$)",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Records that <paramref name="outputPath"/> was drawn on <paramref name="sourcePath"/>. Never throws.</summary>
@@ -31,8 +30,6 @@ internal static class BgInfoOutputRegistry {
             entries.RemoveAll(entry => string.Equals(entry.Key, key, StringComparison.OrdinalIgnoreCase));
             var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath);
             entries.Add(new KeyValuePair<string, string>(key, source));
-            if (entries.Count > MaxEntries) entries.RemoveRange(0, entries.Count - MaxEntries);
-
             var lines = new List<string>(entries.Count + 1) { Header };
             lines.AddRange(entries.Select(entry => entry.Key + Separator + entry.Value));
             File.WriteAllLines(registryPath, lines);

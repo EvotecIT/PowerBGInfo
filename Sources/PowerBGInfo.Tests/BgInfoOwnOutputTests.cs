@@ -123,11 +123,60 @@ public class BgInfoOwnOutputTests
         Assert.Equal(photo, ReadRecordedSource(second));
     }
 
+    [Fact]
+    public void UnrecordedChosenFileThatIsTheOutputItselfRemainsTheBase()
+    {
+        using var folder = new TempFolder();
+        var photo = folder.CreateImage("corporate.png", ChartColors.Navy);
+        var first = Render(folder, null, "wallpaper.png", out _, filePath: photo);
+        var firstPixels = Pixels(first);
+        File.Delete(Path.Combine(folder.Path, BgInfoOutputRegistry.FileName));
+
+        var second = Render(folder, null, "wallpaper.png", out _, filePath: first);
+
+        Assert.Equal(firstPixels, Pixels(second));
+    }
+
+    [Fact]
+    public void UnrecordedCustomSlideshowOutputIsRecognizedFromItsPlannedPath()
+    {
+        using var folder = new TempFolder();
+        var output = folder.CreateImage("wallpaper_001.png", ChartColors.Navy);
+        var warnings = new List<string>();
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService()) {
+            Warning = warnings.Add
+        };
+        var knownOutputPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            Path.GetFullPath(output)
+        };
+
+        var original = generator.ResolveOriginalImage(output, null, "The slideshow image", chosenByUser: false, knownOutputPaths: knownOutputPaths);
+
+        Assert.Null(original);
+        Assert.Single(warnings);
+    }
+
+    [Fact]
+    public void RegistryRetainsMappingsForLargeSlideshows()
+    {
+        using var folder = new TempFolder();
+        for (var index = 0; index < 300; index++)
+        {
+            BgInfoOutputRegistry.Record(
+                Path.Combine(folder.Path, $"slide-{index:D3}.png"),
+                Path.Combine(folder.Path, $"source-{index:D3}.png"));
+        }
+
+        Assert.True(BgInfoOutputRegistry.TryGetSource(
+            Path.Combine(folder.Path, "slide-000.png"), out var source));
+        Assert.Equal(Path.Combine(folder.Path, "source-000.png"), source);
+    }
+
     [Theory]
     [InlineData("img0_PowerBgInfo.jpg", true)]
     [InlineData("img0_powerbginfo_003.png", true)]
     [InlineData("wallpaper_refresh_0123456789abcdef0123456789abcdef.png", true)]
-    [InlineData("PowerBgInfo.png", false)]
+    [InlineData("PowerBgInfo.png", true)]
     [InlineData("corporate.jpg", false)]
     public void RecognizesTheDefaultOutputNames(string fileName, bool expected)
     {

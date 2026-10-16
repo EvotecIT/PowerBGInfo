@@ -23,7 +23,10 @@ if ($monitors.Count -eq 0) {
 }
 
 foreach ($monitor in $monitors) {
-    $scale = [Math]::Max(1, [Math]::Round($monitor.Height / 1080, 2))
+    $scale = $monitor.Height / 1080
+    if ($scale -lt 1) {
+        $scale = 1
+    }
     $render = @{
         Theme                  = New-BGInfoTheme Graphite -Mode $Theme -Scale $scale
         Target                 = 'File'

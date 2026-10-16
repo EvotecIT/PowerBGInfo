@@ -28,7 +28,7 @@ the task from [Task Scheduler](../task-scheduler/) does that.
 3. **Installation program** (one line):
 
    ```text
-   %windir%\Sysnative\WindowsPowerShell\v1.0\powershell.exe
+   %windir%\System32\WindowsPowerShell\v1.0\powershell.exe
    -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
    ```
 
@@ -43,23 +43,24 @@ the task from [Task Scheduler](../task-scheduler/) does that.
    logged on**.
 6. Deploy as **Required** to a device collection.
 
-Microsoft documents the `Sysnative` alias for package programs, which run
-as 32-bit processes on 64-bit clients. This guide uses it for the script
-installer too; check `AppEnforce.log` on a pilot device to confirm which
-PowerShell started.
+Leave **Run installation and uninstall program as 32-bit process on
+64-bit clients** unchecked and use the `System32` command above to start
+64-bit Windows PowerShell. If the deployment type must run as a 32-bit
+process, use `%windir%\Sysnative\WindowsPowerShell\v1.0\powershell.exe`
+instead; `Sysnative` is available only to a 32-bit process on 64-bit Windows.
+Check `AppEnforce.log` on a pilot device to confirm which PowerShell started.
 
 ## Option B: a package and program
 
 Use this if you still deploy with packages. Create a **Standard Program**:
 
-- **Command line**: as above.
+- **Command line**:
+  `%windir%\Sysnative\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1`.
 - **Program can run**: **Whether or not a user is logged on**.
 - **Run mode**: **Run with administrative rights**.
 
-Microsoft documents that a program's command line runs as a 32-bit process
-on 64-bit clients, so `%ProgramFiles%` resolves to
-`C:\Program Files (x86)` and `powershell.exe` is the 32-bit one, unless you
-use `%windir%\Sysnative`.
+Standard Program commands run as 32-bit processes on 64-bit clients, so
+use `Sysnative` to launch 64-bit Windows PowerShell.
 
 ## Run Scripts
 

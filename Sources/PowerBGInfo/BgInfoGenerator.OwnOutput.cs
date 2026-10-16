@@ -20,14 +20,16 @@ public partial class BgInfoGenerator
     /// overwrites; any other image, even one PowerBGInfo rendered, is used as given. The current wallpaper and slideshow
     /// images are replaced whenever PowerBGInfo wrote them.
     /// </param>
-    internal string? ResolveOriginalImage(string? candidate, string? plannedOutputPath, string role, bool chosenByUser)
+    internal string? ResolveOriginalImage(string? candidate, string? plannedOutputPath, string role, bool chosenByUser,
+        ISet<string>? knownOutputPaths = null)
     {
         if (string.IsNullOrWhiteSpace(candidate))
         {
             return candidate;
         }
 
-        if (chosenByUser && !IsSamePath(candidate!, plannedOutputPath))
+        var isPlannedOutput = IsSamePath(candidate!, plannedOutputPath);
+        if (chosenByUser && !isPlannedOutput)
         {
             return candidate;
         }
@@ -39,7 +41,13 @@ public partial class BgInfoGenerator
             return IsSamePath(source ?? string.Empty, candidate) ? null : source;
         }
 
-        if (!IsSamePath(candidate!, plannedOutputPath) && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
+        if (chosenByUser && isPlannedOutput && File.Exists(candidate))
+        {
+            return candidate;
+        }
+
+        var isKnownOutputPath = knownOutputPaths?.Contains(TryGetFullPath(candidate!)) == true;
+        if (!isPlannedOutput && !isKnownOutputPath && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
         {
             return candidate;
         }

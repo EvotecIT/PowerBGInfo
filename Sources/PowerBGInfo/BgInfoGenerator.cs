@@ -290,8 +290,15 @@ public partial class BgInfoGenerator
         }
 
         // After the first run the slideshow shows the rendered copies; go back to the images they were drawn on.
-        var sourcePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths)
-            .Select(path => ResolveOriginalImage(path, null, "The slideshow image", chosenByUser: false))
+        var slideshowImagePaths = ResolveSlideshowSourcePaths(slideshow.ImagePaths);
+        var knownOutputPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var index = 0; index < slideshowImagePaths.Length; index++)
+        {
+            knownOutputPaths.Add(TryGetFullPath(BuildSlideshowOutputPath(config, slideshowImagePaths[index], index)));
+        }
+
+        var sourcePaths = slideshowImagePaths
+            .Select(path => ResolveOriginalImage(path, null, "The slideshow image", chosenByUser: false, knownOutputPaths))
             .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
             .Select(path => path!)
             .Distinct(StringComparer.OrdinalIgnoreCase)

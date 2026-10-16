@@ -41,10 +41,42 @@ $programFiles = if ($env:ProgramW6432) { $env:ProgramW6432 } else {
 
 $moduleTarget = Join-Path $programFiles `
     "WindowsPowerShell\Modules\PowerBGInfo\$version"
-if (-not (Test-Path -LiteralPath $moduleTarget)) {
+$moduleSource = Join-Path $share "Module\PowerBGInfo\$version"
+$moduleFiles = @(Get-ChildItem -LiteralPath $moduleSource -File -Recurse -ErrorAction Stop)
+if (-not $moduleFiles.Count) { throw "The module source is empty: $moduleSource" }
+
+$copyModule = -not (Test-Path -LiteralPath (Join-Path $moduleTarget 'PowerBGInfo.psd1') -PathType Leaf)
+foreach ($moduleFile in $moduleFiles) {
+    $relativePath = $moduleFile.FullName.Substring($moduleSource.Length).TrimStart('\', '/')
+    $targetFile = Join-Path $moduleTarget $relativePath
+    if (-not (Test-Path -LiteralPath $targetFile -PathType Leaf)) {
+        $copyModule = $true
+        break
+    }
+    $sourceHash = (Get-FileHash -LiteralPath $moduleFile.FullName -Algorithm SHA256).Hash
+    $targetHash = (Get-FileHash -LiteralPath $targetFile -Algorithm SHA256).Hash
+    if ($sourceHash -ne $targetHash) {
+        $copyModule = $true
+        break
+    }
+}
+
+if ($copyModule) {
     New-Item -ItemType Directory -Path $moduleTarget -Force | Out-Null
-    Copy-Item -Path "$share\Module\PowerBGInfo\$version\*" `
-        -Destination $moduleTarget -Recurse -Force
+    Copy-Item -Path (Join-Path $moduleSource '*') -Destination $moduleTarget `
+        -Recurse -Force -ErrorAction Stop
+    foreach ($moduleFile in $moduleFiles) {
+        $relativePath = $moduleFile.FullName.Substring($moduleSource.Length).TrimStart('\', '/')
+        $targetFile = Join-Path $moduleTarget $relativePath
+        if (-not (Test-Path -LiteralPath $targetFile -PathType Leaf)) {
+            throw "The module copy is incomplete: $targetFile"
+        }
+        $sourceHash = (Get-FileHash -LiteralPath $moduleFile.FullName -Algorithm SHA256).Hash
+        $targetHash = (Get-FileHash -LiteralPath $targetFile -Algorithm SHA256).Hash
+        if ($sourceHash -ne $targetHash) {
+            throw "The module copy does not match its source: $targetFile"
+        }
+    }
 }
 
 $scriptTarget = Join-Path $programFiles 'PowerBGInfo'
