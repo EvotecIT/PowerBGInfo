@@ -231,6 +231,8 @@ public sealed class BgInfoTreemapItem {
     public double Value { get; set; }
     /// <summary>Optional group that nests the rectangle.</summary>
     public string? Group { get; set; }
+    /// <summary>Optional second measure that colors the rectangle, for example CPU while the size is memory.</summary>
+    public double? ColorValue { get; set; }
 }
 
 /// <summary>Sizes as nested rectangles, rendered as a ChartForgeX treemap.</summary>
@@ -249,12 +251,22 @@ public sealed class BgInfoTreemapWidget : BgInfoWidget {
     public bool ShowValues { get; set; } = true;
     /// <summary>Optional suffix after values, for example GB.</summary>
     public string ValueSuffix { get; set; } = string.Empty;
+    /// <summary>
+    /// Optional thresholds for <see cref="BgInfoTreemapItem.ColorValue"/>. With thresholds, rectangles take the ok, warning
+    /// and critical colors; without them, color values shade from a faint accent to the full accent.
+    /// </summary>
+    public BgInfoThreshold? Threshold { get; set; }
+
+    /// <summary>True when at least one rectangle has a color value.</summary>
+    public bool HasColorValues => Items.Any(item => item.ColorValue.HasValue);
 
     /// <inheritdoc />
     public override void Validate() {
         base.Validate();
         if (Items.Count == 0) throw new InvalidOperationException("A treemap needs at least one item.");
         if (Items.Any(item => item.Value < 0 || double.IsNaN(item.Value) || double.IsInfinity(item.Value))) throw new InvalidOperationException("Treemap values must be finite and not negative.");
+        if (Items.Any(item => item.ColorValue is { } color && (double.IsNaN(color) || double.IsInfinity(color)))) throw new InvalidOperationException("Treemap color values must be finite.");
+        Threshold?.Validate();
     }
 }
 

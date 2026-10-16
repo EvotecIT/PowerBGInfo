@@ -180,7 +180,15 @@ public static class BgInfoLayoutEngine {
 
         var available = Math.Max(1, bottom - top);
         var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, gap, maximumShare);
-        var used = heights.Sum() + gap * Math.Max(0, indexes.Length - 1);
+        var gaps = gap * Math.Max(0, indexes.Length - 1);
+        var total = heights.Sum();
+        // Fixed and natural heights that add up to more than the column shrink together, so the stack
+        // stays inside the safe area instead of running into the taskbar or off the image.
+        if (total + gaps > available && total > 0) {
+            var fit = Math.Max(0, available - gaps) / total;
+            for (var n = 0; n < heights.Length; n++) heights[n] = Math.Max(1, heights[n] * fit);
+        }
+        var used = heights.Sum() + gaps;
         var spare = Math.Max(0, available - used);
         var y = alignment switch {
             BgInfoColumnAlignment.Center => top + spare / 2,

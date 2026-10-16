@@ -204,7 +204,11 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 Start = start.Value,
                 End = CmdletNewBGInfoCalendarHeatmap.ToDate(BgInfoValueReader.GetProperty(value, "End", "EndTime", "To")),
                 Category = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Category", "Kind", "Type")) is { Length: > 0 } category ? category : "Scheduled",
-                Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State"))
+                Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State")),
+                // Objects may carry a color like New-BGInfoTimelineItem -Color; the first item of a category sets it.
+                Color = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Color")) is { Length: > 0 } color
+                    ? PowerShellColorConverter.ConvertRequired(color, "Color")
+                    : null
             });
         }
     }
@@ -221,9 +225,17 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
 
 /// <summary>Creates a treemap panel: sizes as nested rectangles, for example disk usage by folder or VM.</summary>
 /// <para>Pipe objects with Name, Value and an optional Group, or pass -Data @{ name = size }.</para>
+/// <para>-ColorProperty colors each rectangle by a second measure; with -WarningThreshold and -CriticalThreshold the colors are the ok, warning and critical status colors.</para>
 /// <example>
 /// <code>
 /// New-BGInfoTreemap -Region Right -Title 'D: by folder' -ValueSuffix ' GB' -Data ([ordered]@{ Databases = 412; Logs = 96; Backups = 230 })
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// Get-VM | Select-Object Name, CPUUsage, @{ Name = 'MemoryGB'; Expression = { $_.MemoryAssigned / 1GB } } |
+///     New-BGInfoTreemap -Region Center -Title 'Memory by VM, colored by CPU' -ValueProperty MemoryGB -ValueSuffix ' GB' `
+///         -ColorProperty CPUUsage -WarningThreshold 70 -CriticalThreshold 90
 /// </code>
 /// </example>
 [Cmdlet(VerbsCommon.New, "BGInfoTreemap", DefaultParameterSetName = "Objects")]
@@ -259,6 +271,22 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
     [Parameter]
     public SwitchParameter NoValues { get; set; }
 
+    /// <para>Property with a second number that colors each rectangle, for example CPU while the size is memory.</para>
+    [Parameter(ParameterSetName = "Objects")]
+    public string ColorProperty { get; set; } = string.Empty;
+
+    /// <para>Color value at which a rectangle takes the warning color. Without -ColorProperty the size is compared.</para>
+    [Parameter]
+    public double WarningThreshold { get; set; }
+
+    /// <para>Color value at which a rectangle takes the critical color. Without -ColorProperty the size is compared.</para>
+    [Parameter]
+    public double CriticalThreshold { get; set; }
+
+    /// <para>Above: higher values are worse. Below: lower values are worse.</para>
+    [Parameter]
+    public BgInfoThresholdDirection ThresholdDirection { get; set; }
+
     /// <summary>Collects piped items.</summary>
     protected override void ProcessRecord() {
         if (ParameterSetName != "Objects" || InputObject == null) return;
@@ -269,7 +297,13 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
             return;
         }
         var group = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, GroupProperty));
-        _items.Add(new BgInfoTreemapItem { Name = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, NameProperty, "Label")), Value = size.Value, Group = group.Length > 0 ? group : null });
+        var color = string.IsNullOrWhiteSpace(ColorProperty) ? null : BgInfoValueReader.Number(BgInfoValueReader.GetProperty(value, ColorProperty));
+        _items.Add(new BgInfoTreemapItem {
+            Name = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, NameProperty, "Label")),
+            Value = size.Value,
+            Group = group.Length > 0 ? group : null,
+            ColorValue = color
+        });
     }
 
     /// <summary>Emits the treemap widget.</summary>
@@ -283,6 +317,14 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
         widget.Items.AddRange(_items);
         widget.ValueSuffix = ValueSuffix ?? string.Empty;
         widget.ShowValues = !NoValues.IsPresent;
+        widget.Threshold = BgInfoThemeDefaults.Threshold(this, WarningThreshold, CriticalThreshold, ThresholdDirection);
+        if (widget.Threshold != null && string.IsNullOrWhiteSpace(ColorProperty)) {
+            // Thresholds without a second measure compare the sizes themselves.
+            foreach (var item in widget.Items) item.ColorValue = item.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(ColorProperty) && !widget.HasColorValues) {
+            WriteWarning($"No item has a numeric '{ColorProperty}'; the treemap keeps its default colors.");
+        }
         Emit(widget);
     }
 }
