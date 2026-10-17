@@ -91,7 +91,10 @@ New-BGInfo -Theme $look -Target File {
         -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $branch.Site -FontSize ([int](72 * $scale)) `
         -FontWeight 600
-    if ($down.Count -eq 0) {
+    if ($branch.Links.Count -eq 0) {
+        New-BGInfoLabel -Name '●  Connectivity unavailable' -Status Info `
+            -FontWeight 600
+    } elseif ($down.Count -eq 0) {
         $text = "Connected to head office · $($branch.Backup)"
         New-BGInfoLabel -Name "●  $text" -Status Ok -FontWeight 600
     } else {

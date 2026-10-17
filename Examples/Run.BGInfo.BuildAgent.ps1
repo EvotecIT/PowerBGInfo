@@ -19,6 +19,7 @@ Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
 function Get-BuildAgentData {
     [pscustomobject] @{
         Name      = 'BLD-WIN-04'
+        Available = $true
         Pool      = 'WIN-BUILD-2025'
         # .agent and .credentials in the agent folder, or the pool API:
         # GET {org}/_apis/distributedtask/pools/{id}/agents
@@ -54,9 +55,10 @@ function Get-BuildAgentData {
 }
 
 $fallback = [pscustomobject] @{
-    Name = $env:COMPUTERNAME; Pool = 'unknown'; Agent = 'unknown'
-    Toolchain = 'unknown'; Job = 'idle'; Stage = ''; Waiting = 0
-    Disks = @(); Builds = @(); Stages = @('Idle')
+    Name = $env:COMPUTERNAME; Available = $false
+    Pool = 'unknown'; Agent = 'unknown'; Toolchain = 'unknown'
+    Job = 'unavailable'; Stage = ''; Waiting = 0
+    Disks = @(); Builds = @(); Stages = @()
 }
 $source = @{
     Name           = 'Build agent data'
@@ -108,17 +110,24 @@ New-BGInfo -Theme $look -Target File {
         -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $agent.Name -FontSize ([int](72 * $scale)) `
         -FontWeight 600
-    New-BGInfoLabel -Name "▶  Running $($agent.Job)" -Accent `
-        -FontWeight 600
+    if ($agent.Available) {
+        New-BGInfoLabel -Name "▶  Running $($agent.Job)" -Accent `
+            -FontWeight 600
+    } else {
+        New-BGInfoLabel -Name 'Build data unavailable' -Status Info `
+            -FontWeight 600
+    }
     New-BGInfoValue -Name 'Agent' -Value $agent.Agent
     New-BGInfoValue -Name 'Toolchain' -Value $agent.Toolchain
     New-BGInfoValue -Name 'Clean-up' -Value 'Sunday 03:00, keeps 3 days'
 
     # Right column: the queue, then free space. Free space is worse when
     # low: amber below 100 GB on the work drive, red below 50 GB.
-    New-BGInfoMetric -Region Right -Label 'Waiting in the pool' `
-        -Value $agent.Waiting -Unit 'jobs' -Caption '4 agents online' `
-        -Height ([int](150 * $scale))
+    if ($agent.Available) {
+        New-BGInfoMetric -Region Right -Label 'Waiting in the pool' `
+            -Value $agent.Waiting -Unit 'jobs' -Caption '4 agents online' `
+            -Height ([int](150 * $scale))
+    }
     foreach ($disk in $agent.Disks) {
         $limits = if ($disk.Name -like 'D:*') { 100, 50 } else { 40, 20 }
         New-BGInfoMetric -Region Right -Label "$($disk.Name) free" `
@@ -130,9 +139,11 @@ New-BGInfo -Theme $look -Target File {
     # Center: what ran here last. Bottom band: where the current job is.
     $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
         -Note 'on this agent' -StatusColumn Result
-    New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
-        -Title $agent.Job -Note "stage $($at + 1) of $($agent.Stages.Count)" `
-        -Definition $flow
+    if ($agent.Available) {
+        New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
+            -Title $agent.Job -Note "stage $($at + 1) of $($agent.Stages.Count)" `
+            -Definition $flow
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "build-agent-$($Theme.ToLower()).png"
 #endregion

@@ -134,7 +134,10 @@ New-BGInfo -Theme $look -Target File {
         -Accent -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $dc.Name -FontSize ([int](72 * $scale)) `
         -FontWeight 600
-    if ($failing.Count -gt 0) {
+    if ($dc.Partners.Count -eq 0) {
+        New-BGInfoLabel -Name '●  Replication data unavailable' -Status Info `
+            -FontWeight 600
+    } elseif ($failing.Count -gt 0) {
         $partner = $failing[0]
         $text = "Replication from $($partner.Partner) last succeeded " +
             $partner.Last

@@ -60,7 +60,7 @@ function Get-PatchDayData {
 }
 
 $fallback = [pscustomobject] @{
-    Now = Get-Date; RestartAt = (Get-Date).AddHours(4); GraceMin = 240
+    Now = Get-Date; RestartAt = $null; GraceMin = 240
     Computer = $env:COMPUTERNAME; Ring = 'unknown'; Updates = 'unknown'
     Windows = @(); Rings = [ordered] @{ 'Ring' = 0 }; Checklist = @()
 }
@@ -76,10 +76,22 @@ $patch = Invoke-BGInfoDataSource @source
 #region Presentation: reads only $patch
 $scale = [Math]::Round($Height / 1080, 2)
 $look = New-BGInfoTheme Ember -Mode $Theme -Scale $scale
-$left = $patch.RestartAt - $patch.Now
-$minutes = [Math]::Max(0, [int] $left.TotalMinutes)
-$hours = [Math]::Floor($left.TotalHours)
-$countdown = '{0} h {1:00} min' -f $hours, $left.Minutes
+$minutes = $null
+$restartTitle = 'Restart schedule unavailable'
+$restartDetail = 'Check your update policy for the restart schedule.'
+if ($null -ne $patch.RestartAt) {
+    $left = $patch.RestartAt - $patch.Now
+    if ($left.TotalMinutes -le 0) {
+        $restartTitle = 'Restart overdue'
+        $restartDetail = "Scheduled restart was at $($patch.RestartAt.ToString('HH:mm')). Check update status."
+    } else {
+        $minutes = [int] [Math]::Ceiling($left.TotalMinutes)
+        $hours = [Math]::Floor($left.TotalHours)
+        $countdown = '{0} h {1:00} min' -f $hours, $left.Minutes
+        $restartTitle = "Restart in $countdown"
+        $restartDetail = "This PC restarts at $($patch.RestartAt.ToString('HH:mm')) for about 20 minutes."
+    }
+}
 # Installed is green, installing takes the accent, restarts are amber and
 # planned windows stay quiet.
 $colors = @{
@@ -97,10 +109,9 @@ New-BGInfo -Theme $look -Target File {
 
     New-BGInfoLabel -Name 'PATCH TUESDAY  ·  OCTOBER 2026' -Accent `
         -FontSize ([int](15 * $scale)) -FontWeight 700
-    New-BGInfoLabel -Name "Restart in $countdown" `
+    New-BGInfoLabel -Name $restartTitle `
         -FontSize ([int](64 * $scale)) -FontWeight 600
-    New-BGInfoLabel -Name ("This PC restarts at " +
-        "$($patch.RestartAt.ToString('HH:mm')) for about 20 minutes.") `
+    New-BGInfoLabel -Name $restartDetail `
         -FontSize ([int](22 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'This PC' -Value "$($patch.Computer) · $($patch.Ring)"
     New-BGInfoValue -Name 'Installing' -Value $patch.Updates
@@ -108,11 +119,13 @@ New-BGInfo -Theme $look -Target File {
 
     # Right column: the countdown turns amber in the last hour and red in
     # the last 15 minutes. Then what to do before it happens.
-    New-BGInfoChart -Region Right -Id 'restart' -Title 'Until restart' `
-        -Kind Gauge -Values $minutes -Maximum $patch.GraceMin `
-        -ValueSuffix ' min' -ShowLatestValue:$false -NoHistory `
-        -WarningThreshold 60 -CriticalThreshold 15 -ThresholdDirection Below `
-        -Height ([int](250 * $scale))
+    if ($null -ne $minutes) {
+        New-BGInfoChart -Region Right -Id 'restart' -Title 'Until restart' `
+            -Kind Gauge -Values $minutes -Maximum $patch.GraceMin `
+            -ValueSuffix ' min' -ShowLatestValue:$false -NoHistory `
+            -WarningThreshold 60 -CriticalThreshold 15 -ThresholdDirection Below `
+            -Height ([int](250 * $scale))
+    }
     New-BGInfoList -Region Right -Title 'Before you go' -Item $patch.Checklist
 
     # Bottom band: the windows of the week and how far each ring got.

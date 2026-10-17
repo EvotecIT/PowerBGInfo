@@ -45,7 +45,7 @@ function Get-AdminWorkstationData {
 $fallback = [pscustomobject] @{
     Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'
     Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0
-    Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = 0
+    Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = $null
     Elevation = 'unknown'; SignIns = @(0); Changes = @(0)
     Alerts = [ordered] @{ High = 0 }; ReplicaLag = ''
 }
@@ -64,12 +64,24 @@ $look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale
 
 # Fewer than 30 days left on the smart card is a warning, fewer than 7 is
 # critical.
-$card = @{
-    StatusValue        = $paw.SmartCardDays
-    WarningThreshold   = 30
-    CriticalThreshold  = 7
-    ThresholdDirection = 'Below'
+$card = if ($null -eq $paw.SmartCardDays) {
+    @{ Status = 'Info' }
+} else {
+    @{
+        StatusValue        = $paw.SmartCardDays
+        WarningThreshold   = 30
+        CriticalThreshold  = 7
+        ThresholdDirection = 'Below'
+    }
 }
+$cardValue = if ($null -eq $paw.SmartCardDays) { 'unknown' } else {
+    "Expires in $($paw.SmartCardDays) days"
+}
+$defenderStatus = if ($paw.Defender -eq 'unknown') { 'Info' } else { 'Ok' }
+$patchStatus = if ($paw.PatchLevel -eq 'unknown') { 'Info' } else { 'Ok' }
+$defenderDetail = if ($paw.Defender -eq 'unknown') { 'Status unavailable' } else { 'Signatures 2 h old' }
+$patchDetail = if ($paw.PatchLevel -eq 'unknown') { 'Status unavailable' } else { 'Ring 0 · pilot' }
+$cardDetail = if ($null -eq $paw.SmartCardDays) { 'Status unavailable' } else { 'Renew before 11 Nov' }
 $tile = @{ SurfaceStyle = 'Glass' }
 $tiles = @(
     New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `
@@ -82,13 +94,12 @@ $tiles = @(
         -Value "$($paw.SystemFreeGB) GB free" -Detail 'BitLocker · TPM + PIN' `
         -Progress $paw.SystemUsed
     New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' `
-        -Value $paw.Defender -Detail 'Signatures 2 h old' -Status Ok
+        -Value $paw.Defender -Detail $defenderDetail -Status $defenderStatus
     New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem `
-        -Label 'PATCH LEVEL' -Value $paw.PatchLevel -Detail 'Ring 0 · pilot' `
-        -Status Ok
+        -Label 'PATCH LEVEL' -Value $paw.PatchLevel -Detail $patchDetail `
+        -Status $patchStatus
     New-BGInfoVisualCanvasTile @tile @card -IconKind Domain `
-        -Label 'SMART CARD' -Value "Expires in $($paw.SmartCardDays) days" `
-        -Detail 'Renew before 11 Nov'
+        -Label 'SMART CARD' -Value $cardValue -Detail $cardDetail
     New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' `
         -Value $paw.Elevation -Detail 'Approved by S. Ortiz' -Status Warning
 )

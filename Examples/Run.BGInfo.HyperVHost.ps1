@@ -53,7 +53,7 @@ DC02,Infrastructure,2,8,3
         #     % Total Run Time' sampled every 5 minutes
         Cpu      = @(38, 41, 52, 47, 44, 49, 46)
         # (Get-VMHost).MemoryCapacity and the sum of MemoryAssigned
-        MemoryGB = 632
+        MemoryGB = [int] ($vms | Measure-Object -Property MemoryGB -Sum).Sum
         # The cluster keeps one node's worth of memory free for failover.
         ReserveGB = 64
         TotalGB  = 768

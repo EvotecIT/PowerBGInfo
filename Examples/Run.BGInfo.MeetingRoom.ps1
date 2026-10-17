@@ -29,6 +29,7 @@ function Get-MeetingRoomData {
         }
     }
     [pscustomobject] @{
+        Available = $true
         Room     = 'Oslo'
         Where    = 'BUILDING A  ·  FLOOR 4  ·  ROOM 4.12'
         Seats    = '10 seats · video bar · whiteboard'
@@ -59,6 +60,7 @@ function Get-MeetingRoomData {
 }
 
 $fallback = [pscustomobject] @{
+    Available = $false
     Room = $env:COMPUTERNAME; Where = 'MEETING ROOM'; Seats = ''
     Book = 'Outlook or Teams'; Now = Get-Date; Bookings = @()
     Wifi = @{ Ssid = 'CONTOSO-GUEST'; Text = 'WIFI:T:nopass;S:CONTOSO-GUEST;;' }
@@ -81,7 +83,9 @@ $current = $here |
     Where-Object { $_.Start -le $room.Now -and $_.End -gt $room.Now }
 $next = $here | Where-Object Start -GT $room.Now | Sort-Object Start |
     Select-Object -First 1
-$status = if ($current) {
+$status = if (-not $room.Available) {
+    @{ Text = 'Availability unavailable'; Status = 'Info' }
+} elseif ($current) {
     @{
         Text   = "In use until $($current.End.ToString('HH:mm'))"
         Status = 'Warning'
@@ -91,7 +95,7 @@ $status = if ($current) {
 } else {
     @{ Text = 'Free for the rest of the day'; Status = 'Ok' }
 }
-$after = if ($next) {
+$after = if (-not $room.Available) { 'unavailable' } elseif ($next) {
     "$($next.Start.ToString('HH:mm'))–$($next.End.ToString('HH:mm'))"
 } else { 'none today' }
 # This room takes the accent; the rooms next door stay quiet.
