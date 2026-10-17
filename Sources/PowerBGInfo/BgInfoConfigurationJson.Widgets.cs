@@ -354,8 +354,13 @@ public static partial class BgInfoConfigurationJson {
 
     private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
 
-    private static DateTime? ParseDate(string? text) =>
-        !string.IsNullOrWhiteSpace(text) && DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var value) ? value : null;
+    private static DateTime? ParseDate(string? text) {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.RoundtripKind;
+        if (DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized)) return localized;
+        string[] invariantFormats = { "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" };
+        return DateTime.TryParseExact(text, invariantFormats, CultureInfo.InvariantCulture, styles, out var invariant) ? invariant : null;
+    }
 
     internal sealed class BgInfoLayoutFile {
         public int? MarginX { get; set; }

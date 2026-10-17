@@ -41,7 +41,7 @@ public partial class BgInfoGenerator {
             }
         }
         foreach (var visual in config.VisualCanvases) {
-            if (visual.Region != BgInfoRegion.None) {
+            if (visual.Region != BgInfoRegion.None && visual.Tiles.Count > 0) {
                 var visualHeight = visual.Height > 0 ? visual.Height : BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, height);
                 items.Add((visual, visual.Region, visual.RegionOrder, rank++, visual.Width, visualHeight));
             }

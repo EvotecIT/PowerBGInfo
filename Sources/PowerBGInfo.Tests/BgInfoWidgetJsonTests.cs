@@ -34,6 +34,40 @@ public class BgInfoWidgetJsonTests
     }
 
     [Fact]
+    public void AmbiguousCalendarAndTimelineDatesUseCurrentCulture()
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo-localized-widget-dates-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "config.json");
+        File.WriteAllText(path, """
+            {
+              "Widgets": [
+                { "Kind": "CalendarHeatmap", "Dates": [{ "Date": "10/11/2026", "Value": 1 }] },
+                { "Kind": "Timeline", "Now": "10/11/2026", "TimelineItems": [{ "Lane": "A", "Start": "10/11/2026" }] }
+              ]
+            }
+            """);
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
+            var configuration = BgInfoConfigurationJson.Load(path);
+            var calendar = Assert.IsType<BgInfoCalendarHeatmapWidget>(configuration.Widgets[0]);
+            var timeline = Assert.IsType<BgInfoTimelineWidget>(configuration.Widgets[1]);
+
+            Assert.Equal(new DateTime(2026, 11, 10), calendar.Items[0].Date);
+            Assert.Equal(new DateTime(2026, 11, 10), timeline.Now);
+            Assert.Equal(new DateTime(2026, 11, 10), timeline.Items[0].Start);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public void PartialStatusPaletteUsesTheConfiguredLightModeDefaults()
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-partial-status-" + Path.GetRandomFileName());
@@ -82,7 +116,7 @@ public class BgInfoWidgetJsonTests
             Kind = BgInfoChartKind.Gauge, Values = new double[] { 91 }, Region = BgInfoRegion.Right, RegionOrder = 3,
             Threshold = new BgInfoThreshold { Warning = 80, Critical = 90, Colors = theme.StatusColors }
         });
-        config.Topologies.Add(new BgInfoTopology { Region = BgInfoRegion.Center, RegionOrder = 4 });
+        config.Topologies.Add(new BgInfoTopology { Region = BgInfoRegion.Center, RegionOrder = 4, Accent = ChartColor.FromHex("#F020A0"), FontFamilyName = "Arial" });
         config.VisualCanvases.Add(new BgInfoVisualCanvas { Region = BgInfoRegion.Left, RailMarginX = 64, RailMarginY = 56 });
 
         var metric = new BgInfoMetricWidget {
@@ -122,6 +156,8 @@ public class BgInfoWidgetJsonTests
             Assert.Equal(90, loaded.Charts[0].Threshold!.Critical);
             Assert.Equal(theme.Critical, loaded.Charts[0].Threshold!.Colors!.Critical);
             Assert.Equal(BgInfoRegion.Center, loaded.Topologies[0].Region);
+            Assert.Equal(ChartColor.FromHex("#F020A0"), loaded.Topologies[0].Accent);
+            Assert.Equal("Arial", loaded.Topologies[0].FontFamilyName);
             Assert.Equal(64, loaded.VisualCanvases[0].RailMarginX);
             Assert.Equal(BgInfoRegion.Left, loaded.VisualCanvases[0].Region);
 
@@ -171,6 +207,7 @@ public class BgInfoWidgetJsonTests
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
+
 }
 
 public class BgInfoSystemInfoTests

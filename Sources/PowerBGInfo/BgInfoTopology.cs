@@ -41,6 +41,10 @@ public sealed class BgInfoTopology {
     public TopologyCanvasSurfaceStyle CanvasSurfaceStyle { get; set; } = TopologyCanvasSurfaceStyle.Plain;
     /// <summary>Theme name.</summary>
     public string Theme { get; set; } = "Dark";
+    /// <summary>Optional accent applied to topology nodes and edges.</summary>
+    public Color? Accent { get; set; }
+    /// <summary>Optional font family for topology labels.</summary>
+    public string? FontFamilyName { get; set; }
     /// <summary>Whether to render a transparent canvas.</summary>
     public bool Transparent { get; set; } = true;
     /// <summary>Whether to show the topology title.</summary>

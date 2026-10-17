@@ -21,6 +21,7 @@ Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
 
     It 'fills unbound chart, topology, canvas and widget settings from the theme' {
         $theme = New-BGInfoTheme -Preset Midnight -Mode Light
+        $theme.FontFamilyName = 'Arial'
         $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
             New-BGInfoChart -Title 'CPU' -Values 1, 2 -NoHistory
             New-BGInfoChart -Title 'Explicit' -Values 1 -CornerRadius 3 -BackgroundColor '#000000' -NoHistory
@@ -40,6 +41,8 @@ Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
         $config.Charts[1].BackgroundColor.ToHex() | Should -Be '#000000'
         $config.Topologies[0].Theme | Should -Be 'Light'
         $config.Topologies[0].BackgroundColor | Should -Be $theme.Surface
+        $config.Topologies[0].Accent | Should -Be $theme.Accent
+        $config.Topologies[0].FontFamilyName | Should -Be 'Arial'
         $config.VisualCanvases[0].Accent | Should -Be $theme.Accent
         $config.VisualCanvases[0].HeroContentVisible | Should -BeFalse
         $config.Widgets[0].BackgroundColor | Should -Be $theme.Surface

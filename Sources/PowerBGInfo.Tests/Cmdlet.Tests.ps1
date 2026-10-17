@@ -421,6 +421,16 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.HeroBadgeVisible | Should -BeFalse
     }
 
+    It 'keeps themed hero text when only the badge is disabled' {
+        $theme = New-BGInfoTheme -Preset Corporate -Mode Dark
+        $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -NoHeroBadge
+        }
+
+        $config.VisualCanvases[0].HeroContentVisible | Should -BeTrue
+        $config.VisualCanvases[0].HeroBadgeVisible | Should -BeFalse
+    }
+
     It 'can disable all hero content' {
         $visual = New-BGInfoVisualCanvas -NoHeroContent
 

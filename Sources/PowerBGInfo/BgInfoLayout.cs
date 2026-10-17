@@ -139,7 +139,10 @@ public static class BgInfoLayoutEngine {
         var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
         var centerGapCount = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
         var centerReserve = center.Length > 0 && sideColumns > 0 ? Math.Min(120, safe.Width) : 0;
-        var centerGaps = centerGapCount * gap;
+        var centerGap = center.Length > 0 && centerGapCount > 0
+            ? Math.Min(gap, Math.Max(0, (safe.Width - centerReserve - sideColumns) / centerGapCount))
+            : 0;
+        var centerGaps = centerGapCount * centerGap;
         var columnLimit = sideColumns > 0
             ? Math.Max(1, (safe.Width - centerReserve - centerGaps) / sideColumns)
             : safe.Width;
@@ -151,8 +154,8 @@ public static class BgInfoLayoutEngine {
         if (left.Length > 0) FlowColumn(requests, left, result, leftX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.Start, layout.ColumnAlignment, maximumShare);
         if (right.Length > 0) FlowColumn(requests, right, result, rightX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.End, layout.ColumnAlignment, maximumShare);
         if (center.Length > 0) {
-            var centerLeft = left.Length > 0 ? leftX + columnWidth + gap : safe.X;
-            var centerRight = right.Length > 0 ? rightX - gap : safeRight;
+            var centerLeft = left.Length > 0 ? leftX + columnWidth + centerGap : safe.X;
+            var centerRight = right.Length > 0 ? rightX - centerGap : safeRight;
             FlowColumn(requests, center, result, centerLeft, Math.Max(1, centerRight - centerLeft), columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
         }
 

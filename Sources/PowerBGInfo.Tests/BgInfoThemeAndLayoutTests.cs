@@ -270,6 +270,25 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void LargeConfiguredGapIsFittedInsideSafeWidthForThreeColumns()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 1024 };
+        var requests = new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Left, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Center, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Right, 0, 100)
+        };
+
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, null, requests);
+        var safe = BgInfoLayoutEngine.GetSafeArea(640, 480, layout);
+
+        Assert.All(slots, slot => Assert.True(slot.X >= safe.X && slot.X + slot.Width <= safe.X + safe.Width, $"{slot} must remain inside {safe}."));
+        Assert.True(slots[0].X + slots[0].Width <= slots[1].X);
+        Assert.True(slots[1].X + slots[1].Width <= slots[2].X);
+        Assert.True(slots[1].Width > 0);
+    }
+
+    [Fact]
     public void EmptyRegionChartsDoNotReserveSpaceForOtherPanels()
     {
         var chart = new BgInfoChart { Region = BgInfoRegion.Right, Values = System.Array.Empty<double>(), UseHistory = false };
@@ -304,6 +323,21 @@ public class BgInfoThemeAndLayoutTests
         Assert.True(placements.TryGet(metric, out var actualSlot));
         Assert.True(expected.TryGet(expectedMetric, out var expectedSlot));
         Assert.Equal(expectedSlot, actualSlot);
+    }
+
+    [Fact]
+    public void TilelessRegionVisualCanvasDoesNotReserveSpace()
+    {
+        var empty = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Height = 400 };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration();
+        config.VisualCanvases.Add(empty);
+        config.Widgets.Add(metric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default);
+
+        Assert.False(placements.TryGet(empty, out _));
+        Assert.True(placements.TryGet(metric, out _));
     }
 
     [Fact]

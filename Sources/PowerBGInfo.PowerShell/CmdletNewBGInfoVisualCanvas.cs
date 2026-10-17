@@ -366,7 +366,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         IsBound(nameof(Title)) || IsBound(nameof(Subtitle)) ||
         IsBound(nameof(TitleColor)) || IsBound(nameof(TitleAccentColor)) || IsBound(nameof(SubtitleColor)) ||
         IsBound(nameof(HeroBadgeTop)) || IsBound(nameof(HeroBadgeBottom)) || IsBound(nameof(HeroBadgeTextColor)) ||
-        IsBound(nameof(HeroBadgeText)) || IsBound(nameof(HeroBadgeImagePath)) || IsBound(nameof(HeroBadgeImageFit)) ||
+        IsBound(nameof(NoHeroBadge)) || IsBound(nameof(HeroBadgeText)) || IsBound(nameof(HeroBadgeImagePath)) || IsBound(nameof(HeroBadgeImageFit)) ||
         IsBound(nameof(HeroBadgeImagePadding)) || IsBound(nameof(HeroBadgeImageOpacity));
 
 }

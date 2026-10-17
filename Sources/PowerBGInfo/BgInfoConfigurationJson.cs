@@ -442,6 +442,8 @@ public static partial class BgInfoConfigurationJson {
                     VisualStyle = topology.VisualStyle.ToString(),
                     CanvasSurfaceStyle = topology.CanvasSurfaceStyle.ToString(),
                     Theme = topology.Theme,
+                    Accent = topology.Accent.HasValue ? BgInfoColorParser.ToHex(topology.Accent.Value) : null,
+                    FontFamilyName = topology.FontFamilyName,
                     Transparent = topology.Transparent,
                     ShowTitle = topology.ShowTitle,
                     ShowLegend = topology.ShowLegend,
@@ -797,6 +799,8 @@ public static partial class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.Theme)) {
             topology.Theme = model.Theme!;
         }
+        if (!string.IsNullOrWhiteSpace(model.Accent) && BgInfoColorParser.TryParse(model.Accent, out var accent)) topology.Accent = accent;
+        if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) topology.FontFamilyName = model.FontFamilyName;
         if (model.Transparent.HasValue) {
             topology.Transparent = model.Transparent.Value;
         }
@@ -1413,6 +1417,8 @@ public static partial class BgInfoConfigurationJson {
         public string? VisualStyle { get; set; }
         public string? CanvasSurfaceStyle { get; set; }
         public string? Theme { get; set; }
+        public string? Accent { get; set; }
+        public string? FontFamilyName { get; set; }
         public bool? Transparent { get; set; }
         public bool? ShowTitle { get; set; }
         public bool? ShowLegend { get; set; }
