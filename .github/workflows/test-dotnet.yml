@@ -12,6 +12,7 @@ on:
   pull_request:
     branches:
       - v2-speedygonzales
+      - feature/wallpaper-scenarios
 
 env:
   DOTNET_VERSION: '8.x'
