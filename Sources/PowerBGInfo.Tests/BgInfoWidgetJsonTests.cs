@@ -6,6 +6,33 @@ namespace PowerBGInfo.Tests;
 public class BgInfoWidgetJsonTests
 {
     [Fact]
+    public void LoadRejectsUnknownWidgetKindsInsteadOfDroppingConfigurationData()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo-unknown-widget-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "config.json");
+        File.WriteAllText(path, """
+            {
+              "Widgets": [{
+                "Kind": "FutureWidget",
+                "Id": "important-widget",
+                "Definition": "preserve this widget"
+              }]
+            }
+            """);
+
+        try
+        {
+            var exception = Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
+            Assert.Contains("FutureWidget", exception.Message);
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public void PartialStatusPaletteUsesTheConfiguredLightModeDefaults()
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-partial-status-" + Path.GetRandomFileName());

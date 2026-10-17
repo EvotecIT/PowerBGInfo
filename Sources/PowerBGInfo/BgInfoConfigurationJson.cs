@@ -640,8 +640,10 @@ public static partial class BgInfoConfigurationJson {
         };
         ApplyEnum<VisualThemeMode>(model.ThemeMode, value => chart.ThemeMode = value);
 
-        if (!string.IsNullOrWhiteSpace(model.Kind) &&
-            Enum.TryParse(model.Kind, true, out BgInfoChartKind kind)) {
+        if (!string.IsNullOrWhiteSpace(model.Kind)) {
+            if (!Enum.TryParse(model.Kind, true, out BgInfoChartKind kind) || !Enum.IsDefined(typeof(BgInfoChartKind), kind)) {
+                throw new InvalidDataException("Unknown chart kind '" + model.Kind + "'.");
+            }
             chart.Kind = kind;
         }
         if (!string.IsNullOrWhiteSpace(model.Anchor) &&

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -112,7 +113,9 @@ public static partial class BgInfoConfigurationJson {
     }
 
     private static BgInfoWidget? MapWidget(BgInfoWidgetFile model) {
-        if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) return null;
+        if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) {
+            throw new InvalidDataException("Unknown widget kind '" + (model.Kind ?? "<missing>") + "'.");
+        }
         var themeMode = TryParseDefinedEnumName<VisualThemeMode>(model.ThemeMode, out var configuredMode)
             ? configuredMode
             : VisualThemeMode.Dark;
