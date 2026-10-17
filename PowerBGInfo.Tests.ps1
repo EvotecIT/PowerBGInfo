@@ -19,6 +19,14 @@ foreach ($Module in $RequiredModules) {
     if ($Module -eq 'PowerBgInfo') {
         continue
     }
+    if ($Module -eq 'Pester') {
+        $Pester5 = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version.Major -eq 5 }
+        if (-not $Pester5) {
+            Write-Warning "$ModuleName - Installing Pester 5 from PSGallery"
+            Install-Module -Name Pester -MinimumVersion 5.0.0 -MaximumVersion 5.99.99 -Force -SkipPublisherCheck -AllowClobber
+        }
+        continue
+    }
     if ($Module -is [System.Collections.IDictionary]) {
         $Exists = Get-Module -ListAvailable -Name $Module.ModuleName
         if (-not $Exists) {
@@ -32,6 +40,8 @@ foreach ($Module in $RequiredModules) {
         }
     }
 }
+
+Import-Module Pester -MinimumVersion 5.0.0 -MaximumVersion 5.99.99 -Force
 
 Write-Color 'ModuleName: ', $ModuleName, ' Version: ', $PSDInformation.ModuleVersion -Color Yellow, Green, Yellow, Green -LinesBefore 2
 Write-Color 'PowerShell Version: ', $PSVersionTable.PSVersion -Color Yellow, Green
