@@ -53,9 +53,21 @@ jobs:
     needs: refresh-psd1
     name: 'Windows PowerShell 5.1'
     runs-on: windows-latest
+    env:
+      ChartForgeXProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX\ChartForgeX.csproj
+      ChartForgeXVisualsProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj
+      ChartForgeXStoriesProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Stories\ChartForgeX.Stories.csproj
+      ChartForgeXMermaidProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Checkout ChartForgeX source
+        uses: actions/checkout@v7
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: 1662d69d8ff1f09ee3868fde951623e079ded26f
+          path: ChartForgeXSource
 
       - name: Download manifest
         uses: actions/download-artifact@v8
@@ -95,9 +107,21 @@ jobs:
     needs: refresh-psd1
     name: 'Windows PowerShell 7'
     runs-on: windows-latest
+    env:
+      ChartForgeXProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX\ChartForgeX.csproj
+      ChartForgeXVisualsProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj
+      ChartForgeXStoriesProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Stories\ChartForgeX.Stories.csproj
+      ChartForgeXMermaidProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Checkout ChartForgeX source
+        uses: actions/checkout@v7
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: 1662d69d8ff1f09ee3868fde951623e079ded26f
+          path: ChartForgeXSource
 
       - name: Download manifest
         uses: actions/download-artifact@v8
@@ -137,9 +161,21 @@ jobs:
     needs: refresh-psd1
     name: 'Windows Packaged ALC'
     runs-on: windows-latest
+    env:
+      ChartForgeXProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX\ChartForgeX.csproj
+      ChartForgeXVisualsProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj
+      ChartForgeXStoriesProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Stories\ChartForgeX.Stories.csproj
+      ChartForgeXMermaidProjectPath: ${{ github.workspace }}\ChartForgeXSource\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Checkout ChartForgeX source
+        uses: actions/checkout@v7
+        with:
+          repository: EvotecIT/ChartForgeX
+          ref: 1662d69d8ff1f09ee3868fde951623e079ded26f
+          path: ChartForgeXSource
 
       - name: Download manifest
         uses: actions/download-artifact@v8
