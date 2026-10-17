@@ -140,8 +140,9 @@ New-BGInfo -Theme $look -Target File {
     $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
         -Note 'on this agent' -StatusColumn Result
     if ($agent.Available) {
+        $stageNote = "stage $($at + 1) of $($agent.Stages.Count)"
         New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
-            -Title $agent.Job -Note "stage $($at + 1) of $($agent.Stages.Count)" `
+            -Title $agent.Job -Note $stageNote `
             -Definition $flow
     }
 } -ConfigurationDirectory $OutputDirectory `

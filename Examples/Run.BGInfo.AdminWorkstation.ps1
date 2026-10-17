@@ -81,9 +81,15 @@ $cardValue = if ($null -eq $paw.SmartCardDays) { 'unknown' } else {
 }
 $defenderStatus = if ($paw.Defender -eq 'unknown') { 'Info' } else { 'Ok' }
 $patchStatus = if ($paw.PatchLevel -eq 'unknown') { 'Info' } else { 'Ok' }
-$defenderDetail = if ($paw.Defender -eq 'unknown') { 'Status unavailable' } else { 'Signatures 2 h old' }
-$patchDetail = if ($paw.PatchLevel -eq 'unknown') { 'Status unavailable' } else { 'Ring 0 · pilot' }
-$cardDetail = if ($null -eq $paw.SmartCardDays) { 'Status unavailable' } else { 'Renew before 11 Nov' }
+$defenderDetail = if ($paw.Defender -eq 'unknown') {
+    'Status unavailable'
+} else { 'Signatures 2 h old' }
+$patchDetail = if ($paw.PatchLevel -eq 'unknown') {
+    'Status unavailable'
+} else { 'Ring 0 · pilot' }
+$cardDetail = if ($null -eq $paw.SmartCardDays) {
+    'Status unavailable'
+} else { 'Renew before 11 Nov' }
 $tile = @{ SurfaceStyle = 'Glass' }
 $tiles = @(
     New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `

@@ -131,7 +131,8 @@ New-BGInfo -Theme $look -Target File {
                     -Status $device.Status
             }
             foreach ($device in $branch.Links) {
-                New-BGInfoTopologyEdge -SourceNodeId 'sw' -TargetNodeId $device.Id `
+                New-BGInfoTopologyEdge -SourceNodeId 'sw' `
+                    -TargetNodeId $device.Id `
                     -Kind Connectivity -Status $device.Status
             }
         }

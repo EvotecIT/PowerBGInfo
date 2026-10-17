@@ -83,13 +83,15 @@ if ($null -ne $patch.RestartAt) {
     $left = $patch.RestartAt - $patch.Now
     if ($left.TotalMinutes -le 0) {
         $restartTitle = 'Restart overdue'
-        $restartDetail = "Scheduled restart was at $($patch.RestartAt.ToString('HH:mm')). Check update status."
+        $restartDetail = ('Scheduled restart was at {0}. ' +
+            'Check update status.') -f $patch.RestartAt.ToString('HH:mm')
     } else {
         $minutes = [int] [Math]::Ceiling($left.TotalMinutes)
         $hours = [Math]::Floor($minutes / 60)
         $countdown = '{0} h {1:00} min' -f $hours, ($minutes % 60)
         $restartTitle = "Restart in $countdown"
-        $restartDetail = "This PC restarts at $($patch.RestartAt.ToString('HH:mm')) for about 20 minutes."
+        $restartDetail = ('This PC restarts at {0} for about ' +
+            '20 minutes.') -f $patch.RestartAt.ToString('HH:mm')
     }
 }
 # Installed is green, installing takes the accent, restarts are amber and
@@ -125,7 +127,8 @@ New-BGInfo -Theme $look -Target File {
         New-BGInfoChart -Region Right -Id 'restart' -Title 'Until restart' `
             -Kind Gauge -Values $minutes -Maximum $patch.GraceMin `
             -ValueSuffix ' min' -ShowLatestValue:$false -NoHistory `
-            -WarningThreshold 60 -CriticalThreshold 15 -ThresholdDirection Below `
+            -WarningThreshold 60 -CriticalThreshold 15 `
+            -ThresholdDirection Below `
             -Height ([int](250 * $scale))
     }
     if ($patch.Checklist.Count -gt 0) {
