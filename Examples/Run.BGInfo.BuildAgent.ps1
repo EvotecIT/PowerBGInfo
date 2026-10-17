@@ -137,9 +137,9 @@ New-BGInfo -Theme $look -Target File {
     }
 
     # Center: what ran here last. Bottom band: where the current job is.
-    $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
-        -Note 'on this agent' -StatusColumn Result
     if ($agent.Available) {
+        $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
+            -Note 'on this agent' -StatusColumn Result
         $stageNote = "stage $($at + 1) of $($agent.Stages.Count)"
         New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
             -Title $agent.Job -Note $stageNote `
