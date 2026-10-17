@@ -99,7 +99,7 @@ public class BgInfoChartRendererTests
         Assert.Equal("Consolas", plot.Options.DataLabelStyle.FontFamily);
         labels = XDocument.Parse(plot.ToSvg()).Descendants().Where(node => node.Name.LocalName == "text").ToArray();
         Assert.NotEmpty(labels);
-        Assert.All(labels, label => Assert.Equal("Consolas", (string?)label.Attribute("font-family")));
+        Assert.All(labels, label => Assert.Equal("Consolas", ((string?)label.Attribute("font-family"))?.Split(',')[0].Trim()));
     }
 
     [Fact]

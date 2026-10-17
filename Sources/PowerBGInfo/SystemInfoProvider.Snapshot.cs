@@ -78,7 +78,7 @@ public static partial class SystemInfoProvider {
             ComputerName = Environment.MachineName,
             UserName = Environment.UserName,
             LoggedOnUser = GetLoggedOnUser(),
-            Domain = OrUnknown(Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName),
+            Domain = MachineDomainCache.Value,
             OSName = OrUnknown(OsInfoCache.Value.Name),
             OSVersion = OrUnknown(OsInfoCache.Value.Version),
             OSBuild = OrUnknown(OsInfoCache.Value.Build),
@@ -94,6 +94,24 @@ public static partial class SystemInfoProvider {
             BitLockerStatus = GetBitLockerStatus()
         };
     }
+
+    private static string LoadMachineDomain() {
+        if (IsWindows()) {
+            try {
+                using var searcher = new ManagementObjectSearcher("SELECT Domain FROM Win32_ComputerSystem");
+                foreach (ManagementObject computer in searcher.Get()) {
+                    var domain = computer["Domain"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(domain)) return ResolveMachineDomain(domain);
+                }
+            } catch {
+                // Machine membership is unavailable; the process account is not a reliable substitute.
+            }
+        }
+
+        return Unknown;
+    }
+
+    internal static string ResolveMachineDomain(string? machineDomain) => OrUnknown(machineDomain);
 
     /// <summary>Formats an uptime as days and hours, or hours and minutes under a day.</summary>
     public static string FormatUptime(TimeSpan? uptime) {

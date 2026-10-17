@@ -883,6 +883,11 @@ public partial class BgInfoGenerator
                 continue;
             }
 
+            if (topology.Region != BgInfoRegion.None)
+            {
+                continue;
+            }
+
             using var topologyImage = BgInfoTopologyRenderer.Render(topology, config);
             var position = ResolveTopologyPosition(image, topology);
             image.DrawImage(topologyImage, position.X, position.Y);
@@ -903,6 +908,11 @@ public partial class BgInfoGenerator
             {
                 using var regionImage = BgInfoVisualCanvasRenderer.RenderRegion(visual, (int)slot.Width, (int)slot.Height, image.Height);
                 image.DrawImage(regionImage, slot.X, slot.Y);
+                continue;
+            }
+
+            if (visual.Region != BgInfoRegion.None)
+            {
                 continue;
             }
 

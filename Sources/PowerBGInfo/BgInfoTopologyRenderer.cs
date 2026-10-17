@@ -106,7 +106,7 @@ internal static class BgInfoTopologyRenderer {
     // Transparent overlays and panels both let the wallpaper or panel show through the diagram canvas.
     private static VisualTheme CreateTheme(BgInfoTopology topology) {
         var theme = VisualTheme.Graphite();
-        if (!string.IsNullOrWhiteSpace(topology.FontFamilyName)) theme = theme.WithFontFamily(topology.FontFamilyName);
+        if (!string.IsNullOrWhiteSpace(topology.FontFamilyName)) theme = theme.WithFontFamily(topology.FontFamilyName!);
         return theme.Configure(builder => {
             var colors = builder.Colors(ResolveThemeMode(topology));
             if (topology.Accent.HasValue) colors.Accent = topology.Accent.Value;

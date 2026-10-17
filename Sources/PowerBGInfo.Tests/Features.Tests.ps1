@@ -230,6 +230,16 @@ Describe 'Widget cmdlets' {
         $list.Marker | Should -Be 'Auto'
     }
 
+    It 'parses textual checkbox values instead of treating False as truthy' {
+        $list = New-BGInfoList -Item @(
+            @{ Text = 'enabled'; Checked = 'True' },
+            @{ Text = 'disabled'; Checked = 'False' }
+        )
+
+        $list.Items[0].Checked | Should -BeTrue
+        $list.Items[1].Checked | Should -BeFalse
+    }
+
     It 'collects calendar values from objects, dates and hashtables' {
         $fromObjects = @([pscustomobject] @{ Date = [datetime] '2026-10-01'; Value = 3 }) | New-BGInfoCalendarHeatmap
         $fromDates = [datetime] '2026-10-01', [datetime] '2026-10-02' | New-BGInfoCalendarHeatmap

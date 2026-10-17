@@ -316,7 +316,7 @@ public class CmdletNewBGInfo : PSCmdlet {
         if (theme != null) ApplyTheme(config, theme);
 
         System.Collections.ObjectModel.Collection<PSObject> results;
-        using (BgInfoThemeScope.Enter(theme)) {
+        using (BgInfoThemeScope.Enter(theme, IsBound(nameof(Color)))) {
             results = BGInfoContent.Invoke();
         }
 

@@ -125,16 +125,16 @@ public static class BgInfoLayoutEngine {
 
         if (top.Length > 0) {
             var span = BandSpan(safe.X, safeRight, safe.Y, topHeight, text, gap);
-            FlowRow(requests, top, result, span.Start, span.End, safe.Y, topHeight, gap, alignBottom: false);
+            if (span is { } available) FlowRow(requests, top, result, available.Start, available.End, safe.Y, topHeight, gap, alignBottom: false);
         }
         if (bottom.Length > 0) {
             var y = safeBottom - bottomHeight;
             var span = BandSpan(safe.X, safeRight, y, bottomHeight, text, gap);
-            FlowRow(requests, bottom, result, span.Start, span.End, y, bottomHeight, gap, alignBottom: true);
+            if (span is { } available) FlowRow(requests, bottom, result, available.Start, available.End, y, bottomHeight, gap, alignBottom: true);
         }
 
-        var columnTop = safe.Y + (top.Length > 0 ? topHeight + gap : 0);
-        var columnBottom = safeBottom - (bottom.Length > 0 ? bottomHeight + gap : 0);
+        var columnTop = Math.Min(safeBottom, Math.Max(safe.Y, safe.Y + (top.Length > 0 ? topHeight + gap : 0)));
+        var columnBottom = Math.Min(safeBottom, Math.Max(safe.Y, safeBottom - (bottom.Length > 0 ? bottomHeight + gap : 0)));
         var columnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : Clamp(width * 0.24, 340, 620);
         var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
         var centerGapCount = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
@@ -170,15 +170,16 @@ public static class BgInfoLayoutEngine {
         return Math.Min(height, limit);
     }
 
-    private static (double Start, double End) BandSpan(double start, double end, double y, double height, ChartRect? text, double gap) {
+    private static (double Start, double End)? BandSpan(double start, double end, double y, double height, ChartRect? text, double gap) {
         if (text is not { } block || !Overlaps(y, y + height, block.Y, block.Y + block.Height)) return (start, end);
         var before = block.X - gap - start;
         var after = end - (block.X + block.Width + gap);
-        if (before <= 0 && after <= 0) return (start, end);
+        if (before <= 0 && after <= 0) return null;
         return after >= before ? (block.X + block.Width + gap, end) : (start, block.X - gap);
     }
 
     private static void FlowRow(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double start, double end, double y, double height, double gap, bool alignBottom) {
+        if (height <= 0 || end <= start) return;
         var available = Math.Max(1, end - start);
         var effectiveGap = FitGap(available, indexes.Length, gap);
         var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, effectiveGap);
@@ -200,6 +201,8 @@ public static class BgInfoLayoutEngine {
             if (block.Y + block.Height / 2 <= middle) top = Math.Max(top, block.Y + block.Height + gap);
             else bottom = Math.Min(bottom, block.Y - gap);
         }
+
+        if (top >= bottom) return;
 
         var available = Math.Max(1, bottom - top);
         var effectiveGap = FitGap(available, indexes.Length, gap);

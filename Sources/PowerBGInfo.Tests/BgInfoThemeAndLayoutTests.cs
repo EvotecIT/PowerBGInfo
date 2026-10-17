@@ -341,6 +341,62 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void ColumnSlotsAreOmittedWhenReservedTextConsumesTheColumn()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 24 };
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, new ChartRect(0, 0, 300, 480), new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Left, 300, 100)
+        });
+
+        Assert.Equal(0, slots[0].Width);
+        Assert.Equal(0, slots[0].Height);
+    }
+
+    [Fact]
+    public void OmittedColumnSlotsDoNotBecomeRegionPlacements()
+    {
+        var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "Health", Value = "OK" });
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Left, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration { Layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0 } };
+        config.VisualCanvases.Add(visual);
+        config.Widgets.Add(metric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(640, 480, config, new ChartRect(0, 0, 640, 480));
+
+        Assert.False(placements.TryGet(visual, out _));
+        Assert.False(placements.TryGet(metric, out _));
+    }
+
+    [Fact]
+    public void BandsAreOmittedWhenReservedTextCoversTheirFullWidth()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 24 };
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, new ChartRect(0, 0, 640, 480), new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 200, 80),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 200, 80)
+        });
+
+        Assert.All(slots, slot => {
+            Assert.Equal(0, slot.Width);
+            Assert.Equal(0, slot.Height);
+        });
+
+        var exhaustedBands = BgInfoLayoutEngine.Resolve(640, 1, layout, null, new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 200, 80),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 200, 80)
+        });
+        Assert.All(exhaustedBands, slot => Assert.Equal(0, slot.Height));
+    }
+
+    [Fact]
+    public void MachineDomainPrefersComputerMembershipOverCurrentUserDomain()
+    {
+        Assert.Equal("machine.example", SystemInfoProvider.ResolveMachineDomain("machine.example"));
+        Assert.Equal(SystemInfoProvider.Unknown, SystemInfoProvider.ResolveMachineDomain(null));
+    }
+
+    [Fact]
     public void VisualCanvasUsesItsExplicitRegionHeight()
     {
         var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Width = 280, Height = 80, TileHeight = 100 };

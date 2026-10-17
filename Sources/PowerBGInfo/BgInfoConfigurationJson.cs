@@ -799,7 +799,7 @@ public static partial class BgInfoConfigurationJson {
         if (!string.IsNullOrWhiteSpace(model.Theme)) {
             topology.Theme = model.Theme!;
         }
-        if (!string.IsNullOrWhiteSpace(model.Accent) && BgInfoColorParser.TryParse(model.Accent, out var accent)) topology.Accent = accent;
+        if (!string.IsNullOrWhiteSpace(model.Accent) && BgInfoColorParser.TryParse(model.Accent!, out var accent)) topology.Accent = accent;
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) topology.FontFamilyName = model.FontFamilyName;
         if (model.Transparent.HasValue) {
             topology.Transparent = model.Transparent.Value;

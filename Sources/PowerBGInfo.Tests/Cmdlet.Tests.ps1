@@ -116,6 +116,15 @@ Describe 'New-BGInfoValue cmdlet' {
 }
 
 Describe 'New-BGInfoLabel cmdlet' {
+    It 'uses the explicit New-BGInfo color ahead of a theme ink default' {
+        $config = New-BGInfo -Theme Aurora -Color Red -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoLabel -Name 'Status'
+        }
+
+        $config.Color.ToHexRgba() | Should -Be '#FF0000FF'
+        $config.Entries[0].Color | Should -BeNullOrEmpty
+    }
+
     It 'supports native font styles' {
         $entry = New-BGInfoLabel -Name 'Test' -FontWeight 600 -Italic -UnderlineStyle Dotted -StrikethroughStyle Double -Baseline Subscript -TextCase SentenceCase
 

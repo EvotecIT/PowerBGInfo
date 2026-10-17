@@ -55,7 +55,9 @@ public partial class BgInfoGenerator {
         var requests = ordered.Select(item => new BgInfoLayoutRequest(item.Region, item.Width, item.Height)).ToArray();
         var reserved = textBlock.Width > 0 && textBlock.Height > 0 ? textBlock : (ChartRect?)null;
         var slots = BgInfoLayoutEngine.Resolve(width, height, config.Layout ?? new BgInfoLayout(), reserved, requests);
-        for (var i = 0; i < ordered.Count; i++) placements.Set(ordered[i].Item, slots[i]);
+        for (var i = 0; i < ordered.Count; i++) {
+            if (slots[i].Width > 0 && slots[i].Height > 0) placements.Set(ordered[i].Item, slots[i]);
+        }
         return placements;
     }
 
@@ -79,6 +81,7 @@ public partial class BgInfoGenerator {
                 height = (int)slot.Height;
                 position = new ChartPoint(slot.X, slot.Y);
             } else {
+                if (widget.Region != BgInfoRegion.None) continue;
                 width = Math.Max(1, widget.Width);
                 height = Math.Max(1, widget.Height);
                 position = widget.PositionX.HasValue && widget.PositionY.HasValue
