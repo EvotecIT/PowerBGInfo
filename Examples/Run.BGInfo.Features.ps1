@@ -11,8 +11,11 @@ param(
     [string] $SourceCommit = ''
 )
 
-if (-not $SourceCommit) { $SourceCommit = (git -C $PSScriptRoot rev-parse HEAD).Trim() }
-if ($LASTEXITCODE -ne 0 -or $SourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'SourceCommit must be the full Git commit SHA used to render the features.' }
+if (-not $SourceCommit) {
+    $SourceCommit = (git -C $PSScriptRoot rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot read the feature source commit.' }
+}
+if ($SourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'SourceCommit must be the full Git commit SHA used to render the features.' }
 
 # Fixed formatting keeps the published renders identical on every machine.
 [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
