@@ -85,7 +85,7 @@ public static partial class SystemInfoProvider {
             LastBootTime = lastBoot,
             Uptime = uptime,
             UptimeText = FormatUptime(uptime),
-            IPv4Address = OrUnknown(NetworkInfoCache.Value.IPv4),
+            IPv4Address = OrUnknown(LoadNetworkInfo().IPv4),
             Disks = GetDisks(),
             LastPatchId = patch.Id,
             LastPatchDate = patch.Date,

@@ -53,25 +53,6 @@ $paw = Invoke-BGInfoDataSource -Name 'Workstation data' -TimeoutSeconds 15 -Scri
 $scale = [Math]::Round($Height / 1080, 2)
 $look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale
 
-$tile = @{ SurfaceStyle = 'Glass' }
-$tiles = @(
-    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' -Value "$($paw.Cpu[-1]) %" `
-        -Detail '8 cores · Credential Guard on' -MiniChartKind Area -MiniChartValues $paw.Cpu -MiniChartMaximum 100
-    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' -Value '9.6 of 32 GB' `
-        -Detail 'Hyper-V isolation' -MiniChartKind Bars -MiniChartValues $paw.Memory -MiniChartMaximum 100
-    New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' -Value "$($paw.SystemFreeGB) GB free" `
-        -Detail 'BitLocker · TPM + PIN' -Progress $paw.SystemUsed
-    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' -Value $paw.Defender `
-        -Detail 'Signatures 2 h old' -Status Ok
-    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'PATCH LEVEL' -Value $paw.PatchLevel `
-        -Detail 'Ring 0 · pilot' -Status Ok
-    # Fewer than 30 days left is a warning, fewer than 7 is critical.
-    New-BGInfoVisualCanvasTile @tile -IconKind Domain -Label 'SMART CARD' -Value "Expires in $($paw.SmartCardDays) days" `
-        -Detail 'Renew before 11 Nov' -StatusValue $paw.SmartCardDays -WarningThreshold 30 -CriticalThreshold 7 -ThresholdDirection Below
-    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' -Value $paw.Elevation `
-        -Detail 'Approved by S. Ortiz' -Status Warning
-)
-
 # Seven tiles fill the left rail from the top margin to the bottom margin.
 $railWidth = [int](460 * $scale)
 $tileHeight = [Math]::Floor(($Height - 2 * $look.MarginY - 6 * $look.TileGap) / 7)
@@ -84,6 +65,24 @@ $diagramTop = [int](360 * $scale)
 $diagramHeight = $Height - $diagramTop - $look.MarginY - $bottomHeight - 32
 
 New-BGInfo -Theme $look -SpaceX $textX -Target File {
+    $tile = @{ SurfaceStyle = 'Glass' }
+    $tiles = @(
+        New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' -Value "$($paw.Cpu[-1]) %" `
+            -Detail '8 cores · Credential Guard on' -MiniChartKind Area -MiniChartValues $paw.Cpu -MiniChartMaximum 100
+        New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' -Value '9.6 of 32 GB' `
+            -Detail 'Hyper-V isolation' -MiniChartKind Bars -MiniChartValues $paw.Memory -MiniChartMaximum 100
+        New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' -Value "$($paw.SystemFreeGB) GB free" `
+            -Detail 'BitLocker · TPM + PIN' -Progress $paw.SystemUsed
+        New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' -Value $paw.Defender `
+            -Detail 'Signatures 2 h old' -Status Ok
+        New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'PATCH LEVEL' -Value $paw.PatchLevel `
+            -Detail 'Ring 0 · pilot' -Status Ok
+        # Fewer than 30 days left is a warning, fewer than 7 is critical.
+        New-BGInfoVisualCanvasTile @tile -IconKind Domain -Label 'SMART CARD' -Value "Expires in $($paw.SmartCardDays) days" `
+            -Detail 'Renew before 11 Nov' -StatusValue $paw.SmartCardDays -WarningThreshold 30 -CriticalThreshold 7 -ThresholdDirection Below
+        New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' -Value $paw.Elevation `
+            -Detail 'Approved by S. Ortiz' -Status Warning
+    )
     New-BGInfoBackground -Width $Width -Height $Height
 
     New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' -Status Critical -FontSize ([int](15 * $scale)) -FontWeight 700

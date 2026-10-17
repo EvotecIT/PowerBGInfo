@@ -201,6 +201,38 @@ public class BgInfoWidgetTests
         Assert.Equal(300, rendered.Width);
     }
 
+    [Fact]
+    public void RegionVisualCanvasCompressesTilesIntoAShortRegion()
+    {
+        var visual = new BgInfoVisualCanvas { TileHeight = 100, TileGap = 10, Transparent = true };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "A", Value = "1", Side = BgInfoVisualCanvasSide.Left });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "B", Value = "2", Side = BgInfoVisualCanvasSide.Right, Height = 60 });
+
+        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 300, 110, 1080);
+        var pixels = rendered.ToRgbaImage().Pixels;
+        var visibleBottomPixels = 0;
+        for (var y = 100; y < 110; y++) {
+            for (var x = 0; x < 300; x++) {
+                if (pixels[(y * 300 + x) * 4 + 3] > 0) visibleBottomPixels++;
+            }
+        }
+
+        Assert.True(visibleBottomPixels > 0, "The second tile should remain visible at the bottom of a compressed region.");
+    }
+
+    [Fact]
+    public void TreemapGroupsDifferingOnlyByCaseShareAValidParent()
+    {
+        var widget = new BgInfoTreemapWidget();
+        widget.Items.Add(new BgInfoTreemapItem { Name = "Database", Value = 4, Group = "Ops" });
+        widget.Items.Add(new BgInfoTreemapItem { Name = "Logs", Value = 2, Group = "ops" });
+
+        using var rendered = BgInfoWidgetRenderer.Render(widget, new BgInfoConfiguration(), 360, 220);
+
+        Assert.Equal(360, rendered.Width);
+        Assert.Equal(220, rendered.Height);
+    }
+
     private static int CountDistinctFromPanel(RgbaImage pixels)
     {
         var count = 0;

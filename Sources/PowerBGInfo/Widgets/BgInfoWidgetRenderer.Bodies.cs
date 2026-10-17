@@ -178,13 +178,17 @@ internal static partial class BgInfoWidgetRenderer {
 
     private static RgbaImage RenderTreemap(BgInfoTreemapWidget widget, BgInfoWidgetStyle style, int width, int height) {
         var items = new List<ChartHierarchyItem>();
-        var groups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var groups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var index = 0;
         foreach (var item in widget.Items) {
             string? parent = null;
             if (!string.IsNullOrWhiteSpace(item.Group)) {
-                parent = "group:" + item.Group!.Trim();
-                if (groups.Add(parent)) items.Add(new ChartHierarchyItem(parent, item.Group.Trim()));
+                var groupName = item.Group!.Trim();
+                if (!groups.TryGetValue(groupName, out parent)) {
+                    parent = "group:" + groupName;
+                    groups.Add(groupName, parent);
+                    items.Add(new ChartHierarchyItem(parent, groupName));
+                }
             }
             items.Add(new ChartHierarchyItem("item:" + (index++).ToString(CultureInfo.InvariantCulture), item.Name, parent, item.Value));
         }
