@@ -174,6 +174,9 @@ public sealed class BgInfoCalendarHeatmapWidget : BgInfoWidget {
     public override void Validate() {
         base.Validate();
         if (Items.Count == 0) throw new InvalidOperationException("A calendar heatmap needs at least one dated value.");
+        if (Items.Any(item => item.Value < 0 || double.IsNaN(item.Value) || double.IsInfinity(item.Value))) {
+            throw new InvalidOperationException("Calendar heatmap values must be finite and not negative.");
+        }
     }
 }
 

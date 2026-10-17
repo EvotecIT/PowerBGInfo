@@ -358,8 +358,15 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (!IsBound(nameof(TileGap))) visual.TileGap = theme.TileGap;
         if (!IsBound(nameof(RailMarginX))) visual.RailMarginX = theme.MarginX;
         if (!IsBound(nameof(RailMarginY))) visual.RailMarginY = theme.MarginY;
-        if (!IsBound(nameof(NoHeroContent))) visual.HeroContentVisible = false;
+        if (!IsBound(nameof(NoHeroContent)) && !HasExplicitHeroContent()) visual.HeroContentVisible = false;
         if (!IsBound(nameof(NoTechBackdrop))) visual.TechBackdrop = false;
     }
+
+    private bool HasExplicitHeroContent() =>
+        IsBound(nameof(Title)) || IsBound(nameof(Subtitle)) ||
+        IsBound(nameof(TitleColor)) || IsBound(nameof(TitleAccentColor)) || IsBound(nameof(SubtitleColor)) ||
+        IsBound(nameof(HeroBadgeTop)) || IsBound(nameof(HeroBadgeBottom)) || IsBound(nameof(HeroBadgeTextColor)) ||
+        IsBound(nameof(HeroBadgeText)) || IsBound(nameof(HeroBadgeImagePath)) || IsBound(nameof(HeroBadgeImageFit)) ||
+        IsBound(nameof(HeroBadgeImagePadding)) || IsBound(nameof(HeroBadgeImageOpacity));
 
 }

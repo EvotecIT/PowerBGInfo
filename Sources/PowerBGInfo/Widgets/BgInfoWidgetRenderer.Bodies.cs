@@ -150,17 +150,8 @@ internal static partial class BgInfoWidgetRenderer {
     }
 
     private static RgbaImage RenderTimeline(BgInfoTimelineWidget widget, BgInfoWidgetStyle style, int width, int height) {
-        var categories = new List<ChartStateCategory>();
-        var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var palette = style.Palette;
-        foreach (var item in widget.Items) {
-            var label = string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category.Trim();
-            if (keys.ContainsKey(label)) continue;
-            var key = "c" + keys.Count.ToString(CultureInfo.InvariantCulture);
-            keys[label] = key;
-            var color = item.Color ?? style.Status.Resolve(item.Status) ?? palette[(keys.Count - 1) % palette.Length];
-            categories.Add(new ChartStateCategory(key, label, color));
-        }
+        var categories = ResolveTimelineCategories(widget.Items, style);
+        var keys = categories.ToDictionary(category => category.Label, category => category.Key, StringComparer.OrdinalIgnoreCase);
 
         var chart = CreateChart(widget, style, width, height, axes: true)
             .WithLegend(widget.ShowLegend)
@@ -169,12 +160,34 @@ internal static partial class BgInfoWidgetRenderer {
         if (widget.Now.HasValue) chart.WithGanttLaneNow(widget.Now.Value);
         foreach (var lane in widget.Items.GroupBy(item => item.Lane.Trim(), StringComparer.OrdinalIgnoreCase)) {
             chart.AddGanttLane(lane.Key, lane.Select(item => new ChartGanttLaneItem(item.Start, item.End,
-                keys[string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category.Trim()],
+                keys[NormalizeTimelineCategory(item.Category)],
                 string.IsNullOrWhiteSpace(item.Label) ? null : item.Label)));
         }
 
         return chart.ToRgbaImage();
     }
+
+    internal static List<ChartStateCategory> ResolveTimelineCategories(IEnumerable<BgInfoTimelineItem> items, BgInfoWidgetStyle style) {
+        var categories = new List<ChartStateCategory>();
+        var palette = style.Palette;
+        var index = 0;
+        foreach (var group in items.GroupBy(item => NormalizeTimelineCategory(item.Category), StringComparer.OrdinalIgnoreCase)) {
+            ChartColor? explicitColor = null;
+            var explicitStatus = BgInfoStatus.None;
+            foreach (var item in group) {
+                if (!explicitColor.HasValue && item.Color.HasValue) explicitColor = item.Color.Value;
+                if (explicitStatus == BgInfoStatus.None && item.Status != BgInfoStatus.None) explicitStatus = item.Status;
+            }
+            var color = explicitColor ?? style.Status.Resolve(explicitStatus) ?? palette[index % palette.Length];
+            var key = "c" + index.ToString(CultureInfo.InvariantCulture);
+            categories.Add(new ChartStateCategory(key, group.Key, color));
+            index++;
+        }
+        return categories;
+    }
+
+    private static string NormalizeTimelineCategory(string? category) =>
+        string.IsNullOrWhiteSpace(category) ? "Scheduled" : category!.Trim();
 
     private static RgbaImage RenderTreemap(BgInfoTreemapWidget widget, BgInfoWidgetStyle style, int width, int height) {
         var items = new List<ChartHierarchyItem>();

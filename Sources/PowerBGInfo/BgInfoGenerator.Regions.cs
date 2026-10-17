@@ -36,7 +36,9 @@ public partial class BgInfoGenerator {
             }
         }
         foreach (var topology in config.Topologies) {
-            if (topology.Region != BgInfoRegion.None) items.Add((topology, topology.Region, topology.RegionOrder, rank++, topology.Width, topology.Height));
+            if (topology.Region != BgInfoRegion.None && topology.Nodes.Count > 0) {
+                items.Add((topology, topology.Region, topology.RegionOrder, rank++, topology.Width, topology.Height));
+            }
         }
         foreach (var visual in config.VisualCanvases) {
             if (visual.Region != BgInfoRegion.None) {

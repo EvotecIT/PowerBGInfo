@@ -122,8 +122,11 @@ public static partial class SystemInfoProvider {
     internal static DateTime? ParsePatchDate(string? text) {
         if (string.IsNullOrWhiteSpace(text)) return null;
         var value = text!.Trim();
-        var formats = new[] { "M/d/yyyy", "MM/dd/yyyy", "yyyyMMdd", "yyyy-MM-dd" };
-        if (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact)) return exact;
+        var invariantFormats = new[] { "d-M-yyyy", "dd-MM-yyyy", "yyyyMMdd", "yyyy-MM-dd" };
+        if (DateTime.TryParseExact(value, invariantFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact)) return exact;
+        if (DateTime.TryParseExact(value, "d", CultureInfo.CurrentCulture, DateTimeStyles.None, out var localized)) return localized;
+        var legacyFormats = new[] { "M/d/yyyy", "MM/dd/yyyy" };
+        if (DateTime.TryParseExact(value, legacyFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out exact)) return exact;
         // Some systems store a FILETIME as hexadecimal text.
         if (long.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var fileTime) && fileTime > 0) {
             try { return DateTime.FromFileTime(fileTime); } catch (ArgumentOutOfRangeException) { return null; }

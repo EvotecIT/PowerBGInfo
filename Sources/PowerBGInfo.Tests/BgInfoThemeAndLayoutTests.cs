@@ -286,6 +286,27 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void EmptyRegionTopologiesDoNotReserveSpaceForOtherPanels()
+    {
+        var empty = new BgInfoTopology { Region = BgInfoRegion.Right, Width = 900, Height = 400 };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var withEmpty = new BgInfoConfiguration();
+        withEmpty.Topologies.Add(empty);
+        withEmpty.Widgets.Add(metric);
+        var withoutEmpty = new BgInfoConfiguration();
+        var expectedMetric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        withoutEmpty.Widgets.Add(expectedMetric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, withEmpty, default);
+        var expected = BgInfoGenerator.ResolveRegionPlacements(1280, 720, withoutEmpty, default);
+
+        Assert.False(placements.TryGet(empty, out _));
+        Assert.True(placements.TryGet(metric, out var actualSlot));
+        Assert.True(expected.TryGet(expectedMetric, out var expectedSlot));
+        Assert.Equal(expectedSlot, actualSlot);
+    }
+
+    [Fact]
     public void VisualCanvasUsesItsExplicitRegionHeight()
     {
         var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Width = 280, Height = 80, TileHeight = 100 };

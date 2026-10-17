@@ -137,6 +137,35 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void CalendarHeatmapRejectsNegativeValuesBeforeRendering()
+    {
+        var calendar = new BgInfoCalendarHeatmapWidget();
+        calendar.Items.Add(new BgInfoDatedValue { Date = Now, Value = -1 });
+
+        var error = Assert.Throws<InvalidOperationException>(calendar.Validate);
+
+        Assert.Contains("not negative", error.Message);
+    }
+
+    [Fact]
+    public void LaterTimelineColorAndStatusResolveTheSharedCategory()
+    {
+        var explicitColor = ChartColor.FromHex("#E6007E");
+        var timeline = new BgInfoTimelineWidget();
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "A", Start = Now, Category = "Maintenance" });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "B", Start = Now, Category = "maintenance", Color = explicitColor });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "C", Start = Now, Category = "Incident" });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "D", Start = Now, Category = "incident", Status = BgInfoStatus.Warning });
+        var style = new BgInfoWidgetStyle(timeline, new BgInfoConfiguration());
+
+        var categories = BgInfoWidgetRenderer.ResolveTimelineCategories(timeline.Items, style);
+
+        Assert.Equal(2, categories.Count);
+        Assert.Equal(explicitColor, categories[0].Color);
+        Assert.Equal(style.Status.Warning, categories[1].Color);
+    }
+
+    [Fact]
     public void ChartThresholdsColorEachRowAndTheLatestValue()
     {
         var chart = new BgInfoChart {

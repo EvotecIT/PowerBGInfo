@@ -1,5 +1,6 @@
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using System.Globalization;
 
 namespace PowerBGInfo.Tests;
 
@@ -200,11 +201,44 @@ public class BgInfoSystemInfoTests
 
     [Theory]
     [InlineData("10/14/2026", 2026, 10, 14)]
+    [InlineData("23-10-2013", 2013, 10, 23)]
     [InlineData("20261014", 2026, 10, 14)]
     [InlineData("2026-10-14", 2026, 10, 14)]
     public void PatchDatesParseInTheFormatsWindowsStores(string text, int year, int month, int day)
     {
         Assert.Equal(new DateTime(year, month, day), SystemInfoProvider.ParsePatchDate(text));
+    }
+
+    [Theory]
+    [InlineData("en-US", 3, 4)]
+    [InlineData("en-GB", 4, 3)]
+    public void AmbiguousPatchDatesFollowTheCurrentShortDateCulture(string cultureName, int month, int day)
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            Assert.Equal(new DateTime(2013, month, day), SystemInfoProvider.ParsePatchDate("03/04/2013"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
+    }
+
+    [Fact]
+    public void LocalizedDayFirstPatchDatesFollowTheCurrentCulture()
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
+            Assert.Equal(new DateTime(2013, 10, 23), SystemInfoProvider.ParsePatchDate("23/10/2013"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
     }
 
     [Fact]

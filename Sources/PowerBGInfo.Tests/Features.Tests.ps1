@@ -46,6 +46,19 @@ Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
         $config.Widgets[0].StatusColors.Critical | Should -Be $theme.Critical
     }
 
+    It 'preserves explicitly requested hero content inside a themed visual canvas' {
+        $theme = New-BGInfoTheme -Preset Midnight -Mode Light
+        $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoVisualCanvas -Title 'Operations' -Subtitle 'Current environment' -HeroBadgeText 'OPS'
+        }
+
+        $visual = $config.VisualCanvases[0]
+        $visual.HeroContentVisible | Should -BeTrue
+        $visual.Title | Should -Be 'Operations'
+        $visual.Subtitle | Should -Be 'Current environment'
+        $visual.HeroBadgeText | Should -Be 'OPS'
+    }
+
     It 'accepts a preset name and switches its mode with -ThemeMode' {
         $config = New-BGInfo -Theme Aurora -ThemeMode Light -PassThru -ConfigurationDirectory $TestDrive {
             New-BGInfoChart -Values 1 -NoHistory
