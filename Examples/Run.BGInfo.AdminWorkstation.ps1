@@ -19,6 +19,7 @@ Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
 #region Data: your logic goes here
 function Get-AdminWorkstationData {
     [pscustomobject] @{
+        Available = $true
         Name          = 'PAW-T0-03'
         Operator      = 'adm.jsmith'
         Domain        = 'corp.contoso.com'
@@ -43,7 +44,8 @@ function Get-AdminWorkstationData {
 }
 
 $fallback = [pscustomobject] @{
-    Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'
+    Name = $env:COMPUTERNAME; Operator = $env:USERNAME
+    Available = $false; Domain = 'unknown'
     Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0
     Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = $null
     Elevation = 'unknown'; SignIns = @(0); Changes = @(0)
@@ -124,12 +126,19 @@ New-BGInfo -Theme $look -SpaceX $textX -Target File {
         -Status Critical -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $paw.Name -FontSize ([int](64 * $scale)) `
         -FontWeight 600
+    if (-not $paw.Available) {
+        New-BGInfoLabel -Name 'Live workstation data unavailable' `
+            -Status Info -FontWeight 600
+    }
     New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' `
         -FontSize ([int](19 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'Operator' -Value $paw.Operator
     New-BGInfoValue -Name 'Domain' -Value $paw.Domain
-    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'
+    if ($paw.Available) {
+        New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'
+    }
 
+    if ($paw.Available) {
     # The theme puts the canvas rails on its margins; only sizes are set.
     $rail = $tiles | ForEach-Object { $_.Side = 'Left'; $_ }
     New-BGInfoVisualCanvas -Tile $rail -LeftTileWidth $railWidth `
@@ -194,6 +203,7 @@ New-BGInfo -Theme $look -SpaceX $textX -Target File {
         -Labels @($paw.Alerts.Keys) -Maximum 10 `
         -Palette $look.Critical, $look.Warning, $look.Accent `
         -NoProgressHandles -ShowLatestValue:$false -OffsetX $look.MarginX
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "admin-workstation-$($Theme.ToLower()).png"
 #endregion

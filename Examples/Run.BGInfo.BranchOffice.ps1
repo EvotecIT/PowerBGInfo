@@ -55,8 +55,9 @@ function Get-BranchOfficeData {
 }
 
 $fallback = [pscustomobject] @{
-    Site = 'Contoso'; SiteCode = ''; Computer = $env:COMPUTERNAME
-    Printer = 'unknown'; Contact = 'Service desk, ext. 4357'; Wifi = ''
+    Site = 'Contoso'; SiteCode = 'unknown'; Computer = $env:COMPUTERNAME
+    Printer = 'unknown'; Contact = 'Service desk, ext. 4357'
+    Wifi = 'unknown'
     Switch = @{ Label = 'Switch'; Detail = '' }; Links = @(); Backup = ''
     Hours = @()
     HelpUrl = 'https://help.contoso.com/new'
@@ -110,25 +111,31 @@ New-BGInfo -Theme $look -Target File {
     New-BGInfoQRCode -Region Right -Url $branch.HelpUrl `
         -Title 'Scan for IT help' -Caption 'help.contoso.com' `
         -Note 'opens a ticket' -Height ([int](330 * $scale))
-    $branch.Hours | New-BGInfoTable -Region Right -Title 'Opening hours' `
-        -Property Day, Office, @{ Name = 'IT desk'; Expression = { $_.IT } }
+    if ($branch.Hours.Count -gt 0) {
+        $branch.Hours | New-BGInfoTable -Region Right -Title 'Opening hours' `
+            -Property Day, Office, @{ Name = 'IT desk'
+                Expression = { $_.IT } }
+    }
 
     # Center: everything this desk depends on, around the office switch.
-    New-BGInfoTopology -Region Center -Height 0 `
-        -Title 'Your connection' -Subtitle 'checked 2 min ago' `
-        -Layout HubAndSpoke -NodeDisplayMode Card -Scale $diagramScale `
-        -TopologyDefinition {
-        New-BGInfoTopologyNode -Id 'sw' -Label $branch.Switch.Label `
-            -Subtitle $branch.Switch.Detail -Kind Network -Status Healthy
-        foreach ($device in $branch.Links) {
-            New-BGInfoTopologyNode -Id $device.Id -Label $device.Label `
-                -Subtitle $device.Detail -Kind $device.Kind `
-                -Status $device.Status
+    if ($branch.Links.Count -gt 0) {
+        New-BGInfoTopology -Region Center -Height 0 `
+            -Title 'Your connection' -Subtitle 'checked 2 min ago' `
+            -Layout HubAndSpoke -NodeDisplayMode Card -Scale $diagramScale `
+            -TopologyDefinition {
+            New-BGInfoTopologyNode -Id 'sw' -Label $branch.Switch.Label `
+                -Subtitle $branch.Switch.Detail -Kind Network -Status Healthy
+            foreach ($device in $branch.Links) {
+                New-BGInfoTopologyNode -Id $device.Id -Label $device.Label `
+                    -Subtitle $device.Detail -Kind $device.Kind `
+                    -Status $device.Status
+            }
+            foreach ($device in $branch.Links) {
+                New-BGInfoTopologyEdge -SourceNodeId 'sw' -TargetNodeId $device.Id `
+                    -Kind Connectivity -Status $device.Status
+            }
         }
-        foreach ($device in $branch.Links) {
-            New-BGInfoTopologyEdge -SourceNodeId 'sw' -TargetNodeId $device.Id `
-                -Kind Connectivity -Status $device.Status
-        }
-    }} -ConfigurationDirectory $OutputDirectory `
+    }
+} -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "branch-office-$($Theme.ToLower()).png"
 #endregion

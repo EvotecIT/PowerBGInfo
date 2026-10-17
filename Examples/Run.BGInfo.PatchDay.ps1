@@ -86,8 +86,8 @@ if ($null -ne $patch.RestartAt) {
         $restartDetail = "Scheduled restart was at $($patch.RestartAt.ToString('HH:mm')). Check update status."
     } else {
         $minutes = [int] [Math]::Ceiling($left.TotalMinutes)
-        $hours = [Math]::Floor($left.TotalHours)
-        $countdown = '{0} h {1:00} min' -f $hours, $left.Minutes
+        $hours = [Math]::Floor($minutes / 60)
+        $countdown = '{0} h {1:00} min' -f $hours, ($minutes % 60)
         $restartTitle = "Restart in $countdown"
         $restartDetail = "This PC restarts at $($patch.RestartAt.ToString('HH:mm')) for about 20 minutes."
     }
@@ -115,7 +115,9 @@ New-BGInfo -Theme $look -Target File {
         -FontSize ([int](22 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'This PC' -Value "$($patch.Computer) · $($patch.Ring)"
     New-BGInfoValue -Name 'Installing' -Value $patch.Updates
-    New-BGInfoValue -Name 'Postpone' -Value 'Once, up to 4 h, from the tray'
+    if ($null -ne $minutes) {
+        New-BGInfoValue -Name 'Postpone' -Value 'Once, up to 4 h, from the tray'
+    }
 
     # Right column: the countdown turns amber in the last hour and red in
     # the last 15 minutes. Then what to do before it happens.
@@ -126,17 +128,22 @@ New-BGInfo -Theme $look -Target File {
             -WarningThreshold 60 -CriticalThreshold 15 -ThresholdDirection Below `
             -Height ([int](250 * $scale))
     }
-    New-BGInfoList -Region Right -Title 'Before you go' -Item $patch.Checklist
+    if ($patch.Checklist.Count -gt 0) {
+        New-BGInfoList -Region Right -Title 'Before you go' `
+            -Item $patch.Checklist
+    }
 
     # Bottom band: the windows of the week and how far each ring got.
     $band = @{ Region = 'Bottom'; Height = [int](290 * $scale) }
-    New-BGInfoTimeline @band -Title 'Maintenance windows' `
-        -Note 'Tue 13 – Sun 18 Oct' -Item $windows -Now $patch.Now
-    New-BGInfoChart @band -Id 'rings' -Title 'Installed per ring' `
-        -Kind ProgressBar -Values @($patch.Rings.Values) `
-        -Labels @($patch.Rings.Keys) -Maximum 100 -ValueSuffix ' %' `
-        -NoProgressHandles -ShowLatestValue:$false -NoHistory `
-        -Width ([int](560 * $scale))
+    if (@($windows).Count -gt 0) {
+        New-BGInfoTimeline @band -Title 'Maintenance windows' `
+            -Note 'Tue 13 – Sun 18 Oct' -Item $windows -Now $patch.Now
+        New-BGInfoChart @band -Id 'rings' -Title 'Installed per ring' `
+            -Kind ProgressBar -Values @($patch.Rings.Values) `
+            -Labels @($patch.Rings.Keys) -Maximum 100 -ValueSuffix ' %' `
+            -NoProgressHandles -ShowLatestValue:$false -NoHistory `
+            -Width ([int](560 * $scale))
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "patch-day-$($Theme.ToLower()).png"
 #endregion
