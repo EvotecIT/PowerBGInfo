@@ -67,17 +67,21 @@ public class BgInfoWidgetJsonTests
         }
     }
 
-    [Fact]
-    public void PartialStatusPaletteUsesTheConfiguredLightModeDefaults()
+    [Theory]
+    [InlineData(BgInfoWidgetKind.Metric, VisualThemeMode.Light)]
+    [InlineData(BgInfoWidgetKind.Metric, VisualThemeMode.Dark)]
+    [InlineData(BgInfoWidgetKind.Treemap, VisualThemeMode.Light)]
+    [InlineData(BgInfoWidgetKind.Treemap, VisualThemeMode.Dark)]
+    public void PartialStatusPaletteUsesTheConfiguredModeDefaults(BgInfoWidgetKind kind, VisualThemeMode mode)
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-partial-status-" + Path.GetRandomFileName());
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "config.json");
-        File.WriteAllText(path, """
+        File.WriteAllText(path, $$"""
             {
               "Widgets": [{
-                "Kind": "Metric",
-                "ThemeMode": "Light",
+                "Kind": "{{kind}}",
+                "ThemeMode": "{{mode}}",
                 "StatusCritical": "#123456",
                 "Threshold": { "Warning": 70, "Critical": 90, "CriticalColor": "#123456" }
               }]
@@ -87,15 +91,21 @@ public class BgInfoWidgetJsonTests
         try
         {
             var loaded = BgInfoConfigurationJson.Load(path);
-            var widget = Assert.IsType<BgInfoMetricWidget>(Assert.Single(loaded.Widgets));
-            var light = BgInfoStatusColors.Default(VisualThemeMode.Light);
+            var widget = Assert.Single(loaded.Widgets);
+            Assert.Equal(kind, widget.Kind);
+            var defaults = BgInfoStatusColors.Default(mode);
+            var threshold = widget switch {
+                BgInfoMetricWidget metric => metric.Threshold,
+                BgInfoTreemapWidget treemap => treemap.Threshold,
+                _ => throw new InvalidOperationException("Expected a threshold-capable widget.")
+            };
 
-            Assert.Equal(light.Warning, widget.StatusColors!.Warning);
-            Assert.Equal(light.Ok, widget.StatusColors.Ok);
+            Assert.Equal(defaults.Warning, widget.StatusColors!.Warning);
+            Assert.Equal(defaults.Ok, widget.StatusColors.Ok);
             Assert.Equal(ChartColor.FromHex("#123456"), widget.StatusColors.Critical);
-            Assert.Equal(light.Warning, widget.Threshold!.Colors!.Warning);
-            Assert.Equal(light.Ok, widget.Threshold.Colors.Ok);
-            Assert.Equal(ChartColor.FromHex("#123456"), widget.Threshold.Colors.Critical);
+            Assert.Equal(defaults.Warning, threshold!.Colors!.Warning);
+            Assert.Equal(defaults.Ok, threshold.Colors.Ok);
+            Assert.Equal(ChartColor.FromHex("#123456"), threshold.Colors.Critical);
         }
         finally
         {

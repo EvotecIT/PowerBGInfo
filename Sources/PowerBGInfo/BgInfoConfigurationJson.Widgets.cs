@@ -133,7 +133,7 @@ public static partial class BgInfoConfigurationJson {
             BgInfoWidgetKind.List => MapList(model),
             BgInfoWidgetKind.CalendarHeatmap => MapCalendar(model),
             BgInfoWidgetKind.Timeline => MapTimeline(model),
-            BgInfoWidgetKind.Treemap => MapTreemap(model),
+            BgInfoWidgetKind.Treemap => MapTreemap(model, themeMode),
             BgInfoWidgetKind.Mermaid => new BgInfoMermaidWidget { Definition = model.Definition ?? string.Empty },
             _ => MapQrCode(model)
         };
@@ -242,11 +242,11 @@ public static partial class BgInfoConfigurationJson {
         return timeline;
     }
 
-    private static BgInfoTreemapWidget MapTreemap(BgInfoWidgetFile model) {
+    private static BgInfoTreemapWidget MapTreemap(BgInfoWidgetFile model, VisualThemeMode themeMode) {
         var treemap = new BgInfoTreemapWidget {
             ShowValues = model.ShowValues ?? true,
             ValueSuffix = model.ValueSuffix ?? string.Empty,
-            Threshold = MapThreshold(model.Threshold)
+            Threshold = MapThreshold(model.Threshold, themeMode)
         };
         foreach (var item in model.TreemapItems ?? new List<BgInfoTreemapItemFile>()) {
             if (item == null) continue;
