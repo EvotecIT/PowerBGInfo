@@ -2,7 +2,7 @@
 .SYNOPSIS
 Builds or publishes PowerBGInfo through the shared module pipeline.
 .PARAMETER ConfigurationGateMode
-Selects manifest refresh, documentation generation, a local build, or publication.
+Selects a local build or publication.
 Build is the default and does not publish configured destinations.
 .PARAMETER SignModule
 Controls module signing. Use false for unsigned local validation.
@@ -18,7 +18,7 @@ Path to the protected GitHub token file, required when publishing.
 ./Build/Build-Module.ps1 -ConfigurationGateMode Publish -SignModule:$true -SkipInstall -PowerShellGalleryApiKeyPath '<protected Gallery key file>' -GitHubApiKeyPath '<protected GitHub token file>'
 #>
 param(
-    [ValidateSet('Manifest', 'Documentation', 'Build', 'Publish')]
+    [ValidateSet('Build', 'Publish')]
     [string] $ConfigurationGateMode = 'Build',
     [bool] $SignModule = $(if ([string]::IsNullOrWhiteSpace($Env:SignModule)) { $true } else { [bool]::Parse($Env:SignModule) }),
     [switch] $SkipInstall,
@@ -131,7 +131,6 @@ Build-Module -ModuleName 'PowerBGInfo' {
         DotSourceClasses                  = $true
         DeleteTargetModuleBeforeBuild     = $true
         NETBinaryModuleDocumentation      = $true
-        RefreshPSD1Only                   = if ([string]::IsNullOrWhiteSpace($Env:RefreshPSD1Only)) { $false } else { [bool]::Parse($Env:RefreshPSD1Only) }
         CertificateThumbprint             = '92e95fb58effa6a4a75e77a33cdd6bfe6dd30f1a'
     }
 
