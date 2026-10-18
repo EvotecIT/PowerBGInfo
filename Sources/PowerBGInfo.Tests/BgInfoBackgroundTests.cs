@@ -176,6 +176,56 @@ public class BgInfoBackgroundTests
         }
     }
 
+    [Theory]
+    [InlineData(39)]
+    [InlineData(41)]
+    public void OddSpacedGridKeepsOnePixelLines(int spacing)
+    {
+        var background = new BgInfoBackground {
+            Color = ChartColor.Black,
+            Pattern = BgInfoBackgroundPattern.Grid,
+            PatternColor = ChartColor.White,
+            PatternSpacing = spacing
+        };
+        using var image = BgInfoBackgroundRenderer.Render(background, 100, 100);
+        var pixels = image.ToRgbaImage();
+        var origin = spacing / 2;
+        AssertNear(ChartColor.White, Pixel(pixels, origin, 1));
+        AssertNear(ChartColor.Black, Pixel(pixels, origin - 1, 1));
+        AssertNear(ChartColor.Black, Pixel(pixels, origin + 1, 1));
+        AssertNear(ChartColor.White, Pixel(pixels, 1, origin));
+        AssertNear(ChartColor.Black, Pixel(pixels, 1, origin + 1));
+    }
+
+    [Theory]
+    [InlineData(20000, -10, 2000, 16384, 0, 1024)]
+    [InlineData(-10, 20000, -1, 0, 16384, 8)]
+    public void PersistedBackgroundUsesTheCmdletDimensionAndPatternLimits(
+        int width, int height, int spacing, int expectedWidth, int expectedHeight, int expectedSpacing)
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
+        try {
+            File.WriteAllText(path, $"{{\"background\":{{\"width\":{width},\"height\":{height},\"patternSpacing\":{spacing}}}}}");
+            var background = BgInfoConfigurationJson.Load(path).Background!;
+            Assert.Equal(expectedWidth, background.Width);
+            Assert.Equal(expectedHeight, background.Height);
+            Assert.Equal(expectedSpacing, background.PatternSpacing);
+        } finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void PersistedGlowUsesTheCmdletPositionAndRadiusLimits()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
+        try {
+            File.WriteAllText(path, "{\"background\":{\"glows\":[{\"x\":-4,\"y\":5,\"radius\":-1},{\"x\":5,\"y\":-4,\"radius\":8}]}}");
+            var glows = BgInfoConfigurationJson.Load(path).Background!.Glows;
+            Assert.Collection(glows,
+                first => { Assert.Equal(-1d, first.X); Assert.Equal(2d, first.Y); Assert.Equal(0.01d, first.Radius); },
+                second => { Assert.Equal(2d, second.X); Assert.Equal(-1d, second.Y); Assert.Equal(4d, second.Radius); });
+        } finally { File.Delete(path); }
+    }
+
     internal static ChartColor Pixel(RgbaImage image, int x, int y)
     {
         var offset = (y * image.Width + x) * 4;

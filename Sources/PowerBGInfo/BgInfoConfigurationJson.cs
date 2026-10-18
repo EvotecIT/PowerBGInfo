@@ -822,7 +822,7 @@ public static partial class BgInfoConfigurationJson {
         if (model.Padding.HasValue) topology.Padding = Math.Max(0, model.Padding.Value);
         ApplyColor(model.TitleColor, value => topology.TitleColor = value);
         if (model.TitleFontSize.HasValue) topology.TitleFontSize = model.TitleFontSize.Value;
-        if (model.TitleFontWeight.HasValue) topology.TitleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(model.TitleFontWeight.Value, "TitleFontWeight");
+        if (model.TitleFontWeight.HasValue) topology.TitleFontWeight = model.TitleFontWeight.Value;
         ApplyEnum<TextCaseTransform>(model.TitleTextCase, value => topology.TitleTextCase = value);
 
         if (model.Groups != null) {

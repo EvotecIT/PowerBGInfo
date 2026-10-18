@@ -167,6 +167,18 @@ public class BgInfoPanelTests
         }
     }
 
+    [Theory]
+    [InlineData(99)]
+    [InlineData(901)]
+    public void TopologyFontWeightRejectsInvalidDirectAssignments(int invalidWeight)
+    {
+        var topology = new BgInfoTopology { TitleFontWeight = 700 };
+        Assert.Throws<ArgumentOutOfRangeException>(() => topology.TitleFontWeight = invalidWeight);
+        Assert.Equal(700, topology.TitleFontWeight);
+        topology.TitleFontWeight = null;
+        Assert.Null(topology.TitleFontWeight);
+    }
+
     private static BgInfoTopology CreateTopology()
     {
         var topology = new BgInfoTopology { Width = 480, Height = 260, Title = "Path" };

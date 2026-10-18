@@ -41,20 +41,20 @@ $glows = if ($dark) { '#4F46E544', '#DC262622' } else {
 $canvas = $hud.Canvas.Clone()
 $rail = $Height - 2 * $hud.MarginY - 6 * $canvas.TileGap
 $canvas.TileHeight = [Math]::Floor($rail / 7)
-$tile = @{ Side = 'Left'; SurfaceStyle = 'Glass'; Accent = $accent }
+$tile = @{ Side = 'Left'; SurfaceStyle = 'Glass' }
 $tiles = @(
     # Get-Counter '\Processor(_Total)\% Processor Time'
     New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `
         -Value '18 %' -Detail '8 cores · Credential Guard on' `
         -MiniChartKind Area -MiniChartValues 9, 14, 31, 22, 12, 18 `
-        -MiniChartMaximum 100
+        -MiniChartMaximum 100 -Accent $accent
     New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `
         -Value '9.6 of 32 GB' -Detail 'Hyper-V isolation' `
         -MiniChartKind Bars -MiniChartValues 28, 30, 29, 31, 30, 30 `
-        -MiniChartMaximum 100
+        -MiniChartMaximum 100 -Accent $accent
     New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' `
         -Value '212 GB free' -Detail 'BitLocker · TPM + PIN' `
-        -Progress 0.41
+        -Progress 0.41 -Accent $accent
     # Get-MpComputerStatus
     New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' `
         -Value 'Protected' -Detail 'Signatures 2 h old' -Accent $ok

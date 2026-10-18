@@ -11,7 +11,7 @@ Creates a BGInfo configuration object.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoConfiguration [-FilePath <string>] [-OutputFileName <string>] [-ConfigurationDirectory <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <float>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-Entries <BgInfoEntry[]>] [-Variables <BgInfoVariable[]>] [-Charts <BgInfoChart[]>] [-Topologies <BgInfoTopology[]>] [-Images <BgInfoImage[]>] [-VisualCanvases <BgInfoVisualCanvas[]>] [<CommonParameters>]
+New-BGInfoConfiguration [-FilePath <string>] [-OutputFileName <string>] [-ConfigurationDirectory <string>] [-FontFamilyName <string>] [-Color <Object>] [-BackgroundColor <Object>] [-FontSize <float>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [-ValueColor <Object>] [-ValueFontSize <float>] [-ValueFontFamilyName <string>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ValueWrapWidth <int>] [-SpaceBetweenLines <int>] [-SpaceBetweenColumns <int>] [-PositionX <float>] [-PositionY <float>] [-MonitorIndex <int>] [-SpaceX <int>] [-SpaceY <int>] [-WallpaperFit <DesktopWallpaperPosition>] [-TextPosition <BgInfoTextPosition>] [-Target <BgInfoTarget>] [-ChartLayout <BgInfoChartLayoutMode>] [-ChartStackAnchor <BgInfoTextPosition>] [-ChartStackDirection <BgInfoChartStackDirection>] [-ChartStackSpacing <int>] [-ChartStackOffsetX <int>] [-ChartStackOffsetY <int>] [-ChartStackAlignToTextBlock] [-ChartStackOutsideTextBlock] [-AllUsers] [-ExcludeDefaultUserProfile] [-DisableWallpaperRefresh] [-DisableWallpaperSlideshow] [-UseScreenCoordinates] [-Entries <BgInfoEntry[]>] [-Variables <BgInfoVariable[]>] [-Charts <BgInfoChart[]>] [-Topologies <BgInfoTopology[]>] [-Images <BgInfoImage[]>] [-VisualCanvases <BgInfoVisualCanvas[]>] [-Background <BgInfoBackground>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,6 +32,22 @@ Apply wallpaper for all user profiles.
 
 ```yaml
 Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Background
+Generated backdrop created with New-BGInfoBackground. It replaces FilePath and the current wallpaper.
+
+```yaml
+Type: BgInfoBackground
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
