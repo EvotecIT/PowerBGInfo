@@ -36,7 +36,7 @@ public sealed class CmdletNewBGInfoBackground : PSCmdlet {
     [ValidateCount(2, 2)]
     public object[] Gradient { get; set; } = Array.Empty<object>();
 
-    /// <para>Gradient direction in degrees, like a CSS gradient. 90 runs top to bottom; 135 runs from the top-left corner.</para>
+    /// <para>Gradient direction in degrees clockwise from the rightward horizontal axis. 0 paints left to right; 90 paints top to bottom.</para>
     [Parameter]
     public double GradientAngle { get; set; } = 135d;
 

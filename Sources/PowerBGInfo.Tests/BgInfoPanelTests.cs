@@ -72,12 +72,16 @@ public class BgInfoPanelTests
     public void TopologyScaleRendersAtTheRequestedSize()
     {
         var topology = CreateTopology();
+        topology.Scale = 1;
+        using var unscaled = BgInfoTopologyRenderer.Render(topology, new BgInfoConfiguration());
         topology.Scale = 2;
 
         using var rendered = BgInfoTopologyRenderer.Render(topology, new BgInfoConfiguration());
 
         Assert.Equal(topology.Width, rendered.Width);
         Assert.Equal(topology.Height, rendered.Height);
+        Assert.False(unscaled.ToRgbaImage().Pixels.SequenceEqual(rendered.ToRgbaImage().Pixels),
+            "Scaling must change the diagram content inside the fixed outer dimensions.");
     }
 
     [Theory]

@@ -1958,7 +1958,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>GradientAngle</maml:name>
           <maml:description>
-            <maml:para>Gradient direction in degrees, like a CSS gradient. 90 runs top to bottom; 135 runs from the top-left corner.</maml:para>
+            <maml:para>Gradient direction in degrees clockwise from the rightward horizontal axis. 0 paints left to right; 90 paints top to bottom.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -2117,7 +2117,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>GradientAngle</maml:name>
         <maml:description>
-          <maml:para>Gradient direction in degrees, like a CSS gradient. 90 runs top to bottom; 135 runs from the top-left corner.</maml:para>
+          <maml:para>Gradient direction in degrees clockwise from the rightward horizontal axis. 0 paints left to right; 90 paints top to bottom.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
         <dev:type>
