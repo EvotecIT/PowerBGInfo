@@ -1,10 +1,11 @@
 $discoveryConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $discoveryFallbackConfiguration = if ($discoveryConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
+$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0-windows' }
 $modulePath = $Env:POWERBGINFO_TEST_MODULE
 if ([string]::IsNullOrWhiteSpace($modulePath)) {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\$discoveryFramework\PowerBGInfo.PowerShell.dll"
     if (-not (Test-Path -LiteralPath $modulePath)) {
-        $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryFallbackConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
+        $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryFallbackConfiguration\$discoveryFramework\PowerBGInfo.PowerShell.dll"
     }
 }
 Import-Module -Name $modulePath -Force
@@ -346,7 +347,7 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $inheritedPath = Join-Path $TestDrive 'inherited-font.json'
         New-BGInfo { $fontChart } -FilePath $sourcePath -Target File -ConfigurationDirectory $TestDrive -OutputFileName 'inherited-font.png' -JsonPath $inheritedPath -ExportOnly | Out-Null
         $inheritedOutput = Invoke-BGInfo -Path $inheritedPath -NoApply
-        $fontChart.FontFamilyName = $expected.FontFamily
+        $fontChart.FontFamilyName = ([ChartForgeX.Themes.VisualTheme]::Graphite()).Typography.Family
         $canonicalPath = Join-Path $TestDrive 'canonical-font.json'
         New-BGInfo { $fontChart } -FilePath $sourcePath -Target File -ConfigurationDirectory $TestDrive -OutputFileName 'canonical-font.png' -JsonPath $canonicalPath -ExportOnly | Out-Null
         $canonicalOutput = Invoke-BGInfo -Path $canonicalPath -NoApply

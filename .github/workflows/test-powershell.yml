@@ -16,7 +16,6 @@ on:
 env:
   DOTNET_VERSION: '8.x'
   BUILD_CONFIGURATION: 'Debug'
-  ChartForgeXProjectPath: '${{ github.workspace }}\external\ChartForgeX\ChartForgeX\ChartForgeX.csproj'
 
 jobs:
   refresh-psd1:
@@ -26,13 +25,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v7
-        with:
-          repository: EvotecIT/ChartForgeX
-          ref: main
-          path: external/ChartForgeX
-
       - name: Setup PowerShell modules
         shell: pwsh
         run: |
@@ -41,14 +33,12 @@ jobs:
           } else {
             Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Install-Module PSPublishModule -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
+          Install-Module PSPublishModule -MinimumVersion 3.0.170 -Force -Scope CurrentUser -AllowClobber
 
-      - name: Refresh module manifest
+      - name: Build unsigned module and refresh manifest
         shell: pwsh
-        env:
-          RefreshPSD1Only: 'true'
         run: |
-          ./Build/Build-Module.ps1
+          ./Build/Build-Module.ps1 -ConfigurationGateMode Build -SignModule:$false -SkipInstall
 
       - name: Upload refreshed manifest
         uses: actions/upload-artifact@v7
@@ -64,13 +54,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v7
-        with:
-          repository: EvotecIT/ChartForgeX
-          ref: main
-          path: external/ChartForgeX
-
       - name: Download manifest
         uses: actions/download-artifact@v8
         with:
@@ -98,8 +81,8 @@ jobs:
 
       - name: Build .NET solution
         run: |
-          dotnet restore Sources/PowerBGInfo.sln -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
-          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
+          dotnet restore Sources/PowerBGInfo.sln
+          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
       - name: Run PowerShell tests
         shell: powershell
@@ -113,13 +96,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v7
-        with:
-          repository: EvotecIT/ChartForgeX
-          ref: main
-          path: external/ChartForgeX
-
       - name: Download manifest
         uses: actions/download-artifact@v8
         with:
@@ -147,8 +123,8 @@ jobs:
 
       - name: Build .NET solution
         run: |
-          dotnet restore Sources/PowerBGInfo.sln -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
-          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -p:ChartForgeXProjectPath="$env:ChartForgeXProjectPath"
+          dotnet restore Sources/PowerBGInfo.sln
+          dotnet build Sources/PowerBGInfo.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
       - name: Run PowerShell tests
         shell: pwsh
@@ -161,13 +137,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-
-      - name: Checkout ChartForgeX dependency
-        uses: actions/checkout@v7
-        with:
-          repository: EvotecIT/ChartForgeX
-          ref: main
-          path: external/ChartForgeX
 
       - name: Download manifest
         uses: actions/download-artifact@v8
@@ -191,16 +160,13 @@ jobs:
           } else {
             Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           }
-          Install-Module -Name PSPublishModule -Repository PSGallery -MinimumVersion 3.0.4 -Force -Scope CurrentUser -AllowClobber
+          Install-Module -Name PSPublishModule -Repository PSGallery -MinimumVersion 3.0.170 -Force -Scope CurrentUser -AllowClobber
           Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
           Install-Module -Name PSWriteColor -Repository PSGallery -Force -SkipPublisherCheck -AllowClobber
 
       - name: Build packaged module
         shell: pwsh
-        env:
-          RefreshPSD1Only: 'false'
-          SignModule: 'false'
-        run: ./Build/Build-Module.ps1
+        run: ./Build/Build-Module.ps1 -ConfigurationGateMode Build -SignModule:$false -SkipInstall
         timeout-minutes: 15
 
       - name: Run packaged ALC smoke test

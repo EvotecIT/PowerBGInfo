@@ -29,7 +29,7 @@ internal static class BgInfoTopologyRenderer {
         var chart = TopologyChart.Create()
             .WithViewport(width, height, 18)
             .WithLayout(topology.Layout, topology.Direction)
-            .WithTheme(CreateTheme(topology));
+            .WithTheme(CreateTheme(topology), ResolveThemeMode(topology));
 
         if (!string.IsNullOrWhiteSpace(topology.Title)) {
             chart.Title = topology.Title;
@@ -61,17 +61,11 @@ internal static class BgInfoTopologyRenderer {
         };
     }
 
-    private static TopologyTheme CreateTheme(BgInfoTopology topology) {
-        var tokens = string.Equals(topology.Theme, "Light", StringComparison.OrdinalIgnoreCase)
-            ? VisualDesignTokens.GraphiteLight()
-            : VisualDesignTokens.GraphiteDark();
-        var theme = tokens.ApplyTo(new TopologyTheme());
+    private static VisualThemeMode ResolveThemeMode(BgInfoTopology topology) =>
+        string.Equals(topology.Theme, "Light", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Light : VisualThemeMode.Dark;
 
-        if (topology.Transparent) {
-            theme.Background = "#00000000";
-        }
-
-        return theme;
-    }
+    private static VisualTheme CreateTheme(BgInfoTopology topology) => topology.Transparent
+        ? VisualTheme.Graphite().Configure(builder => builder.Colors(ResolveThemeMode(topology)).Background = Color.Transparent)
+        : VisualTheme.Graphite();
 
 }
