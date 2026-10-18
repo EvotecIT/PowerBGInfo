@@ -84,8 +84,8 @@ public sealed class CmdletNewBGInfoCalendarHeatmap : BgInfoWidgetCmdlet {
             case DateTime date: return date;
             case DateTimeOffset offset: return offset.LocalDateTime;
             case string text:
-                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var invariant)) return invariant;
                 if (DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out var local)) return local;
+                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var invariant)) return invariant;
                 return null;
             default:
                 return value != null && LanguagePrimitives.TryConvertTo<DateTime>(value, out var converted) ? converted : null;

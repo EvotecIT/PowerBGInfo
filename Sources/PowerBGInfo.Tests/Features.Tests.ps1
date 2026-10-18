@@ -249,6 +249,30 @@ Describe 'Widget cmdlets' {
         $fromData.Items[0].Date | Should -Be ([datetime] '2026-10-01')
     }
 
+    It 'uses <Culture> dates consistently in calendar and timeline inputs' -TestCases @(
+        @{ Culture = 'en-GB' }
+        @{ Culture = 'pl-PL' }
+    ) {
+        param($Culture)
+        $previousCulture = [Globalization.CultureInfo]::CurrentCulture
+        try {
+            [Globalization.CultureInfo]::CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo($Culture)
+            $expectedStart = [datetime]::new(2026, 11, 10)
+            $expectedEnd = [datetime]::new(2026, 11, 12)
+            $fromObjects = [pscustomobject] @{ Date = '10/11/2026'; Value = 3 } | New-BGInfoCalendarHeatmap
+            $fromData = New-BGInfoCalendarHeatmap -Data ([ordered] @{ '10/11/2026' = 5; '2026-11-12' = 6 })
+            $timeline = New-BGInfoTimeline -Item @{ Lane = 'Server'; Start = '10/11/2026'; End = '12/11/2026' }
+
+            $fromObjects.Items[0].Date | Should -Be $expectedStart
+            $fromData.Items[0].Date | Should -Be $expectedStart
+            $fromData.Items[1].Date | Should -Be $expectedEnd
+            $timeline.Items[0].Start | Should -Be $expectedStart
+            $timeline.Items[0].End | Should -Be $expectedEnd
+        } finally {
+            [Globalization.CultureInfo]::CurrentCulture = $previousCulture
+        }
+    }
+
     It 'builds timeline items with -Duration and from hashtables' {
         $item = New-BGInfoTimelineItem 'Server' 'Patch' -Start '2026-10-18 02:00' -Duration '02:00' -Category Maintenance -Status Warning
         $item.End | Should -Be ([datetime] '2026-10-18 04:00')
