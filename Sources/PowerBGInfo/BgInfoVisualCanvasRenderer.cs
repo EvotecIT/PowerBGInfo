@@ -25,7 +25,8 @@ internal static class BgInfoVisualCanvasRenderer {
     private static VisualCanvas BuildCanvas(BgInfoVisualCanvas visual, int width, int height) {
         var canvas = VisualCanvas.Create(width, height)
             .WithTitle(Resolve(visual.Title))
-            .WithTheme(BuildTheme(visual))
+            .WithTheme(BuildTheme(visual), visual.ThemeMode)
+            .ConfigureStyle(style => ApplyStyle(style, visual))
             .WithBackground(visual.BackgroundTop, visual.BackgroundBottom)
             .WithBackdrop(visual.Transparent ? VisualCanvasBackdropStyle.Transparent : (visual.TechBackdrop ? VisualCanvasBackdropStyle.TechHorizon : VisualCanvasBackdropStyle.Plain));
 
@@ -73,8 +74,8 @@ internal static class BgInfoVisualCanvasRenderer {
         if (visual.HeroContentVisible) {
             AddHeroBadge(canvas, visual, 538 * scaleX, 157 * scaleY, 124 * scaleX, 88 * scaleY, accent);
             canvas
-                .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), canvas.Theme))
-                .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, canvas.Theme.SubtitleColor, TextAlignment.Center);
+                .AddHeroTitle(312 * scaleX, 296 * scaleY, 576 * scaleX, 82 * scaleY, SplitTitle(Resolve(visual.Title), visual, canvas.Theme))
+                .AddText(240 * scaleX, 402 * scaleY, 720 * scaleX, Resolve(visual.Subtitle), 24 * scaleY, visual.SubtitleColor ?? canvas.Theme.Resolve(visual.ThemeMode).MutedForeground, TextAlignment.Center);
         }
         if (visual.Features.Count > 0) {
             var stripWidth = ResolveFeatureWidth(visual, 620 * scaleX);
@@ -111,8 +112,8 @@ internal static class BgInfoVisualCanvasRenderer {
             var titleY = Clamp(height * 0.39, titleTopMin, titleTopMax);
             AddHeroBadge(canvas, visual, centerLeft + (centerWidth - badgeWidth) / 2, badgeY, badgeWidth, badgeHeight, accent);
             canvas
-                .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), canvas.Theme))
-                .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, canvas.Theme.SubtitleColor, TextAlignment.Center);
+                .AddHeroTitle(centerLeft, titleY, centerWidth, titleFont, SplitTitle(Resolve(visual.Title), visual, canvas.Theme))
+                .AddText(centerLeft, titleY + titleFont + subtitleGap, centerWidth, Resolve(visual.Subtitle), subtitleFont, visual.SubtitleColor ?? canvas.Theme.Resolve(visual.ThemeMode).MutedForeground, TextAlignment.Center);
         }
         if (visual.Features.Count > 0) {
             var stripHeight = Clamp(height * 0.075, Math.Min(36, height * 0.1), Math.Min(64, height * 0.14));
@@ -328,14 +329,15 @@ internal static class BgInfoVisualCanvasRenderer {
         }
     }
 
-    private static IEnumerable<VisualCanvasTextRun> SplitTitle(string title, VisualCanvasTheme theme) {
+    private static IEnumerable<VisualCanvasTextRun> SplitTitle(string title, BgInfoVisualCanvas visual, VisualTheme theme) {
+        var titleColor = visual.TitleColor ?? theme.Resolve(visual.ThemeMode).Foreground;
         if (title.EndsWith("BGInfo", StringComparison.OrdinalIgnoreCase) && title.Length > "BGInfo".Length) {
-            yield return new VisualCanvasTextRun(title.Substring(0, title.Length - "BGInfo".Length), theme.HeroTitleColor);
-            yield return new VisualCanvasTextRun(title.Substring(title.Length - "BGInfo".Length), theme.HeroTitleAccentColor);
+            yield return new VisualCanvasTextRun(title.Substring(0, title.Length - "BGInfo".Length), titleColor);
+            yield return new VisualCanvasTextRun(title.Substring(title.Length - "BGInfo".Length), visual.TitleAccentColor ?? visual.Accent);
             yield break;
         }
 
-        yield return new VisualCanvasTextRun(title, theme.HeroTitleColor);
+        yield return new VisualCanvasTextRun(title, titleColor);
     }
 
     private static IEnumerable<VisualCanvasFeatureItem> BuildFeatureItems(IEnumerable<BgInfoVisualCanvasFeature> features) {
@@ -373,29 +375,23 @@ internal static class BgInfoVisualCanvasRenderer {
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
-    private static VisualCanvasTheme BuildTheme(BgInfoVisualCanvas visual) {
-        var theme = visual.DesignTokens.ApplyTo(new VisualCanvasTheme());
-        theme.Accent = visual.Accent;
-        theme.HeroTitleAccentColor = visual.Accent;
-        theme.ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34);
-        ApplyColor(visual.SecondaryAccent, value => theme.SecondaryAccent = value);
-        ApplyColor(visual.TitleColor, value => theme.HeroTitleColor = value);
-        ApplyColor(visual.TitleAccentColor, value => theme.HeroTitleAccentColor = value);
-        ApplyColor(visual.SubtitleColor, value => theme.SubtitleColor = value);
-        ApplyColor(visual.TileGlassTop, value => theme.TileGlassTop = value);
-        ApplyColor(visual.TileGlassBottom, value => theme.TileGlassBottom = value);
-        ApplyColor(visual.TileLabelColor, value => theme.TileLabelColor = value);
-        ApplyColor(visual.TileValueColor, value => theme.TileValueColor = value);
-        ApplyColor(visual.TileDetailColor, value => theme.TileDetailColor = value);
-        ApplyColor(visual.TileProgressTrackColor, value => theme.TileProgressTrackColor = value);
-        ApplyColor(visual.HeroBadgeTop, value => theme.HeroBadgeTop = value);
-        ApplyColor(visual.HeroBadgeBottom, value => theme.HeroBadgeBottom = value);
-        ApplyColor(visual.HeroBadgeTextColor, value => theme.HeroBadgeTextColor = value);
-        return theme;
-    }
+    private static VisualTheme BuildTheme(BgInfoVisualCanvas visual) => VisualTheme.Graphite().Configure(builder => {
+        var colors = builder.Colors(visual.ThemeMode);
+        colors.Accent = visual.Accent;
+        if (visual.SecondaryAccent.HasValue) colors.SecondaryAccent = visual.SecondaryAccent.Value;
+    });
 
-    private static void ApplyColor(ChartColor? color, Action<ChartColor> setter) {
-        if (color.HasValue) setter(color.Value);
+    private static void ApplyStyle(VisualCanvasStyleOptions style, BgInfoVisualCanvas visual) {
+        style.ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34);
+        style.TileGlassTop = visual.TileGlassTop;
+        style.TileGlassBottom = visual.TileGlassBottom;
+        style.TileLabelColor = visual.TileLabelColor;
+        style.TileValueColor = visual.TileValueColor;
+        style.TileDetailColor = visual.TileDetailColor;
+        style.TileProgressTrackColor = visual.TileProgressTrackColor;
+        style.HeroBadgeTop = visual.HeroBadgeTop;
+        style.HeroBadgeBottom = visual.HeroBadgeBottom;
+        style.HeroBadgeTextColor = visual.HeroBadgeTextColor;
     }
 
     private static VisualCanvasInfoTileSurfaceStyle MapSurfaceStyle(BgInfoVisualCanvasTileSurfaceStyle style) {

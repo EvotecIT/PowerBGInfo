@@ -30,6 +30,7 @@ $serviceCount = @($services).Count
 $stoppedServices = [Math]::Max(0, $serviceCount - $runningServices)
 
 $tokens = [ChartForgeX.Themes.VisualDesignTokens]::GraphiteDark()
+$fontFamily = ([ChartForgeX.Themes.VisualTheme]::Graphite()).Typography.Family
 $white = $tokens.Foreground
 $muted = $tokens.MutedForeground
 $panel = $tokens.ElevatedSurface.WithOpacity(0.96)
@@ -40,7 +41,7 @@ $orange = $tokens.Warning
 $red = $tokens.Negative
 
 New-BGInfo -MonitorIndex 0 -Target File {
-    New-BGInfoValue -BuiltinValue HostName -Color $muted -ValueColor $white -FontSize 24 -ValueFontSize 18 -FontFamilyName $tokens.FontFamily
+    New-BGInfoValue -BuiltinValue HostName -Color $muted -ValueColor $white -FontSize 24 -ValueFontSize 18 -FontFamilyName $fontFamily
     New-BGInfoValue -BuiltinValue FullUserName -Name 'User' -Color $muted -ValueColor $white
     New-BGInfoValue -BuiltinValue OSName -Name 'OS' -Color $muted -ValueColor $white
     New-BGInfoValue -Name 'Chart mode' -Value 'live metrics, local status and a sample patch target' -Color $muted -ValueColor $white
