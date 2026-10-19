@@ -17,8 +17,12 @@ internal static partial class BgInfoWidgetRenderer {
         foreach (var item in widget.Items) {
             string? parent = null;
             if (!string.IsNullOrWhiteSpace(item.Group)) {
-                parent = "group:" + item.Group!.Trim();
-                if (groups.Add(parent)) items.Add(new ChartHierarchyItem(parent, item.Group.Trim()));
+                var groupName = item.Group!.Trim();
+                if (!groups.TryGetValue(groupName, out parent)) {
+                    parent = "group:" + groupName;
+                    groups.Add(groupName, parent);
+                    items.Add(new ChartHierarchyItem(parent, groupName));
+                }
             }
             items.Add(new ChartHierarchyItem("item:" + (index++).ToString(CultureInfo.InvariantCulture), item.Name, parent, item.Value, item.ColorValue));
         }

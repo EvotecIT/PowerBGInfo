@@ -223,6 +223,11 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
 
+    /// <para>Default scale for tile text and its supporting layout.</para>
+    [Parameter]
+    [ValidateRange(0.5, 4)]
+    public double? TileTextScale { get; set; }
+
     /// <para>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</para>
     [Parameter]
     public int FeatureOffsetX { get; set; }
@@ -319,6 +324,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             CenterTileOffsetX = CenterTileOffsetX,
             CenterTileOffsetY = CenterTileOffsetY,
             TileTextFitPolicy = TileTextFitPolicy,
+            TileTextScale = TileTextScale ?? 1d,
             FeatureOffsetX = FeatureOffsetX,
             FeatureOffsetY = FeatureOffsetY,
             Transparent = !Opaque.IsPresent,
@@ -361,8 +367,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (!IsBound(nameof(TileLabelColor))) visual.TileLabelColor = theme.Muted;
         if (!IsBound(nameof(TileValueColor))) visual.TileValueColor = theme.Ink;
         if (!IsBound(nameof(TileDetailColor))) visual.TileDetailColor = theme.Muted;
-        if (!IsBound(nameof(TileHeight))) visual.TileHeight = theme.TileHeight;
-        if (!IsBound(nameof(TileGap))) visual.TileGap = theme.TileGap;
+        if (!IsBound(nameof(TileTextScale))) visual.TileTextScale = theme.Scale;
         if (!IsBound(nameof(RailMarginX))) visual.RailMarginX = theme.MarginX;
         if (!IsBound(nameof(RailMarginY))) visual.RailMarginY = theme.MarginY;
         if (!IsBound(nameof(NoHeroContent)) && !HasExplicitHeroContent()) visual.HeroContentVisible = false;

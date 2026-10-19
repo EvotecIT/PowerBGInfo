@@ -228,6 +228,8 @@ public sealed class BgInfoVisualCanvas {
     public int CenterTileOffsetY { get; set; }
     /// <summary>Default tile text fitting policy.</summary>
     public BgInfoVisualCanvasTileTextFitPolicy TileTextFitPolicy { get; set; }
+    /// <summary>Default scale for tile typography and supporting tile layout.</summary>
+    public double TileTextScale { get; set; } = 1d;
     /// <summary>Horizontal feature-strip offset. For right anchors, positive values inset from the right edge.</summary>
     public int FeatureOffsetX { get; set; }
     /// <summary>Vertical feature-strip offset. For bottom anchors, positive values inset from the bottom edge.</summary>
@@ -276,6 +278,14 @@ public sealed class BgInfoVisualCanvasTile {
     public BgInfoVisualCanvasTileMiniChartKind MiniChartKind { get; set; }
     /// <summary>Tile-specific text fitting policy. Auto inherits the visual canvas setting.</summary>
     public BgInfoVisualCanvasTileTextFitPolicy TextFitPolicy { get; set; }
+    /// <summary>Optional tile text scale; null inherits the canvas default.</summary>
+    public double? TextScale { get; set; }
+    /// <summary>Optional label font size in logical pixels.</summary>
+    public double? LabelFontSize { get; set; }
+    /// <summary>Optional value font size in logical pixels.</summary>
+    public double? ValueFontSize { get; set; }
+    /// <summary>Optional detail font size in logical pixels.</summary>
+    public double? DetailFontSize { get; set; }
     /// <summary>Compact tile chart values.</summary>
     public IReadOnlyList<double> MiniChartValues { get; set; } = System.Array.Empty<double>();
     /// <summary>Optional compact tile chart maximum.</summary>

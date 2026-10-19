@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - v2-speedygonzales
-      - feature/wallpaper-scenarios
     paths-ignore:
       - '*.md'
       - 'Docs/**'

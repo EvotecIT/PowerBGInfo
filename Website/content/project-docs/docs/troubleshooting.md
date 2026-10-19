@@ -98,6 +98,14 @@ Get-BGInfoMonitor | Select-Object Index, Width, Height, Scale
 - A small corporate image scaled up to 4K stays soft. Use a source image at
   least as large as the biggest screen.
 
+## How do I make tile text bigger or smaller?
+
+Set `-TextScale` on one tile or `-TileTextScale` on its canvas. The
+`New-BGInfoTheme -Scale` value is the default. Tiles without explicit width
+or height grow with the text; fixed-size tiles keep their dimensions and may
+shrink text or trim detail when the requested size does not fit. The layout
+reports those fit adjustments.
+
 ## How do I migrate from BGInfo?
 
 There is no importer for `.bgi` files; rebuild the layout in PowerShell.

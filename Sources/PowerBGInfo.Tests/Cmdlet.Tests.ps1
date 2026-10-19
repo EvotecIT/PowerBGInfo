@@ -26,6 +26,15 @@ function Get-BGInfoTestCliPath {
     return $path
 }
 
+function Get-BGInfoTestPowerShellPath {
+    $executable = if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        'powershell.exe'
+    } else {
+        'pwsh.exe'
+    }
+    return Join-Path -Path $PSHOME -ChildPath $executable
+}
+
 function Get-ImagePixelHash {
     param(
         [string] $Path
@@ -307,6 +316,10 @@ Describe 'New-BGInfo cmdlet parameters' {
         $tileCommand.Parameters.Keys | Should -Contain 'Height'
         $tileCommand.Parameters.Keys | Should -Contain 'TextFitPolicy'
         $tileCommand.Parameters['Side'].Aliases | Should -Contain 'Lane'
+        $tileCommand.Parameters.Keys | Should -Contain 'TextScale'
+        $tileCommand.Parameters.Keys | Should -Contain 'LabelFontSize'
+        $tileCommand.Parameters.Keys | Should -Contain 'ValueFontSize'
+        $tileCommand.Parameters.Keys | Should -Contain 'DetailFontSize'
     }
 }
 
@@ -364,13 +377,32 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
     }
 
     It 'creates a visual canvas model' {
-        $tile = New-BGInfoVisualCanvasTile -Lane Center -Icon PC -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised -IconKind Computer -MiniChartKind Sparkline -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 -MiniChartMaximum 100
+        $tile = New-BGInfoVisualCanvasTile -Lane Center -Icon PC `
+            -Label HOSTNAME -Value '{{HostName}}' -Detail '{{OSName}}' `
+            -Width 460 -Height 144 -Progress 0.25 -SurfaceStyle Raised `
+            -IconKind Computer -MiniChartKind Sparkline `
+            -TextFitPolicy SingleLineEllipsis -MiniChartValues 18,26,22 `
+            -MiniChartMaximum 100 -TextScale 1.5 -LabelFontSize 17 `
+            -ValueFontSize 26 -DetailFontSize 14
         $feature = New-BGInfoVisualCanvasFeature -Icon PS -Label 'LIGHTWEIGHT'
 
         $path = Join-Path -Path $TestDrive -ChildPath 'logo.png'
         Set-Content -LiteralPath $path -Value 'not-a-real-rendered-image'
 
-        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -Width 1200 -Height 630 -TitleColor White -TileValueColor '#F8FAFC' -HeroBadgeTextColor AliceBlue -HeroBadgeText EV -HeroBadgeImagePath $path -HeroBadgeImageFit Cover -HeroBadgeImagePadding 14 -HeroBadgeImageOpacity 0.82 -NoHeroContent -FeatureAnchor BottomRight -FeatureWidth 610 -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails -TileWidth 420 -TileHeight 132 -TileGap 24 -LeftTileWidth 430 -RightTileWidth 460 -CenterTileWidth 440 -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 -RightTileOffsetY 14 -CenterTileOffsetX -18 -CenterTileOffsetY 16 -TileTextFitPolicy WrapThenShrink -Tile $tile -Feature $feature
+        $visual = New-BGInfoVisualCanvas -Title PowerBGInfo `
+            -Subtitle 'Desktop insights' -Width 1200 -Height 630 `
+            -TitleColor White -TileValueColor '#F8FAFC' `
+            -HeroBadgeTextColor AliceBlue -HeroBadgeText EV `
+            -HeroBadgeImagePath $path -HeroBadgeImageFit Cover `
+            -HeroBadgeImagePadding 14 -HeroBadgeImageOpacity 0.82 `
+            -NoHeroContent -FeatureAnchor BottomRight -FeatureWidth 610 `
+            -FeatureOffsetX 165 -FeatureOffsetY 120 -LayoutPreset WideRails `
+            -TileWidth 420 -TileHeight 132 -TileGap 24 `
+            -LeftTileWidth 430 -RightTileWidth 460 -CenterTileWidth 440 `
+            -LeftTileOffsetX 8 -LeftTileOffsetY 10 -RightTileOffsetX 12 `
+            -RightTileOffsetY 14 -CenterTileOffsetX -18 `
+            -CenterTileOffsetY 16 -TileTextFitPolicy WrapThenShrink `
+            -TileTextScale 1.4 -Tile $tile -Feature $feature
 
         $visual.GetType().FullName | Should -Be 'PowerBGInfo.BgInfoVisualCanvas'
         $visual.Title | Should -Be 'PowerBGInfo'
@@ -402,6 +434,7 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.CenterTileOffsetX | Should -Be -18
         $visual.CenterTileOffsetY | Should -Be 16
         $visual.TileTextFitPolicy.ToString() | Should -Be 'WrapThenShrink'
+        $visual.TileTextScale | Should -Be 1.4
         $visual.Tiles.Count | Should -Be 1
         $visual.Tiles[0].Value | Should -Be '{{HostName}}'
         $visual.Tiles[0].Width | Should -Be 460
@@ -410,10 +443,55 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual.Tiles[0].IconKind.ToString() | Should -Be 'Computer'
         $visual.Tiles[0].MiniChartKind.ToString() | Should -Be 'Sparkline'
         $visual.Tiles[0].TextFitPolicy.ToString() | Should -Be 'SingleLineEllipsis'
+        $visual.Tiles[0].TextScale | Should -Be 1.5
+        $visual.Tiles[0].LabelFontSize | Should -Be 17
+        $visual.Tiles[0].ValueFontSize | Should -Be 26
+        $visual.Tiles[0].DetailFontSize | Should -Be 14
         $visual.Tiles[0].MiniChartValues.Count | Should -Be 3
         $visual.Tiles[0].MiniChartMaximum | Should -Be 100
         $visual.Tiles[0].Side.ToString() | Should -Be 'Center'
         $visual.Features.Count | Should -Be 1
+    }
+
+    It 'uses theme scale as the canvas default and keeps explicit scales' {
+        $theme = New-BGInfoTheme Graphite -Mode Dark -Scale 1.5
+        $defaultTile = New-BGInfoVisualCanvasTile -Label HOST -Value WK01
+        $themePath = Join-Path $TestDrive 'theme-tile-scale.json'
+        New-BGInfo {
+                New-BGInfoVisualCanvas -Tile $defaultTile
+            } -Theme $theme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'theme-tile-scale.png' -JsonPath $themePath `
+            -ExportOnly | Out-Null
+        $themeJson = Get-Content -LiteralPath $themePath -Raw | ConvertFrom-Json
+        $themeJson.VisualCanvases[0].TileTextScale | Should -Be 1.5
+
+        $baselineTheme = New-BGInfoTheme Graphite -Mode Dark -Scale 1
+        $renderTile = New-BGInfoVisualCanvasTile -Icon PC `
+            -IconKind Computer -Label HOST -Value WK01
+        New-BGInfo {
+                New-BGInfoVisualCanvas -Tile $renderTile
+            } -Theme $baselineTheme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'theme-tile-scale-default.png' | Out-Null
+        New-BGInfo {
+                New-BGInfoVisualCanvas -Tile $renderTile
+            } -Theme $theme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'theme-tile-scale-large.png' | Out-Null
+        $baselineRender = Join-Path $TestDrive 'theme-tile-scale-default.png'
+        $scaledRender = Join-Path $TestDrive 'theme-tile-scale-large.png'
+        (Get-ImagePixelHash -Path $scaledRender) | Should -Not -Be `
+            (Get-ImagePixelHash -Path $baselineRender)
+
+        $explicitTile = New-BGInfoVisualCanvasTile -Label HOST -Value WK01 `
+            -TextScale 1.75
+        $explicitPath = Join-Path $TestDrive 'explicit-tile-scale.json'
+        New-BGInfo {
+                New-BGInfoVisualCanvas -TileTextScale 1.25 -Tile $explicitTile
+            } -Theme $theme -Target File -ConfigurationDirectory $TestDrive `
+            -OutputFileName 'explicit-tile-scale.png' -JsonPath $explicitPath `
+            -ExportOnly | Out-Null
+        $explicitJson = Get-Content -LiteralPath $explicitPath -Raw | ConvertFrom-Json
+        $explicitJson.VisualCanvases[0].TileTextScale | Should -Be 1.25
+        $explicitJson.VisualCanvases[0].Tiles[0].TextScale | Should -Be 1.75
     }
 
     It 'keeps template feature placement when only the strip size changes' {
@@ -765,7 +843,8 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --no-apply | Out-Null
+        & $cliPath --script $scriptPath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli.png') | Should -BeTrue
     }
 
@@ -785,7 +864,8 @@ New-BGInfo {
 } -ConfigurationDirectory '$($TestDrive.Replace("'", "''"))' -Target File -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        $result = & $cliPath --script $scriptPath --export-json $exportPath --export-only
+        $result = & $cliPath --script $scriptPath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --export-json $exportPath --export-only
 
         $result | Should -Be $exportPath
         Test-Path -LiteralPath $exportPath | Should -BeTrue
@@ -812,7 +892,8 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli-module.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --module $modulePath --no-apply | Out-Null
+        & $cliPath --script $scriptPath --module $modulePath --pwsh `
+            (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli-module.png') | Should -BeTrue
     }
 }
