@@ -88,6 +88,27 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void MetricThresholdColorsOverrideTheDefaultStatusPalette()
+    {
+        var colors = new BgInfoStatusColors {
+            Ok = ChartColor.FromHex("#112233"),
+            Warning = ChartColor.FromHex("#445566"),
+            Critical = ChartColor.FromHex("#778899"),
+            Info = ChartColor.FromHex("#AABBCC")
+        };
+        var metric = new BgInfoMetricWidget {
+            NumericValue = 95,
+            Threshold = new BgInfoThreshold { Warning = 80, Critical = 90, Colors = colors }
+        };
+
+        var style = new BgInfoWidgetStyle(metric, new BgInfoConfiguration());
+
+        Assert.Equal(colors.Critical, style.Status.Critical);
+        Assert.Equal(colors.Warning, style.Status.Warning);
+        Assert.Equal(colors.Ok, style.Status.Ok);
+    }
+
+    [Fact]
     public void MetricPanelRendersItsSharedHeaderAboveTheMetricBody()
     {
         var withoutHeader = BgInfoWidgetRenderer.Render(new BgInfoMetricWidget { Label = "CPU", Value = "38", BackgroundColor = Panel }, new BgInfoConfiguration(), 320, 200).ToRgbaImage();
@@ -116,6 +137,35 @@ public class BgInfoWidgetTests
     }
 
     [Fact]
+    public void CalendarHeatmapRejectsNegativeValuesBeforeRendering()
+    {
+        var calendar = new BgInfoCalendarHeatmapWidget();
+        calendar.Items.Add(new BgInfoDatedValue { Date = Now, Value = -1 });
+
+        var error = Assert.Throws<InvalidOperationException>(calendar.Validate);
+
+        Assert.Contains("not negative", error.Message);
+    }
+
+    [Fact]
+    public void LaterTimelineColorAndStatusResolveTheSharedCategory()
+    {
+        var explicitColor = ChartColor.FromHex("#E6007E");
+        var timeline = new BgInfoTimelineWidget();
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "A", Start = Now, Category = "Maintenance" });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "B", Start = Now, Category = "maintenance", Color = explicitColor });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "C", Start = Now, Category = "Incident" });
+        timeline.Items.Add(new BgInfoTimelineItem { Lane = "D", Start = Now, Category = "incident", Status = BgInfoStatus.Warning });
+        var style = new BgInfoWidgetStyle(timeline, new BgInfoConfiguration());
+
+        var categories = BgInfoWidgetRenderer.ResolveTimelineCategories(timeline.Items, style);
+
+        Assert.Equal(2, categories.Count);
+        Assert.Equal(explicitColor, categories[0].Color);
+        Assert.Equal(style.Status.Warning, categories[1].Color);
+    }
+
+    [Fact]
     public void ChartThresholdsColorEachRowAndTheLatestValue()
     {
         var chart = new BgInfoChart {
@@ -131,6 +181,29 @@ public class BgInfoWidgetTests
         chart.Palette = new[] { ChartColor.White };
         Assert.Equal(new[] { ChartColor.White }, BgInfoChartRenderer.ResolvePalette(chart, new double[] { 95 }));
         Assert.Equal(defaults.Critical, BgInfoChartRenderer.ResolveThresholdColor(chart, 99));
+    }
+
+    [Fact]
+    public void ExplicitLineColorSuppressesGeneratedThresholdPalette()
+    {
+        var chart = new BgInfoChart {
+            Kind = BgInfoChartKind.Bar,
+            LineColor = ChartColor.FromHex("#0000FF"),
+            Threshold = new BgInfoThreshold { Warning = 80 }
+        };
+
+        Assert.Empty(BgInfoChartRenderer.ResolvePalette(chart, new double[] { 50, 90 }));
+    }
+
+    [Fact]
+    public void QrWidgetRejectsASlotThatCannotFitItsQuietZoneAndModules()
+    {
+        var widget = new BgInfoQrCodeWidget { Text = "https://help.contoso.com" };
+
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            BgInfoWidgetRenderer.Render(widget, new BgInfoConfiguration(), 20, 20));
+
+        Assert.Contains("needs at least", error.Message);
     }
 
     [Fact]
@@ -155,6 +228,38 @@ public class BgInfoWidgetTests
         Assert.Equal(170, BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080));
         using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 300, 170, 1080);
         Assert.Equal(300, rendered.Width);
+    }
+
+    [Fact]
+    public void RegionVisualCanvasCompressesTilesIntoAShortRegion()
+    {
+        var visual = new BgInfoVisualCanvas { TileHeight = 100, TileGap = 10, Transparent = true };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "A", Value = "1", Side = BgInfoVisualCanvasSide.Left });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "B", Value = "2", Side = BgInfoVisualCanvasSide.Right, Height = 60 });
+
+        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 300, 110, 1080);
+        var pixels = rendered.ToRgbaImage().Pixels;
+        var visibleBottomPixels = 0;
+        for (var y = 100; y < 110; y++) {
+            for (var x = 0; x < 300; x++) {
+                if (pixels[(y * 300 + x) * 4 + 3] > 0) visibleBottomPixels++;
+            }
+        }
+
+        Assert.True(visibleBottomPixels > 0, "The second tile should remain visible at the bottom of a compressed region.");
+    }
+
+    [Fact]
+    public void TreemapGroupsDifferingOnlyByCaseShareAValidParent()
+    {
+        var widget = new BgInfoTreemapWidget();
+        widget.Items.Add(new BgInfoTreemapItem { Name = "Database", Value = 4, Group = "Ops" });
+        widget.Items.Add(new BgInfoTreemapItem { Name = "Logs", Value = 2, Group = "ops" });
+
+        using var rendered = BgInfoWidgetRenderer.Render(widget, new BgInfoConfiguration(), 360, 220);
+
+        Assert.Equal(360, rendered.Width);
+        Assert.Equal(220, rendered.Height);
     }
 
     private static int CountDistinctFromPanel(RgbaImage pixels)

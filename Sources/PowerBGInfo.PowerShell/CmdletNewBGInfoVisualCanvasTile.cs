@@ -80,7 +80,7 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public double? MiniChartMaximum { get; set; }
 
-    /// <para>Explicit status: Ok, Warning, Critical or Info. The tile accent takes the status color.</para>
+    /// <para>Semantic status: Ok, Warning, Critical or Info. The owning canvas supplies its status color at render time; an explicit Accent takes priority.</para>
     [Parameter]
     public BgInfoStatus Status { get; set; }
 
@@ -113,10 +113,6 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             status = threshold.Evaluate(StatusValue);
         }
         var accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent));
-        if (!accent.HasValue && status != BgInfoStatus.None) {
-            accent = (BgInfoThemeDefaults.StatusColors ?? BgInfoStatusColors.Default(BgInfoThemeScope.Current?.Mode ?? ChartForgeX.Themes.VisualThemeMode.Dark)).Resolve(status);
-        }
-
         WriteObject(new BgInfoVisualCanvasTile {
             Side = Side,
             Icon = Icon,
@@ -126,6 +122,7 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             Width = Width,
             Height = Height,
             Accent = accent,
+            Status = status,
             Progress = Progress,
             SurfaceStyle = SurfaceStyle,
             IconKind = IconKind,

@@ -101,6 +101,13 @@ public enum BgInfoChartMetric {
 
 /// <summary>Defines a chart block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoChart {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoChart WithRegionOrder(int order) {
+        var copy = (BgInfoChart)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     private VisualThemeMode _themeMode = VisualThemeMode.Light;
     private int? _titleFontWeight;
     private TextDecorationStyle? _titleUnderlineStyle;

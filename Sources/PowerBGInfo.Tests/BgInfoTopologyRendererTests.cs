@@ -6,6 +6,21 @@ namespace PowerBGInfo.Tests;
 public class BgInfoTopologyRendererTests
 {
     [Theory]
+    [InlineData("Light")]
+    [InlineData("Dark")]
+    public void PanelTitleUsesTheTopologyFontBeforeTheGlobalFont(string theme) {
+        var topology = new BgInfoTopology {
+            Width = 480, Height = 280, Theme = theme, Title = "Operations WWW iii",
+            FontFamilyName = "Consolas", TitleFontSize = 24,
+            BackgroundColor = ChartForgeX.Primitives.ChartColor.FromHex(theme == "Dark" ? "#101827" : "#F8FAFC")
+        };
+        topology.Nodes.Add(new ChartForgeX.Topology.TopologyNode { Id = "api", Label = "API service" });
+        using var actual = BgInfoTopologyRenderer.Render(topology, new BgInfoConfiguration { FontFamilyName = "Carlito" });
+        using var reference = BgInfoTopologyRenderer.Render(topology, new BgInfoConfiguration { FontFamilyName = "Consolas" });
+        Assert.Equal(reference.ToRgbaImage().Pixels, actual.ToRgbaImage().Pixels);
+    }
+
+    [Theory]
     [InlineData(2)]
     [InlineData(3)]
     public void AutomaticLayeredGroupContainsEveryRenderedMemberAfterJsonLoad(int memberCount)

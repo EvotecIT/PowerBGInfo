@@ -13,22 +13,34 @@ internal static class BgInfoThemeScope {
     [ThreadStatic]
     private static BgInfoTheme? _current;
 
+    [ThreadStatic]
+    private static bool _globalColorExplicitlyBound;
+
     public static BgInfoTheme? Current => _current;
 
-    public static IDisposable Enter(BgInfoTheme? theme) {
+    public static bool GlobalColorExplicitlyBound => _globalColorExplicitlyBound;
+
+    public static IDisposable Enter(BgInfoTheme? theme, bool globalColorExplicitlyBound) {
         var previous = _current;
+        var previousGlobalColorExplicitlyBound = _globalColorExplicitlyBound;
         _current = theme;
-        return new Restore(previous);
+        _globalColorExplicitlyBound = globalColorExplicitlyBound;
+        return new Restore(previous, previousGlobalColorExplicitlyBound);
     }
 
     private sealed class Restore : IDisposable {
         private readonly BgInfoTheme? _previous;
+        private readonly bool _previousGlobalColorExplicitlyBound;
         private bool _disposed;
-        public Restore(BgInfoTheme? previous) => _previous = previous;
+        public Restore(BgInfoTheme? previous, bool previousGlobalColorExplicitlyBound) {
+            _previous = previous;
+            _previousGlobalColorExplicitlyBound = previousGlobalColorExplicitlyBound;
+        }
         public void Dispose() {
             if (_disposed) return;
             _disposed = true;
             _current = _previous;
+            _globalColorExplicitlyBound = _previousGlobalColorExplicitlyBound;
         }
     }
 }

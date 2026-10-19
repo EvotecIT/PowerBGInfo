@@ -75,11 +75,13 @@ public static class BgInfoLayoutEngine {
     /// <summary>Returns the safe area: the image minus margins, the taskbar reserve and the icon area.</summary>
     public static ChartRect GetSafeArea(int width, int height, BgInfoLayout layout) {
         if (layout == null) throw new ArgumentNullException(nameof(layout));
+        width = Math.Max(1, width);
+        height = Math.Max(1, height);
         var taskbar = layout.TaskbarReserve >= 0 ? layout.TaskbarReserve : (int)Math.Round(height * 0.0444);
-        var left = Math.Max(0, layout.MarginX) + Math.Max(0, layout.IconAreaWidth);
-        var top = Math.Max(0, layout.MarginY);
-        var right = Math.Max(0, layout.MarginX);
-        var bottom = Math.Max(Math.Max(0, layout.MarginY), taskbar > 0 ? taskbar + 16 : 0);
+        var left = (int)Math.Min(width - 1L, (long)Math.Max(0, layout.MarginX) + Math.Max(0, layout.IconAreaWidth));
+        var top = Math.Min(height - 1, Math.Max(0, layout.MarginY));
+        var right = Math.Min(width - left - 1, Math.Max(0, layout.MarginX));
+        var bottom = (int)Math.Min(height - top - 1L, Math.Max((long)Math.Max(0, layout.MarginY), taskbar > 0 ? (long)taskbar + 16 : 0));
         return new ChartRect(left, top, Math.Max(1, width - left - right), Math.Max(1, height - top - bottom));
     }
 
@@ -107,28 +109,52 @@ public static class BgInfoLayoutEngine {
         var autoBand = layout.BandHeight > 0 ? layout.BandHeight : Clamp(height * 0.26, 200, 340);
         var topHeight = BandHeight(requests, top, autoBand, safe.Height);
         var bottomHeight = BandHeight(requests, bottom, autoBand, safe.Height);
+        var hasMiddleRegions = left.Length > 0 || right.Length > 0 || center.Length > 0;
+        var separatorCount = hasMiddleRegions
+            ? (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0)
+            : top.Length > 0 && bottom.Length > 0 ? 1 : 0;
+        var bandTotal = topHeight + bottomHeight;
+        var verticalRegionCount = (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0) + (hasMiddleRegions ? 1 : 0);
+        if (safe.Height < verticalRegionCount) return result;
+        var middleReserve = hasMiddleRegions ? Math.Min(120, safe.Height / verticalRegionCount) : 0;
+        var bandReserve = Math.Min(120, topHeight) + Math.Min(120, bottomHeight);
+        var bandGap = separatorCount > 0
+            ? Math.Min(gap, Math.Max(0, safe.Height - bandReserve - middleReserve) / separatorCount)
+            : 0;
+        var bandBudget = Math.Max(0, safe.Height - bandGap * separatorCount - middleReserve);
+        if (bandTotal > bandBudget && bandTotal > 0) {
+            var bandScale = bandBudget / bandTotal;
+            topHeight = top.Length > 0
+                ? Math.Max(1, Math.Min(bandBudget - (bottom.Length > 0 ? 1 : 0), topHeight * bandScale))
+                : 0;
+            bottomHeight = bottom.Length > 0 ? bandBudget - topHeight : 0;
+        }
         var safeRight = safe.X + safe.Width;
         var safeBottom = safe.Y + safe.Height;
 
         if (top.Length > 0) {
             var span = BandSpan(safe.X, safeRight, safe.Y, topHeight, text, gap);
-            FlowRow(requests, top, result, span.Start, span.End, safe.Y, topHeight, gap, alignBottom: false);
+            if (span is { } available) FlowRow(requests, top, result, available.Start, available.End, safe.Y, topHeight, gap, alignBottom: false);
         }
         if (bottom.Length > 0) {
             var y = safeBottom - bottomHeight;
             var span = BandSpan(safe.X, safeRight, y, bottomHeight, text, gap);
-            FlowRow(requests, bottom, result, span.Start, span.End, y, bottomHeight, gap, alignBottom: true);
+            if (span is { } available) FlowRow(requests, bottom, result, available.Start, available.End, y, bottomHeight, gap, alignBottom: true);
         }
 
-        var columnTop = safe.Y + (top.Length > 0 ? topHeight + gap : 0);
-        var columnBottom = safeBottom - (bottom.Length > 0 ? bottomHeight + gap : 0);
+        var columnTop = Math.Min(safeBottom, Math.Max(safe.Y, safe.Y + (top.Length > 0 ? topHeight + bandGap : 0)));
+        var columnBottom = Math.Min(safeBottom, Math.Max(safe.Y, safeBottom - (bottom.Length > 0 ? bottomHeight + bandGap : 0)));
         var columnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : Clamp(width * 0.24, 340, 620);
         var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
-        var centerGapCount = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
+        if (safe.Width < sideColumns + (center.Length > 0 ? 1 : 0)) return result;
+        var columnGapCount = center.Length > 0 ? sideColumns : Math.Max(0, sideColumns - 1);
         var centerReserve = center.Length > 0 && sideColumns > 0 ? Math.Min(120, safe.Width) : 0;
-        var centerGaps = centerGapCount * gap;
+        var columnGap = columnGapCount > 0
+            ? Math.Min(gap, Math.Max(0, (safe.Width - centerReserve - sideColumns) / columnGapCount))
+            : 0;
+        var columnGaps = columnGapCount * columnGap;
         var columnLimit = sideColumns > 0
-            ? Math.Max(1, (safe.Width - centerReserve - centerGaps) / sideColumns)
+            ? Math.Max(1, (safe.Width - centerReserve - columnGaps) / sideColumns)
             : safe.Width;
         columnWidth = Math.Max(1, Math.Min(columnWidth, columnLimit));
 
@@ -138,9 +164,10 @@ public static class BgInfoLayoutEngine {
         if (left.Length > 0) FlowColumn(requests, left, result, leftX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.Start, layout.ColumnAlignment, maximumShare);
         if (right.Length > 0) FlowColumn(requests, right, result, rightX, columnWidth, columnTop, columnBottom, text, gap, CrossAlign.End, layout.ColumnAlignment, maximumShare);
         if (center.Length > 0) {
-            var centerLeft = left.Length > 0 ? leftX + columnWidth + gap : safe.X;
-            var centerRight = right.Length > 0 ? rightX - gap : safeRight;
-            FlowColumn(requests, center, result, centerLeft, Math.Max(1, centerRight - centerLeft), columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
+            var centerLeft = left.Length > 0 ? leftX + columnWidth + columnGap : safe.X;
+            var centerRight = right.Length > 0 ? rightX - columnGap : safeRight;
+            if (centerRight > centerLeft)
+                FlowColumn(requests, center, result, centerLeft, centerRight - centerLeft, columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
         }
 
         return result;
@@ -154,16 +181,19 @@ public static class BgInfoLayoutEngine {
         return Math.Min(height, limit);
     }
 
-    private static (double Start, double End) BandSpan(double start, double end, double y, double height, ChartRect? text, double gap) {
-        if (text is not { } block || !Overlaps(y, y + height, block.Y, block.Y + block.Height)) return (start, end);
+    private static (double Start, double End)? BandSpan(double start, double end, double y, double height, ChartRect? text, double gap) {
+        if (text is not { } block || !Overlaps(y, y + height, block.Y, block.Y + block.Height)
+            || !Overlaps(start, end, block.X, block.X + block.Width)) return (start, end);
         var before = block.X - gap - start;
         var after = end - (block.X + block.Width + gap);
-        if (before <= 0 && after <= 0) return (start, end);
+        if (before <= 0 && after <= 0) return null;
         return after >= before ? (block.X + block.Width + gap, end) : (start, block.X - gap);
     }
 
     private static void FlowRow(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double start, double end, double y, double height, double gap, bool alignBottom) {
-        var available = Math.Max(1, end - start);
+        if (height <= 0 || end <= start) return;
+        var available = end - start;
+        if (available < indexes.Length) return;
         var effectiveGap = FitGap(available, indexes.Length, gap);
         var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, effectiveGap);
         // A row of fixed-width panels that does not fill the band is centered in it.
@@ -185,7 +215,10 @@ public static class BgInfoLayoutEngine {
             else bottom = Math.Min(bottom, block.Y - gap);
         }
 
-        var available = Math.Max(1, bottom - top);
+        if (top >= bottom) return;
+
+        var available = bottom - top;
+        if (available < indexes.Length) return;
         var effectiveGap = FitGap(available, indexes.Length, gap);
         var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, effectiveGap, maximumShare);
         var used = heights.Sum() + effectiveGap * Math.Max(0, indexes.Length - 1);
@@ -211,15 +244,35 @@ public static class BgInfoLayoutEngine {
     /// <summary>Keeps fixed sizes when they fit, scales them proportionally when their combined size and gaps exceed the region, and splits remaining space among zero-size items.</summary>
     internal static double[] Share(double[] requested, double available, double gap, double maximumShare = double.MaxValue) {
         var sizes = new double[requested.Length];
-        if (requested.Length == 0) return sizes;
+        if (requested.Length == 0 || available < requested.Length) return sizes;
         gap = FitGap(available, requested.Length, gap);
         var fixedTotal = requested.Where(v => v > 0).Sum();
         var automatic = requested.Count(v => v <= 0);
         var fixedBudget = Math.Max(0, available - gap * (requested.Length - 1) - automatic);
         var fixedScale = fixedTotal > fixedBudget && fixedTotal > 0 ? fixedBudget / fixedTotal : 1;
+        var minimums = new bool[requested.Length];
+        var unallocated = fixedBudget;
+        var weight = fixedTotal;
+        // Lock subpixel fixed requests at one pixel, then rescale only the others.
+        // Sizes that already fit keep their authored proportions and rounding.
+        while (fixedScale < 1 && weight > 0) {
+            var changed = false;
+            for (var i = 0; i < requested.Length; i++) {
+                if (requested[i] <= 0 || minimums[i] || requested[i] * fixedScale >= 1) continue;
+                sizes[i] = 1;
+                minimums[i] = true;
+                unallocated -= 1;
+                weight -= requested[i];
+                changed = true;
+            }
+            if (!changed) break;
+            fixedScale = weight > 0 ? unallocated / weight : 0;
+        }
         var remaining = available - Math.Min(fixedTotal, fixedBudget) - gap * (requested.Length - 1);
         var share = automatic > 0 ? Math.Max(1, Math.Min(maximumShare, remaining / automatic)) : 0;
-        for (var i = 0; i < requested.Length; i++) sizes[i] = requested[i] > 0 ? Math.Min(requested[i] * fixedScale, available) : share;
+        for (var i = 0; i < requested.Length; i++) {
+            if (!minimums[i]) sizes[i] = requested[i] > 0 ? Math.Min(requested[i] * fixedScale, available) : share;
+        }
         return sizes;
     }
 
@@ -233,6 +286,13 @@ public static class BgInfoLayoutEngine {
 
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 
-    private static ChartRect Round(double x, double y, double width, double height) =>
-        new(Math.Round(x), Math.Round(y), Math.Max(1, Math.Round(width)), Math.Max(1, Math.Round(height)));
+    private static ChartRect Round(double x, double y, double width, double height) {
+        // Round shared edges consistently: ties-to-even can collapse a one-pixel
+        // span at half-pixel origins and force it into its neighbor's rectangle.
+        var left = Math.Floor(x + 0.5);
+        var top = Math.Floor(y + 0.5);
+        var right = Math.Floor(x + width + 0.5);
+        var bottom = Math.Floor(y + height + 0.5);
+        return new ChartRect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
+    }
 }

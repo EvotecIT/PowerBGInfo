@@ -316,7 +316,7 @@ public class CmdletNewBGInfo : PSCmdlet {
         if (theme != null) ApplyTheme(config, theme);
 
         System.Collections.ObjectModel.Collection<PSObject> results;
-        using (BgInfoThemeScope.Enter(theme)) {
+        using (BgInfoThemeScope.Enter(theme, IsBound(nameof(Color)))) {
             results = BGInfoContent.Invoke();
         }
 
@@ -325,8 +325,7 @@ public class CmdletNewBGInfo : PSCmdlet {
         {
             if (item?.BaseObject is BgInfoWidget widget)
             {
-                widget.RegionOrder = regionOrder++;
-                config.Widgets.Add(widget);
+                config.Widgets.Add(widget.WithRegionOrder(regionOrder++));
                 continue;
             }
 
@@ -354,22 +353,19 @@ public class CmdletNewBGInfo : PSCmdlet {
 
             if (item?.BaseObject is BgInfoChart chart)
             {
-                chart.RegionOrder = regionOrder++;
-                config.Charts.Add(chart);
+                config.Charts.Add(chart.WithRegionOrder(regionOrder++));
                 continue;
             }
 
             if (item?.BaseObject is BgInfoTopology topology)
             {
-                topology.RegionOrder = regionOrder++;
-                config.Topologies.Add(topology);
+                config.Topologies.Add(topology.WithRegionOrder(regionOrder++));
                 continue;
             }
 
             if (item?.BaseObject is BgInfoVisualCanvas visualCanvas)
             {
-                visualCanvas.RegionOrder = regionOrder++;
-                config.VisualCanvases.Add(visualCanvas);
+                config.VisualCanvases.Add(visualCanvas.WithRegionOrder(regionOrder++));
                 continue;
             }
 

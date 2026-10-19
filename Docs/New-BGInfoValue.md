@@ -88,7 +88,7 @@ Built-in token to resolve to a value.
 Type: String
 Parameter Sets: Builtin
 Aliases: None
-Possible values: UserName, HostName, FullUserName, CpuName, CpuMaxClockSpeed, CpuCores, CpuLogicalCores, RAMSize, RAMSpeed, RAMPartNumber, BiosVersion, BiosManufacturer, BiosReleaseDate, OSName, OSVersion, OSArchitecture, OSBuild, OSInstallDate, OSLastBootUpTime, UserDNSDomain, FQDN, IPv4Address, IPv6Address
+Possible values: UserName, HostName, FullUserName, CpuName, CpuMaxClockSpeed, CpuCores, CpuLogicalCores, RAMSize, RAMSpeed, RAMPartNumber, BiosVersion, BiosManufacturer, BiosReleaseDate, OSName, OSVersion, OSArchitecture, OSBuild, OSInstallDate, OSLastBootUpTime, UserDNSDomain, FQDN, IPv4Address, IPv6Address, Uptime, LastPatch, DefenderStatus, BitLockerStatus, LoggedOnUser, Domain, DiskSummary
 
 Required: True
 Position: named

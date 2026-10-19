@@ -29,6 +29,13 @@ public enum BgInfoWidgetKind {
 /// Base for widget panels: a framed surface with an optional header and a ChartForgeX body.
 /// </summary>
 public abstract class BgInfoWidget {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoWidget WithRegionOrder(int order) {
+        var copy = (BgInfoWidget)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     private double _scale = 1d;
     private VisualThemeMode _themeMode = VisualThemeMode.Dark;
 

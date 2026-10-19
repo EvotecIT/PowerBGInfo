@@ -10,6 +10,36 @@ namespace PowerBGInfo.Tests;
 
 public partial class BgInfoGeneratorTests
 {
+    [Fact]
+    public void TilelessRegionVisualCanvasDoesNotRenderAsAFullScreenCanvas()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "bginfo-empty-visual-region-" + Path.GetRandomFileName());
+        var config = new BgInfoConfiguration {
+            ConfigurationDirectory = directory,
+            OutputFileName = "with-visual.png",
+            Target = BgInfoTarget.File,
+            Background = new BgInfoBackground { Width = 320, Height = 200, Color = ChartColors.Black }
+        };
+        config.VisualCanvases.Add(new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Title = "Should not render" });
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService());
+
+        try
+        {
+            var withUnplacedVisual = generator.Generate(config);
+            config.VisualCanvases.Clear();
+            config.OutputFileName = "without-visual.png";
+            var withoutVisual = generator.Generate(config);
+            using var actual = BgInfoRasterImage.Load(withUnplacedVisual);
+            using var expected = BgInfoRasterImage.Load(withoutVisual);
+
+            Assert.Equal(expected.ToRgbaImage().Pixels, actual.ToRgbaImage().Pixels);
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(null, null, null)]
     [InlineData("Calibri", "Consolas", null)]

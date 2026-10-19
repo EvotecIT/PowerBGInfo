@@ -1,4 +1,4 @@
-<#
+﻿<#
     Template: copy this file and fill in Get-MyWallpaperData. Nothing else
     needs to change.
 

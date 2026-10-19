@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -41,6 +42,7 @@ public static partial class BgInfoConfigurationJson {
                 model.VisualCanvases[i].RegionOrder = visuals[i].RegionOrder == 0 ? null : visuals[i].RegionOrder;
                 model.VisualCanvases[i].RailMarginX = visuals[i].RailMarginX;
                 model.VisualCanvases[i].RailMarginY = visuals[i].RailMarginY;
+                model.VisualCanvases[i].FontFamilyName = visuals[i].FontFamilyName;
             }
         }
         if (configuration.Widgets.Count > 0) {
@@ -51,11 +53,14 @@ public static partial class BgInfoConfigurationJson {
     private static void MapPlacement(BgInfoChartFile model, BgInfoChart chart) {
         chart.Region = ParseRegion(model.Region);
         chart.RegionOrder = model.RegionOrder ?? 0;
-        chart.Threshold = MapThreshold(model.Threshold);
+        chart.Threshold = MapThreshold(model.Threshold, chart.ThemeMode);
     }
 
-    private static BgInfoRegion ParseRegion(string? text) =>
-        TryParseDefinedEnumName<BgInfoRegion>(text, out var region) ? region : BgInfoRegion.None;
+    private static BgInfoRegion ParseRegion(string? text) {
+        if (string.IsNullOrWhiteSpace(text)) return BgInfoRegion.None;
+        if (TryParseDefinedEnumName<BgInfoRegion>(text, out var region)) return region;
+        throw new InvalidDataException($"Unknown region '{text}'. Expected None, Left, Right, Top, Bottom or Center.");
+    }
 
     private static BgInfoLayout? MapLayout(BgInfoLayoutFile? model) {
         if (model == null) return null;
@@ -82,16 +87,20 @@ public static partial class BgInfoConfigurationJson {
         ColumnAlignment = layout.ColumnAlignment == BgInfoColumnAlignment.Top ? null : layout.ColumnAlignment.ToString()
     };
 
-    private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model) {
-        if (model == null || (!model.Warning.HasValue && !model.Critical.HasValue)) return null;
+    private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model, VisualThemeMode mode) {
+        if (model == null) return null;
         var threshold = new BgInfoThreshold { Warning = model.Warning, Critical = model.Critical };
         ApplyEnum<BgInfoThresholdDirection>(model.Direction, value => threshold.Direction = value);
-        threshold.Colors = MapStatusColors(model.Ok, model.WarningColor, model.CriticalColor, model.Info);
+        threshold.Colors = MapStatusColors(model.Ok, model.WarningColor, model.CriticalColor, model.Info, mode);
         threshold.Validate();
-        return threshold;
+        return threshold.IsDefined ? threshold : null;
     }
 
-    private static BgInfoThresholdFile? MapThresholdFile(BgInfoThreshold? threshold) => threshold is not { IsDefined: true } ? null : new BgInfoThresholdFile {
+    private static BgInfoThresholdFile? MapThresholdFile(BgInfoThreshold? threshold) {
+        if (threshold == null) return null;
+        threshold.Validate();
+        if (!threshold.IsDefined) return null;
+        return new BgInfoThresholdFile {
         Warning = threshold.Warning,
         Critical = threshold.Critical,
         Direction = threshold.Direction == BgInfoThresholdDirection.Above ? null : threshold.Direction.ToString(),
@@ -99,11 +108,12 @@ public static partial class BgInfoConfigurationJson {
         WarningColor = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Warning),
         CriticalColor = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Critical),
         Info = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Info)
-    };
+        };
+    }
 
-    private static BgInfoStatusColors? MapStatusColors(string? ok, string? warning, string? critical, string? info) {
+    private static BgInfoStatusColors? MapStatusColors(string? ok, string? warning, string? critical, string? info, VisualThemeMode mode) {
         if (ok == null && warning == null && critical == null && info == null) return null;
-        var colors = BgInfoStatusColors.Default(VisualThemeMode.Dark);
+        var colors = BgInfoStatusColors.Default(mode);
         ApplyColor(ok, value => colors.Ok = value);
         ApplyColor(warning, value => colors.Warning = value);
         ApplyColor(critical, value => colors.Critical = value);
@@ -112,9 +122,13 @@ public static partial class BgInfoConfigurationJson {
     }
 
     private static BgInfoWidget? MapWidget(BgInfoWidgetFile model) {
-        if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) return null;
+        if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) {
+            throw new InvalidDataException("Unknown widget kind '" + (model.Kind ?? "<missing>") + "'.");
+        }
+        var themeMode = VisualThemeMode.Dark;
+        ApplyEnum<VisualThemeMode>(model.ThemeMode, value => themeMode = value);
         BgInfoWidget widget = kind switch {
-            BgInfoWidgetKind.Metric => MapMetric(model),
+            BgInfoWidgetKind.Metric => MapMetric(model, themeMode),
             BgInfoWidgetKind.Table => MapTable(model),
             BgInfoWidgetKind.List => MapList(model),
             BgInfoWidgetKind.CalendarHeatmap => MapCalendar(model),
@@ -127,8 +141,8 @@ public static partial class BgInfoConfigurationJson {
         widget.Id = model.Id ?? string.Empty;
         widget.Title = model.Title ?? string.Empty;
         widget.Note = model.Note ?? string.Empty;
-        if (model.Width.HasValue) widget.Width = Math.Max(0, model.Width.Value);
-        if (model.Height.HasValue) widget.Height = Math.Max(0, model.Height.Value);
+        if (model.Width.HasValue) widget.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) widget.Height = ImportRasterDimension(model.Height.Value);
         widget.Region = ParseRegion(model.Region);
         widget.RegionOrder = model.RegionOrder ?? 0;
         ApplyEnum<BgInfoTextPosition>(model.Anchor, value => widget.Anchor = value);
@@ -136,7 +150,7 @@ public static partial class BgInfoConfigurationJson {
         if (model.OffsetY.HasValue) widget.OffsetY = model.OffsetY.Value;
         widget.PositionX = model.PositionX;
         widget.PositionY = model.PositionY;
-        if (TryParseDefinedEnumName<VisualThemeMode>(model.ThemeMode, out var mode)) widget.ThemeMode = mode;
+        widget.ThemeMode = themeMode;
         ApplyColor(model.BackgroundColor, value => widget.BackgroundColor = value);
         ApplyColor(model.BorderColor, value => widget.BorderColor = value);
         if (model.CornerRadius.HasValue) widget.CornerRadius = Math.Max(0, model.CornerRadius.Value);
@@ -144,18 +158,18 @@ public static partial class BgInfoConfigurationJson {
         ApplyColor(model.TitleColor, value => widget.TitleColor = value);
         widget.TitleFontSize = model.TitleFontSize;
         widget.TitleFontWeight = model.TitleFontWeight;
-        if (TryParseDefinedEnumName<TextCaseTransform>(model.TitleTextCase, out var textCase)) widget.TitleTextCase = textCase;
+        ApplyEnum<TextCaseTransform>(model.TitleTextCase, value => widget.TitleTextCase = value);
         ApplyColor(model.TextColor, value => widget.TextColor = value);
         ApplyColor(model.MutedColor, value => widget.MutedColor = value);
         ApplyColor(model.Accent, value => widget.Accent = value);
         ApplyColor(model.SecondaryAccent, value => widget.SecondaryAccent = value);
         widget.FontFamilyName = string.IsNullOrWhiteSpace(model.FontFamilyName) ? null : model.FontFamilyName;
         if (model.Scale.HasValue) widget.Scale = Math.Max(1, Math.Min(4, model.Scale.Value));
-        widget.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo);
+        widget.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo, themeMode);
         return widget;
     }
 
-    private static BgInfoMetricWidget MapMetric(BgInfoWidgetFile model) {
+    private static BgInfoMetricWidget MapMetric(BgInfoWidgetFile model, VisualThemeMode themeMode) {
         var metric = new BgInfoMetricWidget {
             Label = model.Label ?? string.Empty,
             Value = model.Value ?? string.Empty,
@@ -164,7 +178,7 @@ public static partial class BgInfoConfigurationJson {
             Caption = model.Caption ?? string.Empty,
             Symbol = model.Symbol ?? string.Empty,
             NumericValue = model.NumericValue,
-            Threshold = MapThreshold(model.Threshold),
+            Threshold = MapThreshold(model.Threshold, themeMode),
             History = model.History ?? Array.Empty<double>(),
             HistoryMaximum = model.HistoryMaximum
         };
@@ -220,6 +234,7 @@ public static partial class BgInfoConfigurationJson {
                 End = ParseDate(item.End),
                 Category = string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category!
             };
+            if (entry.ValidationError() is { } error) throw new InvalidDataException(error);
             ApplyEnum<BgInfoStatus>(item.Status, value => entry.Status = value);
             ApplyColor(item.Color, value => entry.Color = value);
             timeline.Items.Add(entry);
@@ -315,7 +330,7 @@ public static partial class BgInfoConfigurationJson {
                 model.Color = Hex(calendar.Color);
                 model.FirstDayOfWeek = calendar.FirstDayOfWeek == DayOfWeek.Monday ? null : calendar.FirstDayOfWeek.ToString();
                 model.ShowLegend = calendar.ShowLegend ? true : null;
-                model.Dates = calendar.Items.Select(item => new BgInfoDatedValueFile { Date = FormatDate(item.Date), Value = item.Value }).ToList();
+                model.Dates = calendar.Items.Select(item => new BgInfoDatedValueFile { Date = item.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Value = item.Value }).ToList();
                 break;
             case BgInfoTimelineWidget timeline:
                 model.Now = timeline.Now.HasValue ? FormatDate(timeline.Now.Value) : null;
@@ -346,10 +361,16 @@ public static partial class BgInfoConfigurationJson {
 
     private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
-    private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+    private static string FormatDate(DateTime value) => value.ToString("O", CultureInfo.InvariantCulture);
 
-    private static DateTime? ParseDate(string? text) =>
-        !string.IsNullOrWhiteSpace(text) && DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var value) ? value : null;
+    private static DateTime? ParseDate(string? text) {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.RoundtripKind;
+        string[] invariantFormats = { "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" };
+        if (DateTime.TryParseExact(text, invariantFormats, CultureInfo.InvariantCulture, styles, out var invariant)) return invariant;
+        if (DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized)) return localized;
+        throw new InvalidDataException($"Invalid widget date '{text}'. Use an ISO date or a valid date in the current culture.");
+    }
 
     internal sealed class BgInfoLayoutFile {
         public int? MarginX { get; set; }

@@ -62,46 +62,65 @@ public sealed class BgInfoDiskInfo {
 }
 
 public static partial class SystemInfoProvider {
+#if NET472
+    // The 32-bit Environment.TickCount wraps after49.7 days. This native clock is
+    // available on supported Windows hosts and includes the full boot duration.
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", ExactSpelling = true)]
+    private static extern ulong GetTickCount64();
+#endif
     /// <summary>Text used when a fact cannot be read.</summary>
     public const string Unknown = "Unknown";
 
     private static readonly TimeSpan QueryTimeout = TimeSpan.FromSeconds(5);
-    private static readonly Lazy<(string Id, DateTime? Date)> LastPatchCache = new(LoadLastPatch, true);
-    private static readonly Lazy<(string Status, TimeSpan? SignatureAge)> DefenderCache = new(LoadDefender, true);
-    private static readonly Lazy<string> BitLockerCache = new(LoadBitLocker, true);
-    private static readonly Lazy<string> LoggedOnUserCache = new(LoadLoggedOnUser, true);
-
-    private static (string Id, DateTime? Date) GetLastPatch() => LastPatchCache.Value;
-    private static (string Status, TimeSpan? SignatureAge) GetDefender() => DefenderCache.Value;
-    private static string GetBitLockerStatus() => BitLockerCache.Value;
-    private static string GetLoggedOnUser() => LoggedOnUserCache.Value;
+    private static (string Id, DateTime? Date) GetLastPatch() => LoadLastPatch();
+    private static (string Status, TimeSpan? SignatureAge) GetDefender() => LoadDefender();
+    private static string GetBitLockerStatus() => LoadBitLocker();
+    private static string GetLoggedOnUser() => LoadLoggedOnUser();
 
     /// <summary>Collects every fact. Each probe fails on its own; the snapshot is always returned.</summary>
     public static BgInfoSystemInfo GetSnapshot() {
-        var uptime = GetUptime();
-        var lastBoot = OsInfoCache.Value.LastBootUpTime;
-        var patch = LastPatchCache.Value;
-        var defender = DefenderCache.Value;
+        var osInfo = OsInfoCache.Value;
+        var uptime = GetUptime(osInfo);
+        var lastBoot = osInfo.LastBootUpTime;
+        var patch = GetLastPatch();
+        var defender = GetDefender();
         return new BgInfoSystemInfo {
             ComputerName = Environment.MachineName,
             UserName = Environment.UserName,
-            LoggedOnUser = LoggedOnUserCache.Value,
-            Domain = OrUnknown(Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName),
-            OSName = OrUnknown(OsInfoCache.Value.Name),
-            OSVersion = OrUnknown(OsInfoCache.Value.Version),
-            OSBuild = OrUnknown(OsInfoCache.Value.Build),
+            LoggedOnUser = GetLoggedOnUser(),
+            Domain = MachineDomainCache.Value,
+            OSName = OrUnknown(osInfo.Name),
+            OSVersion = OrUnknown(osInfo.Version),
+            OSBuild = OrUnknown(osInfo.Build),
             LastBootTime = lastBoot,
             Uptime = uptime,
             UptimeText = FormatUptime(uptime),
-            IPv4Address = OrUnknown(NetworkInfoCache.Value.IPv4),
+            IPv4Address = OrUnknown(LoadNetworkInfo().IPv4),
             Disks = GetDisks(),
             LastPatchId = patch.Id,
             LastPatchDate = patch.Date,
             DefenderStatus = defender.Status,
             DefenderSignatureAge = defender.SignatureAge,
-            BitLockerStatus = BitLockerCache.Value
+            BitLockerStatus = GetBitLockerStatus()
         };
     }
+
+    private static string LoadMachineDomain() {
+        if (IsWindows()) {
+            try {
+                foreach (var computer in Query(@"root\cimv2", "SELECT Domain FROM Win32_ComputerSystem")) {
+                    var domain = computer["Domain"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(domain)) return ResolveMachineDomain(domain);
+                }
+            } catch {
+                // Machine membership is unavailable; the process account is not a reliable substitute.
+            }
+        }
+
+        return Unknown;
+    }
+
+    internal static string ResolveMachineDomain(string? machineDomain) => OrUnknown(machineDomain);
 
     /// <summary>Formats an uptime as days and hours, or hours and minutes under a day.</summary>
     public static string FormatUptime(TimeSpan? uptime) {
@@ -130,8 +149,11 @@ public static partial class SystemInfoProvider {
     internal static DateTime? ParsePatchDate(string? text) {
         if (string.IsNullOrWhiteSpace(text)) return null;
         var value = text!.Trim();
-        var formats = new[] { "M/d/yyyy", "MM/dd/yyyy", "yyyyMMdd", "yyyy-MM-dd" };
-        if (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact)) return exact;
+        var invariantFormats = new[] { "d-M-yyyy", "dd-MM-yyyy", "yyyyMMdd", "yyyy-MM-dd" };
+        if (DateTime.TryParseExact(value, invariantFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact)) return exact;
+        if (DateTime.TryParseExact(value, "d", CultureInfo.CurrentCulture, DateTimeStyles.None, out var localized)) return localized;
+        var legacyFormats = new[] { "M/d/yyyy", "MM/dd/yyyy" };
+        if (DateTime.TryParseExact(value, legacyFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out exact)) return exact;
         // Some systems store a FILETIME as hexadecimal text.
         if (long.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var fileTime) && fileTime > 0) {
             try { return DateTime.FromFileTime(fileTime); } catch (ArgumentOutOfRangeException) { return null; }
@@ -221,14 +243,6 @@ public static partial class SystemInfoProvider {
             return obj["UserName"]?.ToString();
         }
         return null;
-    }
-
-    private static List<ManagementBaseObject> Query(string scope, string query) {
-        var options = new System.Management.EnumerationOptions { Timeout = QueryTimeout, ReturnImmediately = true, Rewindable = false };
-        using var searcher = new ManagementObjectSearcher(new ManagementScope(scope), new ObjectQuery(query), options);
-        var results = new List<ManagementBaseObject>();
-        foreach (var obj in searcher.Get()) results.Add(obj);
-        return results;
     }
 
     private static string OrUnknown(string? value) => string.IsNullOrWhiteSpace(value) ? Unknown : value!.Trim();

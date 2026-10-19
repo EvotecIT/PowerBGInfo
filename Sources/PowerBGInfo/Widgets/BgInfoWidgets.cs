@@ -48,8 +48,25 @@ public sealed class BgInfoMetricWidget : BgInfoWidget {
     /// <summary>Optional history scale maximum.</summary>
     public double? HistoryMaximum { get; set; }
 
+    /// <inheritdoc />
+    public override void Validate() {
+        base.Validate();
+        Threshold?.Validate();
+        if (History == null) throw new ArgumentNullException(nameof(History));
+        foreach (var value in History) {
+            if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(History), "Metric history must contain finite values.");
+        }
+        if (HistoryKind == BgInfoMetricHistoryKind.Sparkline && History.Count == 1) {
+            throw new ArgumentException("Metric sparkline history requires at least two values; use Bars for a single sample.", nameof(History));
+        }
+        if (HistoryMaximum.HasValue && (double.IsNaN(HistoryMaximum.Value) || double.IsInfinity(HistoryMaximum.Value))) {
+            throw new ArgumentOutOfRangeException(nameof(HistoryMaximum), "Metric history maximum must be finite.");
+        }
+    }
+
     /// <summary>The status after thresholds are applied.</summary>
     public BgInfoStatus ResolveStatus() {
+        Threshold?.Validate();
         if (Threshold is { IsDefined: true } threshold && NumericValue.HasValue) return threshold.Evaluate(NumericValue.Value);
         return Status;
     }
@@ -79,7 +96,7 @@ public sealed class BgInfoTableWidget : BgInfoWidget {
     public bool RowStriping { get; set; } = true;
 
     // ChartForgeX table rows are 31 px (24 dense) under a 32 px (26 dense) header.
-    internal override double NaturalBodyHeight => (ShowHeader ? (Dense ? 30 : 36) : 0) + Rows.Count * (Dense ? 24 : 31) + 16;
+    internal override double NaturalBodyHeight => (ShowHeader ? (Dense ? 30 : 36) : 0) + Rows.Count * (Dense ? 24d : 31d) + 16;
 
     /// <inheritdoc />
     public override void Validate() {
@@ -140,7 +157,7 @@ public sealed class BgInfoListWidget : BgInfoWidget {
     public bool Dense { get; set; }
 
     // ChartForgeX list rows are 33 px (25 dense).
-    internal override double NaturalBodyHeight => Items.Count * (Dense ? 25 : 33) + 16;
+    internal override double NaturalBodyHeight => Items.Count * (Dense ? 25d : 33d) + 16;
 }
 
 /// <summary>One dated value.</summary>
@@ -174,6 +191,9 @@ public sealed class BgInfoCalendarHeatmapWidget : BgInfoWidget {
     public override void Validate() {
         base.Validate();
         if (Items.Count == 0) throw new InvalidOperationException("A calendar heatmap needs at least one dated value.");
+        if (Items.Any(item => item.Value < 0 || double.IsNaN(item.Value) || double.IsInfinity(item.Value))) {
+            throw new InvalidOperationException("Calendar heatmap values must be finite and not negative.");
+        }
     }
 }
 
@@ -193,6 +213,17 @@ public sealed class BgInfoTimelineItem {
     public BgInfoStatus Status { get; set; }
     /// <summary>Optional explicit category color.</summary>
     public Color? Color { get; set; }
+
+    internal string? ValidationError() {
+        if (string.IsNullOrWhiteSpace(Lane)) return "Every timeline item needs a lane.";
+        try {
+            // Use the renderer owner's UTC, epoch and display-resolution contract unchanged.
+            _ = new ChartForgeX.Core.ChartGanttLaneItem(Start, End, "range");
+            return null;
+        } catch (ArgumentException error) {
+            return $"Timeline item '{Label}' has an invalid range: {error.Message}";
+        }
+    }
 }
 
 /// <summary>Time ranges on named lanes, rendered as ChartForgeX Gantt lanes.</summary>
@@ -217,8 +248,7 @@ public sealed class BgInfoTimelineWidget : BgInfoWidget {
         base.Validate();
         if (Items.Count == 0) throw new InvalidOperationException("A timeline needs at least one item.");
         foreach (var item in Items) {
-            if (string.IsNullOrWhiteSpace(item.Lane)) throw new InvalidOperationException("Every timeline item needs a lane.");
-            if (item.End.HasValue && item.End.Value < item.Start) throw new InvalidOperationException($"Timeline item '{item.Label}' ends before it starts.");
+            if (item.ValidationError() is { } error) throw new InvalidOperationException(error);
         }
     }
 }

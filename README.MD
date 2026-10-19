@@ -177,8 +177,11 @@ desktop icons. Items without `-Region` keep `-Anchor`, `-OffsetX`,
 
 ## Widgets
 
-Each widget is a small cmdlet with the panel, header (`-Title`, `-Note`),
-placement (`-Region` or `-Anchor`) and theme of the other panels.
+Each widget shares panel, header (`-Title`, `-Note`), placement and theme
+options. `-Scale` enlarges content inside the same panel. Over-capacity
+tables and lists retain their rows through bounded native batches. Text
+can become very small; use fewer rows or a larger panel when readers need
+individual values.
 
 | Cmdlet | Shows |
 | --- | --- |
@@ -293,24 +296,25 @@ New-BGInfo -Theme Graphite -Target File `
 ```
 
 - `Invoke-BGInfoDataSource` runs the script block in its own runspace.
-  When it throws, returns nothing or exceeds `-TimeoutSeconds`, it writes a
-  warning and returns `-Default`, so the wallpaper still renders. Pass the
-  caller's variables with `-ArgumentList`.
-- `Get-BGInfoSystemInfo` returns the facts support asks for first as one
-  plain object: computer, user and signed-in session user, domain, OS name,
-  version and build, last boot and uptime, IPv4, fixed disks, last
-  installed update, Defender state and signature age, and BitLocker state.
-  Every probe is read-only and has a time limit; what cannot be read is
-  `Unknown`. Replace it with your own function that returns the same
-  property names and the layout keeps working.
-- `Get-BGInfoMonitor` lists the monitors with the `Index` that
-  `-MonitorIndex` takes, their bounds, the primary flag and the display
-  scale. Loop over it to render one image per monitor;
-  `Examples/Run.BGInfo.PerMonitor.ps1` shows how.
+  Errors, empty output and timeouts produce a warning and `-Default`.
+  Pass caller variables with `-ArgumentList`. Waiting for capacity and
+  cancellation share the caller's time budget; a started provider retains
+  capacity until cleanup finishes.
+- `Get-BGInfoSystemInfo` returns machine, account and signed-in session
+  user, domain, OS, boot time, uptime, IPv4, disks, update, Defender and
+  BitLocker facts as plain data. Unavailable probes leave fields unknown.
+  WMI probes use a five-second caller limit; after a stalled worker's
+  deadline, later probes return unknown until it finishes. A later
+  snapshot retries unavailable facts. Wrap the snapshot in
+  `Invoke-BGInfoDataSource` to bound the whole call.
+- `Get-BGInfoMonitor` returns the indexes `-MonitorIndex` takes, monitor
+  bounds, primary flag and display scale. Loop over it to render one image
+  per monitor; `Examples/Run.BGInfo.PerMonitor.ps1` shows how.
 
-Built-in value tokens such as `HostName`, `LoggedOnUser`, `OSName`,
-`Uptime`, `LastPatch`, `DefenderStatus`, `BitLockerStatus` and
-`DiskSummary` also work directly in `New-BGInfoValue -BuiltinValue`.
+Built-in tokens such as `LoggedOnUser`, `OSName` and `Uptime` remain
+portable in saved configuration and resolve during rendering. Use the
+snapshot command for immediate values. `LoggedOnUser` refers to this
+process's signed-in session; in session 0 it uses the active console user.
 
 ## Showcase
 

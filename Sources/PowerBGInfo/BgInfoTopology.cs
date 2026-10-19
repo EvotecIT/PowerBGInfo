@@ -7,6 +7,13 @@ namespace PowerBGInfo;
 
 /// <summary>Defines a topology diagram block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoTopology {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoTopology WithRegionOrder(int order) {
+        var copy = (BgInfoTopology)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     /// <summary>Topology title.</summary>
     public string Title { get; set; } = string.Empty;
     /// <summary>Optional topology subtitle.</summary>
@@ -41,6 +48,10 @@ public sealed class BgInfoTopology {
     public TopologyCanvasSurfaceStyle CanvasSurfaceStyle { get; set; } = TopologyCanvasSurfaceStyle.Plain;
     /// <summary>Theme name.</summary>
     public string Theme { get; set; } = "Dark";
+    /// <summary>Optional accent applied to topology nodes and edges.</summary>
+    public Color? Accent { get; set; }
+    /// <summary>Optional font family for topology labels.</summary>
+    public string? FontFamilyName { get; set; }
     /// <summary>Whether to render a transparent canvas.</summary>
     public bool Transparent { get; set; } = true;
     /// <summary>Whether to show the topology title.</summary>
@@ -72,7 +83,11 @@ public sealed class BgInfoTopology {
     /// <summary>Panel header font size. Unset uses the global label font size.</summary>
     public float? TitleFontSize { get; set; }
     /// <summary>Panel header font weight from 100 through 900. Unset uses 600.</summary>
-    public int? TitleFontWeight { get; set; }
+    public int? TitleFontWeight {
+        get => _titleFontWeight;
+        set => _titleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(value, nameof(value));
+    }
+    private int? _titleFontWeight;
     /// <summary>Panel header casing.</summary>
     public TextCaseTransform? TitleTextCase { get; set; }
     /// <summary>Whether the overlay is drawn inside a panel.</summary>

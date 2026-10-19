@@ -1,4 +1,4 @@
-<#
+﻿<#
     Server status wallpaper: who the server is, how long it has been up,
     and whether disks, services and the network need attention.
 
@@ -52,23 +52,22 @@ $look = New-BGInfoTheme Aurora -Mode $Theme -Scale $scale
 $fullest = $server.Volumes.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 1
 $memory = $server.Memory.UsedGB / $server.Memory.TotalGB
 
-$tile = @{ SurfaceStyle = 'Glass' }
-$tiles = @(
-    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'UPTIME' `
-        -Value "$($server.Uptime.Days) days $($server.Uptime.Hours) h" `
-        -Detail 'Since the September patch window' -Status Ok
-    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `
-        -Value "$($server.Cpu[-1]) %" -Detail '16 cores · 2.9 GHz' `
-        -MiniChartKind Area -MiniChartValues $server.Cpu -MiniChartMaximum 100
-    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `
-        -Value "$($server.Memory.UsedGB) of $($server.Memory.TotalGB) GB" -Detail 'SQL Server buffer pool' `
-        -Progress $memory -StatusValue ($memory * 100) -WarningThreshold 75 -CriticalThreshold 90
-    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'NETWORK' `
-        -Value "$($server.Network[-1]) Mbps" -Detail '10.40.12.21 · 10 GbE' `
-        -MiniChartKind Sparkline -MiniChartValues $server.Network
-)
-
 New-BGInfo -Theme $look -Target File {
+    $tile = @{ SurfaceStyle = 'Glass' }
+    $tiles = @(
+        New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'UPTIME' `
+            -Value "$($server.Uptime.Days) days $($server.Uptime.Hours) h" `
+            -Detail 'Since the September patch window' -Status Ok
+        New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `
+            -Value "$($server.Cpu[-1]) %" -Detail '16 cores · 2.9 GHz' `
+            -MiniChartKind Area -MiniChartValues $server.Cpu -MiniChartMaximum 100
+        New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `
+            -Value "$($server.Memory.UsedGB) of $($server.Memory.TotalGB) GB" -Detail 'SQL Server buffer pool' `
+            -Progress $memory -StatusValue ($memory * 100) -WarningThreshold 75 -CriticalThreshold 90
+        New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'NETWORK' `
+            -Value "$($server.Network[-1]) Mbps" -Detail '10.40.12.21 · 10 GbE' `
+            -MiniChartKind Sparkline -MiniChartValues $server.Network
+    )
     New-BGInfoBackground -Width $Width -Height $Height
 
     New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Accent -FontWeight 700 -FontSize ([int](15 * $scale))

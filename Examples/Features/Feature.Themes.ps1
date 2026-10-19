@@ -1,4 +1,4 @@
-<#
+﻿<#
     Feature: themes. One parameter gives the text, panels, charts, tiles and the
     backdrop one look. Every PowerBGInfo cmdlet inside New-BGInfo -Theme uses the
     theme for the parameters you leave out; parameters you set always win.

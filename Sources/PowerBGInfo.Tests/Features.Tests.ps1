@@ -21,6 +21,7 @@ Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
 
     It 'fills unbound chart, topology, canvas and widget settings from the theme' {
         $theme = New-BGInfoTheme -Preset Midnight -Mode Light
+        $theme.FontFamilyName = 'Arial'
         $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
             New-BGInfoChart -Title 'CPU' -Values 1, 2 -NoHistory
             New-BGInfoChart -Title 'Explicit' -Values 1 -CornerRadius 3 -BackgroundColor '#000000' -NoHistory
@@ -40,10 +41,25 @@ Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
         $config.Charts[1].BackgroundColor.ToHex() | Should -Be '#000000'
         $config.Topologies[0].Theme | Should -Be 'Light'
         $config.Topologies[0].BackgroundColor | Should -Be $theme.Surface
+        $config.Topologies[0].Accent | Should -Be $theme.Accent
+        $config.Topologies[0].FontFamilyName | Should -Be 'Arial'
         $config.VisualCanvases[0].Accent | Should -Be $theme.Accent
         $config.VisualCanvases[0].HeroContentVisible | Should -BeFalse
         $config.Widgets[0].BackgroundColor | Should -Be $theme.Surface
         $config.Widgets[0].StatusColors.Critical | Should -Be $theme.Critical
+    }
+
+    It 'preserves explicitly requested hero content inside a themed visual canvas' {
+        $theme = New-BGInfoTheme -Preset Midnight -Mode Light
+        $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoVisualCanvas -Title 'Operations' -Subtitle 'Current environment' -HeroBadgeText 'OPS'
+        }
+
+        $visual = $config.VisualCanvases[0]
+        $visual.HeroContentVisible | Should -BeTrue
+        $visual.Title | Should -Be 'Operations'
+        $visual.Subtitle | Should -Be 'Current environment'
+        $visual.HeroBadgeText | Should -Be 'OPS'
     }
 
     It 'accepts a preset name and switches its mode with -ThemeMode' {
@@ -164,9 +180,12 @@ Describe 'Thresholds' {
         { New-BGInfoChart -Values 1 -WarningThreshold 20 -CriticalThreshold 10 -ThresholdDirection Below } | Should -Not -Throw
     }
 
-    It 'colors tiles from a status value' {
+    It 'preserves tile status until the owning canvas supplies the color' {
         $tile = New-BGInfoVisualCanvasTile -Label 'Disk' -Value '91 %' -StatusValue 91 -WarningThreshold 80 -CriticalThreshold 90
-        $tile.Accent | Should -Be ([PowerBGInfo.BgInfoStatusColors]::Default('Dark').Critical)
+        $tile.Status.ToString() | Should -Be 'Critical'
+        $tile.Accent | Should -BeNullOrEmpty
+        $explicit = New-BGInfoVisualCanvasTile -Label 'Disk' -Value '91 %' -Status Critical -Accent '#123456'
+        $explicit.Accent.ToHex() | Should -Be '#123456'
         { New-BGInfoVisualCanvasTile -Label 'Disk' -Value 'x' -WarningThreshold 80 } | Should -Throw '*StatusValue*'
     }
 
@@ -214,6 +233,16 @@ Describe 'Widget cmdlets' {
         $list.Marker | Should -Be 'Auto'
     }
 
+    It 'parses textual checkbox values instead of treating False as truthy' {
+        $list = New-BGInfoList -Item @(
+            @{ Text = 'enabled'; Checked = 'True' },
+            @{ Text = 'disabled'; Checked = 'False' }
+        )
+
+        $list.Items[0].Checked | Should -BeTrue
+        $list.Items[1].Checked | Should -BeFalse
+    }
+
     It 'collects calendar values from objects, dates and hashtables' {
         $fromObjects = @([pscustomobject] @{ Date = [datetime] '2026-10-01'; Value = 3 }) | New-BGInfoCalendarHeatmap
         $fromDates = [datetime] '2026-10-01', [datetime] '2026-10-02' | New-BGInfoCalendarHeatmap
@@ -221,6 +250,30 @@ Describe 'Widget cmdlets' {
         $fromObjects.Items[0].Value | Should -Be 3
         $fromDates.Items.Count | Should -Be 2
         $fromData.Items[0].Date | Should -Be ([datetime] '2026-10-01')
+    }
+
+    It 'uses <Culture> dates consistently in calendar and timeline inputs' -TestCases @(
+        @{ Culture = 'en-GB' }
+        @{ Culture = 'pl-PL' }
+    ) {
+        param($Culture)
+        $previousCulture = [Globalization.CultureInfo]::CurrentCulture
+        try {
+            [Globalization.CultureInfo]::CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo($Culture)
+            $expectedStart = [datetime]::new(2026, 11, 10)
+            $expectedEnd = [datetime]::new(2026, 11, 12)
+            $fromObjects = [pscustomobject] @{ Date = '10/11/2026'; Value = 3 } | New-BGInfoCalendarHeatmap
+            $fromData = New-BGInfoCalendarHeatmap -Data ([ordered] @{ '10/11/2026' = 5; '2026-11-12' = 6 })
+            $timeline = New-BGInfoTimeline -Item @{ Lane = 'Server'; Start = '10/11/2026'; End = '12/11/2026' }
+
+            $fromObjects.Items[0].Date | Should -Be $expectedStart
+            $fromData.Items[0].Date | Should -Be $expectedStart
+            $fromData.Items[1].Date | Should -Be $expectedEnd
+            $timeline.Items[0].Start | Should -Be $expectedStart
+            $timeline.Items[0].End | Should -Be $expectedEnd
+        } finally {
+            [Globalization.CultureInfo]::CurrentCulture = $previousCulture
+        }
     }
 
     It 'builds timeline items with -Duration and from hashtables' {
@@ -305,14 +358,21 @@ Describe 'Data helpers' {
             return
         }
         (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be "$env:USERDOMAIN\$env:USERNAME"
-        (New-BGInfoValue -BuiltinValue LoggedOnUser).Value | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+        $entry = New-BGInfoValue -BuiltinValue LoggedOnUser
+        $entry.BuiltinValue | Should -Be 'LoggedOnUser'
+        $entry.Value | Should -BeNullOrEmpty
+        $provider = $entry.GetType().Assembly.GetType('PowerBGInfo.SystemInfoProvider')
+        $provider.GetMethod('GetValue').Invoke($null, @('LoggedOnUser')) |
+            Should -Be "$env:USERDOMAIN\$env:USERNAME"
     }
 
-    It 'resolves the new built-in value tokens' -ForEach @(
+    It 'preserves the new dynamic built-in tokens without querying them during authoring' -ForEach @(
         @{ Token = 'Uptime' }, @{ Token = 'LastPatch' }, @{ Token = 'DefenderStatus' }, @{ Token = 'BitLockerStatus' },
         @{ Token = 'LoggedOnUser' }, @{ Token = 'Domain' }, @{ Token = 'DiskSummary' }
     ) {
-        (New-BGInfoValue -BuiltinValue $Token).Value | Should -Not -BeNullOrEmpty
+        $entry = New-BGInfoValue -BuiltinValue $Token
+        $entry.BuiltinValue | Should -Be $Token
+        $entry.Value | Should -BeNullOrEmpty
     }
 
     It 'returns the script block output' {

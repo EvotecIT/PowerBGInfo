@@ -1,4 +1,4 @@
-<#
+﻿<#
     Feature: layout regions. Panels flow into named regions instead of
     hand-placed coordinates, so one script lays out correctly at 1920x1080,
     2560x1440, ultrawide and portrait, and on every monitor you render for.

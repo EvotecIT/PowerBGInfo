@@ -55,8 +55,12 @@ internal static partial class BgInfoWidgetRenderer {
             TextDecorationStyle.None, TextDecorationStyle.None, TextBaseline.Normal, TextCaseTransform.None);
         var captionHeight = string.IsNullOrWhiteSpace(widget.Caption) ? 0 : panel.GetTextSize("Ag", captionStyle).Height + 10;
         var side = Math.Max(1, Math.Min(width, height - captionHeight));
+        var minimumSide = count + quietZone * 2;
+        if (side < minimumSide) {
+            throw new InvalidOperationException($"QR widget '{widget.Id}' needs at least {minimumSide} pixels of square space, but its slot is {side} pixels.");
+        }
         // Whole-pixel modules keep every edge sharp, which scanners need far more than an exact size.
-        var moduleSize = Math.Max(1, (int)Math.Floor(side / (double)(count + quietZone * 2)));
+        var moduleSize = (int)Math.Floor(side / (double)minimumSide);
         var fieldSide = moduleSize * (count + quietZone * 2);
         var left = Math.Round(x + (width - fieldSide) / 2d);
         var top = Math.Round(y + Math.Max(0, (height - captionHeight - fieldSide) / 2d));

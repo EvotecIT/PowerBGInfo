@@ -98,6 +98,13 @@ public enum BgInfoVisualCanvasTileTextFitPolicy {
 
 /// <summary>Defines a reusable ChartForgeX visual canvas overlay.</summary>
 public sealed class BgInfoVisualCanvas {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoVisualCanvas WithRegionOrder(int order) {
+        var copy = (BgInfoVisualCanvas)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     private Color? _backgroundTop;
     private Color? _backgroundBottom;
     private Color? _accent;
@@ -136,6 +143,9 @@ public sealed class BgInfoVisualCanvas {
     public int? RailMarginX { get; set; }
     /// <summary>Distance of the tile rails from the top edge of a transparent canvas. Unset uses 16 % of the height.</summary>
     public int? RailMarginY { get; set; }
+
+    /// <summary>Optional font family for hero and tile text. Unset uses the shared theme default.</summary>
+    public string? FontFamilyName { get; set; }
     /// <summary>Position in the region's flow. New-BGInfo numbers items in the order they are emitted; equal values keep chart, diagram, canvas, widget order.</summary>
     public int RegionOrder { get; set; }
     /// <summary>Top background color.</summary>
@@ -146,6 +156,8 @@ public sealed class BgInfoVisualCanvas {
     public Color Accent { get => _accent ?? DesignTokens.Accent; set => _accent = value; }
     /// <summary>Secondary accent color for badge and backdrop highlights.</summary>
     public Color? SecondaryAccent { get; set; }
+    /// <summary>Status palette for semantic tiles. Unset uses the defaults for <see cref="ThemeMode"/>.</summary>
+    public BgInfoStatusColors? StatusColors { get; set; }
     /// <summary>Primary hero title color.</summary>
     public Color? TitleColor { get; set; }
     /// <summary>Accent hero title color.</summary>
@@ -232,6 +244,12 @@ public sealed class BgInfoVisualCanvas {
 
 /// <summary>Defines one visual canvas tile.</summary>
 public sealed class BgInfoVisualCanvasTile {
+    private BgInfoStatus _status;
+    /// <summary>Semantic status resolved by the owning canvas. An explicit <see cref="Accent"/> takes priority.</summary>
+    public BgInfoStatus Status {
+        get => _status;
+        set => _status = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
     /// <summary>Tile lane placement.</summary>
     public BgInfoVisualCanvasSide Side { get; set; }
     /// <summary>Compact tile icon or symbol.</summary>

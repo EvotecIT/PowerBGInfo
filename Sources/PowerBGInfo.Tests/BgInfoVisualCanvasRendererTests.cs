@@ -365,6 +365,33 @@ public class BgInfoVisualCanvasRendererTests
         Assert.Equal(0, CountOpaquePixels(pixels, 430, 210, 24, 40));
     }
 
+    [Theory]
+    [InlineData(4096, 0)]
+    [InlineData(0, 4096)]
+    [InlineData(int.MaxValue, int.MaxValue)]
+    public void OversizedTransparentRailMarginsRetainTilesInsideTheCanvas(int marginX, int marginY) {
+        var visual = new BgInfoVisualCanvas {
+            Width = 640, Height = 320, Transparent = true, HeroContentVisible = false,
+            RailMarginX = marginX, RailMarginY = marginY
+        };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Side = BgInfoVisualCanvasSide.Left, Label = "CPU", Value = "31%", SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Side = BgInfoVisualCanvasSide.Left, Label = "QUEUE", Value = "7", SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Side = BgInfoVisualCanvasSide.Right, Label = "RAM", Value = "42%", SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Side = BgInfoVisualCanvasSide.Right, Label = "NETWORK", Value = "81", SurfaceStyle = BgInfoVisualCanvasTileSurfaceStyle.Raised });
+        using var image = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 640, 320);
+        var pixels = image.ToRgbaImage();
+        Assert.True(CountOpaquePixels(pixels, 0, 0, 320, 320) > 0);
+        Assert.True(CountOpaquePixels(pixels, 320, 0, 320, 320) > 0);
+        visual.Tiles[1].Value = "99";
+        using var changed = BgInfoVisualCanvasRenderer.Render(visual, new BgInfoConfiguration(), 640, 320);
+        Assert.False(pixels.Pixels.SequenceEqual(changed.ToRgbaImage().Pixels));
+        var center = BgInfoVisualCanvasRenderer.ResolveDefaultTransparentCenterBounds(visual, 640, 320);
+        Assert.InRange(center.X, 0, 639);
+        Assert.InRange(center.Y, 0, 319);
+        Assert.True(center.X + center.Width <= 640);
+        Assert.True(center.Y + center.Height <= 320);
+    }
+
     private static int CountOpaquePixels(ChartForgeX.Raster.RgbaImage image, int x, int y, int width, int height)
     {
         return CountPixels(image, x, y, width, height, (_, _, _, a) => a > 0);

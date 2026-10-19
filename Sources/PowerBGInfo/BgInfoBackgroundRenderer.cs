@@ -48,13 +48,14 @@ internal static class BgInfoBackgroundRenderer {
     private static void DrawPattern(ImageComposition composition, BgInfoBackground background, int width, int height) {
         if (background.Pattern == BgInfoBackgroundPattern.None || background.PatternColor.A == 0) return;
         var spacing = Math.Max(8, background.PatternSpacing);
-        var offset = spacing / 2d;
         if (background.Pattern == BgInfoBackgroundPattern.Grid) {
-            for (var x = offset; x < width; x += spacing) composition.FillRectangle(x, 0, 1, height, background.PatternColor);
-            for (var y = offset; y < height; y += spacing) composition.FillRectangle(0, y, width, 1, background.PatternColor);
+            var gridOffset = spacing / 2;
+            for (var x = gridOffset; x < width; x += spacing) composition.FillRectangle(x, 0, 1, height, background.PatternColor);
+            for (var y = gridOffset; y < height; y += spacing) composition.FillRectangle(0, y, width, 1, background.PatternColor);
             return;
         }
 
+        var offset = spacing / 2d;
         var radius = Math.Max(0.8, spacing / 40d);
         for (var y = offset; y < height; y += spacing) {
             for (var x = offset; x < width; x += spacing) {

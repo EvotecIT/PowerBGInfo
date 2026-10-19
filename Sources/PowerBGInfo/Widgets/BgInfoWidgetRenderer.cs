@@ -16,7 +16,10 @@ internal sealed class BgInfoWidgetStyle {
         Muted = widget.MutedColor ?? tokens.MutedForeground;
         Accent = widget.Accent ?? tokens.Accent;
         SecondaryAccent = widget.SecondaryAccent ?? tokens.SecondaryAccent;
-        Status = widget.ResolveStatusColors();
+        Status = widget is BgInfoMetricWidget metric && metric.NumericValue.HasValue
+            && metric.Threshold is { IsDefined: true, Colors: { } thresholdColors }
+                ? thresholdColors
+                : widget.ResolveStatusColors();
         Grid = widget.BorderColor.HasValue ? WithAlpha(widget.BorderColor.Value, 255) : tokens.Border;
         FontFamily = widget.FontFamilyName ?? config.CustomFontFamilyName ?? VisualTheme.Graphite().Typography.Family;
     }
@@ -105,8 +108,9 @@ internal static partial class BgInfoWidgetRenderer {
     /// <summary>Logical size and output density for a body rendered at <see cref="BgInfoWidget.Scale"/>.</summary>
     internal static (int Width, int Height, int OutputScale) Density(BgInfoWidget widget, int width, int height) {
         var scale = widget.Scale;
-        var logicalWidth = Math.Max(1, (int)Math.Round(width / scale));
-        var logicalHeight = Math.Max(1, (int)Math.Round(height / scale));
+        if (widget.NaturalBodyHeight > 0) scale = Math.Min(scale, height / widget.NaturalBodyHeight);
+        var logicalWidth = Math.Max(1, (int)Math.Min(int.MaxValue, Math.Round(width / scale)));
+        var logicalHeight = Math.Max(1, (int)Math.Min(int.MaxValue, Math.Round(height / scale)));
         var output = Math.Max(1, Math.Min(4, (int)Math.Ceiling(scale)));
         // Small panels still need a second sample per pixel to keep thin strokes smooth.
         if (output == 1) output = 2;

@@ -84,7 +84,7 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
             roleColor = theme.Muted;
         } else if (Accent.IsPresent || Muted.IsPresent) {
             WriteWarning("-Accent and -Muted use the New-BGInfo -Theme colors; no theme is active.");
-        } else if (theme != null) {
+        } else if (theme != null && !BgInfoThemeScope.GlobalColorExplicitlyBound) {
             // Under a theme, standalone labels are headings and use the primary ink; value names stay muted.
             roleColor = theme.Ink;
         }

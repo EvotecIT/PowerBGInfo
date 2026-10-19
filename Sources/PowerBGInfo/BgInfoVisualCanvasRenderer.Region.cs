@@ -34,6 +34,9 @@ internal static partial class BgInfoVisualCanvasRenderer {
         width = Math.Max(1, width);
         height = Math.Max(1, height);
         var (tileHeight, gap) = ResolveRegionTileMetrics(visual, imageHeight);
+        var naturalHeight = MeasureRegionHeight(visual, imageHeight);
+        var scale = Math.Min(1d, (double)height / naturalHeight);
+        var scaledGap = gap * scale;
         var canvas = VisualCanvas.Create(width, height)
             .WithTitle(string.Empty)
             .WithTheme(BuildTheme(visual), visual.ThemeMode)
@@ -42,14 +45,14 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
         var y = 0d;
         foreach (var tile in visual.Tiles) {
-            var itemHeight = tile.Height > 0 ? tile.Height : tileHeight;
+            var itemHeight = (tile.Height > 0 ? tile.Height : tileHeight) * scale;
             var itemWidth = tile.Width > 0 ? Math.Min(tile.Width, width) : width;
             canvas.AddInfoTile(0, y, itemWidth, itemHeight,
                 Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value), Resolve(tile.Detail),
-                tile.Accent, tile.Progress, MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
+                ResolveTileAccent(visual, tile), tile.Progress, MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
                 MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues, tile.MiniChartMaximum,
                 ResolveTextFitPolicy(visual, tile));
-            y += itemHeight + gap;
+            y += itemHeight + scaledGap;
         }
 
         var image = new BgInfoRasterImage();

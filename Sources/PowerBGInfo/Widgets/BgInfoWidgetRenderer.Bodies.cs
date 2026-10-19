@@ -53,7 +53,8 @@ internal static partial class BgInfoWidgetRenderer {
         return card.RenderRgba();
     }
 
-    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height) {
+    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
+        if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var table = ChartTable.Create()
             .WithTheme(style.CreateTheme(), style.Mode)
@@ -61,7 +62,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithCard(false)
             .WithSize(w, h)
             .WithPadding(BlockInset)
-            .WithPngOutputScale(scale)
+            .WithPngOutputScale(outputScale ?? scale)
             .WithDenseMode(widget.Dense)
             .WithHeader(widget.ShowHeader)
             .WithRowStriping(widget.RowStriping)
@@ -71,7 +72,8 @@ internal static partial class BgInfoWidgetRenderer {
         return table.RenderRgba();
     }
 
-    private static RgbaImage RenderList(BgInfoListWidget widget, BgInfoWidgetStyle style, int width, int height) {
+    private static RgbaImage RenderList(BgInfoListWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
+        if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var list = ChartList.Create()
             .WithTheme(style.CreateTheme(), style.Mode)
@@ -79,7 +81,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithCard(false)
             .WithSize(w, h)
             .WithPadding(BlockInset)
-            .WithPngOutputScale(scale)
+            .WithPngOutputScale(outputScale ?? scale)
             .WithDenseMode(widget.Dense);
         foreach (var item in widget.Items) {
             if (item.Checked.HasValue) {
@@ -150,17 +152,8 @@ internal static partial class BgInfoWidgetRenderer {
     }
 
     private static RgbaImage RenderTimeline(BgInfoTimelineWidget widget, BgInfoWidgetStyle style, int width, int height) {
-        var categories = new List<ChartStateCategory>();
-        var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var palette = style.Palette;
-        foreach (var item in widget.Items) {
-            var label = string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category.Trim();
-            if (keys.ContainsKey(label)) continue;
-            var key = "c" + keys.Count.ToString(CultureInfo.InvariantCulture);
-            keys[label] = key;
-            var color = item.Color ?? style.Status.Resolve(item.Status) ?? palette[(keys.Count - 1) % palette.Length];
-            categories.Add(new ChartStateCategory(key, label, color));
-        }
+        var categories = ResolveTimelineCategories(widget.Items, style);
+        var keys = categories.ToDictionary(category => category.Label, category => category.Key, StringComparer.OrdinalIgnoreCase);
 
         var chart = CreateChart(widget, style, width, height, axes: true)
             .WithLegend(widget.ShowLegend)
@@ -169,22 +162,48 @@ internal static partial class BgInfoWidgetRenderer {
         if (widget.Now.HasValue) chart.WithGanttLaneNow(widget.Now.Value);
         foreach (var lane in widget.Items.GroupBy(item => item.Lane.Trim(), StringComparer.OrdinalIgnoreCase)) {
             chart.AddGanttLane(lane.Key, lane.Select(item => new ChartGanttLaneItem(item.Start, item.End,
-                keys[string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category.Trim()],
+                keys[NormalizeTimelineCategory(item.Category)],
                 string.IsNullOrWhiteSpace(item.Label) ? null : item.Label)));
         }
 
         return chart.ToRgbaImage();
     }
 
+    internal static List<ChartStateCategory> ResolveTimelineCategories(IEnumerable<BgInfoTimelineItem> items, BgInfoWidgetStyle style) {
+        var categories = new List<ChartStateCategory>();
+        var palette = style.Palette;
+        var index = 0;
+        foreach (var group in items.GroupBy(item => NormalizeTimelineCategory(item.Category), StringComparer.OrdinalIgnoreCase)) {
+            ChartColor? explicitColor = null;
+            var explicitStatus = BgInfoStatus.None;
+            foreach (var item in group) {
+                if (!explicitColor.HasValue && item.Color.HasValue) explicitColor = item.Color.Value;
+                if (explicitStatus == BgInfoStatus.None && item.Status != BgInfoStatus.None) explicitStatus = item.Status;
+            }
+            var color = explicitColor ?? style.Status.Resolve(explicitStatus) ?? palette[index % palette.Length];
+            var key = "c" + index.ToString(CultureInfo.InvariantCulture);
+            categories.Add(new ChartStateCategory(key, group.Key, color));
+            index++;
+        }
+        return categories;
+    }
+
+    private static string NormalizeTimelineCategory(string? category) =>
+        string.IsNullOrWhiteSpace(category) ? "Scheduled" : category!.Trim();
+
     private static RgbaImage RenderTreemap(BgInfoTreemapWidget widget, BgInfoWidgetStyle style, int width, int height) {
         var items = new List<ChartHierarchyItem>();
-        var groups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var groups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var index = 0;
         foreach (var item in widget.Items) {
             string? parent = null;
             if (!string.IsNullOrWhiteSpace(item.Group)) {
-                parent = "group:" + item.Group!.Trim();
-                if (groups.Add(parent)) items.Add(new ChartHierarchyItem(parent, item.Group.Trim()));
+                var groupName = item.Group!.Trim();
+                if (!groups.TryGetValue(groupName, out parent)) {
+                    parent = "group:" + groupName;
+                    groups.Add(groupName, parent);
+                    items.Add(new ChartHierarchyItem(parent, groupName));
+                }
             }
             items.Add(new ChartHierarchyItem("item:" + (index++).ToString(CultureInfo.InvariantCulture), item.Name, parent, item.Value));
         }
@@ -193,7 +212,7 @@ internal static partial class BgInfoWidgetRenderer {
         var chart = CreateChart(widget, style, width, height, axes: false)
             .WithLegend(false)
             .WithDataLabels(true)
-            .WithValueFormatter(value => value.ToString("0.#", CultureInfo.InvariantCulture) + suffix)
+            .WithValueFormatter(value => value.ToString("0.#", CultureInfo.CurrentCulture) + suffix)
             .ConfigureTreemap(options => {
                 options.ShowValues = widget.ShowValues;
                 options.ShowGroupLabels = groups.Count > 0;

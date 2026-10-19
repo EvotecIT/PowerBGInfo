@@ -11,7 +11,7 @@ Creates a BGInfo topology overlay definition.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoTopology [-TopologyDefinition] <scriptblock> [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-Layout <TopologyLayoutMode>] [-Direction <TopologyLayoutDirection>] [-NodeDisplayMode <TopologyNodeDisplayMode>] [-Theme <string>] [-Opaque] [-NoTitle] [-ShowLegend] [-NoGroups] [-NoEdgeLabels] [<CommonParameters>]
+New-BGInfoTopology [-TopologyDefinition] <scriptblock> [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-Layout <TopologyLayoutMode>] [-Direction <TopologyLayoutDirection>] [-NodeDisplayMode <TopologyNodeDisplayMode>] [-Theme <string>] [-Scale <int>] [-Opaque] [-NoTitle] [-ShowLegend] [-NoGroups] [-NoEdgeLabels] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-Region <BgInfoRegion>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,6 +35,54 @@ Type: BgInfoTextPosition
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values: TopLeft, TopCenter, TopRight, MiddleLeft, MiddleCenter, MiddleRight, BottomLeft, BottomCenter, BottomRight
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BackgroundColor
+Panel fill. A fill or border draws the diagram in the same panel style as New-BGInfoChart, with a matching header.
+
+```yaml
+Type: Object
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BorderColor
+Optional one-pixel panel outline.
+
+```yaml
+Type: Object
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CornerRadius
+Panel corner radius in pixels.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
 
 Required: False
 Position: named
@@ -203,6 +251,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Padding
+Space between the panel edge and its content.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PositionX
 Absolute X position.
 
@@ -221,6 +285,38 @@ Accept wildcard characters: False
 
 ### -PositionY
 Absolute Y position.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Region
+Region to flow into: Left, Right, Top, Bottom or Center. Without -Width or -Height the diagram shares the region.
+
+```yaml
+Type: BgInfoRegion
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Left, Right, Top, Bottom, Center
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Scale
+Whole-number render scale from 1 to 4. Use 2 to enlarge nodes and text on high-resolution wallpapers.
 
 ```yaml
 Type: Int32
@@ -268,12 +364,12 @@ Accept wildcard characters: False
 ```
 
 ### -Theme
-Theme name.
+Theme name. ThemeMode is accepted as an alias to match charts and visual canvases.
 
 ```yaml
 Type: String
 Parameter Sets: __AllParameterSets
-Aliases: None
+Aliases: ThemeMode
 Possible values: Light, Dark
 
 Required: False
@@ -291,6 +387,70 @@ Type: String
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleColor
+Panel header color.
+
+```yaml
+Type: Object
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleFontSize
+Panel header font size.
+
+```yaml
+Type: Single
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleFontWeight
+Panel header font weight from 100 through 900.
+
+```yaml
+Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TitleTextCase
+Panel header casing.
+
+```yaml
+Type: TextCaseTransform
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Uppercase, Lowercase, TitleCase, SentenceCase, ToggleCase
 
 Required: False
 Position: named

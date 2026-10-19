@@ -11,6 +11,32 @@ namespace PowerBGInfo.Tests;
 public class BgInfoConfigurationJsonTests
 {
     [Fact]
+    public void LoadRejectsUnknownChartKindsInsteadOfReplacingThemWithTheDefault()
+    {
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-unknown-chart-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDirectory);
+        var path = Path.Combine(tempDirectory, "config.json");
+        File.WriteAllText(path, """
+            {
+              "Charts": [{
+                "Kind": "FutureChart",
+                "Title": "Keep this chart"
+              }]
+            }
+            """);
+
+        try
+        {
+            var exception = Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Load(path));
+            Assert.Contains("FutureChart", exception.Message);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory)) Directory.Delete(tempDirectory, true);
+        }
+    }
+
+    [Fact]
     public void SaveAndLoadPreservesCompleteTextStyleContract()
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo-json-" + Path.GetRandomFileName());

@@ -207,6 +207,8 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
         var theme = BgInfoThemeScope.Current;
         if (theme == null) return;
         if (!IsBound(nameof(Theme))) topology.Theme = theme.Mode.ToString();
+        topology.Accent = theme.Accent;
+        topology.FontFamilyName = theme.FontFamilyName;
         if (!IsBound(nameof(BackgroundColor))) topology.BackgroundColor = theme.Surface;
         if (!IsBound(nameof(BorderColor))) topology.BorderColor = theme.SurfaceBorder;
         if (!IsBound(nameof(CornerRadius))) topology.CornerRadius = theme.CornerRadius;

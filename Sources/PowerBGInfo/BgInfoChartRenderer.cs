@@ -20,6 +20,7 @@ internal static class BgInfoChartRenderer {
     public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int requestedWidth, int requestedHeight) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
+        chart.Threshold?.Validate();
 
         var width = Math.Max(1, requestedWidth);
         var height = Math.Max(1, requestedHeight);
@@ -215,7 +216,7 @@ internal static class BgInfoChartRenderer {
             .WithPictorialShape(ResolvePictorialShape(chart.PictorialSymbol));
 
         if (chart.Palette.Count > 0) {
-            plot.WithTheme(plot.Options.Theme.WithPalette(chart.Palette.ToArray()));
+            plot.WithTheme(plot.Options.Theme.WithPalette(chart.Palette.ToArray()), chart.ThemeMode);
         }
         if (chart.DonutInnerRadiusRatio.HasValue) {
             plot.WithDonutInnerRadiusRatio(chart.DonutInnerRadiusRatio.Value);
@@ -270,7 +271,7 @@ internal static class BgInfoChartRenderer {
 
     /// <summary>Explicit palette first; otherwise per-point threshold colors for row-based kinds.</summary>
     internal static IReadOnlyList<ChartColor> ResolvePalette(BgInfoChart chart, IReadOnlyList<double> values) {
-        if (chart.Palette.Count > 0 || chart.Threshold is not { IsDefined: true } || !IsPerPointKind(chart.Kind)) return chart.Palette;
+        if (chart.Palette.Count > 0 || chart.LineColor.HasValue || chart.Threshold is not { IsDefined: true } || !IsPerPointKind(chart.Kind)) return chart.Palette;
         var colors = new ChartColor[values.Count];
         for (var i = 0; i < values.Count; i++) {
             colors[i] = ResolveThresholdColor(chart, values[i]) ?? ResolveTokens(chart).Accent;

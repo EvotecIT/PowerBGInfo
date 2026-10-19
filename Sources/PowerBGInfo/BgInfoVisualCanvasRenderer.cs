@@ -96,7 +96,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
         var centerTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
         var centerDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
-        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, layout.MarginX, 48, centerTileWidth, layout.LeftRailX, layout.LeftRailWidth, layout.RightRailX), layout.RailY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, layout.TileHeight, layout.TileGap);
+        AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, layout.MarginX, layout.LaneGap, centerTileWidth, layout.LeftRailX, layout.LeftRailWidth, layout.RightRailX), layout.RailY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, layout.TileHeight, layout.TileGap);
 
         var centerLeft = layout.CenterLeft;
         var centerWidth = layout.CenterWidth;
@@ -129,6 +129,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
         }
     }
 
+    private static Color? ResolveTileAccent(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile) {
+        if (tile.Accent.HasValue || tile.Status == BgInfoStatus.None) return tile.Accent;
+        return (visual.StatusColors ?? BgInfoStatusColors.Default(visual.ThemeMode)).Resolve(tile.Status);
+    }
+
     private static void AddTiles(VisualCanvas canvas, BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double x, double y, double width, double defaultTileWidth, double height, double gap) {
         var cursorY = y;
         foreach (var tile in visual.Tiles) {
@@ -156,7 +161,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Label),
                 Resolve(tile.Value),
                 Resolve(tile.Detail),
-                tile.Accent,
+                ResolveTileAccent(visual, tile),
                 tile.Progress,
                 MapSurfaceStyle(tile.SurfaceStyle),
                 MapIconKind(tile.IconKind),
@@ -243,31 +248,40 @@ internal static partial class BgInfoVisualCanvasRenderer {
     }
 
     private static OverlayRailLayout ResolveOverlayRailLayout(BgInfoVisualCanvas visual, int width, int height) {
-        var marginX = visual.RailMarginX.HasValue ? Math.Max(0, visual.RailMarginX.Value) : Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
-        var railBudget = Math.Max(1, (width - (marginX * 2) - 96) / 2);
+        var requestedMarginX = visual.RailMarginX.HasValue ? Math.Max(0, visual.RailMarginX.Value) : Clamp(width * 0.045, Math.Min(24, width * 0.04), Math.Min(132, width * 0.08));
+        // Reserve usable rails as well as their centre gap; merely leaving one
+        // pixel per rail keeps geometry on-canvas but removes all tile facts.
+        var minimumRailWidth = Math.Min(180, width / 4d);
+        var marginX = Math.Min(requestedMarginX, Math.Max(0, (width - minimumRailWidth * 2 - 96) / 2));
+        var laneGap = Math.Min(48, Math.Max(0, (width - marginX * 2 - 2) / 2));
+        var railBudget = Math.Max(1, (width - (marginX * 2) - laneGap * 2) / 2);
         var templateTileWidth = Math.Min(Clamp(ApplyTileWidthPreset(visual.LayoutPreset, width * 0.18), Math.Min(180, railBudget), Math.Min(560, railBudget)), railBudget);
         var tileHeight = Clamp(ApplyTileHeightPreset(visual.LayoutPreset, height * 0.092), Math.Min(56, height * 0.18), Math.Min(140, height * 0.26));
         var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
-        var railY = visual.RailMarginY.HasValue ? Math.Max(0, visual.RailMarginY.Value) : Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
+        var requestedRailY = visual.RailMarginY.HasValue ? Math.Max(0, visual.RailMarginY.Value) : Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
+        var laneHeight = visual.Tiles.GroupBy(tile => tile.Side)
+            .Select(group => group.Sum(tile => ResolveTileHeight(visual, tile, tileHeight)) + tileGap * Math.Max(0, group.Count() - 1))
+            .DefaultIfEmpty(tileHeight).Max();
+        var railY = Math.Min(requestedRailY, Math.Max(0, height - laneHeight));
         var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
         var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
         var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth);
-        var laneWidthScale = ResolveCenteredLaneWidthScale(visual, width, marginX, 48, leftRailWidth, centerRailWidth, rightRailWidth);
+        var laneWidthScale = ResolveCenteredLaneWidthScale(visual, width, marginX, laneGap, leftRailWidth, centerRailWidth, rightRailWidth);
         leftTileWidth *= laneWidthScale;
         rightTileWidth *= laneWidthScale;
         leftRailWidth *= laneWidthScale;
         rightRailWidth *= laneWidthScale;
         var leftRailX = marginX + visual.LeftTileOffsetX;
         var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
-        var centerLeft = leftRailX + leftRailWidth + 48;
-        var centerRight = rightRailX - 48;
-        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft));
+        var centerLeft = leftRailX + leftRailWidth + laneGap;
+        var centerRight = rightRailX - laneGap;
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft), laneGap);
     }
 
     private readonly struct OverlayRailLayout {
-        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth) {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth, double laneGap) {
             LeftRailX = leftRailX;
             RightRailX = rightRailX;
             RailY = railY;
@@ -280,6 +294,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
             MarginX = marginX;
             TileHeight = tileHeight;
             TileGap = tileGap;
+            LaneGap = laneGap;
             CenterLeft = centerLeft;
             CenterWidth = centerWidth;
         }
@@ -296,6 +311,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         public double MarginX { get; }
         public double TileHeight { get; }
         public double TileGap { get; }
+        public double LaneGap { get; }
         public double CenterLeft { get; }
         public double CenterWidth { get; }
     }
@@ -375,7 +391,8 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
-    private static VisualTheme BuildTheme(BgInfoVisualCanvas visual) => VisualTheme.Graphite().Configure(builder => {
+    private static VisualTheme BuildTheme(BgInfoVisualCanvas visual) =>
+        (string.IsNullOrWhiteSpace(visual.FontFamilyName) ? VisualTheme.Graphite() : VisualTheme.Graphite().WithFontFamily(visual.FontFamilyName!)).Configure(builder => {
         var colors = builder.Colors(visual.ThemeMode);
         colors.Accent = visual.Accent;
         if (visual.SecondaryAccent.HasValue) colors.SecondaryAccent = visual.SecondaryAccent.Value;

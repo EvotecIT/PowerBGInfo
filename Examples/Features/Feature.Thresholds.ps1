@@ -1,4 +1,4 @@
-<#
+﻿<#
     Feature: status thresholds. Values pick ok, warning or critical colors by
     themselves, so scripts stop hand-picking colors. Charts color each bar,
     progress row or bullet; gauges and lines take the color of the latest value.

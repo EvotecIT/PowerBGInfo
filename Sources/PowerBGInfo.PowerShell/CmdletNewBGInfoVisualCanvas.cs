@@ -54,6 +54,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
     [Parameter]
     public int Height { get; set; }
 
+    /// <para>Font family for hero and tile text. Unset inherits the active wallpaper theme.</para>
+    [Parameter]
+    public string? FontFamilyName { get; set; }
+
     /// <para>Explicit X position on the generated wallpaper.</para>
     [Parameter]
     public int PositionX { get; set; }
@@ -276,6 +280,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
             Subtitle = Subtitle,
             Width = Width,
             Height = Height,
+            FontFamilyName = FontFamilyName,
             PositionX = PositionX,
             PositionY = PositionY,
             SecondaryAccent = PowerShellColorConverter.ConvertOptional(SecondaryAccent, nameof(SecondaryAccent)),
@@ -327,16 +332,16 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (accent.HasValue) visual.Accent = accent.Value;
         foreach (var tile in Tile ?? Array.Empty<BgInfoVisualCanvasTile>()) if (tile != null) visual.Tiles.Add(tile);
         foreach (var feature in Feature ?? Array.Empty<BgInfoVisualCanvasFeature>()) if (feature != null) visual.Features.Add(feature);
-        var hasCenterTiles = visual.Tiles.Exists(tile => tile.Side == BgInfoVisualCanvasSide.Center);
+        visual.Region = Region;
+        if (IsBound(nameof(RailMarginX))) visual.RailMarginX = RailMarginX;
+        if (IsBound(nameof(RailMarginY))) visual.RailMarginY = RailMarginY;
+        ApplyTheme(visual);
+        var hasCenterTiles = visual.Region == BgInfoRegion.None && visual.Tiles.Exists(tile => tile.Side == BgInfoVisualCanvasSide.Center);
         var hasVisibleHeroContent = visual.HeroContentVisible &&
             (visual.HeroBadgeVisible || !string.IsNullOrWhiteSpace(visual.Title) || !string.IsNullOrWhiteSpace(visual.Subtitle));
         if (hasCenterTiles && hasVisibleHeroContent) {
             WriteWarning("Centered tiles can overlap the hero badge, title, or subtitle. Use -NoHeroContent for a tile-only layout, or move the lane with -CenterTileOffsetX and -CenterTileOffsetY.");
         }
-        visual.Region = Region;
-        if (IsBound(nameof(RailMarginX))) visual.RailMarginX = RailMarginX;
-        if (IsBound(nameof(RailMarginY))) visual.RailMarginY = RailMarginY;
-        ApplyTheme(visual);
         WriteObject(visual);
     }
 
@@ -347,8 +352,10 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         var theme = BgInfoThemeScope.Current;
         if (theme == null) return;
         if (!IsBound(nameof(ThemeMode))) visual.ThemeMode = theme.Mode;
+        if (!IsBound(nameof(FontFamilyName))) visual.FontFamilyName = theme.FontFamilyName;
         if (!IsBound(nameof(Accent))) visual.Accent = theme.Accent;
         if (!IsBound(nameof(SecondaryAccent))) visual.SecondaryAccent = theme.SecondaryAccent;
+        visual.StatusColors = theme.StatusColors;
         if (!IsBound(nameof(TileGlassTop))) visual.TileGlassTop = theme.TileGlassTop;
         if (!IsBound(nameof(TileGlassBottom))) visual.TileGlassBottom = theme.TileGlassBottom;
         if (!IsBound(nameof(TileLabelColor))) visual.TileLabelColor = theme.Muted;
@@ -358,8 +365,15 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (!IsBound(nameof(TileGap))) visual.TileGap = theme.TileGap;
         if (!IsBound(nameof(RailMarginX))) visual.RailMarginX = theme.MarginX;
         if (!IsBound(nameof(RailMarginY))) visual.RailMarginY = theme.MarginY;
-        if (!IsBound(nameof(NoHeroContent))) visual.HeroContentVisible = false;
+        if (!IsBound(nameof(NoHeroContent)) && !HasExplicitHeroContent()) visual.HeroContentVisible = false;
         if (!IsBound(nameof(NoTechBackdrop))) visual.TechBackdrop = false;
     }
+
+    private bool HasExplicitHeroContent() =>
+        IsBound(nameof(Title)) || IsBound(nameof(Subtitle)) ||
+        IsBound(nameof(TitleColor)) || IsBound(nameof(TitleAccentColor)) || IsBound(nameof(SubtitleColor)) ||
+        IsBound(nameof(HeroBadgeTop)) || IsBound(nameof(HeroBadgeBottom)) || IsBound(nameof(HeroBadgeTextColor)) ||
+        IsBound(nameof(NoHeroBadge)) || IsBound(nameof(HeroBadgeText)) || IsBound(nameof(HeroBadgeImagePath)) || IsBound(nameof(HeroBadgeImageFit)) ||
+        IsBound(nameof(HeroBadgeImagePadding)) || IsBound(nameof(HeroBadgeImageOpacity));
 
 }

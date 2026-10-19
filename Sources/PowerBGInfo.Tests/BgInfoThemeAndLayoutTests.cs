@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -95,6 +96,21 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void SafeAreaClampsItsOriginAndSizeInsideTheImageWhenReservesConsumeIt()
+    {
+        var safe = BgInfoLayoutEngine.GetSafeArea(640, 480, new BgInfoLayout {
+            MarginX = int.MaxValue, MarginY = int.MaxValue, TaskbarReserve = int.MaxValue, IconAreaWidth = int.MaxValue
+        });
+
+        Assert.Equal(639, safe.X);
+        Assert.Equal(479, safe.Y);
+        Assert.Equal(1, safe.Width);
+        Assert.Equal(1, safe.Height);
+        Assert.True(safe.X + safe.Width <= 640);
+        Assert.True(safe.Y + safe.Height <= 480);
+    }
+
+    [Fact]
     public void TaskbarReserveIsEstimatedFromTheImageHeight()
     {
         var hd = BgInfoLayoutEngine.GetSafeArea(1920, 1080, new BgInfoLayout { MarginY = 0 });
@@ -142,6 +158,21 @@ public class BgInfoThemeAndLayoutTests
     }
 
     [Fact]
+    public void TopAndBottomBandsShareTheHeightLeftAfterTheirGaps()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, Gap = 24 };
+        var safe = BgInfoLayoutEngine.GetSafeArea(800, 800, layout);
+        var slots = BgInfoLayoutEngine.Resolve(800, 800, layout, null, new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 500),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 0, 500)
+        });
+
+        Assert.True(slots[0].Y + slots[0].Height <= slots[1].Y);
+        Assert.Equal(24, slots[1].Y - (slots[0].Y + slots[0].Height));
+        Assert.Equal(safe.Y + safe.Height, slots[1].Y + slots[1].Height);
+    }
+
+    [Fact]
     public void ColumnsStartBelowTheTextBlockTheyShare()
     {
         var text = new ChartRect(64, 56, 500, 300);
@@ -173,6 +204,22 @@ public class BgInfoThemeAndLayoutTests
         Assert.Equal(100, sizes[0]);
         Assert.Equal(200, sizes[1]);
         Assert.Equal(200, sizes[2]);
+    }
+
+    [Fact]
+    public void RoundedSharedEdgesKeepFractionalRowSlotsDisjoint()
+    {
+        var slots = BgInfoLayoutEngine.Resolve(101, 40,
+            new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, BandHeight = 10, Gap = 0 }, null, new[] {
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10),
+                new BgInfoLayoutRequest(BgInfoRegion.Top, 0, 10)
+            });
+
+        Assert.Equal(0, slots[0].X);
+        Assert.Equal(101, slots[2].X + slots[2].Width);
+        Assert.True(slots[0].X + slots[0].Width <= slots[1].X);
+        Assert.True(slots[1].X + slots[1].Width <= slots[2].X);
     }
 
     [Fact]
@@ -220,6 +267,169 @@ public class BgInfoThemeAndLayoutTests
         Assert.True(slots[1].X >= slots[0].X + slots[0].Width + 24);
         Assert.True(slots[1].X + slots[1].Width + 24 <= slots[2].X);
         Assert.True(slots[1].Width >= 120);
+    }
+
+    [Fact]
+    public void LargeConfiguredGapIsFittedInsideSafeWidthForThreeColumns()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 1024 };
+        var requests = new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Left, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Center, 0, 100),
+            new BgInfoLayoutRequest(BgInfoRegion.Right, 0, 100)
+        };
+
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, null, requests);
+        var safe = BgInfoLayoutEngine.GetSafeArea(640, 480, layout);
+
+        Assert.All(slots, slot => Assert.True(slot.X >= safe.X && slot.X + slot.Width <= safe.X + safe.Width, $"{slot} must remain inside {safe}."));
+        Assert.True(slots[0].X + slots[0].Width <= slots[1].X);
+        Assert.True(slots[1].X + slots[1].Width <= slots[2].X);
+        Assert.True(slots[1].Width > 0);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OversizedVerticalGapPreservesBandsAndRequestedMiddle(bool includeMiddle)
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 1024 };
+        var requests = new List<BgInfoLayoutRequest> {
+            new(BgInfoRegion.Top, 0, 160), new(BgInfoRegion.Bottom, 0, 160)
+        };
+        if (includeMiddle) requests.Add(new(BgInfoRegion.Center, 0, 120));
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, null, requests);
+        Assert.All(slots, slot => {
+            Assert.True(slot.Height >= 120, "Separators must not consume the panel content height.");
+            Assert.True(slot.Y >= 0 && slot.Y + slot.Height <= 480);
+        });
+        Assert.True(slots[0].Y + slots[0].Height <= slots[1].Y);
+        if (includeMiddle) {
+            Assert.True(slots[0].Y + slots[0].Height <= slots[2].Y);
+            Assert.True(slots[2].Y + slots[2].Height <= slots[1].Y);
+        }
+    }
+
+    [Fact]
+    public void EmptyRegionChartsDoNotReserveSpaceForOtherPanels()
+    {
+        var chart = new BgInfoChart { Region = BgInfoRegion.Right, Values = System.Array.Empty<double>(), UseHistory = false };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration();
+        config.Charts.Add(chart);
+        config.Widgets.Add(metric);
+        var values = new IReadOnlyList<double>[] { System.Array.Empty<double>() };
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default, values);
+
+        Assert.False(placements.TryGet(chart, out _));
+        Assert.True(placements.TryGet(metric, out _));
+    }
+
+    [Fact]
+    public void EmptyRegionTopologiesDoNotReserveSpaceForOtherPanels()
+    {
+        var empty = new BgInfoTopology { Region = BgInfoRegion.Right, Width = 900, Height = 400 };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var withEmpty = new BgInfoConfiguration();
+        withEmpty.Topologies.Add(empty);
+        withEmpty.Widgets.Add(metric);
+        var withoutEmpty = new BgInfoConfiguration();
+        var expectedMetric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        withoutEmpty.Widgets.Add(expectedMetric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, withEmpty, default);
+        var expected = BgInfoGenerator.ResolveRegionPlacements(1280, 720, withoutEmpty, default);
+
+        Assert.False(placements.TryGet(empty, out _));
+        Assert.True(placements.TryGet(metric, out var actualSlot));
+        Assert.True(expected.TryGet(expectedMetric, out var expectedSlot));
+        Assert.Equal(expectedSlot, actualSlot);
+    }
+
+    [Fact]
+    public void TilelessRegionVisualCanvasDoesNotReserveSpace()
+    {
+        var empty = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Height = 400 };
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Right, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration();
+        config.VisualCanvases.Add(empty);
+        config.Widgets.Add(metric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default);
+
+        Assert.False(placements.TryGet(empty, out _));
+        Assert.True(placements.TryGet(metric, out _));
+    }
+
+    [Fact]
+    public void ColumnSlotsAreOmittedWhenReservedTextConsumesTheColumn()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 24 };
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, new ChartRect(0, 0, 300, 480), new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Left, 300, 100)
+        });
+
+        Assert.Equal(0, slots[0].Width);
+        Assert.Equal(0, slots[0].Height);
+    }
+
+    [Fact]
+    public void OmittedColumnSlotsDoNotBecomeRegionPlacements()
+    {
+        var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "Health", Value = "OK" });
+        var metric = new BgInfoMetricWidget { Region = BgInfoRegion.Left, Label = "CPU", Value = "Unknown" };
+        var config = new BgInfoConfiguration { Layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0 } };
+        config.VisualCanvases.Add(visual);
+        config.Widgets.Add(metric);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(640, 480, config, new ChartRect(0, 0, 640, 480));
+
+        Assert.False(placements.TryGet(visual, out _));
+        Assert.False(placements.TryGet(metric, out _));
+    }
+
+    [Fact]
+    public void BandsAreOmittedWhenReservedTextCoversTheirFullWidth()
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 24 };
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, new ChartRect(0, 0, 640, 480), new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 200, 80),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 200, 80)
+        });
+
+        Assert.All(slots, slot => {
+            Assert.Equal(0, slot.Width);
+            Assert.Equal(0, slot.Height);
+        });
+
+        var exhaustedBands = BgInfoLayoutEngine.Resolve(640, 1, layout, null, new[] {
+            new BgInfoLayoutRequest(BgInfoRegion.Top, 200, 80),
+            new BgInfoLayoutRequest(BgInfoRegion.Bottom, 200, 80)
+        });
+        Assert.All(exhaustedBands, slot => Assert.Equal(0, slot.Height));
+    }
+
+    [Fact]
+    public void MachineDomainPrefersComputerMembershipOverCurrentUserDomain()
+    {
+        Assert.Equal("machine.example", SystemInfoProvider.ResolveMachineDomain("machine.example"));
+        Assert.Equal(SystemInfoProvider.Unknown, SystemInfoProvider.ResolveMachineDomain(null));
+    }
+
+    [Fact]
+    public void VisualCanvasUsesItsExplicitRegionHeight()
+    {
+        var visual = new BgInfoVisualCanvas { Region = BgInfoRegion.Right, Width = 280, Height = 80, TileHeight = 100 };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile { Label = "Health", Value = "OK" });
+        var config = new BgInfoConfiguration();
+        config.VisualCanvases.Add(visual);
+
+        var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default);
+
+        Assert.True(placements.TryGet(visual, out var slot));
+        Assert.Equal(80, slot.Height);
     }
 
     [Fact]

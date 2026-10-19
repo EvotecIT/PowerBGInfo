@@ -58,7 +58,13 @@ public sealed class CmdletNewBGInfoCalendarHeatmap : BgInfoWidgetCmdlet {
             WriteWarning($"Skipped an item without a '{DateProperty}' date.");
             return;
         }
-        _items.Add(new BgInfoDatedValue { Date = date.Value, Value = BgInfoValueReader.Number(BgInfoValueReader.GetProperty(value, ValueProperty, "Count")) ?? 1 });
+        var hasValue = BgInfoValueReader.TryGetProperty(value, out var rawValue, ValueProperty, "Count");
+        var numericValue = hasValue ? BgInfoValueReader.Number(rawValue) : 1;
+        if (!numericValue.HasValue) {
+            WriteWarning($"Skipped an item with an invalid '{ValueProperty}' value.");
+            return;
+        }
+        _items.Add(new BgInfoDatedValue { Date = date.Value, Value = numericValue.Value });
     }
 
     /// <summary>Emits the calendar widget.</summary>
@@ -66,8 +72,9 @@ public sealed class CmdletNewBGInfoCalendarHeatmap : BgInfoWidgetCmdlet {
         if (ParameterSetName == "Data") {
             foreach (DictionaryEntry entry in Data) {
                 var date = ToDate(entry.Key);
-                if (date.HasValue) _items.Add(new BgInfoDatedValue { Date = date.Value, Value = BgInfoValueReader.Number(entry.Value) ?? 0 });
-                else WriteWarning($"Skipped '{entry.Key}': not a date.");
+                var number = BgInfoValueReader.Number(entry.Value);
+                if (date.HasValue && number.HasValue) _items.Add(new BgInfoDatedValue { Date = date.Value, Value = number.Value });
+                else WriteWarning($"Skipped '{entry.Key}': expected a date and numeric value.");
             }
         }
         var widget = Configure(new BgInfoCalendarHeatmapWidget());
@@ -84,8 +91,10 @@ public sealed class CmdletNewBGInfoCalendarHeatmap : BgInfoWidgetCmdlet {
             case DateTime date: return date;
             case DateTimeOffset offset: return offset.LocalDateTime;
             case string text:
-                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var invariant)) return invariant;
+                string[] isoFormats = { "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" };
+                if (DateTime.TryParseExact(text, isoFormats, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var iso)) return iso;
                 if (DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out var local)) return local;
+                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var invariant)) return invariant;
                 return null;
             default:
                 return value != null && LanguagePrimitives.TryConvertTo<DateTime>(value, out var converted) ? converted : null;
@@ -114,7 +123,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
     [Parameter(Mandatory = true)]
     public DateTime Start { get; set; }
 
-    /// <para>Range end. Without -End or -Duration the range stays open until now.</para>
+    /// <para>Range end, later than Start at the chart's 100-microsecond resolution. Without -End or -Duration the range stays open until now.</para>
     [Parameter]
     public DateTime End { get; set; }
 
@@ -142,11 +151,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
             return;
         }
         DateTime? end = bound.ContainsKey(nameof(End)) ? End : bound.ContainsKey(nameof(Duration)) ? Start + Duration : null;
-        if (end.HasValue && end.Value < Start) {
-            ThrowTerminatingError(new ErrorRecord(new ArgumentException("The item ends before it starts."), "BGInfoTimelineNegativeRange", ErrorCategory.InvalidArgument, end));
-            return;
-        }
-        WriteObject(new BgInfoTimelineItem {
+        var item = new BgInfoTimelineItem {
             Lane = Lane,
             Label = Label,
             Start = Start,
@@ -154,7 +159,12 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
             Category = string.IsNullOrWhiteSpace(Category) ? "Scheduled" : Category,
             Status = Status,
             Color = PowerShellColorConverter.ConvertOptional(Color, nameof(Color))
-        });
+        };
+        if (item.ValidationError() is { } error) {
+            ThrowTerminatingError(new ErrorRecord(new ArgumentException(error), "BGInfoTimelineNegativeRange", ErrorCategory.InvalidArgument, end));
+            return;
+        }
+        WriteObject(item);
     }
 }
 
@@ -173,7 +183,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
 public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
     private readonly List<BgInfoTimelineItem> _items = new();
 
-    /// <para>Timeline items.</para>
+    /// <para>Timeline items. Records without a lane or with an invalid range are skipped with a warning.</para>
     [Parameter(Position = 0, ValueFromPipeline = true)]
     public object[] Item { get; set; } = Array.Empty<object>();
 
@@ -190,7 +200,7 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
         foreach (var raw in Item ?? Array.Empty<object>()) {
             var value = BgInfoValueReader.Unwrap(raw);
             if (value is BgInfoTimelineItem item) {
-                _items.Add(item);
+                AddItem(item);
                 continue;
             }
             var start = CmdletNewBGInfoCalendarHeatmap.ToDate(BgInfoValueReader.GetProperty(value, "Start", "StartTime", "From"));
@@ -198,15 +208,30 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 WriteWarning("Skipped a timeline item without a Start.");
                 continue;
             }
-            _items.Add(new BgInfoTimelineItem {
+            var rawEnd = BgInfoValueReader.GetProperty(value, "End", "EndTime", "To");
+            var end = CmdletNewBGInfoCalendarHeatmap.ToDate(rawEnd);
+            if (rawEnd != null && !string.IsNullOrWhiteSpace(BgInfoValueReader.Text(rawEnd)) && !end.HasValue) {
+                WriteWarning("Skipped a timeline item with an invalid end date.");
+                continue;
+            }
+            AddItem(new BgInfoTimelineItem {
                 Lane = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Lane", "Name", "Server", "Team")),
                 Label = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Label", "Title", "Text")),
                 Start = start.Value,
-                End = CmdletNewBGInfoCalendarHeatmap.ToDate(BgInfoValueReader.GetProperty(value, "End", "EndTime", "To")),
+                End = end,
                 Category = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Category", "Kind", "Type")) is { Length: > 0 } category ? category : "Scheduled",
-                Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State"))
+                Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State")),
+                Color = PowerShellColorConverter.ConvertOptional(BgInfoValueReader.GetProperty(value, "Color"), "Color")
             });
         }
+    }
+
+    private void AddItem(BgInfoTimelineItem item) {
+        if (item.ValidationError() is { } error) {
+            WriteWarning("Skipped a timeline item: " + error);
+            return;
+        }
+        _items.Add(item);
     }
 
     /// <summary>Emits the timeline widget.</summary>
@@ -276,7 +301,9 @@ public sealed class CmdletNewBGInfoTreemap : BgInfoWidgetCmdlet {
     protected override void EndProcessing() {
         if (ParameterSetName == "Data") {
             foreach (DictionaryEntry entry in Data) {
-                _items.Add(new BgInfoTreemapItem { Name = BgInfoValueReader.Text(entry.Key), Value = BgInfoValueReader.Number(entry.Value) ?? 0 });
+                var number = BgInfoValueReader.Number(entry.Value);
+                if (number.HasValue) _items.Add(new BgInfoTreemapItem { Name = BgInfoValueReader.Text(entry.Key), Value = number.Value });
+                else WriteWarning($"Skipped '{entry.Key}': expected a numeric value.");
             }
         }
         var widget = Configure(new BgInfoTreemapWidget());
@@ -307,6 +334,7 @@ public sealed class CmdletNewBGInfoMermaid : BgInfoWidgetCmdlet {
 
     /// <para>Mermaid source.</para>
     [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+    [AllowEmptyString]
     public string Definition { get; set; } = string.Empty;
 
     /// <summary>Collects pipeline lines into one Mermaid definition.</summary>

@@ -102,7 +102,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public object? FillColor { get; set; }
 
-    /// <para>Palette colors for point-based charts.</para>
+    /// <para>Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.</para>
     [Parameter]
     public object[] Palette { get; set; } = Array.Empty<object>();
 
@@ -530,5 +530,8 @@ public class CmdletNewBGInfoChart : PSCmdlet {
         if (!IsBound(nameof(FontFamilyName))) chart.FontFamilyName = theme.FontFamilyName;
         // Thresholds pick the series color, so the theme accent only fills in without them.
         if (!IsBound(nameof(LineColor)) && chart.Threshold == null) chart.LineColor = theme.Accent;
+        if (!IsBound(nameof(Palette)) && chart.Kind is BgInfoChartKind.Pie or BgInfoChartKind.Donut) {
+            chart.Palette = new[] { theme.Accent, theme.SecondaryAccent, theme.Info, theme.Ok, theme.Warning, theme.Critical, theme.Muted };
+        }
     }
 }
