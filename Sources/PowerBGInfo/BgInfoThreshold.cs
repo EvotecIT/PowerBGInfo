@@ -91,6 +91,7 @@ public sealed class BgInfoThreshold {
 
     /// <summary>Validates that warning and critical are ordered for the direction.</summary>
     public void Validate() {
+        if (!Enum.IsDefined(typeof(BgInfoThresholdDirection), Direction)) throw new ArgumentOutOfRangeException(nameof(Direction), Direction, "Threshold direction must be Above or Below.");
         if (Warning.HasValue && !IsFinite(Warning.Value)) throw new ArgumentOutOfRangeException(nameof(Warning), Warning, "Warning threshold must be finite.");
         if (Critical.HasValue && !IsFinite(Critical.Value)) throw new ArgumentOutOfRangeException(nameof(Critical), Critical, "Critical threshold must be finite.");
         if (!Warning.HasValue || !Critical.HasValue) return;

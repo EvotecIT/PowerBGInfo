@@ -1201,9 +1201,12 @@ public static partial class BgInfoConfigurationJson {
         }
     }
 
-    private static void ApplyEnum<TEnum>(string? text, Action<TEnum> setter) where TEnum : struct {
+    private static void ApplyEnum<TEnum>(string? text, Action<TEnum> setter) where TEnum : struct, Enum {
         if (string.IsNullOrWhiteSpace(text)) return;
-        if (Enum.TryParse(text, true, out TEnum parsed) && Enum.IsDefined(typeof(TEnum), parsed)) setter(parsed);
+        if (!TryParseDefinedEnumName(text, out TEnum parsed)) {
+            throw new InvalidDataException("Unknown " + typeof(TEnum).Name + " value '" + text + "'.");
+        }
+        setter(parsed);
     }
 
     private static string ResolvePath(string? path, string baseDirectory) {

@@ -84,7 +84,7 @@ public static partial class SystemInfoProvider {
             ComputerName = Environment.MachineName,
             UserName = Environment.UserName,
             LoggedOnUser = GetLoggedOnUser(),
-            Domain = GetMachineDomain(),
+            Domain = MachineDomainCache.Value,
             OSName = OrUnknown(OsInfoCache.Value.Name),
             OSVersion = OrUnknown(OsInfoCache.Value.Version),
             OSBuild = OrUnknown(OsInfoCache.Value.Build),
@@ -99,15 +99,6 @@ public static partial class SystemInfoProvider {
             DefenderSignatureAge = defender.SignatureAge,
             BitLockerStatus = GetBitLockerStatus()
         };
-    }
-
-    private static string GetMachineDomain() {
-        var cached = System.Threading.Volatile.Read(ref _machineDomain);
-        if (cached != null) return cached;
-        var domain = LoadMachineDomain();
-        // A timeout or unavailable provider is a transient result, not machine membership.
-        if (domain != Unknown) System.Threading.Interlocked.CompareExchange(ref _machineDomain, domain, null);
-        return domain;
     }
 
     private static string LoadMachineDomain() {
