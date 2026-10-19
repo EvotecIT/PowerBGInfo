@@ -230,6 +230,7 @@ public static partial class BgInfoConfigurationJson {
                 End = ParseDate(item.End),
                 Category = string.IsNullOrWhiteSpace(item.Category) ? "Scheduled" : item.Category!
             };
+            if (entry.ValidationError() is { } error) throw new InvalidDataException(error);
             ApplyEnum<BgInfoStatus>(item.Status, value => entry.Status = value);
             ApplyColor(item.Color, value => entry.Color = value);
             timeline.Items.Add(entry);

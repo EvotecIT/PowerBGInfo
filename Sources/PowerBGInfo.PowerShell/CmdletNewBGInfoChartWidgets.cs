@@ -123,7 +123,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
     [Parameter(Mandatory = true)]
     public DateTime Start { get; set; }
 
-    /// <para>Range end. Without -End or -Duration the range stays open until now.</para>
+    /// <para>Range end, later than Start at the chart's 100-microsecond resolution. Without -End or -Duration the range stays open until now.</para>
     [Parameter]
     public DateTime End { get; set; }
 
@@ -151,11 +151,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
             return;
         }
         DateTime? end = bound.ContainsKey(nameof(End)) ? End : bound.ContainsKey(nameof(Duration)) ? Start + Duration : null;
-        if (end.HasValue && end.Value < Start) {
-            ThrowTerminatingError(new ErrorRecord(new ArgumentException("The item ends before it starts."), "BGInfoTimelineNegativeRange", ErrorCategory.InvalidArgument, end));
-            return;
-        }
-        WriteObject(new BgInfoTimelineItem {
+        var item = new BgInfoTimelineItem {
             Lane = Lane,
             Label = Label,
             Start = Start,
@@ -163,7 +159,12 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
             Category = string.IsNullOrWhiteSpace(Category) ? "Scheduled" : Category,
             Status = Status,
             Color = PowerShellColorConverter.ConvertOptional(Color, nameof(Color))
-        });
+        };
+        if (item.ValidationError() is { } error) {
+            ThrowTerminatingError(new ErrorRecord(new ArgumentException(error), "BGInfoTimelineNegativeRange", ErrorCategory.InvalidArgument, end));
+            return;
+        }
+        WriteObject(item);
     }
 }
 
@@ -182,7 +183,7 @@ public sealed class CmdletNewBGInfoTimelineItem : PSCmdlet {
 public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
     private readonly List<BgInfoTimelineItem> _items = new();
 
-    /// <para>Timeline items.</para>
+    /// <para>Timeline items. Records without a lane or with an invalid range are skipped with a warning.</para>
     [Parameter(Position = 0, ValueFromPipeline = true)]
     public object[] Item { get; set; } = Array.Empty<object>();
 
@@ -199,7 +200,7 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
         foreach (var raw in Item ?? Array.Empty<object>()) {
             var value = BgInfoValueReader.Unwrap(raw);
             if (value is BgInfoTimelineItem item) {
-                _items.Add(item);
+                AddItem(item);
                 continue;
             }
             var start = CmdletNewBGInfoCalendarHeatmap.ToDate(BgInfoValueReader.GetProperty(value, "Start", "StartTime", "From"));
@@ -213,7 +214,7 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 WriteWarning("Skipped a timeline item with an invalid end date.");
                 continue;
             }
-            _items.Add(new BgInfoTimelineItem {
+            AddItem(new BgInfoTimelineItem {
                 Lane = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Lane", "Name", "Server", "Team")),
                 Label = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Label", "Title", "Text")),
                 Start = start.Value,
@@ -223,6 +224,14 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 Color = PowerShellColorConverter.ConvertOptional(BgInfoValueReader.GetProperty(value, "Color"), "Color")
             });
         }
+    }
+
+    private void AddItem(BgInfoTimelineItem item) {
+        if (item.ValidationError() is { } error) {
+            WriteWarning("Skipped a timeline item: " + error);
+            return;
+        }
+        _items.Add(item);
     }
 
     /// <summary>Emits the timeline widget.</summary>

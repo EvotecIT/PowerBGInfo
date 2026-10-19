@@ -4430,7 +4430,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Palette</maml:name>
           <maml:description>
-            <maml:para>Palette colors for point-based charts.</maml:para>
+            <maml:para>Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
           <dev:type>
@@ -5481,7 +5481,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Palette</maml:name>
           <maml:description>
-            <maml:para>Palette colors for point-based charts.</maml:para>
+            <maml:para>Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
           <dev:type>
@@ -6532,7 +6532,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Palette</maml:name>
         <maml:description>
-          <maml:para>Palette colors for point-based charts.</maml:para>
+          <maml:para>Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -15046,7 +15046,7 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="0" aliases="None">
           <maml:name>Item</maml:name>
           <maml:description>
-            <maml:para>Timeline items.</maml:para>
+            <maml:para>Timeline items. Records without a lane or with an invalid range are skipped with a warning.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
           <dev:type>
@@ -15416,7 +15416,7 @@ New-BGInfo -Theme $theme -Target File {&#xD;
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="0" aliases="None">
         <maml:name>Item</maml:name>
         <maml:description>
-          <maml:para>Timeline items.</maml:para>
+          <maml:para>Timeline items. Records without a lane or with an invalid range are skipped with a warning.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -15761,7 +15761,7 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>End</maml:name>
           <maml:description>
-            <maml:para>Range end. Without -End or -Duration the range stays open until now.</maml:para>
+            <maml:para>Range end, later than Start at the chart's 100-microsecond resolution. Without -End or -Duration the range stays open until now.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">DateTime</command:parameterValue>
           <dev:type>
@@ -15867,7 +15867,7 @@ New-BGInfo -Theme $theme -Target File {&#xD;
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>End</maml:name>
         <maml:description>
-          <maml:para>Range end. Without -End or -Duration the range stays open until now.</maml:para>
+          <maml:para>Range end, later than Start at the chart's 100-microsecond resolution. Without -End or -Duration the range stays open until now.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">DateTime</command:parameterValue>
         <dev:type>

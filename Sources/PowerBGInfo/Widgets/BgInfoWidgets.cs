@@ -196,6 +196,17 @@ public sealed class BgInfoTimelineItem {
     public BgInfoStatus Status { get; set; }
     /// <summary>Optional explicit category color.</summary>
     public Color? Color { get; set; }
+
+    internal string? ValidationError() {
+        if (string.IsNullOrWhiteSpace(Lane)) return "Every timeline item needs a lane.";
+        try {
+            // Use the renderer owner's UTC, epoch and display-resolution contract unchanged.
+            _ = new ChartForgeX.Core.ChartGanttLaneItem(Start, End, "range");
+            return null;
+        } catch (ArgumentException error) {
+            return $"Timeline item '{Label}' has an invalid range: {error.Message}";
+        }
+    }
 }
 
 /// <summary>Time ranges on named lanes, rendered as ChartForgeX Gantt lanes.</summary>
@@ -220,8 +231,7 @@ public sealed class BgInfoTimelineWidget : BgInfoWidget {
         base.Validate();
         if (Items.Count == 0) throw new InvalidOperationException("A timeline needs at least one item.");
         foreach (var item in Items) {
-            if (string.IsNullOrWhiteSpace(item.Lane)) throw new InvalidOperationException("Every timeline item needs a lane.");
-            if (item.End.HasValue && item.End.Value < item.Start) throw new InvalidOperationException($"Timeline item '{item.Label}' ends before it starts.");
+            if (item.ValidationError() is { } error) throw new InvalidOperationException(error);
         }
     }
 }

@@ -561,7 +561,7 @@ Accept wildcard characters: False
 ```
 
 ### -Palette
-Palette colors for point-based charts.
+Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.
 
 ```yaml
 Type: Object[]

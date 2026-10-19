@@ -76,7 +76,7 @@ Accept wildcard characters: False
 ```
 
 ### -End
-Range end. Without -End or -Duration the range stays open until now.
+Range end, later than Start at the chart's 100-microsecond resolution. Without -End or -Duration the range stays open until now.
 
 ```yaml
 Type: DateTime

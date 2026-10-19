@@ -4,6 +4,28 @@ using ChartForgeX.Primitives;
 namespace PowerBGInfo.Tests;
 
 public class BgInfoLayoutBoundaryTests {
+    [Theory]
+    [InlineData(400, false, 24)]
+    [InlineData(400, true, 24)]
+    [InlineData(1440, false, 24)]
+    [InlineData(120, false, 500)]
+    public void OpposingColumnsReserveTheirGapWithOrWithoutCenterContent(int width, bool withCenter, int gap) {
+        var layout = new BgInfoLayout { MarginX = 20, MarginY = 20, TaskbarReserve = 0, Gap = gap, ColumnWidth = 1000 };
+        var requests = new List<BgInfoLayoutRequest> {
+            new(BgInfoRegion.Left, 0, 100), new(BgInfoRegion.Right, 0, 100)
+        };
+        if (withCenter) requests.Add(new(BgInfoRegion.Center, 0, 100));
+        var safe = BgInfoLayoutEngine.GetSafeArea(width, 900, layout);
+        var slots = BgInfoLayoutEngine.Resolve(width, 900, layout, null, requests);
+        Assert.Equal(safe.X, slots[0].X);
+        Assert.Equal(safe.X + safe.Width, slots[1].X + slots[1].Width);
+        var expectedGap = Math.Min(gap, safe.Width - 2);
+        if (withCenter) {
+            Assert.True(slots[2].X - (slots[0].X + slots[0].Width) >= expectedGap - 1);
+            Assert.True(slots[1].X - (slots[2].X + slots[2].Width) >= expectedGap - 1);
+        } else Assert.True(slots[1].X - (slots[0].X + slots[0].Width) >= expectedGap - 1);
+    }
+
     [Fact]
     public void TreemapDecimalCaptionsFollowTheCurrentWallpaperCulture() {
         var before = CultureInfo.CurrentCulture;

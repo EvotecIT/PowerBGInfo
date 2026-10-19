@@ -159,7 +159,7 @@ Accept wildcard characters: False
 ```
 
 ### -Item
-Timeline items.
+Timeline items. Records without a lane or with an invalid range are skipped with a warning.
 
 ```yaml
 Type: Object[]

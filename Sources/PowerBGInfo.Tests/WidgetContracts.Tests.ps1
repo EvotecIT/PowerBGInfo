@@ -11,6 +11,64 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'uses both theme accents for categorical charts while preserving explicit paint overrides' {
+        $theme = New-BGInfoTheme Ember -Mode Dark -Accent '#ED1545' -SecondaryAccent '#17BAA5'
+        $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoChart -Kind Pie -Values 30,70 -NoHistory
+            New-BGInfoChart -Kind Donut -Values 30,70 -NoHistory
+            New-BGInfoChart -Kind Pie -Values 30,70 -Palette '#123456','#ABCDEF' -NoHistory
+            New-BGInfoChart -Kind Bar -Values 30,70 -LineColor '#765432' -NoHistory
+        }
+        foreach ($index in 0,1) {
+            $config.Charts[$index].Palette.Count | Should -BeGreaterOrEqual 2
+            $config.Charts[$index].Palette[0].ToHex() | Should -Be '#ED1545'
+            $config.Charts[$index].Palette[1].ToHex() | Should -Be '#17BAA5'
+        }
+        ($config.Charts[2].Palette | ForEach-Object ToHex) -join ',' | Should -Be '#123456,#ABCDEF'
+        $config.Charts[3].LineColor.ToHex() | Should -Be '#765432'
+        $config.Charts[3].Palette.Count | Should -Be 0
+        (New-BGInfoChart -Kind Pie -Values 30,70 -NoHistory).Palette.Count | Should -Be 0
+    }
+
+    It 'skips reversed and unlabelled timeline records across typed and pipeline forms' {
+        $typed = New-BGInfoTimelineItem -Lane 'Ops' -Start ([datetime]'2026-10-13') -End ([datetime]'2026-10-14')
+        $typed.End = [datetime]'2026-10-12'
+        $warnings = @()
+        $timeline = @(
+            @{ Lane='Ops'; Start='2026-10-13'; End='2026-10-12' }
+            [pscustomobject]@{ Lane='Ops'; Start='2026-10-13'; To='2026-10-12' }
+            $typed
+            @{ Lane=''; Start='2026-10-13' }
+            @{ Lane='Ops'; Start='2026-10-13'; End='2026-10-13' }
+            @{ Lane='Ops'; Start=[datetime]'2026-10-13'; End=([datetime]'2026-10-13').AddTicks(1) }
+            @{ Lane='Ops'; Start='1800-01-01' }
+            @{ Lane='Ops'; Start='2026-10-13'; End='2026-10-14' }
+            @{ Lane='Ops'; Start='2026-10-13' }
+        ) | New-BGInfoTimeline -WarningVariable warnings -WarningAction SilentlyContinue
+        $timeline.Items.Count | Should -Be 2
+        $warnings.Count | Should -Be 7
+        $timeline.Validate()
+        $timeline.Items[0].End | Should -BeGreaterThan $timeline.Items[0].Start
+        $timeline.Items[1].End | Should -BeNullOrEmpty
+    }
+
+    It 'rejects unrenderable helper ranges and renders valid mixed-zone and open intervals' {
+        $utc = [datetime]::SpecifyKind([datetime]'2026-10-13 08:00:00', [DateTimeKind]::Utc)
+        { New-BGInfoTimelineItem -Lane Ops -Start $utc -End $utc } | Should -Throw
+        { New-BGInfoTimelineItem -Lane Ops -Start $utc -Duration ([timespan]::FromTicks(1)) } | Should -Throw
+        { New-BGInfoTimelineItem -Lane Ops -Start ([datetime]'1800-01-01') } | Should -Throw
+        $items = @(
+            New-BGInfoTimelineItem -Lane Ops -Start $utc.ToLocalTime() -End $utc.AddHours(1)
+            New-BGInfoTimelineItem -Lane Ops -Start $utc.AddHours(2)
+        )
+        $timeline = $items | New-BGInfoTimeline -Now $utc.AddHours(4)
+        New-BGInfo -Target File -ConfigurationDirectory $TestDrive -OutputFileName 'timeline.png' {
+            New-BGInfoBackground -Width 640 -Height 360
+            $timeline
+        } | Out-Null
+        (Get-Item (Join-Path $TestDrive 'timeline.png')).Length | Should -BeGreaterThan 100
+    }
+
     It 'uses the requested property before its aliases regardless of dictionary key order' {
         $calendar = [ordered] @{ Count = 99; Value = 3; Date = '2026-10-12' } | New-BGInfoCalendarHeatmap
         $calendar.Items[0].Value | Should -Be 3
