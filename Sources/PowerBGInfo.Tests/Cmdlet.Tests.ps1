@@ -92,17 +92,17 @@ Describe 'New-BGInfoValue cmdlet' {
         { New-BGInfoValue -Name 'Test' -Value 'X' -ValueFontWeight 901 -ErrorAction Stop } | Should -Throw
     }
 
-    It 'resolves builtin values' {
+    It 'defers builtin values to the renderer' {
         $entry = New-BGInfoValue -BuiltinValue 'HostName'
         $entry.Name | Should -Be 'HostName'
-        $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.Value | Should -BeNullOrEmpty
         $entry.BuiltinValue | Should -Be 'HostName'
     }
 
-    It 'resolves WMI-backed builtin values in the PowerShell host' {
+    It 'defers WMI-backed builtin values to the renderer' {
         $entry = New-BGInfoValue -BuiltinValue 'OSName'
         $entry.Name | Should -Be 'OSName'
-        $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.Value | Should -BeNullOrEmpty
         $entry.BuiltinValue | Should -Be 'OSName'
     }
 
@@ -116,6 +116,15 @@ Describe 'New-BGInfoValue cmdlet' {
 }
 
 Describe 'New-BGInfoLabel cmdlet' {
+    It 'uses the explicit New-BGInfo color ahead of a theme ink default' {
+        $config = New-BGInfo -Theme Aurora -Color Red -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoLabel -Name 'Status'
+        }
+
+        $config.Color.ToHexRgba() | Should -Be '#FF0000FF'
+        $config.Entries[0].Color | Should -BeNullOrEmpty
+    }
+
     It 'supports native font styles' {
         $entry = New-BGInfoLabel -Name 'Test' -FontWeight 600 -Italic -UnderlineStyle Dotted -StrikethroughStyle Double -Baseline Subscript -TextCase SentenceCase
 
@@ -419,6 +428,16 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $visual = New-BGInfoVisualCanvas -Title PowerBGInfo -NoHeroBadge
 
         $visual.HeroBadgeVisible | Should -BeFalse
+    }
+
+    It 'keeps themed hero text when only the badge is disabled' {
+        $theme = New-BGInfoTheme -Preset Corporate -Mode Dark
+        $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {
+            New-BGInfoVisualCanvas -Title PowerBGInfo -Subtitle 'Desktop insights' -NoHeroBadge
+        }
+
+        $config.VisualCanvases[0].HeroContentVisible | Should -BeTrue
+        $config.VisualCanvases[0].HeroBadgeVisible | Should -BeFalse
     }
 
     It 'can disable all hero content' {

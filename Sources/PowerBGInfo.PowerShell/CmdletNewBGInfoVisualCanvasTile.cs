@@ -80,8 +80,39 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
     [Parameter]
     public double? MiniChartMaximum { get; set; }
 
+    /// <para>Semantic status: Ok, Warning, Critical or Info. The owning canvas supplies its status color at render time; an explicit Accent takes priority.</para>
+    [Parameter]
+    public BgInfoStatus Status { get; set; }
+
+    /// <para>Number compared with the thresholds to pick the status, for example 88 for 88 % used.</para>
+    [Parameter]
+    public double StatusValue { get; set; }
+
+    /// <para>StatusValue at which the tile turns the warning color.</para>
+    [Parameter]
+    public double WarningThreshold { get; set; }
+
+    /// <para>StatusValue at which the tile turns the critical color.</para>
+    [Parameter]
+    public double CriticalThreshold { get; set; }
+
+    /// <para>Above: higher values are worse. Below: lower values are worse.</para>
+    [Parameter]
+    public BgInfoThresholdDirection ThresholdDirection { get; set; }
+
     /// <summary>Emits a visual canvas tile definition.</summary>
     protected override void EndProcessing() {
+        var status = Status;
+        var threshold = BgInfoThemeDefaults.Threshold(this, WarningThreshold, CriticalThreshold, ThresholdDirection);
+        if (threshold != null) {
+            if (!MyInvocation.BoundParameters.ContainsKey(nameof(StatusValue))) {
+                ThrowTerminatingError(new ErrorRecord(new ArgumentException("Thresholds need -StatusValue, the number they are compared with.", nameof(StatusValue)),
+                    "BGInfoTileThresholdWithoutValue", ErrorCategory.InvalidArgument, StatusValue));
+                return;
+            }
+            status = threshold.Evaluate(StatusValue);
+        }
+        var accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent));
         WriteObject(new BgInfoVisualCanvasTile {
             Side = Side,
             Icon = Icon,
@@ -90,7 +121,8 @@ public class CmdletNewBGInfoVisualCanvasTile : PSCmdlet {
             Detail = Detail,
             Width = Width,
             Height = Height,
-            Accent = PowerShellColorConverter.ConvertOptional(Accent, nameof(Accent)),
+            Accent = accent,
+            Status = status,
             Progress = Progress,
             SurfaceStyle = SurfaceStyle,
             IconKind = IconKind,

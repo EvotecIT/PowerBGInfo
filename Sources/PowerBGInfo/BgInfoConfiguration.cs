@@ -297,5 +297,14 @@ public class BgInfoConfiguration {
     /// Gets the collection of image overlays to render.
     /// </summary>
     public List<BgInfoImage> Images { get; } = new();
+    /// <summary>
+    /// Gets the collection of widget panels (metrics, tables, lists, calendars, timelines, treemaps, diagrams and QR codes).
+    /// </summary>
+    public List<BgInfoWidget> Widgets { get; } = new();
+    /// <summary>
+    /// Gets or sets the safe-area margins and region sizes used by items placed with a <see cref="BgInfoRegion"/>.
+    /// When unset, regions use the default layout.
+    /// </summary>
+    public BgInfoLayout? Layout { get; set; }
 
 }

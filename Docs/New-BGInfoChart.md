@@ -11,12 +11,12 @@ Creates a BGInfo chart definition.
 ## SYNTAX
 ### Single (Default)
 ```powershell
-New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-ThemeMode <VisualThemeMode>] [-Value <double>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-CornerRadius <double>] [-BorderColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
+New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-ThemeMode <VisualThemeMode>] [-Value <double>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-CornerRadius <double>] [-BorderColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [-Region <BgInfoRegion>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [<CommonParameters>]
 ```
 
 ### Multiple
 ```powershell
-New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-ThemeMode <VisualThemeMode>] [-Values <double[]>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-CornerRadius <double>] [-BorderColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [<CommonParameters>]
+New-BGInfoChart [-Title <string>] [-Id <string>] [-Kind <BgInfoChartKind>] [-ThemeMode <VisualThemeMode>] [-Values <double[]>] [-Labels <string[]>] [-Target <double>] [-RangeEnds <double[]>] [-Metric <BgInfoChartMetric>] [-MetricArgument <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-MaxPoints <int>] [-NoHistory] [-ReplaceHistory] [-LineColor <Object>] [-FillColor <Object>] [-Palette <Object[]>] [-BackgroundColor <Object>] [-CornerRadius <double>] [-BorderColor <Object>] [-TextColor <Object>] [-TitleColor <Object>] [-ValueColor <Object>] [-FontFamilyName <string>] [-TitleFontSize <float>] [-ValueFontSize <float>] [-TitleBold] [-TitleFontWeight <int>] [-TitleItalic] [-TitleUnderline] [-TitleUnderlineStyle <TextDecorationStyle>] [-TitleStrikethroughStyle <TextDecorationStyle>] [-TitleBaseline <TextBaseline>] [-TitleTextCase <TextCaseTransform>] [-ValueBold] [-ValueFontWeight <int>] [-ValueItalic] [-ValueUnderline] [-ValueUnderlineStyle <TextDecorationStyle>] [-ValueStrikethroughStyle <TextDecorationStyle>] [-ValueBaseline <TextBaseline>] [-ValueTextCase <TextCaseTransform>] [-ShowLatestValue] [-ValueFormat <string>] [-ValueSuffix <string>] [-BarGap <float>] [-Padding <int>] [-ShowGrid] [-GridColor <Object>] [-GridLineCount <int>] [-ShowLegend] [-ShowPointLegend] [-LegendPosition <BgInfoChartLegendPosition>] [-ShowDataLabels] [-Minimum <double>] [-Maximum <double>] [-NoDonutCenterLabel] [-DonutInnerRadiusRatio <double>] [-DonutCenterValue <string>] [-DonutCenterLabel <string>] [-NoRadialBarCenterLabel] [-NoCircleStatusLabel] [-NoProgressValues] [-NoProgressHandles] [-ProgressBarThicknessRatio <double>] [-PictorialSymbol <BgInfoChartPictorialSymbol>] [-PictorialColumns <int>] [-Region <BgInfoRegion>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -98,6 +98,22 @@ Accept wildcard characters: False
 
 ### -CornerRadius
 Corner radius of the chart panel in pixels. Zero keeps square corners.
+
+```yaml
+Type: Double
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CriticalThreshold
+Value at which the latest value (or each row) turns the critical color.
 
 ```yaml
 Type: Double
@@ -545,7 +561,7 @@ Accept wildcard characters: False
 ```
 
 ### -Palette
-Palette colors for point-based charts.
+Explicit palette colors for point-based charts. An unbound pie or donut palette inherits the active theme accents and status colors.
 
 ```yaml
 Type: Object[]
@@ -648,6 +664,22 @@ Type: Double[]
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Region
+Region to flow into: Left, Right, Top, Bottom or Center. Without -Width or -Height the chart shares the region.
+
+```yaml
+Type: BgInfoRegion
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: None, Left, Right, Top, Bottom, Center
 
 Required: False
 Position: named
@@ -792,6 +824,22 @@ Type: VisualThemeMode
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values: Light, Dark
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThresholdDirection
+Above: higher values are worse (CPU, disk used). Below: lower values are worse (free space).
+
+```yaml
+Type: BgInfoThresholdDirection
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values: Above, Below
 
 Required: False
 Position: named
@@ -1192,6 +1240,22 @@ Type: TextDecorationStyle
 Parameter Sets: Single, Multiple
 Aliases: None
 Possible values: None, Single, Double, Dotted, Dashed, Wavy
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WarningThreshold
+Value at which the latest value (or each bar, progress or bullet row) turns the warning color.
+
+```yaml
+Type: Double
+Parameter Sets: Single, Multiple
+Aliases: None
+Possible values:
 
 Required: False
 Position: named

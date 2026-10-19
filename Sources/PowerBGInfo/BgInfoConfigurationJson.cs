@@ -56,7 +56,7 @@ public static partial class BgInfoConfigurationJson {
 
     private static BgInfoConfigurationFile Deserialize(string json) {
 #if NET472
-        var serializer = new JavaScriptSerializer();
+        var serializer = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
         var model = serializer.Deserialize<BgInfoConfigurationFile>(json);
         return model ?? new BgInfoConfigurationFile();
 #else
@@ -67,7 +67,7 @@ public static partial class BgInfoConfigurationJson {
 
     private static string Serialize(BgInfoConfigurationFile model) {
 #if NET472
-        var serializer = new JavaScriptSerializer();
+        var serializer = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
         return serializer.Serialize(model);
 #else
         return JsonSerializer.Serialize(model, WriteContext.BgInfoConfigurationFile);
@@ -153,30 +153,12 @@ public static partial class BgInfoConfigurationJson {
         if (model.ApplyToAllUsers.HasValue) configuration.ApplyToAllUsers = model.ApplyToAllUsers.Value;
         if (model.IncludeDefaultUserProfile.HasValue) configuration.IncludeDefaultUserProfile = model.IncludeDefaultUserProfile.Value;
 
-        if (!string.IsNullOrWhiteSpace(model.WallpaperFit) &&
-            Enum.TryParse(model.WallpaperFit, true, out DesktopManager.DesktopWallpaperPosition fit)) {
-            configuration.WallpaperFit = fit;
-        }
-        if (!string.IsNullOrWhiteSpace(model.TextPosition) &&
-            Enum.TryParse(model.TextPosition, true, out BgInfoTextPosition position)) {
-            configuration.TextPosition = position;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Target) &&
-            Enum.TryParse(model.Target, true, out BgInfoTarget target)) {
-            configuration.Target = target;
-        }
-        if (!string.IsNullOrWhiteSpace(model.ChartLayout) &&
-            Enum.TryParse(model.ChartLayout, true, out BgInfoChartLayoutMode chartLayout)) {
-            configuration.ChartLayout = chartLayout;
-        }
-        if (!string.IsNullOrWhiteSpace(model.ChartStackAnchor) &&
-            Enum.TryParse(model.ChartStackAnchor, true, out BgInfoTextPosition chartAnchor)) {
-            configuration.ChartStackAnchor = chartAnchor;
-        }
-        if (!string.IsNullOrWhiteSpace(model.ChartStackDirection) &&
-            Enum.TryParse(model.ChartStackDirection, true, out BgInfoChartStackDirection chartDirection)) {
-            configuration.ChartStackDirection = chartDirection;
-        }
+        ApplyEnum<DesktopManager.DesktopWallpaperPosition>(model.WallpaperFit, value => configuration.WallpaperFit = value);
+        ApplyEnum<BgInfoTextPosition>(model.TextPosition, value => configuration.TextPosition = value);
+        ApplyEnum<BgInfoTarget>(model.Target, value => configuration.Target = value);
+        ApplyEnum<BgInfoChartLayoutMode>(model.ChartLayout, value => configuration.ChartLayout = value);
+        ApplyEnum<BgInfoTextPosition>(model.ChartStackAnchor, value => configuration.ChartStackAnchor = value);
+        ApplyEnum<BgInfoChartStackDirection>(model.ChartStackDirection, value => configuration.ChartStackDirection = value);
         if (model.ChartStackSpacing.HasValue) configuration.ChartStackSpacing = model.ChartStackSpacing.Value;
         if (model.ChartStackOffsetX.HasValue) configuration.ChartStackOffsetX = model.ChartStackOffsetX.Value;
         if (model.ChartStackOffsetY.HasValue) configuration.ChartStackOffsetY = model.ChartStackOffsetY.Value;
@@ -238,6 +220,7 @@ public static partial class BgInfoConfigurationJson {
         }
 
         configuration.Background = MapBackground(model.Background, baseDirectory);
+        MapExtensions(model, configuration);
         return configuration;
     }
 
@@ -441,6 +424,8 @@ public static partial class BgInfoConfigurationJson {
                     VisualStyle = topology.VisualStyle.ToString(),
                     CanvasSurfaceStyle = topology.CanvasSurfaceStyle.ToString(),
                     Theme = topology.Theme,
+                    Accent = topology.Accent.HasValue ? BgInfoColorParser.ToHex(topology.Accent.Value) : null,
+                    FontFamilyName = topology.FontFamilyName,
                     Transparent = topology.Transparent,
                     ShowTitle = topology.ShowTitle,
                     ShowLegend = topology.ShowLegend,
@@ -484,6 +469,10 @@ public static partial class BgInfoConfigurationJson {
                     BackgroundBottom = visual.CustomBackgroundBottom.HasValue ? BgInfoColorParser.ToHex(visual.CustomBackgroundBottom.Value) : null,
                     Accent = visual.CustomAccent.HasValue ? BgInfoColorParser.ToHex(visual.CustomAccent.Value) : null,
                     SecondaryAccent = visual.SecondaryAccent.HasValue ? BgInfoColorParser.ToHex(visual.SecondaryAccent.Value) : null,
+                    StatusOk = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Ok),
+                    StatusWarning = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Warning),
+                    StatusCritical = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Critical),
+                    StatusInfo = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Info),
                     TitleColor = visual.TitleColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleColor.Value) : null,
                     TitleAccentColor = visual.TitleAccentColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleAccentColor.Value) : null,
                     SubtitleColor = visual.SubtitleColor.HasValue ? BgInfoColorParser.ToHex(visual.SubtitleColor.Value) : null,
@@ -551,6 +540,7 @@ public static partial class BgInfoConfigurationJson {
         }
 
         model.Background = MapBackgroundFile(configuration.Background);
+        WriteExtensions(configuration, model);
         return model;
     }
 
@@ -560,14 +550,9 @@ public static partial class BgInfoConfigurationJson {
         }
 
         var entry = new BgInfoEntry();
-        if (!string.IsNullOrWhiteSpace(model.Type) &&
-            Enum.TryParse(model.Type, true, out BgInfoEntryType entryType)) {
-            entry.Type = entryType;
-        } else if (!string.IsNullOrWhiteSpace(model.Value) || !string.IsNullOrWhiteSpace(model.BuiltinValue)) {
-            entry.Type = BgInfoEntryType.Value;
-        } else {
-            entry.Type = BgInfoEntryType.Label;
-        }
+        entry.Type = !string.IsNullOrWhiteSpace(model.Value) || !string.IsNullOrWhiteSpace(model.BuiltinValue)
+            ? BgInfoEntryType.Value : BgInfoEntryType.Label;
+        ApplyEnum<BgInfoEntryType>(model.Type, value => entry.Type = value);
 
         entry.Name = model.Name ?? string.Empty;
         if (!string.IsNullOrWhiteSpace(model.BuiltinValue)) {
@@ -616,8 +601,8 @@ public static partial class BgInfoConfigurationJson {
             return null;
         }
 
-        if (!Enum.TryParse(model.Provider, true, out BgInfoVariableProvider provider)) {
-            return null;
+        if (!TryParseDefinedEnumName(model.Provider, out BgInfoVariableProvider provider)) {
+            throw new InvalidDataException("Unknown variable provider '" + model.Provider + "'.");
         }
 
         return new BgInfoVariable {
@@ -638,21 +623,17 @@ public static partial class BgInfoConfigurationJson {
         };
         ApplyEnum<VisualThemeMode>(model.ThemeMode, value => chart.ThemeMode = value);
 
-        if (!string.IsNullOrWhiteSpace(model.Kind) &&
-            Enum.TryParse(model.Kind, true, out BgInfoChartKind kind)) {
+        if (!string.IsNullOrWhiteSpace(model.Kind)) {
+            if (!TryParseDefinedEnumName(model.Kind, out BgInfoChartKind kind)) {
+                throw new InvalidDataException("Unknown chart kind '" + model.Kind + "'.");
+            }
             chart.Kind = kind;
         }
-        if (!string.IsNullOrWhiteSpace(model.Anchor) &&
-            Enum.TryParse(model.Anchor, true, out BgInfoTextPosition anchor)) {
-            chart.Anchor = anchor;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Metric) &&
-            Enum.TryParse(model.Metric, true, out BgInfoChartMetric metric)) {
-            chart.Metric = metric;
-        }
+        ApplyEnum<BgInfoTextPosition>(model.Anchor, value => chart.Anchor = value);
+        ApplyEnum<BgInfoChartMetric>(model.Metric, value => chart.Metric = value);
 
-        if (model.Width.HasValue) chart.Width = model.Width.Value;
-        if (model.Height.HasValue) chart.Height = model.Height.Value;
+        if (model.Width.HasValue) chart.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) chart.Height = ImportRasterDimension(model.Height.Value);
         if (model.OffsetX.HasValue) chart.OffsetX = model.OffsetX.Value;
         if (model.OffsetY.HasValue) chart.OffsetY = model.OffsetY.Value;
 
@@ -719,10 +700,7 @@ public static partial class BgInfoConfigurationJson {
         }
         if (model.ShowLegend.HasValue) chart.ShowLegend = model.ShowLegend.Value;
         if (model.ShowPointLegend.HasValue) chart.ShowPointLegend = model.ShowPointLegend.Value;
-        if (!string.IsNullOrWhiteSpace(model.LegendPosition) &&
-            Enum.TryParse(model.LegendPosition, true, out BgInfoChartLegendPosition legendPosition)) {
-            chart.LegendPosition = legendPosition;
-        }
+        ApplyEnum<BgInfoChartLegendPosition>(model.LegendPosition, value => chart.LegendPosition = value);
         if (model.ShowDataLabels.HasValue) chart.ShowDataLabels = model.ShowDataLabels.Value;
         if (model.Minimum.HasValue) chart.Minimum = model.Minimum.Value;
         if (model.Maximum.HasValue) chart.Maximum = model.Maximum.Value;
@@ -735,12 +713,10 @@ public static partial class BgInfoConfigurationJson {
         if (model.ShowProgressValues.HasValue) chart.ShowProgressValues = model.ShowProgressValues.Value;
         if (model.ShowProgressHandles.HasValue) chart.ShowProgressHandles = model.ShowProgressHandles.Value;
         if (model.ProgressBarThicknessRatio.HasValue) chart.ProgressBarThicknessRatio = model.ProgressBarThicknessRatio.Value;
-        if (!string.IsNullOrWhiteSpace(model.PictorialSymbol) &&
-            Enum.TryParse(model.PictorialSymbol, true, out BgInfoChartPictorialSymbol pictorialSymbol)) {
-            chart.PictorialSymbol = pictorialSymbol;
-        }
+        ApplyEnum<BgInfoChartPictorialSymbol>(model.PictorialSymbol, value => chart.PictorialSymbol = value);
         if (model.PictorialColumns.HasValue) chart.PictorialColumns = model.PictorialColumns.Value;
         if (!string.IsNullOrWhiteSpace(model.MetricArgument)) chart.MetricArgument = model.MetricArgument;
+        MapPlacement(model, chart);
 
         return chart;
     }
@@ -756,14 +732,12 @@ public static partial class BgInfoConfigurationJson {
         };
 
         if (model.Width.HasValue) {
-            topology.Width = model.Width.Value;
+            topology.Width = ImportRasterDimension(model.Width.Value);
         }
         if (model.Height.HasValue) {
-            topology.Height = model.Height.Value;
+            topology.Height = ImportRasterDimension(model.Height.Value);
         }
-        if (!string.IsNullOrWhiteSpace(model.Anchor) && Enum.TryParse(model.Anchor, true, out BgInfoTextPosition anchor)) {
-            topology.Anchor = anchor;
-        }
+        ApplyEnum<BgInfoTextPosition>(model.Anchor, value => topology.Anchor = value);
         if (model.OffsetX.HasValue) {
             topology.OffsetX = model.OffsetX.Value;
         }
@@ -774,24 +748,14 @@ public static partial class BgInfoConfigurationJson {
             topology.PositionX = model.PositionX.Value;
             topology.PositionY = model.PositionY.Value;
         }
-        if (!string.IsNullOrWhiteSpace(model.Layout) && Enum.TryParse(model.Layout, true, out TopologyLayoutMode layout)) {
-            topology.Layout = layout;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Direction) && Enum.TryParse(model.Direction, true, out TopologyLayoutDirection direction)) {
-            topology.Direction = direction;
-        }
-        if (!string.IsNullOrWhiteSpace(model.NodeDisplayMode) && Enum.TryParse(model.NodeDisplayMode, true, out TopologyNodeDisplayMode nodeDisplayMode)) {
-            topology.NodeDisplayMode = nodeDisplayMode;
-        }
-        if (!string.IsNullOrWhiteSpace(model.VisualStyle) && Enum.TryParse(model.VisualStyle, true, out TopologyVisualStyle visualStyle)) {
-            topology.VisualStyle = visualStyle;
-        }
-        if (!string.IsNullOrWhiteSpace(model.CanvasSurfaceStyle) && Enum.TryParse(model.CanvasSurfaceStyle, true, out TopologyCanvasSurfaceStyle canvasStyle)) {
-            topology.CanvasSurfaceStyle = canvasStyle;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Theme)) {
-            topology.Theme = model.Theme!;
-        }
+        ApplyEnum<TopologyLayoutMode>(model.Layout, value => topology.Layout = value);
+        ApplyEnum<TopologyLayoutDirection>(model.Direction, value => topology.Direction = value);
+        ApplyEnum<TopologyNodeDisplayMode>(model.NodeDisplayMode, value => topology.NodeDisplayMode = value);
+        ApplyEnum<TopologyVisualStyle>(model.VisualStyle, value => topology.VisualStyle = value);
+        ApplyEnum<TopologyCanvasSurfaceStyle>(model.CanvasSurfaceStyle, value => topology.CanvasSurfaceStyle = value);
+        ApplyEnum<VisualThemeMode>(model.Theme, value => topology.Theme = value.ToString());
+        if (!string.IsNullOrWhiteSpace(model.Accent) && BgInfoColorParser.TryParse(model.Accent!, out var accent)) topology.Accent = accent;
+        if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) topology.FontFamilyName = model.FontFamilyName;
         if (model.Transparent.HasValue) {
             topology.Transparent = model.Transparent.Value;
         }
@@ -840,6 +804,8 @@ public static partial class BgInfoConfigurationJson {
                 topology.Edges.Add(MapEdge(item));
             }
         }
+        topology.Region = ParseRegion(model.Region);
+        topology.RegionOrder = model.RegionOrder ?? 0;
 
         return topology;
     }
@@ -851,9 +817,7 @@ public static partial class BgInfoConfigurationJson {
             Width = model.Width ?? 0,
             Height = model.Height ?? 0
         };
-        if (!string.IsNullOrWhiteSpace(model.Status) && Enum.TryParse(model.Status, true, out TopologyHealthStatus status)) {
-            group.Status = status;
-        }
+        ApplyEnum<TopologyHealthStatus>(model.Status, value => group.Status = value);
         if (!string.IsNullOrWhiteSpace(model.Subtitle)) {
             group.Subtitle = model.Subtitle;
         }
@@ -868,15 +832,9 @@ public static partial class BgInfoConfigurationJson {
 
     private static TopologyNode MapNode(BgInfoTopologyNodeFile model) {
         var node = new TopologyNode { Id = model.Id ?? string.Empty, Label = model.Label ?? string.Empty };
-        if (!string.IsNullOrWhiteSpace(model.Kind) && Enum.TryParse(model.Kind, true, out TopologyNodeKind kind)) {
-            node.Kind = kind;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Status) && Enum.TryParse(model.Status, true, out TopologyHealthStatus status)) {
-            node.Status = status;
-        }
-        if (!string.IsNullOrWhiteSpace(model.DisplayMode) && Enum.TryParse(model.DisplayMode, true, out TopologyNodeDisplayMode displayMode)) {
-            node.DisplayMode = displayMode;
-        }
+        ApplyEnum<TopologyNodeKind>(model.Kind, value => node.Kind = value);
+        ApplyEnum<TopologyHealthStatus>(model.Status, value => node.Status = value);
+        ApplyEnum<TopologyNodeDisplayMode>(model.DisplayMode, value => node.DisplayMode = value);
         if (!string.IsNullOrWhiteSpace(model.Subtitle)) {
             node.Subtitle = model.Subtitle;
         }
@@ -902,18 +860,10 @@ public static partial class BgInfoConfigurationJson {
             TargetNodeId = model.TargetNodeId ?? string.Empty,
             IsMuted = model.Muted ?? false
         };
-        if (!string.IsNullOrWhiteSpace(model.Kind) && Enum.TryParse(model.Kind, true, out TopologyEdgeKind kind)) {
-            edge.Kind = kind;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Status) && Enum.TryParse(model.Status, true, out TopologyHealthStatus status)) {
-            edge.Status = status;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Direction) && Enum.TryParse(model.Direction, true, out VisualLinkDirection direction)) {
-            edge.Direction = direction;
-        }
-        if (!string.IsNullOrWhiteSpace(model.Routing) && Enum.TryParse(model.Routing, true, out TopologyEdgeRouting routing)) {
-            edge.Routing = routing;
-        }
+        ApplyEnum<TopologyEdgeKind>(model.Kind, value => edge.Kind = value);
+        ApplyEnum<TopologyHealthStatus>(model.Status, value => edge.Status = value);
+        ApplyEnum<VisualLinkDirection>(model.Direction, value => edge.Direction = value);
+        ApplyEnum<TopologyEdgeRouting>(model.Routing, value => edge.Routing = value);
         if (!string.IsNullOrWhiteSpace(model.Label)) {
             edge.Label = model.Label;
         }
@@ -970,17 +920,12 @@ public static partial class BgInfoConfigurationJson {
             Subtitle = model.Subtitle ?? "Desktop background insights for Windows and PowerShell"
         };
         ApplyEnum<VisualThemeMode>(model.ThemeMode, value => visual.ThemeMode = value);
+        visual.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo, visual.ThemeMode);
 
-        if (!string.IsNullOrWhiteSpace(model.Template) &&
-            Enum.TryParse(model.Template, true, out BgInfoVisualCanvasTemplate template)) {
-            visual.Template = template;
-        }
-        if (!string.IsNullOrWhiteSpace(model.LayoutPreset) &&
-            Enum.TryParse(model.LayoutPreset, true, out BgInfoVisualCanvasLayoutPreset layoutPreset)) {
-            visual.LayoutPreset = layoutPreset;
-        }
-        if (model.Width.HasValue) visual.Width = model.Width.Value;
-        if (model.Height.HasValue) visual.Height = model.Height.Value;
+        ApplyEnum<BgInfoVisualCanvasTemplate>(model.Template, value => visual.Template = value);
+        ApplyEnum<BgInfoVisualCanvasLayoutPreset>(model.LayoutPreset, value => visual.LayoutPreset = value);
+        if (model.Width.HasValue) visual.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) visual.Height = ImportRasterDimension(model.Height.Value);
         if (model.PositionX.HasValue) visual.PositionX = model.PositionX.Value;
         if (model.PositionY.HasValue) visual.PositionY = model.PositionY.Value;
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
@@ -989,16 +934,10 @@ public static partial class BgInfoConfigurationJson {
         if (model.HeroContentVisible.HasValue) visual.HeroContentVisible = model.HeroContentVisible.Value;
         if (model.HeroBadgeText != null) visual.HeroBadgeText = model.HeroBadgeText;
         if (!string.IsNullOrWhiteSpace(model.HeroBadgeImagePath)) visual.HeroBadgeImagePath = ResolvePath(model.HeroBadgeImagePath, baseDirectory);
-        if (!string.IsNullOrWhiteSpace(model.HeroBadgeImageFit) &&
-            Enum.TryParse(model.HeroBadgeImageFit, true, out BgInfoImageFit heroBadgeImageFit)) {
-            visual.HeroBadgeImageFit = heroBadgeImageFit;
-        }
+        ApplyEnum<BgInfoImageFit>(model.HeroBadgeImageFit, value => visual.HeroBadgeImageFit = value);
         if (model.HeroBadgeImagePadding.HasValue) visual.HeroBadgeImagePadding = ValidateImagePadding(model.HeroBadgeImagePadding.Value, "Hero badge image padding");
         if (model.HeroBadgeImageOpacity.HasValue) visual.HeroBadgeImageOpacity = ValidateImageOpacity(model.HeroBadgeImageOpacity.Value);
-        if (!string.IsNullOrWhiteSpace(model.FeatureAnchor) &&
-            Enum.TryParse(model.FeatureAnchor, true, out BgInfoTextPosition featureAnchor)) {
-            visual.FeatureAnchor = featureAnchor;
-        }
+        ApplyEnum<BgInfoTextPosition>(model.FeatureAnchor, value => visual.FeatureAnchor = value);
         if (model.FeatureWidth.HasValue) visual.FeatureWidth = model.FeatureWidth.Value;
         if (model.FeatureHeight.HasValue) visual.FeatureHeight = model.FeatureHeight.Value;
         if (model.TileWidth.HasValue) visual.TileWidth = model.TileWidth.Value;
@@ -1013,10 +952,7 @@ public static partial class BgInfoConfigurationJson {
         if (model.RightTileOffsetY.HasValue) visual.RightTileOffsetY = model.RightTileOffsetY.Value;
         if (model.CenterTileOffsetX.HasValue) visual.CenterTileOffsetX = model.CenterTileOffsetX.Value;
         if (model.CenterTileOffsetY.HasValue) visual.CenterTileOffsetY = model.CenterTileOffsetY.Value;
-        if (!string.IsNullOrWhiteSpace(model.TileTextFitPolicy) &&
-            Enum.TryParse(model.TileTextFitPolicy, true, out BgInfoVisualCanvasTileTextFitPolicy tileTextFitPolicy)) {
-            visual.TileTextFitPolicy = tileTextFitPolicy;
-        }
+        ApplyEnum<BgInfoVisualCanvasTileTextFitPolicy>(model.TileTextFitPolicy, value => visual.TileTextFitPolicy = value);
         if (model.FeatureOffsetX.HasValue) visual.FeatureOffsetX = model.FeatureOffsetX.Value;
         if (model.FeatureOffsetY.HasValue) visual.FeatureOffsetY = model.FeatureOffsetY.Value;
         ApplyColor(model.BackgroundTop, value => visual.BackgroundTop = value);
@@ -1046,6 +982,11 @@ public static partial class BgInfoConfigurationJson {
                 if (item != null) visual.Features.Add(MapVisualCanvasFeature(item));
             }
         }
+        visual.Region = ParseRegion(model.Region);
+        visual.RegionOrder = model.RegionOrder ?? 0;
+        visual.RailMarginX = model.RailMarginX;
+        visual.RailMarginY = model.RailMarginY;
+        visual.FontFamilyName = model.FontFamilyName;
 
         return visual;
     }
@@ -1066,22 +1007,11 @@ public static partial class BgInfoConfigurationJson {
             }
             tile.Side = side;
         }
-        if (!string.IsNullOrWhiteSpace(model.SurfaceStyle) &&
-            Enum.TryParse(model.SurfaceStyle, true, out BgInfoVisualCanvasTileSurfaceStyle surfaceStyle)) {
-            tile.SurfaceStyle = surfaceStyle;
-        }
-        if (!string.IsNullOrWhiteSpace(model.IconKind) &&
-            Enum.TryParse(model.IconKind, true, out BgInfoVisualCanvasTileIconKind iconKind)) {
-            tile.IconKind = iconKind;
-        }
-        if (!string.IsNullOrWhiteSpace(model.MiniChartKind) &&
-            Enum.TryParse(model.MiniChartKind, true, out BgInfoVisualCanvasTileMiniChartKind miniChartKind)) {
-            tile.MiniChartKind = miniChartKind;
-        }
-        if (!string.IsNullOrWhiteSpace(model.TextFitPolicy) &&
-            Enum.TryParse(model.TextFitPolicy, true, out BgInfoVisualCanvasTileTextFitPolicy textFitPolicy)) {
-            tile.TextFitPolicy = textFitPolicy;
-        }
+        ApplyEnum<BgInfoVisualCanvasTileSurfaceStyle>(model.SurfaceStyle, value => tile.SurfaceStyle = value);
+        ApplyEnum<BgInfoStatus>(model.Status, value => tile.Status = value);
+        ApplyEnum<BgInfoVisualCanvasTileIconKind>(model.IconKind, value => tile.IconKind = value);
+        ApplyEnum<BgInfoVisualCanvasTileMiniChartKind>(model.MiniChartKind, value => tile.MiniChartKind = value);
+        ApplyEnum<BgInfoVisualCanvasTileTextFitPolicy>(model.TextFitPolicy, value => tile.TextFitPolicy = value);
         ApplyColor(model.Accent, value => tile.Accent = value);
         if (model.Progress.HasValue) tile.Progress = model.Progress.Value;
         if (model.MiniChartValues != null) tile.MiniChartValues = model.MiniChartValues;
@@ -1096,13 +1026,17 @@ public static partial class BgInfoConfigurationJson {
         }
 
         var candidate = value.Trim();
-        foreach (var name in Enum.GetNames(typeof(TEnum))) {
-            if (!string.Equals(candidate, name, StringComparison.OrdinalIgnoreCase)) continue;
-            return Enum.TryParse(candidate, true, out parsed);
+        var names = Enum.GetNames(typeof(TEnum));
+        var tokens = typeof(TEnum).IsDefined(typeof(FlagsAttribute), false)
+            ? candidate.Split(',')
+            : new[] { candidate };
+        foreach (var token in tokens) {
+            if (names.Any(name => string.Equals(token.Trim(), name, StringComparison.OrdinalIgnoreCase))) continue;
+            parsed = default;
+            return false;
         }
 
-        parsed = default;
-        return false;
+        return Enum.TryParse(candidate, true, out parsed);
     }
 
     private static BgInfoVisualCanvasFeature MapVisualCanvasFeature(BgInfoVisualCanvasFeatureFile model) => new() {
@@ -1119,6 +1053,7 @@ public static partial class BgInfoConfigurationJson {
         Width = tile.Width == 0 ? null : tile.Width,
         Height = tile.Height == 0 ? null : tile.Height,
         Accent = tile.Accent.HasValue ? BgInfoColorParser.ToHex(tile.Accent.Value) : null,
+        Status = tile.Status == BgInfoStatus.None ? null : tile.Status.ToString(),
         Progress = tile.Progress,
         SurfaceStyle = tile.SurfaceStyle.ToString(),
         IconKind = tile.IconKind.ToString(),
@@ -1141,21 +1076,15 @@ public static partial class BgInfoConfigurationJson {
         var image = new BgInfoImage {
             Path = ResolvePath(model.Path, baseDirectory)
         };
-        if (model.Width.HasValue) image.Width = model.Width.Value;
-        if (model.Height.HasValue) image.Height = model.Height.Value;
-        if (!string.IsNullOrWhiteSpace(model.Anchor) &&
-            Enum.TryParse(model.Anchor, true, out BgInfoTextPosition anchor)) {
-            image.Anchor = anchor;
-        }
+        if (model.Width.HasValue) image.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) image.Height = ImportRasterDimension(model.Height.Value);
+        ApplyEnum<BgInfoTextPosition>(model.Anchor, value => image.Anchor = value);
         if (model.OffsetX.HasValue) image.OffsetX = model.OffsetX.Value;
         if (model.OffsetY.HasValue) image.OffsetY = model.OffsetY.Value;
         if (model.PositionX.HasValue) image.PositionX = model.PositionX.Value;
         if (model.PositionY.HasValue) image.PositionY = model.PositionY.Value;
         if (model.Opacity.HasValue) image.Opacity = ValidateImageOpacity(model.Opacity.Value);
-        if (!string.IsNullOrWhiteSpace(model.Fit) &&
-            Enum.TryParse(model.Fit, true, out BgInfoImageFit fit)) {
-            image.Fit = fit;
-        }
+        ApplyEnum<BgInfoImageFit>(model.Fit, value => image.Fit = value);
         return image;
     }
 
@@ -1185,9 +1114,12 @@ public static partial class BgInfoConfigurationJson {
         }
     }
 
-    private static void ApplyEnum<TEnum>(string? text, Action<TEnum> setter) where TEnum : struct {
+    private static void ApplyEnum<TEnum>(string? text, Action<TEnum> setter) where TEnum : struct, Enum {
         if (string.IsNullOrWhiteSpace(text)) return;
-        if (Enum.TryParse(text, true, out TEnum parsed) && Enum.IsDefined(typeof(TEnum), parsed)) setter(parsed);
+        if (!TryParseDefinedEnumName(text, out TEnum parsed)) {
+            throw new InvalidDataException("Unknown " + typeof(TEnum).Name + " value '" + text + "'.");
+        }
+        setter(parsed);
     }
 
     private static string ResolvePath(string? path, string baseDirectory) {
@@ -1265,6 +1197,8 @@ public static partial class BgInfoConfigurationJson {
         public List<BgInfoVisualCanvasFile>? VisualCanvases { get; set; }
         public List<BgInfoImageFile>? Images { get; set; }
         public BgInfoBackgroundFile? Background { get; set; }
+        public BgInfoLayoutFile? Layout { get; set; }
+        public List<BgInfoWidgetFile>? Widgets { get; set; }
     }
 
     internal sealed class BgInfoVariableFile {
@@ -1304,6 +1238,9 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoChartFile {
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
+        public BgInfoThresholdFile? Threshold { get; set; }
         public double? CornerRadius { get; set; }
         public string? BorderColor { get; set; }
         public string? ThemeMode { get; set; }
@@ -1380,6 +1317,8 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoTopologyFile {
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
         public string? Title { get; set; }
         public string? Subtitle { get; set; }
         public int? Width { get; set; }
@@ -1395,6 +1334,8 @@ public static partial class BgInfoConfigurationJson {
         public string? VisualStyle { get; set; }
         public string? CanvasSurfaceStyle { get; set; }
         public string? Theme { get; set; }
+        public string? Accent { get; set; }
+        public string? FontFamilyName { get; set; }
         public bool? Transparent { get; set; }
         public bool? ShowTitle { get; set; }
         public bool? ShowLegend { get; set; }
@@ -1454,6 +1395,15 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasFile {
+        public string? StatusOk { get; set; }
+        public string? StatusWarning { get; set; }
+        public string? StatusCritical { get; set; }
+        public string? StatusInfo { get; set; }
+        public string? FontFamilyName { get; set; }
+        public string? Region { get; set; }
+        public int? RegionOrder { get; set; }
+        public int? RailMarginX { get; set; }
+        public int? RailMarginY { get; set; }
         public string? ThemeMode { get; set; }
         public string? Template { get; set; }
         public string? LayoutPreset { get; set; }
@@ -1511,6 +1461,7 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasTileFile {
+        public string? Status { get; set; }
         public string? Side { get; set; }
         public string? Icon { get; set; }
         public string? Label { get; set; }

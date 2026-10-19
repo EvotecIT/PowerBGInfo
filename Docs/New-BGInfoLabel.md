@@ -11,7 +11,7 @@ Creates a BGInfo label entry.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [<CommonParameters>]
+New-BGInfoLabel -Name <string> [-ForEach <string>] [-Color <Object>] [-FontSize <float>] [-FontFamilyName <string>] [-Bold] [-FontWeight <int>] [-Italic] [-Underline] [-UnderlineStyle <TextDecorationStyle>] [-StrikethroughStyle <TextDecorationStyle>] [-Baseline <TextBaseline>] [-TextCase <TextCaseTransform>] [-Status <BgInfoStatus>] [-Accent] [-Muted] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,6 +26,22 @@ New-BGInfoLabel -Name 'Name'
 
 
 ## PARAMETERS
+
+### -Accent
+Colors the label with the theme accent. -Color wins.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Baseline
 Subscript or superscript placement for the label.
@@ -155,6 +171,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Muted
+Colors the label with the theme's secondary ink, for supporting lines. -Color wins.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Name
 Label text to render.
 
@@ -165,6 +197,22 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Status
+Colors the label with the status color (Ok, Warning, Critical or Info) of the New-BGInfo theme. -Color wins.
+
+```yaml
+Type: BgInfoStatus
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Ok, Warning, Critical, Info
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False

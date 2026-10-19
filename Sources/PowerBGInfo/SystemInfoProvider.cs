@@ -9,14 +9,15 @@ namespace PowerBGInfo;
 /// <summary>
 /// Provides built-in system values for BGInfo rendering.
 /// </summary>
-public static class SystemInfoProvider
+public static partial class SystemInfoProvider
 {
-    private static readonly Lazy<CpuInfo> CpuInfoCache = new(LoadCpuInfo, true);
-    private static readonly Lazy<MemoryInfo> MemoryInfoCache = new(LoadMemoryInfo, true);
-    private static readonly Lazy<BiosInfo> BiosInfoCache = new(LoadBiosInfo, true);
-    private static readonly Lazy<OsInfo> OsInfoCache = new(LoadOsInfo, true);
-    private static readonly Lazy<NetworkInfo> NetworkInfoCache = new(LoadNetworkInfo, true);
-    private static readonly Lazy<string> FqdnCache = new(LoadFqdn, true);
+    private static readonly FactCache<CpuInfo> CpuInfoCache = new(LoadCpuInfo, value => value.WasRead);
+    private static readonly FactCache<MemoryInfo> MemoryInfoCache = new(LoadMemoryInfo, value => value.WasRead);
+    private static readonly FactCache<BiosInfo> BiosInfoCache = new(LoadBiosInfo, value => value.WasRead);
+    private static readonly FactCache<OsInfo> OsInfoCache = new(LoadOsInfo, value => value.WasRead);
+    private static readonly FactCache<NetworkInfo> NetworkInfoCache = new(LoadNetworkInfo, value => value.IPv4.Length > 0 || value.IPv6.Length > 0);
+    private static readonly FactCache<string> FqdnCache = new(LoadFqdn, value => !string.IsNullOrWhiteSpace(value));
+    private static readonly FactCache<string> MachineDomainCache = new(LoadMachineDomain, value => value != Unknown);
 
     private static readonly Dictionary<string, Func<string>> Handlers = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -42,7 +43,14 @@ public static class SystemInfoProvider
         ["UserDNSDomain"] = () => Environment.GetEnvironmentVariable("USERDNSDOMAIN") ?? Environment.UserDomainName,
         ["FQDN"] = () => FqdnCache.Value,
         ["IPv4Address"] = () => NetworkInfoCache.Value.IPv4,
-        ["IPv6Address"] = () => NetworkInfoCache.Value.IPv6
+        ["IPv6Address"] = () => NetworkInfoCache.Value.IPv6,
+        ["Uptime"] = () => FormatUptime(GetUptime()),
+        ["LastPatch"] = () => FormatPatch(GetLastPatch()),
+        ["DefenderStatus"] = () => GetDefender().Status,
+        ["BitLockerStatus"] = GetBitLockerStatus,
+        ["LoggedOnUser"] = GetLoggedOnUser,
+        ["Domain"] = () => MachineDomainCache.Value,
+        ["DiskSummary"] = () => FormatDiskSummary(GetDisks())
     };
 
     /// <summary>
@@ -123,8 +131,7 @@ public static class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Name, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, NumberOfEnabledCore FROM Win32_Processor");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Name, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, NumberOfEnabledCore FROM Win32_Processor"))
             {
                 var name = obj["Name"]?.ToString();
                 var trimmedName = name?.Trim();
@@ -150,6 +157,7 @@ public static class SystemInfoProvider
                 {
                     info.MaxClockSpeed = Math.Max(info.MaxClockSpeed ?? 0, maxClock.Value);
                 }
+                info.WasRead = true;
             }
         }
         catch
@@ -170,8 +178,7 @@ public static class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed, PartNumber FROM Win32_PhysicalMemory");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Capacity, Speed, PartNumber FROM Win32_PhysicalMemory"))
             {
                 var capacity = GetUInt64(obj["Capacity"]);
                 if (capacity.HasValue)
@@ -191,6 +198,7 @@ public static class SystemInfoProvider
                 {
                     info.PartNumbers.Add(trimmedPart!);
                 }
+                info.WasRead = true;
             }
         }
         catch
@@ -214,12 +222,12 @@ public static class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Manufacturer, SMBIOSBIOSVersion, Version, ReleaseDate FROM Win32_BIOS");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Manufacturer, SMBIOSBIOSVersion, Version, ReleaseDate FROM Win32_BIOS"))
             {
                 info.Manufacturer = obj["Manufacturer"]?.ToString() ?? string.Empty;
                 info.Version = obj["SMBIOSBIOSVersion"]?.ToString() ?? obj["Version"]?.ToString() ?? string.Empty;
                 info.ReleaseDate = GetDateTime(obj["ReleaseDate"]);
+                info.WasRead = true;
                 break;
             }
         }
@@ -233,18 +241,21 @@ public static class SystemInfoProvider
 
     private static OsInfo LoadOsInfo()
     {
-        var info = new OsInfo();
+        var info = new OsInfo {
+            Architecture = RuntimeInformation.OSArchitecture.ToString(),
+            Version = RuntimeInformation.OSDescription
+        };
         if (!IsWindows())
         {
             info.Architecture = RuntimeInformation.OSArchitecture.ToString();
             info.Version = RuntimeInformation.OSDescription;
+            info.WasRead = true;
             return info;
         }
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Caption, Version, OSArchitecture, BuildNumber, InstallDate, LastBootUpTime FROM Win32_OperatingSystem");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Caption, Version, OSArchitecture, BuildNumber, InstallDate, LastBootUpTime FROM Win32_OperatingSystem"))
             {
                 info.Name = obj["Caption"]?.ToString() ?? string.Empty;
                 info.Version = obj["Version"]?.ToString() ?? RuntimeInformation.OSDescription;
@@ -252,6 +263,7 @@ public static class SystemInfoProvider
                 info.Build = obj["BuildNumber"]?.ToString() ?? string.Empty;
                 info.InstallDate = GetDateTime(obj["InstallDate"]);
                 info.LastBootUpTime = GetDateTime(obj["LastBootUpTime"]);
+                info.WasRead = true;
                 break;
             }
         }
@@ -323,8 +335,7 @@ public static class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Name, Domain FROM Win32_ComputerSystem");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Name, Domain FROM Win32_ComputerSystem"))
             {
                 var name = obj["Name"]?.ToString();
                 var domain = obj["Domain"]?.ToString();
@@ -406,8 +417,7 @@ public static class SystemInfoProvider
         }
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT PercentProcessorTime, Name FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT PercentProcessorTime, Name FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'")) {
                 if (TryGetDouble(obj["PercentProcessorTime"], out value)) {
                     value = ClampPercent(value);
                     return true;
@@ -427,8 +437,7 @@ public static class SystemInfoProvider
         }
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem")) {
                 var total = GetUInt64(obj["TotalVisibleMemorySize"]);
                 var free = GetUInt64(obj["FreePhysicalMemory"]);
                 if (total.HasValue && total.Value > 0 && free.HasValue) {
@@ -479,8 +488,7 @@ public static class SystemInfoProvider
         ulong? fallbackFree = null;
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT DeviceID, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT DeviceID, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3")) {
                 var device = obj["DeviceID"]?.ToString();
                 var sizeValue = GetUInt64(obj["Size"]);
                 var freeValue = GetUInt64(obj["FreeSpace"]);
@@ -523,9 +531,11 @@ public static class SystemInfoProvider
         return true;
     }
 
-    private static TimeSpan? GetUptime() {
+    private static TimeSpan? GetUptime() => GetUptime(IsWindows() ? OsInfoCache.Value : null);
+
+    private static TimeSpan? GetUptime(OsInfo? osInfo) {
         if (IsWindows()) {
-            var lastBoot = OsInfoCache.Value.LastBootUpTime;
+            var lastBoot = osInfo?.LastBootUpTime;
             if (lastBoot.HasValue) {
                 var lastBootUtc = lastBoot.Value.Kind == DateTimeKind.Unspecified
                     ? DateTime.SpecifyKind(lastBoot.Value, DateTimeKind.Local).ToUniversalTime()
@@ -536,7 +546,7 @@ public static class SystemInfoProvider
 
         try {
 #if NET472
-            var ms = unchecked((uint)Environment.TickCount);
+            var ms = IsWindows() ? (double)GetTickCount64() : -1;
 #else
             var ms = Environment.TickCount64;
 #endif
@@ -597,6 +607,7 @@ public static class SystemInfoProvider
 
     private sealed class CpuInfo
     {
+        public bool WasRead { get; set; }
         public string Name { get; set; } = string.Empty;
         public int? MaxClockSpeed { get; set; }
         public int? Cores { get; set; }
@@ -605,6 +616,7 @@ public static class SystemInfoProvider
 
     private sealed class MemoryInfo
     {
+        public bool WasRead { get; set; }
         public List<ulong> Sizes { get; } = new();
         public List<int> Speeds { get; } = new();
         public List<string> PartNumbers { get; } = new();
@@ -615,6 +627,7 @@ public static class SystemInfoProvider
 
     private sealed class BiosInfo
     {
+        public bool WasRead { get; set; }
         public string Version { get; set; } = string.Empty;
         public string Manufacturer { get; set; } = string.Empty;
         public DateTime? ReleaseDate { get; set; }
@@ -622,6 +635,7 @@ public static class SystemInfoProvider
 
     private sealed class OsInfo
     {
+        public bool WasRead { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
         public string Architecture { get; set; } = string.Empty;

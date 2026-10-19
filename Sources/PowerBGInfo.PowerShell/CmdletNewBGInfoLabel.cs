@@ -60,14 +60,40 @@ public class CmdletNewBGInfoLabel : PSCmdlet {
     [Parameter]
     public TextCaseTransform TextCase { get; set; }
 
+    /// <para>Colors the label with the status color (Ok, Warning, Critical or Info) of the New-BGInfo theme. -Color wins.</para>
+    [Parameter]
+    public BgInfoStatus Status { get; set; }
+
+    /// <para>Colors the label with the theme accent. -Color wins.</para>
+    [Parameter]
+    public SwitchParameter Accent { get; set; }
+
+    /// <para>Colors the label with the theme's secondary ink, for supporting lines. -Color wins.</para>
+    [Parameter]
+    public SwitchParameter Muted { get; set; }
+
     /// <summary>Emits a BGInfo label entry.</summary>
     protected override void EndProcessing() {
+        var theme = BgInfoThemeScope.Current;
+        ChartForgeX.Primitives.ChartColor? roleColor = null;
+        if (Status != BgInfoStatus.None) {
+            roleColor = (theme?.StatusColors ?? BgInfoStatusColors.Default(theme?.Mode ?? ChartForgeX.Themes.VisualThemeMode.Dark)).Resolve(Status);
+        } else if (Accent.IsPresent && theme != null) {
+            roleColor = theme.Accent;
+        } else if (Muted.IsPresent && theme != null) {
+            roleColor = theme.Muted;
+        } else if (Accent.IsPresent || Muted.IsPresent) {
+            WriteWarning("-Accent and -Muted use the New-BGInfo -Theme colors; no theme is active.");
+        } else if (theme != null && !BgInfoThemeScope.GlobalColorExplicitlyBound) {
+            // Under a theme, standalone labels are headings and use the primary ink; value names stay muted.
+            roleColor = theme.Ink;
+        }
         var entry = new BgInfoEntry
         {
             Type = BgInfoEntryType.Label,
             Name = Name,
             ForEach = string.IsNullOrWhiteSpace(ForEach) ? null : ForEach,
-            Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,
+            Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : roleColor,
             FontSize = IsParameterBound(nameof(FontSize)) ? FontSize : null,
             FontFamilyName = IsParameterBound(nameof(FontFamilyName)) ? FontFamilyName : null,
             Bold = IsParameterBound(nameof(Bold)) ? Bold.IsPresent : null,

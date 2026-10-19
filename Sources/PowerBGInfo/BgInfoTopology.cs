@@ -7,6 +7,13 @@ namespace PowerBGInfo;
 
 /// <summary>Defines a topology diagram block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoTopology {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoTopology WithRegionOrder(int order) {
+        var copy = (BgInfoTopology)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     /// <summary>Topology title.</summary>
     public string Title { get; set; } = string.Empty;
     /// <summary>Optional topology subtitle.</summary>
@@ -17,6 +24,10 @@ public sealed class BgInfoTopology {
     public int Height { get; set; } = 300;
     /// <summary>Anchor position used for placement.</summary>
     public BgInfoTextPosition Anchor { get; set; } = BgInfoTextPosition.BottomRight;
+    /// <summary>Region the diagram flows into. <see cref="BgInfoRegion.None"/> keeps anchor placement.</summary>
+    public BgInfoRegion Region { get; set; }
+    /// <summary>Position in the region's flow. New-BGInfo numbers items in the order they are emitted; equal values keep chart, diagram, canvas, widget order.</summary>
+    public int RegionOrder { get; set; }
     /// <summary>Horizontal offset from the anchor.</summary>
     public int OffsetX { get; set; } = 32;
     /// <summary>Vertical offset from the anchor.</summary>
@@ -37,6 +48,10 @@ public sealed class BgInfoTopology {
     public TopologyCanvasSurfaceStyle CanvasSurfaceStyle { get; set; } = TopologyCanvasSurfaceStyle.Plain;
     /// <summary>Theme name.</summary>
     public string Theme { get; set; } = "Dark";
+    /// <summary>Optional accent applied to topology nodes and edges.</summary>
+    public Color? Accent { get; set; }
+    /// <summary>Optional font family for topology labels.</summary>
+    public string? FontFamilyName { get; set; }
     /// <summary>Whether to render a transparent canvas.</summary>
     public bool Transparent { get; set; } = true;
     /// <summary>Whether to show the topology title.</summary>

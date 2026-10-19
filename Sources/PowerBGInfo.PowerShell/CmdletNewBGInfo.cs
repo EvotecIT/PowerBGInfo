@@ -228,6 +228,16 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter]
     public SwitchParameter PassThru { get; set; }
 
+    /// <para>Wallpaper theme: a preset name (Graphite, Midnight, Aurora, Ember, Orchid, Corporate) or a theme from New-BGInfoTheme. Cmdlets in the script block use it for every parameter you do not set.</para>
+    [Parameter]
+    [BgInfoThemeTransformation]
+    [ArgumentCompleter(typeof(BgInfoThemeCompleter))]
+    public BgInfoTheme? Theme { get; set; }
+
+    /// <para>Light or dark variant when -Theme is a preset name.</para>
+    [Parameter]
+    public ChartForgeX.Themes.VisualThemeMode ThemeMode { get; set; } = ChartForgeX.Themes.VisualThemeMode.Dark;
+
     /// <summary>Processes the BGInfo script block and generates the image.</summary>
     protected override void ProcessRecord() {
         if (PassThru.IsPresent && ExportOnly.IsPresent) {
@@ -246,6 +256,11 @@ public class CmdletNewBGInfo : PSCmdlet {
                 ErrorCategory.InvalidArgument,
                 JsonPath));
             return;
+        }
+
+        var theme = ResolveTheme();
+        if (theme == null && IsBound(nameof(ThemeMode))) {
+            WriteWarning("-ThemeMode only applies together with -Theme.");
         }
 
         var config = new BgInfoConfiguration
@@ -298,10 +313,32 @@ public class CmdletNewBGInfo : PSCmdlet {
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
         if (MyInvocation.BoundParameters.ContainsKey(nameof(FontFamilyName))) config.FontFamilyName = FontFamilyName;
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
+        if (theme != null) ApplyTheme(config, theme);
 
-        var results = BGInfoContent.Invoke();
+        System.Collections.ObjectModel.Collection<PSObject> results;
+        using (BgInfoThemeScope.Enter(theme, IsBound(nameof(Color)))) {
+            results = BGInfoContent.Invoke();
+        }
+
+        var regionOrder = 0;
         foreach (var item in results)
         {
+            if (item?.BaseObject is BgInfoWidget widget)
+            {
+                config.Widgets.Add(widget.WithRegionOrder(regionOrder++));
+                continue;
+            }
+
+            if (item?.BaseObject is BgInfoLayout layout)
+            {
+                if (config.Layout != null && !ReferenceEquals(config.Layout, themeLayout))
+                {
+                    WriteWarning("More than one New-BGInfoLayout was emitted; the last one is used.");
+                }
+                config.Layout = layout;
+                continue;
+            }
+
             if (item?.BaseObject is BgInfoEntry entry)
             {
                 config.Entries.Add(entry);
@@ -316,19 +353,19 @@ public class CmdletNewBGInfo : PSCmdlet {
 
             if (item?.BaseObject is BgInfoChart chart)
             {
-                config.Charts.Add(chart);
+                config.Charts.Add(chart.WithRegionOrder(regionOrder++));
                 continue;
             }
 
             if (item?.BaseObject is BgInfoTopology topology)
             {
-                config.Topologies.Add(topology);
+                config.Topologies.Add(topology.WithRegionOrder(regionOrder++));
                 continue;
             }
 
             if (item?.BaseObject is BgInfoVisualCanvas visualCanvas)
             {
-                config.VisualCanvases.Add(visualCanvas);
+                config.VisualCanvases.Add(visualCanvas.WithRegionOrder(regionOrder++));
                 continue;
             }
 
@@ -375,6 +412,46 @@ public class CmdletNewBGInfo : PSCmdlet {
 
         var path = BgInfoRunner.Run(config);
         WriteObject(path);
+    }
+
+    private BgInfoLayout? themeLayout;
+
+    private bool IsBound(string name) => MyInvocation.BoundParameters.ContainsKey(name);
+
+    private BgInfoTheme? ResolveTheme()
+    {
+        if (Theme == null || !IsBound(nameof(ThemeMode)) || Theme.Mode == ThemeMode)
+        {
+            return Theme;
+        }
+
+        if (!Theme.IsPlainPreset)
+        {
+            ThrowTerminatingError(new ErrorRecord(
+                new ArgumentException("-ThemeMode only switches preset names. Create the theme with New-BGInfoTheme -Mode instead.", nameof(ThemeMode)),
+                "BGInfoThemeModeConflict", ErrorCategory.InvalidArgument, ThemeMode));
+        }
+
+        var theme = BgInfoTheme.Create(Theme.Preset, ThemeMode);
+        theme.IsPlainPreset = true;
+        return theme;
+    }
+
+    /// <summary>Theme values for the text block, used only where the caller did not bind a parameter.</summary>
+    private void ApplyTheme(BgInfoConfiguration config, BgInfoTheme theme)
+    {
+        if (!IsBound(nameof(Color))) config.Color = theme.Muted;
+        if (!IsBound(nameof(ValueColor))) config.ValueColor = theme.Ink;
+        if (!IsBound(nameof(FontFamilyName))) config.FontFamilyName = theme.FontFamilyName;
+        if (!IsBound(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = theme.FontFamilyName;
+        if (!IsBound(nameof(FontSize))) config.FontSize = theme.FontSize;
+        if (!IsBound(nameof(ValueFontSize))) config.ValueFontSize = theme.FontSize;
+        if (!IsBound(nameof(SpaceBetweenLines))) config.SpaceBetweenLines = theme.LineSpacing;
+        if (!IsBound(nameof(SpaceBetweenColumns))) config.SpaceBetweenColumns = theme.ColumnSpacing;
+        if (!IsBound(nameof(SpaceX))) config.SpaceX = theme.MarginX;
+        if (!IsBound(nameof(SpaceY))) config.SpaceY = theme.MarginY;
+        themeLayout = theme.CreateLayout();
+        config.Layout = themeLayout;
     }
 
     private static bool TryConvertLegacyEntry(PSObject item, out BgInfoEntry entry)

@@ -127,6 +127,10 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
     [Parameter]
     public TextCaseTransform TitleTextCase { get; set; }
 
+    /// <para>Region to flow into: Left, Right, Top, Bottom or Center. Without -Width or -Height the diagram shares the region.</para>
+    [Parameter]
+    public BgInfoRegion Region { get; set; }
+
     /// <summary>Emits a BGInfo topology overlay definition.</summary>
     protected override void EndProcessing() {
         var topology = new BgInfoTopology {
@@ -187,6 +191,31 @@ public sealed class CmdletNewBGInfoTopology : PSCmdlet {
             }
         }
 
+        topology.Region = Region;
+        if (Region != BgInfoRegion.None) {
+            if (!IsBound(nameof(Width))) topology.Width = 0;
+            if (!IsBound(nameof(Height))) topology.Height = 0;
+        }
+        ApplyTheme(topology);
         WriteObject(topology);
+    }
+
+    private bool IsBound(string name) => MyInvocation.BoundParameters.ContainsKey(name);
+
+    /// <summary>Fills unbound panel settings from the New-BGInfo theme.</summary>
+    private void ApplyTheme(BgInfoTopology topology) {
+        var theme = BgInfoThemeScope.Current;
+        if (theme == null) return;
+        if (!IsBound(nameof(Theme))) topology.Theme = theme.Mode.ToString();
+        topology.Accent = theme.Accent;
+        topology.FontFamilyName = theme.FontFamilyName;
+        if (!IsBound(nameof(BackgroundColor))) topology.BackgroundColor = theme.Surface;
+        if (!IsBound(nameof(BorderColor))) topology.BorderColor = theme.SurfaceBorder;
+        if (!IsBound(nameof(CornerRadius))) topology.CornerRadius = theme.CornerRadius;
+        if (!IsBound(nameof(Padding))) topology.Padding = theme.Padding;
+        if (!IsBound(nameof(TitleColor))) topology.TitleColor = theme.Muted;
+        if (!IsBound(nameof(TitleFontSize))) topology.TitleFontSize = theme.TitleFontSize;
+        if (!IsBound(nameof(TitleFontWeight))) topology.TitleFontWeight = theme.TitleFontWeight;
+        if (!IsBound(nameof(TitleTextCase))) topology.TitleTextCase = theme.TitleTextCase;
     }
 }

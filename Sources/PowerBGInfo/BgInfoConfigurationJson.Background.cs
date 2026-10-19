@@ -4,12 +4,15 @@ using System.Collections.Generic;
 namespace PowerBGInfo;
 
 public static partial class BgInfoConfigurationJson {
+    // Match the public background/widget pixel limits before allocating imported surfaces.
+    private static int ImportRasterDimension(int value) => Math.Max(0, Math.Min(16384, value));
+
     private static BgInfoBackground? MapBackground(BgInfoBackgroundFile? model, string baseDirectory) {
         if (model == null) return null;
 
         var background = new BgInfoBackground();
-        if (model.Width.HasValue) background.Width = Math.Max(0, Math.Min(16384, model.Width.Value));
-        if (model.Height.HasValue) background.Height = Math.Max(0, Math.Min(16384, model.Height.Value));
+        if (model.Width.HasValue) background.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) background.Height = ImportRasterDimension(model.Height.Value);
         ApplyColor(model.Color, value => background.Color = value);
         if (!string.IsNullOrWhiteSpace(model.ImagePath)) background.ImagePath = ResolvePath(model.ImagePath, baseDirectory);
         ApplyEnum<BgInfoImageFit>(model.ImageFit, value => background.ImageFit = value);
