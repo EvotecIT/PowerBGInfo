@@ -2,7 +2,7 @@
 Module Name: PowerBGInfo
 Module Guid: 91b9c52d-6a39-4a65-a276-409b9390ee04
 Download Help Link: https://github.com/EvotecIT/PowerBGInfo
-Help Version: 2.0.3
+Help Version: 2.0.4
 Locale: en-US
 ---
 # PowerBGInfo Module
@@ -12,6 +12,9 @@ PowerBGInfo is a module that allows you to create background images with informa
 ## PowerBGInfo Cmdlets
 ### [Export-BGInfoConfiguration](Export-BGInfoConfiguration.md)
 Exports a BGInfo configuration to JSON.
+
+### [Get-BGInfoMonitor](Get-BGInfoMonitor.md)
+Lists the monitors PowerBGInfo renders for.
 
 ### [Get-BGInfoSystemInfo](Get-BGInfoSystemInfo.md)
 Returns read-only facts about this machine as one plain object.
