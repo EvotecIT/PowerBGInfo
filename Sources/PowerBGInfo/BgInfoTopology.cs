@@ -76,7 +76,11 @@ public sealed class BgInfoTopology {
     /// <summary>Panel header font size. Unset uses the global label font size.</summary>
     public float? TitleFontSize { get; set; }
     /// <summary>Panel header font weight from 100 through 900. Unset uses 600.</summary>
-    public int? TitleFontWeight { get; set; }
+    public int? TitleFontWeight {
+        get => _titleFontWeight;
+        set => _titleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(value, nameof(value));
+    }
+    private int? _titleFontWeight;
     /// <summary>Panel header casing.</summary>
     public TextCaseTransform? TitleTextCase { get; set; }
     /// <summary>Whether the overlay is drawn inside a panel.</summary>

@@ -27,7 +27,7 @@ public sealed class BgInfoBackground {
     public Color? GradientStart { get; set; }
     /// <summary>Gradient end color. The gradient is drawn only when both ends are set.</summary>
     public Color? GradientEnd { get; set; }
-    /// <summary>Gradient direction in degrees, measured like a CSS gradient line from the start color.</summary>
+    /// <summary>Gradient direction in degrees clockwise from the rightward horizontal axis. Zero paints left to right; 90 paints top to bottom.</summary>
     public double GradientAngle { get; set; } = 135d;
     /// <summary>Soft radial lights painted over the gradient.</summary>
     public List<BgInfoBackgroundGlow> Glows { get; } = new();
