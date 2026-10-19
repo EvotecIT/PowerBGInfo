@@ -640,25 +640,19 @@ public partial class BgInfoGenerator
             return (1920, 1080);
         }
 
-        DesktopManager.Monitor? monitor;
-        try
-        {
-            monitor = monitors.GetMonitors(index: monitorIndex).FirstOrDefault()
-                ?? monitors.GetMonitors(primaryOnly: true).FirstOrDefault()
-                ?? monitors.GetMonitors().FirstOrDefault();
-        }
-        catch
-        {
-            return (1920, 1080);
-        }
+        return ResolveMonitorSize(BgInfoMonitorProvider.GetMonitors(monitors), monitorIndex);
+    }
 
+    internal static (int Width, int Height) ResolveMonitorSize(IReadOnlyList<BgInfoMonitor> monitors, int monitorIndex)
+    {
+        BgInfoMonitor? monitor = monitors.FirstOrDefault(item => item.Index == monitorIndex)
+            ?? monitors.FirstOrDefault(item => item.Primary)
+            ?? monitors.FirstOrDefault();
         if (monitor == null)
         {
             return (1920, 1080);
         }
-        int width = Math.Max(1, monitor.PositionRight - monitor.PositionLeft);
-        int height = Math.Max(1, monitor.PositionBottom - monitor.PositionTop);
-        return (width, height);
+        return (monitor.Width, monitor.Height);
     }
 
     private static ChartColor ResolveBackgroundColor(BgInfoConfiguration config, Monitors? monitors)

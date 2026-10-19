@@ -14,7 +14,8 @@ are signed, constrained or audited.
 | `-Target Wallpaper` for yourself | No | Runs in the user's session |
 | `-Target File` | No | Only write access to `-ConfigurationDirectory` |
 | `-AllUsers` | Yes | Writes every profile's registry hive and the default profile |
-| `-Target LogonScreen`, `-Target Both` | Yes | DesktopManager checks elevation and stops otherwise |
+| `-Target LogonScreen`, `-Target Both`: per-user attempt | No | Both PowerShell hosts attempt the running account's WinRT lock screen API |
+| Lock screen `PersonalizationPolicy` fallback | Yes | Attempted only after WinRT fails; device-wide policy with edition limits |
 | `Get-BGInfoSystemInfo`, `Get-BGInfoMonitor` | No | BitLocker state usually reads `Unknown` without elevation |
 | `Install-Module -Scope AllUsers`, copying to `Program Files` | Yes | Once per machine |
 | Registering a task for the `Users` group or SYSTEM | Yes | Once per machine |
@@ -22,6 +23,15 @@ are signed, constrained or audited.
 Run the per-user wallpaper task as a limited user (`-RunLevel Limited`).
 Keep elevation for the installer and for SYSTEM tasks that write
 machine-wide files.
+
+Lock screen targets first use the running account's profile in both Windows
+PowerShell 5.1 and PowerShell 7. Elevating as another administrator still
+targets that administrator's per-user lock screen. SYSTEM does not select a
+signed-in user's lock screen. If WinRT fails, PowerBGInfo allows DesktopManager
+to try the machine-policy fallback; a denied write is reported as a failure.
+The policy applies only to Enterprise, Education and Server, including
+relevant IoT Enterprise editions. A successful registry write does not prove
+that Windows displays the image. See [Lock screen](../deployment/#lock-screen).
 
 ## Where things live
 
@@ -179,17 +189,22 @@ and on the lock screen to anyone at the device before sign-in.
 | PowerShell | Script block logging (Group Policy: **Turn on PowerShell Script Block Logging**) writes to `Microsoft-Windows-PowerShell/Operational` |
 | DesktopManager | `%APPDATA%\DesktopManager\wallpaper-history.json` lists applied paths. Its internal warnings go to .NET tracing, not to a file. |
 
-PowerBGInfo reports problems it can work around as warnings, which appear
-in the transcript:
+PowerBGInfo warnings appear in the transcript:
 
 - `<Name> did not finish within <n> s; using the default value.` from
   `Invoke-BGInfoDataSource` when it falls back.
 - `... is an image PowerBGInfo wrote earlier, and the image it was drawn on
   is not recorded.` when a base image was skipped to avoid drawing the
   text twice.
-- `The Windows lock screen API is not available in this PowerShell host,
-  ...` when `-Target LogonScreen` used the policy value on an edition that
-  ignores it.
+- An edition warning when the completed lock screen result reports
+  `PersonalizationPolicy` and the edition is unsupported or cannot be read.
+  The warning concerns the machine policy, not per-user WinRT support or
+  the PowerShell host.
+
+PowerBGInfo also exposes a failed lock screen result to the caller. Check the
+reported error and the running account; changing PowerShell hosts is not a way to select
+the mechanism. An edition warning after a policy write is not confirmation
+that the image appeared.
 
 ## Further reading
 

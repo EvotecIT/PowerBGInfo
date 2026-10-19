@@ -36,4 +36,26 @@ public class BgInfoMonitorTests
         Assert.Equal(monitors.Length, monitors.Select(monitor => monitor.Index).Distinct().Count());
         Assert.All(monitors, monitor => Assert.True(monitor.Width > 0 && monitor.Height > 0));
     }
+
+    [Theory]
+    [InlineData(8, 2560, 1440)]
+    [InlineData(3, 3840, 2160)]
+    [InlineData(99, 3840, 2160)]
+    public void RendererUsesRequestedSnapshotIndexThenPrimary(int index, int width, int height)
+    {
+        var monitors = new[] {
+            BgInfoMonitorProvider.Create(8, "secondary", false, -2560, 0, 0, 1440, 1.5),
+            BgInfoMonitorProvider.Create(3, "primary", true, 0, 0, 3840, 2160, 2)
+        };
+
+        Assert.Equal((width, height), BgInfoGenerator.ResolveMonitorSize(monitors, index));
+    }
+
+    [Fact]
+    public void RendererUsesFirstSnapshotWithoutPrimaryAndFallsBackWithoutGeometry()
+    {
+        var monitor = BgInfoMonitorProvider.Create(8, "", false, -2560, 0, 0, 1440, null);
+        Assert.Equal((2560, 1440), BgInfoGenerator.ResolveMonitorSize(new[] { monitor }, 99));
+        Assert.Equal((1920, 1080), BgInfoGenerator.ResolveMonitorSize(Array.Empty<BgInfoMonitor>(), 0));
+    }
 }

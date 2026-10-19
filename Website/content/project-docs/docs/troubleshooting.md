@@ -83,13 +83,15 @@ $image.Dispose()
 Get-BGInfoMonitor | Select-Object Index, Width, Height, Scale
 ```
 
-- PowerBGInfo reads the monitor rectangle through `IDesktopWallpaper`, in
-  physical pixels. On a test machine with 3840 x 2160 monitors at 150 % and
-  200 % scaling, both Windows PowerShell 5.1 and PowerShell 7 reported
-  3840 x 2160 and rendered at that size; `Get-BGInfoMonitor` showed the
-  scale as 1.5 and 2. Other hosts were not tested; if your file is smaller
-  than the screen, pass the size explicitly with
-  `New-BGInfoBackground -Width -Height`.
+- PowerBGInfo reads physical monitor geometry and effective DPI through
+  DesktopManager's `GetMonitorSnapshots()`. Both Windows PowerShell 5.1 and
+  PowerShell 7 use this path, independent of the host's DPI awareness.
+  `Get-BGInfoMonitor` reports physical `Width` and `Height`, with `Scale`
+  such as 1.5 for 150 %; an empty scale means DPI was unavailable, not that
+  the monitor is at 100 %. Re-query after a display change or remote
+  reconnect. If no monitors can be read, rendering falls back to
+  1920 x 1080; give `New-BGInfoBackground -Width -Height` explicit dimensions
+  when rendering for a different screen.
 - Small fonts on a 4K screen look thin rather than blurry. Scale the theme
   with the screen, as the reference script does (`-Scale` of height divided
   by 1080).
@@ -146,12 +148,16 @@ It does run, but SYSTEM's wallpaper is SYSTEM's own. Under SYSTEM:
 
 - `-Target Wallpaper` changes a desktop nobody sees.
 - `UserName` and `FullUserName` are SYSTEM. `LoggedOnUser` shows the user
-  of the active console session, or `Unknown` when nobody is signed in
-  there.
+  of the active console session through DesktopManager's `GetSessionUser()`.
+  PowerBGInfo keeps `Win32_ComputerSystem.UserName` as a last resort, then
+  `Unknown` if neither source supplies a user. This does not identify a
+  remote user whose session the task never entered.
 - The monitor size may not be readable; the fallback is 1920 x 1080.
 
-Use SYSTEM for `-Target File` (machine images), `-AllUsers` and
-`-Target LogonScreen`. Run per-user wallpapers in the user's session.
+Use SYSTEM for `-Target File` (machine images), `-AllUsers` and managed
+machine-policy deployment. Run per-user wallpaper and lock screen attempts
+in the intended user's session. A lock screen attempt under SYSTEM targets
+SYSTEM's account first; only a subsequent policy fallback is device-wide.
 
 ## Why does the lock screen not change on Windows Pro?
 
@@ -160,15 +166,20 @@ Use SYSTEM for `-Target File` (machine images), `-AllUsers` and
   Personalization CSP, apply only to Enterprise and Education (the policy
   also to Server). Pro ignores them, apart from the Shared PC cases listed
   in [Microsoft Intune](../intune/#the-personalization-csp-enforced-images).
-- `-Target LogonScreen` in PowerShell 7, and as the fallback in Windows
-  PowerShell, writes that same policy value, so it has the same edition
-  limit. On other editions PowerBGInfo writes a warning that the lock
-  screen probably does not change. The table of which host uses which
-  mechanism is in [Run in production](../deployment/#lock-screen).
-- In Windows PowerShell 5.1, `-Target LogonScreen` first tries the WinRT
-  lock screen API, which sets the lock screen of the account that runs the
-  command. An elevated session under a separate admin account changes the
-  admin's lock screen.
+- Both Windows PowerShell 5.1 and PowerShell 7 first attempt the running
+  account's WinRT lock screen API and wait for its result. That per-user
+  attempt needs no elevation and is separate from the policy's edition
+  limits. Policy restrictions, Windows configuration or an unavailable user
+  profile can still prevent a change.
+- If WinRT fails, PowerBGInfo allows the `PersonalizationPolicy` fallback
+  to write that same machine-policy value. Only the fallback needs elevation.
+  PowerBGInfo exposes a failed result and warns when a successful policy
+  write targets an unsupported or unreadable edition. The write does not
+  establish that Windows applied the image. Check the error or edition
+  warning; switching hosts does not choose a different route. See
+  [Run in production](../deployment/#lock-screen).
+- Check which account runs the command. An elevated session under a separate
+  admin account targets the admin's per-user lock screen, not the user's.
 
 ## Why do all my monitors show the same image?
 
@@ -217,7 +228,9 @@ hours of history. On multi-session hosts skip the timer.
 | --- | --- |
 | The text is drawn twice, or each run adds another layer | The base image was an earlier output that PowerBGInfo could not recognise, for example a copy Windows or a policy made of it. PowerBGInfo records its outputs in `PowerBgInfo.outputs.txt` and draws on the original; give a fixed base with `New-BGInfoBackground` or `-FilePath` to rule it out. |
 | `Supply values for the following parameters: ConfigurationDirectory` | `-ConfigurationDirectory` is required (issue #9). |
-| `Operation requires administrative privileges.` | `-AllUsers`, `-Target LogonScreen` or `-Target Both` without elevation. |
+| `Operation requires administrative privileges.` | `-AllUsers` without elevation. Per-user lock screen attempts do not require elevation. |
+| A lock screen failure after the WinRT attempt | Check the reported error, running account, profile and policy. The machine-policy fallback needs elevation; a denied write is a failure. |
+| A lock screen policy edition warning | The result used `PersonalizationPolicy` on an unsupported or unreadable edition. A policy write does not prove a visible change; switching PowerShell hosts does not remove the edition limit. |
 | `The term 'New-BGInfo' is not recognized` from Intune or Configuration Manager | A 32-bit PowerShell; use the 64-bit host (see [Microsoft Intune](../intune/#which-host-runs-what)). |
 | `Error HRESULT E_FAIL has been returned from a call to a COM component` | Reported with a closed laptop lid or duplicated displays (issue #18). Re-run after the display layout settles; the unlock trigger does this. |
 | A warning that an image `is an image PowerBGInfo wrote earlier` | The base image has the name of a PowerBGInfo output but no record, so it was skipped. Give a fixed base. |

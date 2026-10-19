@@ -60,10 +60,14 @@ to host. Check your FSLogix redirections if you exclude `AppData\Local`.
 
 ## What is different in a remote session
 
-- **Monitor size.** PowerBGInfo sizes the image from the session's monitors.
-  Some session hosts report a monitor without a display device; DesktopManager
-  then sets the wallpaper with `SystemParametersInfo` for the whole
-  session (the fix for issue #71). In a multi-monitor session that means
+- **Monitor size.** PowerBGInfo sizes the image from DesktopManager's
+  `GetMonitorSnapshots()`: physical geometry and effective per-monitor DPI,
+  independent of the PowerShell host's DPI awareness. A monitor remains in
+  the snapshots when its wallpaper device path is missing; unavailable DPI
+  leaves `Scale` empty. Some session hosts report a valid wallpaper monitor
+  slot without a device path; DesktopManager then sets the wallpaper with
+  `SystemParametersInfo` for the whole session (the fix for issue #71).
+  In a multi-monitor session that means
   the last image the script writes covers every monitor. If no monitor can
   be read, the image is 1920 x 1080.
 - **Dynamic resolution.** The `dynamic resolution` RDP property defaults to
@@ -72,7 +76,9 @@ to host. Check your FSLogix redirections if you exclude `AppData\Local`.
   it covering the screen afterwards.
 - **Multiple monitors.** With `use multimon:i:1` (the default) the session
   has one monitor per client display. The reference script renders one
-  image per monitor.
+  image per monitor. Re-query after reconnecting or a display change;
+  monitor indexes are not permanent display identities. Windows wallpaper
+  fit is shared by all monitors even when their images differ.
 - **Wallpaper removed by policy.** **Computer Configuration > Administrative
   Templates > Windows Components > Remote Desktop Services > Remote Desktop
   Session Host > Remote Session Environment > Enforce Removal of Remote
@@ -84,11 +90,15 @@ to host. Check your FSLogix redirections if you exclude `AppData\Local`.
 - **The user name.** `UserName`, `FullUserName` and
   `Get-BGInfoSystemInfo.UserName` are the session's user, because the task
   runs as that user. `LoggedOnUser` is the user of the session the task
-  runs in too: PowerBGInfo asks the Remote Desktop Services session API
-  (`WTSQuerySessionInformation`) for the process's own session, which needs
-  no elevation. Only a process in session 0, such as a SYSTEM task, falls
-  back to the console session's user, which on a session host is usually
-  nobody (`Unknown`) or an administrator.
+  runs in too: PowerBGInfo delegates to DesktopManager's
+  `DesktopSessionService.GetSessionUser()`, which asks the Remote Desktop
+  Services session API (`WTSQuerySessionInformation`) for the process's own
+  session without elevation. Only a process in session 0, such as a SYSTEM
+  task, selects the console session's user instead. PowerBGInfo retains
+  `Win32_ComputerSystem.UserName` as its last resort when session information
+  is unavailable, then `Unknown` if neither source supplies a user. On a
+  session host the console is usually empty or belongs to an administrator;
+  these fallbacks cannot select the intended remote user for a SYSTEM task.
 - **Slideshows.** PowerBGInfo skips slideshow handling when DesktopManager
   reports the slideshow as disabled by the remote session.
 
