@@ -1,4 +1,4 @@
-<#
+﻿<#
     Feature: built-in data helpers. Get-BGInfoSystemInfo returns the facts
     support asks for first (uptime, OS build, IP, disks, last update,
     Defender and BitLocker state, console user) as one plain object. Every

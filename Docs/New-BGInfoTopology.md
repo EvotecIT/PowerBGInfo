@@ -11,7 +11,7 @@ Creates a BGInfo topology overlay definition.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoTopology [-TopologyDefinition] <scriptblock> [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-Layout <TopologyLayoutMode>] [-Direction <TopologyLayoutDirection>] [-NodeDisplayMode <TopologyNodeDisplayMode>] [-Theme <string>] [-Scale <int>] [-Opaque] [-NoTitle] [-ShowLegend] [-NoGroups] [-NoEdgeLabels] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [<CommonParameters>]
+New-BGInfoTopology [-TopologyDefinition] <scriptblock> [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-Layout <TopologyLayoutMode>] [-Direction <TopologyLayoutDirection>] [-NodeDisplayMode <TopologyNodeDisplayMode>] [-Theme <string>] [-Scale <int>] [-Opaque] [-NoTitle] [-ShowLegend] [-NoGroups] [-NoEdgeLabels] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-Region <BgInfoRegion>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -291,6 +291,22 @@ Type: Int32
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Region
+Region to flow into: Left, Right, Top, Bottom or Center. Without -Width or -Height the diagram shares the region.
+
+```yaml
+Type: BgInfoRegion
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Left, Right, Top, Bottom, Center
 
 Required: False
 Position: named

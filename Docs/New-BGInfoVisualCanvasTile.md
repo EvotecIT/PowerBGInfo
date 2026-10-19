@@ -11,7 +11,7 @@ Creates a BGInfo visual canvas tile definition.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <Double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-MiniChartValues <double[]>] [-MiniChartMaximum <Double>] [<CommonParameters>]
+New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <Double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-MiniChartValues <double[]>] [-MiniChartMaximum <Double>] [-Status <BgInfoStatus>] [-StatusValue <double>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -38,6 +38,22 @@ Optional accent color.
 
 ```yaml
 Type: Object
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CriticalThreshold
+StatusValue at which the tile turns the critical color.
+
+```yaml
+Type: Double
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -209,6 +225,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Status
+Explicit status: Ok, Warning, Critical or Info. The tile accent takes the status color.
+
+```yaml
+Type: BgInfoStatus
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: None, Ok, Warning, Critical, Info
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StatusValue
+Number compared with the thresholds to pick the status, for example 88 for 88 % used.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -SurfaceStyle
 Tile surface style.
 
@@ -241,6 +289,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ThresholdDirection
+Above: higher values are worse. Below: lower values are worse.
+
+```yaml
+Type: BgInfoThresholdDirection
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values: Above, Below
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Value
 Primary tile value. Templates such as {{HostName}} are resolved at render time.
 
@@ -251,6 +315,22 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WarningThreshold
+StatusValue at which the tile turns the warning color.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False

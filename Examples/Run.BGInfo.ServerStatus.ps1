@@ -1,4 +1,4 @@
-<#
+﻿<#
     Server status wallpaper: who the server is, how long it has been up,
     and whether disks, services and the network need attention.
 

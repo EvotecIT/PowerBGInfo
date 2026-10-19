@@ -182,7 +182,7 @@ Describe 'Thresholds' {
 
     It 'colors tiles from a status value' {
         $tile = New-BGInfoVisualCanvasTile -Label 'Disk' -Value '91 %' -StatusValue 91 -WarningThreshold 80 -CriticalThreshold 90
-        $tile.Accent | Should -Be ([PowerBGInfo.BgInfoStatusColors]::Default('Dark').Critical)
+        $tile.Accent.ToHex() | Should -Be '#F87171'
         { New-BGInfoVisualCanvasTile -Label 'Disk' -Value 'x' -WarningThreshold 80 } | Should -Throw '*StatusValue*'
     }
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
     Help-desk wallpaper for shared or front-desk PCs. It tells people how
     to get help and shows the details the service desk asks for first.
 
