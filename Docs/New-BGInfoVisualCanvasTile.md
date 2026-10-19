@@ -11,7 +11,7 @@ Creates a BGInfo visual canvas tile definition.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <Double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-MiniChartValues <double[]>] [-MiniChartMaximum <Double>] [-Status <BgInfoStatus>] [-StatusValue <double>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [<CommonParameters>]
+New-BGInfoVisualCanvasTile -Label <string> -Value <string> [-Side <BgInfoVisualCanvasSide>] [-Icon <string>] [-Detail <string>] [-Width <int>] [-Height <int>] [-Accent <Object>] [-Progress <Double>] [-SurfaceStyle <BgInfoVisualCanvasTileSurfaceStyle>] [-IconKind <BgInfoVisualCanvasTileIconKind>] [-MiniChartKind <BgInfoVisualCanvasTileMiniChartKind>] [-TextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-TextScale <Double>] [-LabelFontSize <Double>] [-ValueFontSize <Double>] [-DetailFontSize <Double>] [-MiniChartValues <double[]>] [-MiniChartMaximum <Double>] [-Status <BgInfoStatus>] [-StatusValue <double>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -81,6 +81,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DetailFontSize
+Optional detail font size in logical pixels.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Height
 Optional tile height in pixels. Zero uses the visual canvas default or template default.
 
@@ -139,6 +155,22 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LabelFontSize
+Optional label font size in logical pixels.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -289,6 +321,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -TextScale
+Scales tile text and its supporting layout. The canvas setting applies when omitted.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ThresholdDirection
 Above: higher values are worse. Below: lower values are worse.
 
@@ -315,6 +363,22 @@ Aliases: None
 Possible values:
 
 Required: True
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ValueFontSize
+Optional value font size in logical pixels.
+
+```yaml
+Type: Double
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False

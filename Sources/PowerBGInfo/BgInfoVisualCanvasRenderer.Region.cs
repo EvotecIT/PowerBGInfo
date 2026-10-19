@@ -18,17 +18,8 @@ internal static partial class BgInfoVisualCanvasRenderer {
     /// <summary>Natural height of a region stack: every tile plus the gaps between them.</summary>
     internal static int MeasureRegionHeight(BgInfoVisualCanvas visual, int imageHeight) {
         var (tileHeight, gap) = ResolveRegionTileMetrics(visual, imageHeight);
-        double total = 0;
-        var count = 0;
-        BgInfoVisualCanvasTile? previous = null;
-        foreach (var tile in visual.Tiles) {
-            if (previous != null) total += ResolveTileGap(visual, previous, gap);
-            total += ResolveTileHeight(visual, tile, tileHeight);
-            previous = tile;
-            count++;
-        }
-        if (count == 0) return 1;
-        return (int)Math.Ceiling(total);
+        if (visual.Tiles.Count == 0) return 1;
+        return (int)Math.Ceiling(MeasureTileStackHeight(visual, visual.Tiles, tileHeight, gap));
     }
 
     /// <summary>Renders the tiles as one column that fills the region slot, ignoring tile sides and rail offsets.</summary>

@@ -11,22 +11,32 @@ Creates a treemap panel: sizes as nested rectangles, for example disk usage by f
 ## SYNTAX
 ### Objects (Default)
 ```powershell
-New-BGInfoTreemap [-InputObject <Object>] [-NameProperty <string>] [-ValueProperty <string>] [-GroupProperty <string>] [-ValueSuffix <string>] [-NoValues] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
+New-BGInfoTreemap [-InputObject <Object>] [-NameProperty <string>] [-ValueProperty <string>] [-GroupProperty <string>] [-ValueSuffix <string>] [-NoValues] [-ColorProperty <string>] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
 ```
 
 ### Data
 ```powershell
-New-BGInfoTreemap -Data <IDictionary> [-ValueSuffix <string>] [-NoValues] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
+New-BGInfoTreemap -Data <IDictionary> [-ValueSuffix <string>] [-NoValues] [-WarningThreshold <double>] [-CriticalThreshold <double>] [-ThresholdDirection <BgInfoThresholdDirection>] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Pipe objects with Name, Value and an optional Group, or pass -Data @{ name = size }.
+
+-ColorProperty colors each rectangle by a second measure; with -WarningThreshold and -CriticalThreshold the colors are the ok, warning and critical status colors.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```powershell
 New-BGInfoTreemap -Region Right -Title 'D: by folder' -ValueSuffix ' GB' -Data ([ordered]@{ Databases = 412; Logs = 96; Backups = 230 })
+```
+
+
+### EXAMPLE 2
+```powershell
+Get-VM | Select-Object Name, CPUUsage, @{ Name = 'MemoryGB'; Expression = { $_.MemoryAssigned / 1GB } } |
+    New-BGInfoTreemap -Region Center -Title 'Memory by VM, colored by CPU' -ValueProperty MemoryGB -ValueSuffix ' GB' `
+        -ColorProperty CPUUsage -WarningThreshold 70 -CriticalThreshold 90
 ```
 
 
@@ -96,8 +106,40 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ColorProperty
+Property with a second number that colors each rectangle, for example CPU while the size is memory.
+
+```yaml
+Type: String
+Parameter Sets: Objects
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -CornerRadius
 Panel corner radius.
+
+```yaml
+Type: Double
+Parameter Sets: Objects, Data
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CriticalThreshold
+Color value at which a rectangle takes the critical color. Without -ColorProperty the size is compared.
 
 ```yaml
 Type: Double
@@ -416,6 +458,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ThresholdDirection
+Above: higher values are worse. Below: lower values are worse.
+
+```yaml
+Type: BgInfoThresholdDirection
+Parameter Sets: Objects, Data
+Aliases: None
+Possible values: Above, Below
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Title
 Panel header text.
 
@@ -517,6 +575,22 @@ Suffix after values, for example ' GB'.
 
 ```yaml
 Type: String
+Parameter Sets: Objects, Data
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WarningThreshold
+Color value at which a rectangle takes the warning color. Without -ColorProperty the size is compared.
+
+```yaml
+Type: Double
 Parameter Sets: Objects, Data
 Aliases: None
 Possible values:

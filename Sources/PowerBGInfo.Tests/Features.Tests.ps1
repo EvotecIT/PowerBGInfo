@@ -314,14 +314,23 @@ Describe 'Widget cmdlets' {
     }
 
     It 'reads a timeline item color from piped objects' {
+        $typedColor = (New-BGInfoTheme Graphite -Mode Light).Accent
         $timeline = New-BGInfoTimeline -Item @(
             [pscustomobject] @{ Lane = 'A'; Start = '2026-10-16'
                 End = '2026-10-17'; Color = '#F59E0B' }
             [pscustomobject] @{ Lane = 'B'; Start = '2026-10-16'
                 End = '2026-10-17'; Color = '' }
+            [pscustomobject] @{ Lane = 'C'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '  ' }
+            [pscustomobject] @{ Lane = 'D'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = $typedColor }
         )
         $timeline.Items[0].Color.ToHex() | Should -Be '#F59E0B'
         $timeline.Items[1].Color | Should -BeNullOrEmpty
+        $timeline.Items[2].Color | Should -BeNullOrEmpty
+        $timeline.Items[3].Color | Should -Be $typedColor
+        { New-BGInfoTimeline -Item @{ Lane = 'Bad'; Start = '2026-10-16'; Color = 'not-a-color' } } |
+            Should -Throw '*Color*'
     }
 
     It 'validates Mermaid source when the widget is created' {

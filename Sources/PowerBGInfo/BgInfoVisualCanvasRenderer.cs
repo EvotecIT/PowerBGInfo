@@ -224,6 +224,18 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
     private static double ResolveTileGap(BgInfoVisualCanvas visual, double defaultGap) => visual.TileGap > 0 ? visual.TileGap : defaultGap;
 
+    /// <summary>Measures the same tile heights and preceding-tile gaps used when drawing a stack.</summary>
+    private static double MeasureTileStackHeight(BgInfoVisualCanvas visual, IEnumerable<BgInfoVisualCanvasTile> tiles, double defaultHeight, double defaultGap) {
+        double total = 0;
+        BgInfoVisualCanvasTile? previous = null;
+        foreach (var tile in tiles) {
+            if (previous != null) total += ResolveTileGap(visual, previous, defaultGap);
+            total += ResolveTileHeight(visual, tile, defaultHeight);
+            previous = tile;
+        }
+        return total;
+    }
+
     private static bool HasTiles(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side) {
         foreach (var tile in visual.Tiles) {
             if (tile.Side == side) return true;
@@ -283,7 +295,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
         var requestedRailY = visual.RailMarginY.HasValue ? Math.Max(0, visual.RailMarginY.Value) : Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
         var laneHeight = visual.Tiles.GroupBy(tile => tile.Side)
-            .Select(group => group.Sum(tile => ResolveTileHeight(visual, tile, tileHeight)) + tileGap * Math.Max(0, group.Count() - 1))
+            .Select(group => MeasureTileStackHeight(visual, group, tileHeight, tileGap))
             .DefaultIfEmpty(tileHeight).Max();
         var railY = Math.Min(requestedRailY, Math.Max(0, height - laneHeight));
         var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);

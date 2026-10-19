@@ -214,6 +214,8 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 WriteWarning("Skipped a timeline item with an invalid end date.");
                 continue;
             }
+            var color = BgInfoValueReader.GetProperty(value, "Color");
+            if (color is string colorText && string.IsNullOrWhiteSpace(colorText)) color = null;
             AddItem(new BgInfoTimelineItem {
                 Lane = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Lane", "Name", "Server", "Team")),
                 Label = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Label", "Title", "Text")),
@@ -221,7 +223,7 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 End = end,
                 Category = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Category", "Kind", "Type")) is { Length: > 0 } category ? category : "Scheduled",
                 Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State")),
-                Color = PowerShellColorConverter.ConvertOptional(BgInfoValueReader.GetProperty(value, "Color"), "Color")
+                Color = PowerShellColorConverter.ConvertOptional(color, "Color")
             });
         }
     }

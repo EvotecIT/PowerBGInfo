@@ -29,7 +29,7 @@ task.
 
 | Principal | Runs | Can do | Cannot do |
 | --- | --- | --- | --- |
-| Group `BUILTIN\Users` (SID `S-1-5-32-545`), limited | In the session of the member who triggered it, only while they are signed in | `-Target Wallpaper` for that user, `-Target File` into the user's folders | `-AllUsers`, `-Target LogonScreen` (both need elevation) |
+| Group `BUILTIN\Users` (SID `S-1-5-32-545`), limited | In the session of the member who triggered it, only while they are signed in | `-Target Wallpaper` for that user, `-Target File` into the user's folders, per-user `-Target LogonScreen` when the lock-screen API is available | `-AllUsers` and the machine-policy lock-screen fallback (both need elevation) |
 | `SYSTEM` | Without a user, in session 0 | `-Target File` anywhere, `-AllUsers`, `-Target LogonScreen` | A user's live wallpaper |
 
 A group principal is the scripted form of "Run only when user is logged on"
