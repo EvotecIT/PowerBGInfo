@@ -81,7 +81,7 @@ $principal = New-ScheduledTaskPrincipal -GroupId 'S-1-5-32-545' `
 
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
     -DontStopIfGoingOnBatteries -StartWhenAvailable `
-    -MultipleInstances IgnoreNew `
+    -MultipleInstances Parallel `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 Register-ScheduledTask -TaskName $taskName -TaskPath '\PowerBGInfo\' `
@@ -92,6 +92,9 @@ Register-ScheduledTask -TaskName $taskName -TaskPath '\PowerBGInfo\' `
 
 What the pieces do:
 
+- `Parallel` preserves a second user's trigger while another session is
+  rendering. Each user writes to their own output directory; a group task
+  using `IgnoreNew` would discard that second user's run.
 - `-AtLogOn` without `-User` fires for any user who signs in.
 - The unlock trigger is a `SessionStateChangeTrigger` with
   `StateChange = 8` (`TASK_SESSION_UNLOCK`). `New-ScheduledTaskTrigger` has

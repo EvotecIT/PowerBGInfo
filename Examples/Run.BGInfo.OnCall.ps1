@@ -127,15 +127,19 @@ New-BGInfo -Theme $look -Target File {
     New-BGInfoQRCode -Region Right -Url $noc.Runbook -Title 'Runbook' `
         -Caption "$($link.Host)$($link.AbsolutePath)" `
         -Height ([int](330 * $scale))
-    New-BGInfoList -Region Right -Title 'Open incidents' `
-        -Note "$(@($noc.Incidents).Count) open" -Item $noc.Incidents
+    if (@($noc.Incidents).Count -gt 0) {
+        New-BGInfoList -Region Right -Title 'Open incidents' `
+            -Note "$(@($noc.Incidents).Count) open" -Item $noc.Incidents
+    }
 
     # Center: the escalation path. Bottom band: this week's rota.
     New-BGInfoMermaid -Region Center -Title 'Escalation path' `
         -Note 'P1 goes straight to the commander' -Definition $noc.Escalation
-    New-BGInfoTimeline -Region Bottom -Title 'This week' `
+    if (@($rota).Count -gt 0) {
+        New-BGInfoTimeline -Region Bottom -Title 'This week' `
         -Note 'Mon 12 – Sun 18 Oct' -Item $rota -Now $noc.Now `
-        -Height ([int](360 * $scale))
+            -Height ([int](360 * $scale))
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "on-call-$($Theme.ToLower()).png"
 #endregion

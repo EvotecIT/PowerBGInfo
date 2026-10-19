@@ -162,7 +162,7 @@ internal static partial class BgInfoWidgetRenderer {
             if (now < first) first = now;
             if (now > last) last = now;
         }
-        var multiDay = first.Date != last.Date && last - first > TimeSpan.FromDays(1);
+        var multiDay = first.Date != last.Date;
         var chart = CreateChart(widget, style, width, height, axes: true)
             .WithLegend(widget.ShowLegend)
             .WithDataLabels(true)

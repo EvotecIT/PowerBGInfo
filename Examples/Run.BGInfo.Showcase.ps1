@@ -212,11 +212,19 @@ $scenarios = @(
 )
 
 if ($Scenario.Count -gt 0) {
+    $unknown = @($Scenario | Where-Object { $_ -notin $scenarios.id })
+    if ($unknown.Count) { throw "Unknown scenario: $($unknown -join ', ')." }
     $scenarios = @($scenarios | Where-Object { $_.id -in $Scenario })
+}
+foreach ($dimensions in $Size) {
+    if ($dimensions -notmatch '^([1-9][0-9]*)x([1-9][0-9]*)$' -or
+        [double] $Matches[1] -gt 16384 -or [double] $Matches[2] -gt 16384) {
+        throw "Invalid size '$dimensions'. Use WIDTHxHEIGHT, with both dimensions from 1 to 16384."
+    }
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $repositoryRoot = Split-Path -Path $PSScriptRoot -Parent
-$staging = Join-Path $OutputDirectory '.staging'
+$staging = Join-Path $OutputDirectory ('.staging-' + [guid]::NewGuid().ToString('N'))
 $previousCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 
 try {
@@ -270,7 +278,7 @@ try {
 } finally {
     [System.Threading.Thread]::CurrentThread.CurrentCulture = $previousCulture
     if (Test-Path -LiteralPath $staging) {
-        Remove-Item -LiteralPath $staging -Recurse -Force
+        Remove-Item -LiteralPath $staging -Recurse
     }
 }
 
@@ -279,6 +287,7 @@ $manifest = [ordered]@{
     sourceCommit = $SourceCommit
     renders      = @($renders)
 }
-$manifestPath = Join-Path $OutputDirectory 'manifest.json'
+$manifestName = if ($Scenario.Count -gt 0) { 'manifest.filtered.json' } else { 'manifest.json' }
+$manifestPath = Join-Path $OutputDirectory $manifestName
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath
 Get-ChildItem -Path $OutputDirectory -Filter '*.png'

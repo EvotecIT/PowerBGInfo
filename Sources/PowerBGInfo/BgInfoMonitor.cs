@@ -25,7 +25,13 @@ public sealed class BgInfoMonitor {
 /// <summary>Reads the monitors that PowerBGInfo renders for.</summary>
 public static class BgInfoMonitorProvider {
     /// <summary>Returns the monitors Windows reports with a size, ordered by index. Empty when none can be read, for example without a desktop.</summary>
-    public static BgInfoMonitor[] GetMonitors() => GetMonitors(new Monitors());
+    public static BgInfoMonitor[] GetMonitors() {
+        try {
+            return GetMonitors(new Monitors());
+        } catch {
+            return Array.Empty<BgInfoMonitor>();
+        }
+    }
 
     internal static BgInfoMonitor[] GetMonitors(Monitors source) {
         IReadOnlyList<MonitorSnapshot> monitors;

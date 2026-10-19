@@ -220,8 +220,8 @@ changing lock screen and logon image** so users keep that image.
 
 PowerBGInfo's own `-Target LogonScreen` writes the same registry value
 (`HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization\LockScreenImage`)
-whenever it runs in PowerShell 7, and in Windows PowerShell 5.1 when the
-lock screen API fails (see
+only when the per-user lock screen API fails, in both PowerShell 7 and
+Windows PowerShell 5.1 (see
 [Run in production](../deployment/#lock-screen)). Do not use both: the GPO
 owns that value and overwrites it.
 

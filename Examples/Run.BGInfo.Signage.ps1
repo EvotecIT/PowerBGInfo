@@ -37,7 +37,8 @@ function Get-SignageMessage {
 }
 
 $fallback = [pscustomobject] @{
-    Place = 'CONTOSO'; Headline = 'Welcome'; When = ''; Body = ''
+    Place = 'CONTOSO'; Headline = 'Welcome'; When = 'Details unavailable'
+    Body = 'Please contact reception for current information.'
     Link = 'https://www.contoso.com'; Program = @()
 }
 $source = @{
@@ -83,8 +84,10 @@ New-BGInfo -Theme $look -TextPosition $text -SpaceY $top -Target File {
         -Caption "$($link.Host)$($link.AbsolutePath)" `
         -Width ([int](420 * $scale)) -Height ([int](480 * $scale))
     # Signage is read from a distance: the list renders at a larger density.
-    New-BGInfoList -Region $panels -Title 'Highlights' -Item $sign.Program `
-        -Width ([int](420 * $scale)) -Height $listHeight -Scale (1.8 * $scale)
+    if (@($sign.Program).Count -gt 0) {
+        New-BGInfoList -Region $panels -Title 'Highlights' -Item $sign.Program `
+            -Width ([int](420 * $scale)) -Height $listHeight -Scale (1.8 * $scale)
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "signage-$($Theme.ToLower()).png"
 #endregion

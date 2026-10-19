@@ -2,6 +2,27 @@ namespace PowerBGInfo.Tests;
 
 public class SessionUserTests {
     [Theory]
+    [InlineData(1)]
+    [InlineData(8)]
+    [InlineData(-1)]
+    public void UnresolvedNonzeroSessionDoesNotReportTheConsoleUser(int sessionId) {
+        var wmiRead = false;
+        var user = SessionUser.Resolve(() => null, () => {
+            wmiRead = true;
+            return @"CONTOSO\console";
+        }, sessionId);
+
+        Assert.Equal(SystemInfoProvider.Unknown, user);
+        Assert.False(wmiRead);
+    }
+
+    [Fact]
+    public void ResolvedRemoteSessionStillWinsWithoutReadingTheConsole() {
+        Assert.Equal(@"CONTOSO\remote", SessionUser.Resolve(
+            () => @"CONTOSO\remote", () => throw new InvalidOperationException("Must not query console"), 8));
+    }
+
+    [Theory]
     [InlineData(@"CONTOSO\remote")]
     [InlineData("local-user")]
     public void UsesDesktopManagerAccountBeforeWmi(string accountName) {

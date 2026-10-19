@@ -879,9 +879,10 @@ New-BGInfo {
         $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script-module.ps1'
         $modulePath = $Env:POWERBGINFO_TEST_MODULE
         if ([string]::IsNullOrWhiteSpace($modulePath)) {
-            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$testConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
+            $moduleFramework = if ($PSEdition -eq 'Core') { 'net8.0-windows' } else { 'net472' }
+            $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$testConfiguration\$moduleFramework\PowerBGInfo.PowerShell.dll"
             if (-not (Test-Path -LiteralPath $modulePath)) {
-                $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.PowerShell.dll"
+                $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$fallbackConfiguration\$moduleFramework\PowerBGInfo.PowerShell.dll"
             }
         }
         $cliPath = Get-BGInfoTestCliPath

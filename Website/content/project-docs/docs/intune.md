@@ -309,8 +309,9 @@ IME checks in every eight hours.
   assigned to devices are supported. Install as **System**.
 - **Signature check on platform scripts**: it is on by default. Turn it
   off or sign the script.
-- **Personalization CSP on Pro**: ignored outside the Shared PC cases
-  above.
+- **Personalization CSP on Pro**: the CSP reference adds the Shared PC
+  conditions above; use the recommended Settings Catalog route on ordinary
+  Pro devices, as described in Microsoft's background configuration guide.
 
 ## Further reading
 

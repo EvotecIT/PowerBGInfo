@@ -94,7 +94,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var layout = ResolveOverlayRailLayout(visual, width, height);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
-        var centerTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
+        var centerTileWidth = layout.CenterRailWidth;
         var centerDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, layout.MarginX, layout.LaneGap, centerTileWidth, layout.LeftRailX, layout.LeftRailWidth, layout.RightRailX), layout.RailY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, layout.TileHeight, layout.TileGap);
 
@@ -178,11 +178,12 @@ internal static partial class BgInfoVisualCanvasRenderer {
         }
     }
 
-    private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
+    private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth, double implicitMaximum = double.MaxValue) {
         var width = ResolveSideTileWidth(visual, side, defaultWidth);
         foreach (var tile in visual.Tiles) {
             if (tile.Side != side) continue;
             var tileWidth = ResolveTileWidth(visual, tile, defaultWidth);
+            if (tile.Width <= 0 && !HasExplicitSideTileWidth(visual, side)) tileWidth = Math.Min(tileWidth, implicitMaximum);
             if (tileWidth > width) width = tileWidth;
         }
 
@@ -300,9 +301,9 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var railY = Math.Min(requestedRailY, Math.Max(0, height - laneHeight));
         var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
-        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
-        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
-        var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth);
+        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth, railBudget);
+        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth, railBudget);
+        var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth, railBudget);
         var laneWidthScale = ResolveCenteredLaneWidthScale(visual, width, marginX, laneGap, leftRailWidth, centerRailWidth, rightRailWidth);
         leftTileWidth *= laneWidthScale;
         rightTileWidth *= laneWidthScale;
@@ -312,11 +313,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
         var centerLeft = leftRailX + leftRailWidth + laneGap;
         var centerRight = rightRailX - laneGap;
-        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft), laneGap);
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, centerRailWidth * laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft), laneGap);
     }
 
     private readonly struct OverlayRailLayout {
-        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth, double laneGap) {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double centerRailWidth, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth, double laneGap) {
             LeftRailX = leftRailX;
             RightRailX = rightRailX;
             RailY = railY;
@@ -326,6 +327,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
             RightTileWidth = rightTileWidth;
             TemplateTileWidth = templateTileWidth;
             LaneWidthScale = laneWidthScale;
+            CenterRailWidth = centerRailWidth;
             MarginX = marginX;
             TileHeight = tileHeight;
             TileGap = tileGap;
@@ -343,6 +345,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         public double RightTileWidth { get; }
         public double TemplateTileWidth { get; }
         public double LaneWidthScale { get; }
+        public double CenterRailWidth { get; }
         public double MarginX { get; }
         public double TileHeight { get; }
         public double TileGap { get; }

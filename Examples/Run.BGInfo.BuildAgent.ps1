@@ -81,7 +81,7 @@ $at = [array]::IndexOf([string[]] $agent.Stages, $agent.Stage)
 $nodes = for ($i = 0; $i -lt $agent.Stages.Count; $i++) {
     "S$i[$($agent.Stages[$i])]"
 }
-$done = (0..($at - 1) | ForEach-Object { "S$_" }) -join ','
+$done = if ($at -gt 0) { (0..($at - 1) | ForEach-Object { "S$_" }) -join ',' }
 $fill = if ($dark) {
     @{
         Done = 'fill:#064E3B,stroke:#34D399'
@@ -99,7 +99,7 @@ $flow = @(
     "    classDef done $($fill.Done)"
     "    classDef now $($fill.Now),stroke-width:3px"
     if ($at -gt 0) { "    class $done done" }
-    "    class S$at now"
+    if ($at -ge 0) { "    class S$at now" }
 ) -join "`n"
 
 New-BGInfo -Theme $look -Target File {
@@ -111,7 +111,10 @@ New-BGInfo -Theme $look -Target File {
     New-BGInfoLabel -Name $agent.Name -FontSize ([int](72 * $scale)) `
         -FontWeight 600
     if ($agent.Available) {
-        New-BGInfoLabel -Name "▶  Running $($agent.Job)" -Accent `
+        $activity = if ($at -ge 0) { "▶  Running $($agent.Job)" } else {
+            "$($agent.Job) · no active stage"
+        }
+        New-BGInfoLabel -Name $activity -Accent `
             -FontWeight 600
     } else {
         New-BGInfoLabel -Name 'Build data unavailable' -Status Info `
@@ -138,12 +141,18 @@ New-BGInfo -Theme $look -Target File {
 
     # Center: what ran here last. Bottom band: where the current job is.
     if ($agent.Available) {
-        $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
-            -Note 'on this agent' -StatusColumn Result
-        $stageNote = "stage $($at + 1) of $($agent.Stages.Count)"
-        New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
-            -Title $agent.Job -Note $stageNote `
-            -Definition $flow
+        if ($agent.Builds.Count -gt 0) {
+            $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
+                -Note 'on this agent' -StatusColumn Result
+        }
+        if ($agent.Stages.Count -gt 0) {
+            $stageNote = if ($at -ge 0) {
+                "stage $($at + 1) of $($agent.Stages.Count)"
+            } else { 'No active stage' }
+            New-BGInfoMermaid -Region Bottom -Height ([int](200 * $scale)) `
+                -Title $agent.Job -Note $stageNote `
+                -Definition $flow
+        }
     }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "build-agent-$($Theme.ToLower()).png"

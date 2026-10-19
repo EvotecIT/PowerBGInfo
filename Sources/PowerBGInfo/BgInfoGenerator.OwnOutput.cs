@@ -39,6 +39,11 @@ public partial class BgInfoGenerator
         // so one step back is the original. Null means a plain or generated background.
         if (BgInfoOutputRegistry.TryGetSource(candidate!, out var source))
         {
+            if (source != null && !File.Exists(source))
+            {
+                WriteWarning($"The original image '{source}' recorded for '{candidate}' no longer exists. A plain background is used instead.");
+                return null;
+            }
             return IsSamePath(source ?? string.Empty, candidate) ? null : source;
         }
 

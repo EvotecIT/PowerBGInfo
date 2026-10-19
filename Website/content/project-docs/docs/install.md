@@ -21,7 +21,7 @@ Import-Module PowerBGInfo
 Get-Command -Module PowerBGInfo
 ```
 
-PowerBGInfo supports Windows PowerShell 5.1 and PowerShell 7 on Windows. The package includes the rendering and desktop libraries it needs; separate installs of ImagePlayground or DesktopManager are not required. When there is an update, run the same `Install-Module` command again.
+PowerBGInfo supports Windows PowerShell 5.1 and PowerShell 7 on Windows. The package includes the rendering and desktop libraries it needs; separate installs of ImagePlayground or DesktopManager are not required. To update an existing installation, run `Update-Module PowerBGInfo`.
 
 Every release is Authenticode-signed by Evotec. For machines that run it unattended, install it for all users, pinned to the version you tested, and read how to trust the publisher where the execution policy is `AllSigned`:
 

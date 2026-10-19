@@ -6,6 +6,39 @@ namespace PowerBGInfo.Tests;
 public class BgInfoOwnOutputTests
 {
     [Fact]
+    public void MissingRecordedOriginalWarnsAndUsesPlainBackground()
+    {
+        using var folder = new TempFolder();
+        var original = folder.CreateImage("original.png", ChartColors.Navy);
+        var first = Render(folder, original, "wallpaper.png", out _);
+        File.Delete(original);
+
+        var second = Render(folder, first, "wallpaper.png", out var warnings, ChartColors.DarkRed);
+
+        Assert.Contains("no longer exists", Assert.Single(warnings));
+        using var image = BgInfoRasterImage.Load(second);
+        var pixel = image.ToRgbaImage().Pixels;
+        Assert.Equal(new[] { ChartColors.DarkRed.R, ChartColors.DarkRed.G, ChartColors.DarkRed.B }, new[] { pixel[0], pixel[1], pixel[2] });
+        Assert.Null(ReadRecordedSource(second));
+    }
+
+    [Fact]
+    public void ConcurrentRegistryWritersPreserveEveryImageOrigin()
+    {
+        using var folder = new TempFolder();
+        Parallel.For(0, 64, index => BgInfoOutputRegistry.Record(
+            Path.Combine(folder.Path, $"render-{index}.png"),
+            Path.Combine(folder.Path, $"original-{index}.png")));
+
+        for (var index = 0; index < 64; index++)
+        {
+            Assert.True(BgInfoOutputRegistry.TryGetSource(Path.Combine(folder.Path, $"render-{index}.png"), out var source));
+            Assert.Equal(Path.Combine(folder.Path, $"original-{index}.png"), source);
+        }
+        Assert.Empty(Directory.GetFiles(folder.Path, "*.tmp"));
+    }
+
+    [Fact]
     public void RunOnItsOwnOutputDrawsOnTheOriginalAgain()
     {
         using var folder = new TempFolder();

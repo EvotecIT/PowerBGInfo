@@ -59,8 +59,8 @@ Install-Module -Name PowerBGInfo -Scope CurrentUser
 
 PowerBGInfo runs in Windows PowerShell 5.1 and PowerShell 7 on Windows.
 The rendering and desktop libraries ship inside the module, so nothing
-else needs installing. Releases are Authenticode-signed by Evotec. Run the
-same command again to update.
+else needs installing. Releases are Authenticode-signed by Evotec. Run
+`Update-Module -Name PowerBGInfo` to update an existing installation.
 
 ## Quick start
 

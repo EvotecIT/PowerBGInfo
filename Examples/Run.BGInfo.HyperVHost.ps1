@@ -44,6 +44,7 @@ DC02,Infrastructure,2,8,3
     }
 
     [pscustomobject] @{
+        Available = $true
         Name     = 'HV-AMS-07'
         # Get-Cluster and Get-ClusterNode
         Cluster  = 'HVC-AMS-01 · node 3 of 6'
@@ -89,6 +90,7 @@ DC02,Infrastructure,2,8,3
 }
 
 $fallback = [pscustomobject] @{
+    Available = $false
     Name = $env:COMPUTERNAME; Cluster = 'unknown'; Hardware = 'unknown'
     Version = 'unknown'; Cpu = @(0); MemoryGB = 0; TotalGB = 1; ReserveGB = 0
     Storage = @{ Name = 'CSV'; UsedPercent = 0; FreeTB = 0 }
@@ -124,7 +126,10 @@ New-BGInfo -Theme $look -Target File {
         -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $hv.Name -FontSize ([int](72 * $scale)) `
         -FontWeight 600
-    New-BGInfoLabel -Name "Room for $free GB of VMs before failover reserve" `
+    $capacity = if ($hv.Available) {
+        "Room for $free GB of VMs before failover reserve"
+    } else { 'Host capacity unavailable' }
+    New-BGInfoLabel -Name $capacity `
         -FontSize ([int](19 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'Cluster' -Value $hv.Cluster
     New-BGInfoValue -Name 'Hardware' -Value $hv.Hardware
@@ -132,40 +137,42 @@ New-BGInfo -Theme $look -Target File {
 
     # Top band: four host metrics beside the text. Above 80 % memory or
     # 75 % storage the card turns amber; above 90 % it turns red.
-    $card = @{ Region = 'Top'; Height = [int](170 * $scale) }
-    New-BGInfoMetric @card -Label 'CPU' -Value $hv.Cpu[-1] -Unit '%' `
-        -Caption '64 logical cores' -History $hv.Cpu -HistoryMaximum 100 `
-        -WarningThreshold 70 -CriticalThreshold 85
-    New-BGInfoMetric @card -Label 'Memory' -Value $memory -Unit '%' `
-        -Caption "$($hv.MemoryGB) of $($hv.TotalGB) GB assigned" `
-        -WarningThreshold 80 -CriticalThreshold 90
-    New-BGInfoMetric @card -Label $hv.Storage.Name -Unit '%' `
-        -Value $hv.Storage.UsedPercent `
-        -Caption "$($hv.Storage.FreeTB) TB free" `
-        -WarningThreshold 75 -CriticalThreshold 90
-    New-BGInfoMetric @card -Label 'VMs running' -Value $running `
-        -Caption "$vcpu vCPU on 64 cores"
+    if ($hv.Available) {
+        $card = @{ Region = 'Top'; Height = [int](170 * $scale) }
+        New-BGInfoMetric @card -Label 'CPU' -Value $hv.Cpu[-1] -Unit '%' `
+            -Caption '64 logical cores' -History $hv.Cpu -HistoryMaximum 100 `
+            -WarningThreshold 70 -CriticalThreshold 85
+        New-BGInfoMetric @card -Label 'Memory' -Value $memory -Unit '%' `
+            -Caption "$($hv.MemoryGB) of $($hv.TotalGB) GB assigned" `
+            -WarningThreshold 80 -CriticalThreshold 90
+        New-BGInfoMetric @card -Label $hv.Storage.Name -Unit '%' `
+            -Value $hv.Storage.UsedPercent `
+            -Caption "$($hv.Storage.FreeTB) TB free" `
+            -WarningThreshold 75 -CriticalThreshold 90
+        New-BGInfoMetric @card -Label 'VMs running' -Value $running `
+            -Caption "$vcpu vCPU on 64 cores"
 
-    # Center: where the memory goes, grouped by workload. The color is the
-    # VM's CPU: amber from 60 %, red from 85 %.
-    $hv.Vms | New-BGInfoTreemap -Region Center -Title 'Memory by VM' `
-        -Note 'size: memory · color: CPU' -ValueProperty MemoryGB `
-        -GroupProperty Workload -ValueSuffix ' GB' -ColorProperty Cpu `
-        -WarningThreshold 60 -CriticalThreshold 85
+        # Center: where the memory goes, grouped by workload. The color is the
+        # VM's CPU: amber from 60 %, red from 85 %.
+        $hv.Vms | New-BGInfoTreemap -Region Center -Title 'Memory by VM' `
+            -Note 'size: memory · color: CPU' -ValueProperty MemoryGB `
+            -GroupProperty Workload -ValueSuffix ' GB' -ColorProperty Cpu `
+            -WarningThreshold 60 -CriticalThreshold 85
 
-    # Right column: cluster memory by node, today's live migrations and the
-    # checkpoints left behind. Each node keeps its label and palette color.
-    New-BGInfoChart -Region Right -Id 'nodes' -Title 'Cluster memory' `
-        -Kind HorizontalBar -Values @($hv.Nodes.Values) `
-        -Labels @($hv.Nodes.Keys) `
-        -Palette @($look.Accent, $look.SecondaryAccent, $look.Ok, `
-            $look.Warning, $look.Critical, $look.Info) `
-        -Maximum 100 -ValueSuffix ' %' -NoHistory `
-        -Height ([int](250 * $scale))
-    $hv.Moves | New-BGInfoTable -Region Right -Title 'Live migrations' `
-        -Note 'today' -Property Time, VM, Result -StatusColumn Result
-    New-BGInfoList -Region Right -Title 'Old checkpoints' `
-        -Note 'older than 7 days' -Item $hv.Checkpoints
+        # Right column: cluster memory by node, today's live migrations and the
+        # checkpoints left behind. Each node keeps its label and palette color.
+        New-BGInfoChart -Region Right -Id 'nodes' -Title 'Cluster memory' `
+            -Kind HorizontalBar -Values @($hv.Nodes.Values) `
+            -Labels @($hv.Nodes.Keys) `
+            -Palette @($look.Accent, $look.SecondaryAccent, $look.Ok, `
+                $look.Warning, $look.Critical, $look.Info) `
+            -Maximum 100 -ValueSuffix ' %' -NoHistory `
+            -Height ([int](250 * $scale))
+        $hv.Moves | New-BGInfoTable -Region Right -Title 'Live migrations' `
+            -Note 'today' -Property Time, VM, Result -StatusColumn Result
+        New-BGInfoList -Region Right -Title 'Old checkpoints' `
+            -Note 'older than 7 days' -Item $hv.Checkpoints
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "hyperv-host-$($Theme.ToLower()).png"
 #endregion
