@@ -202,7 +202,7 @@ The safe area keeps the taskbar free (estimated from the height, 48 px at 1080 a
 
 ## Widgets
 
-Each widget is a small cmdlet over a ChartForgeX producer and shares the panel, header (`-Title`, `-Note`), placement (`-Region` or `-Anchor`) and theme of the other panels. `-Scale` enlarges the content inside the same panel.
+Each widget is a small cmdlet over a ChartForgeX producer and shares the panel, header (`-Title`, `-Note`), placement (`-Region` or `-Anchor`) and theme of the other panels. `-Scale` enlarges the content inside the same panel. Over-capacity tables and lists use bounded native batches to retain their rows without allocating a natural-height image. Text can become very small; use fewer rows or a larger panel when readers need individual values.
 
 | Cmdlet | Shows | Input |
 | --- | --- | --- |
@@ -262,9 +262,9 @@ New-BGInfo -Theme Graphite -Target File {
 } -ConfigurationDirectory C:\ProgramData\PowerBGInfo -OutputFileName 'wallpaper.png'
 ```
 
-`Invoke-BGInfoDataSource` runs the script block in its own runspace. When it throws, returns nothing or exceeds `-TimeoutSeconds`, it writes a warning and returns `-Default`. Variables of the calling script are not visible inside it; pass them with `-ArgumentList`.
+`Invoke-BGInfoDataSource` runs the script block in its own runspace. When it reports an error, returns nothing or exceeds `-TimeoutSeconds`, it writes a warning and returns `-Default`. Variables of the calling script are not visible inside it; pass them with `-ArgumentList`.
 
-`Get-BGInfoSystemInfo` returns the facts support asks for first as one plain object: computer, user and console user, domain, OS name, version and build, last boot and uptime, IPv4, fixed disks (size, free, used %), last installed update, Defender state and signature age, and BitLocker state of the system drive. Every probe is read-only; the domain, update, Defender, BitLocker, disk and console-user queries return within a five-second WMI caller limit. A missing class, a timeout or a lack of elevation (BitLocker usually needs it) leaves that field `Unknown`. A stalled provider can retain one background worker; further queries return unknown until it finishes, so repeated calls cannot accumulate workers. Wrap the call in `Invoke-BGInfoDataSource` for a hard limit on the whole snapshot. Replace it with your own function that returns the same property names and the presentation code keeps working.
+`Get-BGInfoSystemInfo` returns the facts support asks for first as one plain object: computer, user and console user, domain, OS name, version and build, last boot and uptime, IPv4, fixed disks (size, free, used %), last installed update, Defender state and signature age, and BitLocker state of the system drive. Every probe is read-only; all WMI probes, including operating-system metadata, use a five-second caller limit. A missing class, a timeout or a lack of elevation (BitLocker usually needs it) leaves that field `Unknown`. A stalled provider can retain one background worker; once its deadline expires, further probes immediately return unknown until it finishes, so a snapshot does not wait another deadline for every field. Built-in entries retain their token and resolve their value during rendering; use this snapshot command when you need immediate values. Wrap the call in `Invoke-BGInfoDataSource` for a hard limit on the whole snapshot. Replace it with your own function that returns the same property names and the presentation code keeps working.
 
 ## Running on a schedule
 

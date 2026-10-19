@@ -53,7 +53,8 @@ internal static partial class BgInfoWidgetRenderer {
         return card.RenderRgba();
     }
 
-    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height) {
+    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
+        if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var table = ChartTable.Create()
             .WithTheme(style.CreateTheme(), style.Mode)
@@ -61,7 +62,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithCard(false)
             .WithSize(w, h)
             .WithPadding(BlockInset)
-            .WithPngOutputScale(scale)
+            .WithPngOutputScale(outputScale ?? scale)
             .WithDenseMode(widget.Dense)
             .WithHeader(widget.ShowHeader)
             .WithRowStriping(widget.RowStriping)
@@ -71,7 +72,8 @@ internal static partial class BgInfoWidgetRenderer {
         return table.RenderRgba();
     }
 
-    private static RgbaImage RenderList(BgInfoListWidget widget, BgInfoWidgetStyle style, int width, int height) {
+    private static RgbaImage RenderList(BgInfoListWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
+        if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var list = ChartList.Create()
             .WithTheme(style.CreateTheme(), style.Mode)
@@ -79,7 +81,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithCard(false)
             .WithSize(w, h)
             .WithPadding(BlockInset)
-            .WithPngOutputScale(scale)
+            .WithPngOutputScale(outputScale ?? scale)
             .WithDenseMode(widget.Dense);
         foreach (var item in widget.Items) {
             if (item.Checked.HasValue) {

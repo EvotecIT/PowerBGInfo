@@ -131,8 +131,7 @@ public static partial class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Name, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, NumberOfEnabledCore FROM Win32_Processor");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Name, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, NumberOfEnabledCore FROM Win32_Processor"))
             {
                 var name = obj["Name"]?.ToString();
                 var trimmedName = name?.Trim();
@@ -178,8 +177,7 @@ public static partial class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed, PartNumber FROM Win32_PhysicalMemory");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Capacity, Speed, PartNumber FROM Win32_PhysicalMemory"))
             {
                 var capacity = GetUInt64(obj["Capacity"]);
                 if (capacity.HasValue)
@@ -222,8 +220,7 @@ public static partial class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Manufacturer, SMBIOSBIOSVersion, Version, ReleaseDate FROM Win32_BIOS");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Manufacturer, SMBIOSBIOSVersion, Version, ReleaseDate FROM Win32_BIOS"))
             {
                 info.Manufacturer = obj["Manufacturer"]?.ToString() ?? string.Empty;
                 info.Version = obj["SMBIOSBIOSVersion"]?.ToString() ?? obj["Version"]?.ToString() ?? string.Empty;
@@ -241,7 +238,10 @@ public static partial class SystemInfoProvider
 
     private static OsInfo LoadOsInfo()
     {
-        var info = new OsInfo();
+        var info = new OsInfo {
+            Architecture = RuntimeInformation.OSArchitecture.ToString(),
+            Version = RuntimeInformation.OSDescription
+        };
         if (!IsWindows())
         {
             info.Architecture = RuntimeInformation.OSArchitecture.ToString();
@@ -251,8 +251,7 @@ public static partial class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Caption, Version, OSArchitecture, BuildNumber, InstallDate, LastBootUpTime FROM Win32_OperatingSystem");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Caption, Version, OSArchitecture, BuildNumber, InstallDate, LastBootUpTime FROM Win32_OperatingSystem"))
             {
                 info.Name = obj["Caption"]?.ToString() ?? string.Empty;
                 info.Version = obj["Version"]?.ToString() ?? RuntimeInformation.OSDescription;
@@ -331,8 +330,7 @@ public static partial class SystemInfoProvider
 
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Name, Domain FROM Win32_ComputerSystem");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (var obj in Query(@"root\cimv2", "SELECT Name, Domain FROM Win32_ComputerSystem"))
             {
                 var name = obj["Name"]?.ToString();
                 var domain = obj["Domain"]?.ToString();
@@ -414,8 +412,7 @@ public static partial class SystemInfoProvider
         }
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT PercentProcessorTime, Name FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT PercentProcessorTime, Name FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'")) {
                 if (TryGetDouble(obj["PercentProcessorTime"], out value)) {
                     value = ClampPercent(value);
                     return true;
@@ -435,8 +432,7 @@ public static partial class SystemInfoProvider
         }
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem")) {
                 var total = GetUInt64(obj["TotalVisibleMemorySize"]);
                 var free = GetUInt64(obj["FreePhysicalMemory"]);
                 if (total.HasValue && total.Value > 0 && free.HasValue) {
@@ -487,8 +483,7 @@ public static partial class SystemInfoProvider
         ulong? fallbackFree = null;
 
         try {
-            using var searcher = new ManagementObjectSearcher("SELECT DeviceID, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3");
-            foreach (ManagementObject obj in searcher.Get()) {
+            foreach (var obj in Query(@"root\cimv2", "SELECT DeviceID, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3")) {
                 var device = obj["DeviceID"]?.ToString();
                 var sizeValue = GetUInt64(obj["Size"]);
                 var freeValue = GetUInt64(obj["FreeSpace"]);

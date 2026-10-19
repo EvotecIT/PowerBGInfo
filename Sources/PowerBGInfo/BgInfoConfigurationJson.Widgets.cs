@@ -56,8 +56,11 @@ public static partial class BgInfoConfigurationJson {
         chart.Threshold = MapThreshold(model.Threshold, chart.ThemeMode);
     }
 
-    private static BgInfoRegion ParseRegion(string? text) =>
-        TryParseDefinedEnumName<BgInfoRegion>(text, out var region) ? region : BgInfoRegion.None;
+    private static BgInfoRegion ParseRegion(string? text) {
+        if (string.IsNullOrWhiteSpace(text)) return BgInfoRegion.None;
+        if (TryParseDefinedEnumName<BgInfoRegion>(text, out var region)) return region;
+        throw new InvalidDataException($"Unknown region '{text}'. Expected None, Left, Right, Top, Bottom or Center.");
+    }
 
     private static BgInfoLayout? MapLayout(BgInfoLayoutFile? model) {
         if (model == null) return null;
@@ -360,7 +363,8 @@ public static partial class BgInfoConfigurationJson {
         const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.RoundtripKind;
         string[] invariantFormats = { "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" };
         if (DateTime.TryParseExact(text, invariantFormats, CultureInfo.InvariantCulture, styles, out var invariant)) return invariant;
-        return DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized) ? localized : null;
+        if (DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized)) return localized;
+        throw new InvalidDataException($"Invalid widget date '{text}'. Use an ISO date or a valid date in the current culture.");
     }
 
     internal sealed class BgInfoLayoutFile {

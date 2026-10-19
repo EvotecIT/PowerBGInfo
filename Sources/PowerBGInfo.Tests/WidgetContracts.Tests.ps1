@@ -11,6 +11,38 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'uses the requested property before its aliases regardless of dictionary key order' {
+        $calendar = [ordered] @{ Count = 99; Value = 3; Date = '2026-10-12' } | New-BGInfoCalendarHeatmap
+        $calendar.Items[0].Value | Should -Be 3
+        $calendar = @([ordered] @{ Count = 99; Value = $null; Date = '2026-10-12' }, @{ Date = '2026-10-13'; Value = 0 }) | New-BGInfoCalendarHeatmap -WarningAction SilentlyContinue
+        $calendar.Items.Count | Should -Be 1
+        $calendar.Items[0].Value | Should -Be 0
+    }
+
+    It 'rejects malformed range ends while preserving blank and omitted open ends' {
+        $warnings = @()
+        $timeline = @(
+            @{ Lane = 'Ops'; Start = '2026-10-12'; End = 'N/A' }
+            [pscustomobject] @{ Lane = 'Ops'; Start = '2026-10-12'; EndTime = 'bad date' }
+            @{ Lane = 'Ops'; Start = '2026-10-12'; End = '' }
+            @{ Lane = 'Ops'; Start = '2026-10-12' }
+            @{ Lane = 'Ops'; Start = '2026-10-12'; End = '2026-10-13' }
+        ) | New-BGInfoTimeline -WarningVariable warnings -WarningAction SilentlyContinue
+        $timeline.Items.Count | Should -Be 3
+        $warnings.Count | Should -Be 2
+        $timeline.Items[0].End | Should -BeNullOrEmpty
+        $timeline.Items[1].End | Should -BeNullOrEmpty
+        $timeline.Items[2].End.Day | Should -Be 13
+    }
+
+    It 'returns only the fallback when a source emits data and a nonterminating error' {
+        $warnings = @()
+        $value = @(Invoke-BGInfoDataSource -ScriptBlock { 'partial'; Write-Error 'source unavailable' } -Default 'fallback' -WarningVariable warnings -WarningAction SilentlyContinue)
+        $value.Count | Should -Be 1
+        $value[0] | Should -Be 'fallback'
+        $warnings.Count | Should -Be 1
+    }
+
     It 'skips malformed calendar values while counting only missing values' {
         $warnings = @()
         $calendar = @(

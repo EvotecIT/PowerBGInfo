@@ -15,7 +15,7 @@ Invoke-BGInfoDataSource [-ScriptBlock] <scriptblock> [-Name <string>] [-Default 
 ```
 
 ## DESCRIPTION
-A wallpaper must never fail or hang at logon because one source is slow or down. The script block runs in its own runspace; when it throws, returns nothing or exceeds -TimeoutSeconds, the cmdlet writes a warning and returns -Default instead.
+A wallpaper must never fail or hang at logon because one source is slow or down. The script block runs in its own runspace; when it reports an error, returns nothing or exceeds -TimeoutSeconds, the cmdlet writes a warning and returns -Default instead. Partial output from a failed source is discarded.
 
 Variables of the calling script are not visible inside the script block. Pass what it needs with -ArgumentList and read it with param().
 

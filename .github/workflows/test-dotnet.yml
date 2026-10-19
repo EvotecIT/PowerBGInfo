@@ -54,7 +54,11 @@ jobs:
           $config.OutputFileName = 'interop.png'
           $config.Entries.Add((New-BGInfoValue -BuiltinValue HostName))
           $osEntry = New-BGInfoValue -BuiltinValue OSName
-          if ([string]::IsNullOrWhiteSpace($osEntry.Value)) {
+          if ($osEntry.BuiltinValue -ne 'OSName' -or -not [string]::IsNullOrWhiteSpace($osEntry.Value)) {
+              throw 'Expected an unresolved OSName token for portable configuration.'
+          }
+          $resolvedOsName = [PowerBGInfo.SystemInfoProvider]::GetValue($osEntry.BuiltinValue)
+          if ([string]::IsNullOrWhiteSpace($resolvedOsName)) {
               throw 'Expected the PowerShell host to resolve the WMI-backed OSName value.'
           }
           $config.Entries.Add($osEntry)

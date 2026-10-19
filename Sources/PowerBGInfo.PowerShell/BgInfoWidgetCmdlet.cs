@@ -196,10 +196,12 @@ internal static class BgInfoValueReader {
         if (item == null) return false;
         var value = Unwrap(item);
         if (value is System.Collections.IDictionary dictionary) {
-            foreach (System.Collections.DictionaryEntry entry in dictionary) {
-                if (entry.Key is string key && names.Any(name => string.Equals(name, key, StringComparison.OrdinalIgnoreCase))) {
-                    result = Unwrap(entry.Value);
-                    return true;
+            foreach (var name in names) {
+                foreach (System.Collections.DictionaryEntry entry in dictionary) {
+                    if (entry.Key is string key && string.Equals(name, key, StringComparison.OrdinalIgnoreCase)) {
+                        result = Unwrap(entry.Value);
+                        return true;
+                    }
                 }
             }
             return false;

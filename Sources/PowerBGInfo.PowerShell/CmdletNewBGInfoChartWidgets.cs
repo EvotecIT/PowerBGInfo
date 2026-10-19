@@ -207,11 +207,17 @@ public sealed class CmdletNewBGInfoTimeline : BgInfoWidgetCmdlet {
                 WriteWarning("Skipped a timeline item without a Start.");
                 continue;
             }
+            var rawEnd = BgInfoValueReader.GetProperty(value, "End", "EndTime", "To");
+            var end = CmdletNewBGInfoCalendarHeatmap.ToDate(rawEnd);
+            if (rawEnd != null && !string.IsNullOrWhiteSpace(BgInfoValueReader.Text(rawEnd)) && !end.HasValue) {
+                WriteWarning("Skipped a timeline item with an invalid end date.");
+                continue;
+            }
             _items.Add(new BgInfoTimelineItem {
                 Lane = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Lane", "Name", "Server", "Team")),
                 Label = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Label", "Title", "Text")),
                 Start = start.Value,
-                End = CmdletNewBGInfoCalendarHeatmap.ToDate(BgInfoValueReader.GetProperty(value, "End", "EndTime", "To")),
+                End = end,
                 Category = BgInfoValueReader.Text(BgInfoValueReader.GetProperty(value, "Category", "Kind", "Type")) is { Length: > 0 } category ? category : "Scheduled",
                 Status = BgInfoValueReader.Status(BgInfoValueReader.GetProperty(value, "Status", "State")),
                 Color = PowerShellColorConverter.ConvertOptional(BgInfoValueReader.GetProperty(value, "Color"), "Color")
