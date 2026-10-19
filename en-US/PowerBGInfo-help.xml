@@ -147,6 +147,87 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>Get-BGInfoMonitor</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>BGInfoMonitor</command:noun>
+      <maml:description>
+        <maml:para>Lists the monitors PowerBGInfo renders for.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Each object has the Index that New-BGInfo -MonitorIndex takes, the device name, the bounds in desktop coordinates, whether it is the primary monitor, and the display scale when Windows reports one. Loop over the output to render one image per monitor.</maml:para>
+      <maml:para>The cmdlet only reads the display configuration, needs no elevation and works in Constrained Language Mode. It returns nothing when no monitor can be read, for example in a session without a desktop.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-BGInfoMonitor</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Primary</maml:name>
+          <maml:description>
+            <maml:para>Return only the primary monitor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Primary</maml:name>
+        <maml:description>
+          <maml:para>Return only the primary monitor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>PowerBGInfo.BgInfoMonitor</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>foreach ($monitor in Get-BGInfoMonitor) {&#xD;
+    New-BGInfo -MonitorIndex $monitor.Index -Target File `&#xD;
+        -ConfigurationDirectory C:\Temp\BGInfo `&#xD;
+        -OutputFileName "wallpaper-$($monitor.Index).png" {&#xD;
+        New-BGInfoBackground&#xD;
+        New-BGInfoValue -Name 'Size' -Value "$($monitor.Width) x $($monitor.Height)"&#xD;
+    }&#xD;
+}</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>Get-BGInfoSystemInfo</command:name>
       <command:verb>Get</command:verb>
       <command:noun>BGInfoSystemInfo</command:noun>
@@ -155,7 +236,7 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the console user. Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.</maml:para>
+      <maml:para>Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the user signed in to this session (LoggedOnUser; under SYSTEM in session 0, the console user). Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.</maml:para>
       <maml:para>The object is plain data. Replace it with your own function that returns the same property names and the presentation code keeps working.</maml:para>
     </maml:description>
     <command:syntax>

@@ -93,8 +93,8 @@ public partial class BgInfoGenerator
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
-        if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath, outputPath)) {
-            backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath, outputPath);
+        if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath!, outputPath)) {
+            backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath!, outputPath);
         } else if (chosenBase && hasBaseImage && IsSamePath(imagePath!, outputPath)) {
             imagePath = PreserveInPlaceBaseImage(imagePath!, outputPath);
         }

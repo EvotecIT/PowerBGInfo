@@ -15,7 +15,7 @@ Get-BGInfoSystemInfo [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the console user. Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.
+Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the user signed in to this session (LoggedOnUser; under SYSTEM in session 0, the console user). Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.
 
 The object is plain data. Replace it with your own function that returns the same property names and the presentation code keeps working.
 
