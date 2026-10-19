@@ -120,9 +120,8 @@ public static partial class BgInfoConfigurationJson {
         if (!TryParseDefinedEnumName<BgInfoWidgetKind>(model.Kind, out var kind)) {
             throw new InvalidDataException("Unknown widget kind '" + (model.Kind ?? "<missing>") + "'.");
         }
-        var themeMode = TryParseDefinedEnumName<VisualThemeMode>(model.ThemeMode, out var configuredMode)
-            ? configuredMode
-            : VisualThemeMode.Dark;
+        var themeMode = VisualThemeMode.Dark;
+        ApplyEnum<VisualThemeMode>(model.ThemeMode, value => themeMode = value);
         BgInfoWidget widget = kind switch {
             BgInfoWidgetKind.Metric => MapMetric(model, themeMode),
             BgInfoWidgetKind.Table => MapTable(model),
@@ -154,7 +153,7 @@ public static partial class BgInfoConfigurationJson {
         ApplyColor(model.TitleColor, value => widget.TitleColor = value);
         widget.TitleFontSize = model.TitleFontSize;
         widget.TitleFontWeight = model.TitleFontWeight;
-        if (TryParseDefinedEnumName<TextCaseTransform>(model.TitleTextCase, out var textCase)) widget.TitleTextCase = textCase;
+        ApplyEnum<TextCaseTransform>(model.TitleTextCase, value => widget.TitleTextCase = value);
         ApplyColor(model.TextColor, value => widget.TextColor = value);
         ApplyColor(model.MutedColor, value => widget.MutedColor = value);
         ApplyColor(model.Accent, value => widget.Accent = value);

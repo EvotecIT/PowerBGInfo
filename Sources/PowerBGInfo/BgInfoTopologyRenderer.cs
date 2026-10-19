@@ -90,7 +90,7 @@ internal static class BgInfoTopologyRenderer {
         var tokens = ResolveThemeMode(topology) == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
         return BgInfoRasterImage.CreateTextStyle(
             topology.TitleFontSize ?? config.FontSize,
-            config.CustomFontFamilyName ?? VisualTheme.Graphite().Typography.Family,
+            !string.IsNullOrWhiteSpace(topology.FontFamilyName) ? topology.FontFamilyName! : config.CustomFontFamilyName ?? VisualTheme.Graphite().Typography.Family,
             topology.TitleColor ?? config.CustomColor ?? tokens.MutedForeground,
             topology.TitleFontWeight ?? 600,
             false,
