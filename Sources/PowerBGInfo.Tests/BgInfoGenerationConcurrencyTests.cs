@@ -70,11 +70,18 @@ public sealed class BgInfoGenerationConcurrencyTests {
     }
 
     [Fact]
-    public void DifferentWindowsUsersHaveIndependentCrossSessionMutexNames() {
-        var first = BgInfoGenerationLease.MutexName("S-1-5-21-1001");
-        var second = BgInfoGenerationLease.MutexName("S-1-5-21-1002");
-        Assert.StartsWith(@"Global\", first);
-        Assert.NotEqual(first, second);
+    public void GenerationLockLivesInsideTheUsersProfileAndReleasesAfterNestedLeases() {
+        var expected = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "PowerBGInfo", "generation.lock");
+        Assert.Equal(expected, BgInfoGenerationLease.LockPath);
+        using (var outer = BgInfoGenerationLease.Acquire()) {
+            using (var inner = BgInfoGenerationLease.Acquire()) {
+                Assert.Throws<IOException>(() => File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None));
+            }
+            Assert.Throws<IOException>(() => File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None));
+        }
+        using var available = File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        Assert.True(available.CanWrite);
     }
 
     private sealed class CallbackService : FakeWallpaperService, IWallpaperService {

@@ -324,6 +324,7 @@ try {
         $background.ImagePath = $BaseImage
     }
 
+    $sessionId = (Get-Process -Id $PID).SessionId
     foreach ($monitor in $monitors) {
         # 1 at 1080 lines, 1.33 at 1440, 2 at 2160.
         $scale = [int]($monitor.Height / 10.8) / 100
@@ -335,7 +336,7 @@ try {
             MonitorIndex           = $monitor.Index
             WallpaperFit           = 'Fill'
             ConfigurationDirectory = $OutputDirectory
-            OutputFileName         = "wallpaper-$($monitor.Index).png"
+            OutputFileName         = "wallpaper-$sessionId-$($monitor.Index).png"
         }
         New-BGInfo @render {
             New-BGInfoBackground @background
@@ -387,7 +388,7 @@ Notes on the script:
   machine a 3840 x 2160 image over a photographic `Corporate.jpg` was
   about 18.5 MB as PNG and 4 MB as JPEG; over the plain theme backdrop it
   was about 0.5 MB as PNG. With a photo, consider
-  `wallpaper-$($monitor.Index).jpg`.
+  `wallpaper-$sessionId-$($monitor.Index).jpg`.
 
 Test it without touching the desktop, in the account it will run as:
 

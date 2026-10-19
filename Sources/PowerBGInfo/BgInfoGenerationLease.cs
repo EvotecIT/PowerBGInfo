@@ -1,40 +1,61 @@
-using System.Security.Principal;
+using System.Diagnostics;
 using System.Threading;
 
 namespace PowerBGInfo;
 
 /// <summary>Owns one synchronous generation transaction for the effective Windows user.</summary>
 internal sealed class BgInfoGenerationLease : IDisposable {
-    private Mutex? _mutex;
+    [ThreadStatic] private static FileStream? _currentLock;
+    [ThreadStatic] private static int _depth;
+    private readonly int _threadId = Thread.CurrentThread.ManagedThreadId;
+    private bool _disposed;
 
-    private BgInfoGenerationLease(Mutex mutex) => _mutex = mutex;
+    private BgInfoGenerationLease() { }
 
-    internal static string MutexName(string userSid) => @"Global\Evotec.PowerBGInfo.Generation." + userSid;
+    internal static string LockPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PowerBGInfo", "generation.lock");
 
     internal static BgInfoGenerationLease Acquire() {
-        using var identity = WindowsIdentity.GetCurrent();
-        var sid = identity.User?.Value ?? throw new InvalidOperationException("Cannot determine the Windows user for image generation.");
-        var mutex = new Mutex(false, MutexName(sid));
-        try {
+        if (_depth != 0) {
+            _depth++;
+            return new BgInfoGenerationLease();
+        }
+        var path = LockPath;
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var timeout = TimeSpan.FromMinutes(5);
+        var wait = Stopwatch.StartNew();
+        while (true) {
+            if (wait.Elapsed >= timeout) throw TimedOut();
             try {
-                if (!mutex.WaitOne(TimeSpan.FromMinutes(5))) {
-                    throw new TimeoutException("Another PowerBGInfo run for this user has not finished within five minutes.");
+                var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                if (wait.Elapsed >= timeout) {
+                    stream.Dispose();
+                    throw TimedOut();
                 }
-            } catch (AbandonedMutexException) {
-                // WaitOne grants ownership when the previous rendering process exited.
+                _currentLock = stream;
+                _depth = 1;
+                return new BgInfoGenerationLease();
+            } catch (IOException ex) when ((ex.HResult & 0xffff) is 32 or 33) {
+                // Sharing/lock violations mean another process owns the transaction.
+                // Other I/O failures should remain actionable instead of waiting five minutes.
+                var remaining = timeout - wait.Elapsed;
+                if (remaining <= TimeSpan.Zero) throw TimedOut();
+                Thread.Sleep(remaining < TimeSpan.FromMilliseconds(100) ? remaining : TimeSpan.FromMilliseconds(100));
             }
-            return new BgInfoGenerationLease(mutex);
-        } catch {
-            mutex.Dispose();
-            throw;
         }
     }
 
+    private static TimeoutException TimedOut() => new(
+        "Another PowerBGInfo run for this user has not finished within five minutes.");
+
     public void Dispose() {
-        var mutex = _mutex;
-        _mutex = null;
-        if (mutex == null) return;
-        try { mutex.ReleaseMutex(); }
-        finally { mutex.Dispose(); }
+        if (_disposed) return;
+        if (Thread.CurrentThread.ManagedThreadId != _threadId)
+            throw new InvalidOperationException("The generation lease must be released on its owning thread.");
+        _disposed = true;
+        if (--_depth != 0) return;
+        var stream = _currentLock;
+        _currentLock = null;
+        stream?.Dispose();
     }
 }
