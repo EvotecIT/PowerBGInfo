@@ -61,6 +61,7 @@ $result = Invoke-Pester -Path @(
     "$PSScriptRoot\Tests"
     "$PSScriptRoot\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1"
     "$PSScriptRoot\Sources\PowerBGInfo.Tests\Features.Tests.ps1"
+    "$PSScriptRoot\Sources\PowerBGInfo.Tests\WidgetContracts.Tests.ps1"
 ) -Verbose -PassThru
 
 $failedCount = if ($result.PSObject.Properties.Name -contains 'FailedCount') { [int]$result.FailedCount } else { 0 }

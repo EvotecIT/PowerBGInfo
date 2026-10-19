@@ -341,11 +341,13 @@ Describe 'Data helpers' {
         , $facts.Disks | Should -Not -BeNullOrEmpty
     }
 
-    It 'resolves the new built-in value tokens' -ForEach @(
+    It 'preserves the new dynamic built-in tokens without querying them during authoring' -ForEach @(
         @{ Token = 'Uptime' }, @{ Token = 'LastPatch' }, @{ Token = 'DefenderStatus' }, @{ Token = 'BitLockerStatus' },
         @{ Token = 'LoggedOnUser' }, @{ Token = 'Domain' }, @{ Token = 'DiskSummary' }
     ) {
-        (New-BGInfoValue -BuiltinValue $Token).Value | Should -Not -BeNullOrEmpty
+        $entry = New-BGInfoValue -BuiltinValue $Token
+        $entry.BuiltinValue | Should -Be $Token
+        $entry.Value | Should -BeNullOrEmpty
     }
 
     It 'returns the script block output' {

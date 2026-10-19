@@ -11,7 +11,7 @@ Creates a BGInfo visual canvas definition backed by ChartForgeX.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-New-BGInfoVisualCanvas [-Template <BgInfoVisualCanvasTemplate>] [-LayoutPreset <BgInfoVisualCanvasLayoutPreset>] [-ThemeMode <VisualThemeMode>] [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-PositionX <int>] [-PositionY <int>] [-BackgroundTop <Object>] [-BackgroundBottom <Object>] [-Accent <Object>] [-SecondaryAccent <Object>] [-TitleColor <Object>] [-TitleAccentColor <Object>] [-SubtitleColor <Object>] [-TileGlassTop <Object>] [-TileGlassBottom <Object>] [-TileLabelColor <Object>] [-TileValueColor <Object>] [-TileDetailColor <Object>] [-TileProgressTrackColor <Object>] [-HeroBadgeTop <Object>] [-HeroBadgeBottom <Object>] [-HeroBadgeTextColor <Object>] [-NoHeroBadge] [-NoHeroContent] [-HeroBadgeText <string>] [-HeroBadgeImagePath <string>] [-HeroBadgeImageFit <BgInfoImageFit>] [-HeroBadgeImagePadding <int>] [-HeroBadgeImageOpacity <double>] [-FeatureAnchor <BgInfoTextPosition>] [-FeatureWidth <int>] [-FeatureHeight <int>] [-TileWidth <int>] [-TileHeight <int>] [-TileGap <int>] [-LeftTileWidth <int>] [-RightTileWidth <int>] [-CenterTileWidth <int>] [-LeftTileOffsetX <int>] [-LeftTileOffsetY <int>] [-RightTileOffsetX <int>] [-RightTileOffsetY <int>] [-CenterTileOffsetX <int>] [-CenterTileOffsetY <int>] [-TileTextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-FeatureOffsetX <int>] [-FeatureOffsetY <int>] [-NoTechBackdrop] [-Opaque] [-Tile <BgInfoVisualCanvasTile[]>] [-Feature <BgInfoVisualCanvasFeature[]>] [-Region <BgInfoRegion>] [-RailMarginX <int>] [-RailMarginY <int>] [<CommonParameters>]
+New-BGInfoVisualCanvas [-Template <BgInfoVisualCanvasTemplate>] [-LayoutPreset <BgInfoVisualCanvasLayoutPreset>] [-ThemeMode <VisualThemeMode>] [-Title <string>] [-Subtitle <string>] [-Width <int>] [-Height <int>] [-FontFamilyName <string>] [-PositionX <int>] [-PositionY <int>] [-BackgroundTop <Object>] [-BackgroundBottom <Object>] [-Accent <Object>] [-SecondaryAccent <Object>] [-TitleColor <Object>] [-TitleAccentColor <Object>] [-SubtitleColor <Object>] [-TileGlassTop <Object>] [-TileGlassBottom <Object>] [-TileLabelColor <Object>] [-TileValueColor <Object>] [-TileDetailColor <Object>] [-TileProgressTrackColor <Object>] [-HeroBadgeTop <Object>] [-HeroBadgeBottom <Object>] [-HeroBadgeTextColor <Object>] [-NoHeroBadge] [-NoHeroContent] [-HeroBadgeText <string>] [-HeroBadgeImagePath <string>] [-HeroBadgeImageFit <BgInfoImageFit>] [-HeroBadgeImagePadding <int>] [-HeroBadgeImageOpacity <double>] [-FeatureAnchor <BgInfoTextPosition>] [-FeatureWidth <int>] [-FeatureHeight <int>] [-TileWidth <int>] [-TileHeight <int>] [-TileGap <int>] [-LeftTileWidth <int>] [-RightTileWidth <int>] [-CenterTileWidth <int>] [-LeftTileOffsetX <int>] [-LeftTileOffsetY <int>] [-RightTileOffsetX <int>] [-RightTileOffsetY <int>] [-CenterTileOffsetX <int>] [-CenterTileOffsetY <int>] [-TileTextFitPolicy <BgInfoVisualCanvasTileTextFitPolicy>] [-FeatureOffsetX <int>] [-FeatureOffsetY <int>] [-NoTechBackdrop] [-Opaque] [-Tile <BgInfoVisualCanvasTile[]>] [-Feature <BgInfoVisualCanvasFeature[]>] [-Region <BgInfoRegion>] [-RailMarginX <int>] [-RailMarginY <int>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -221,6 +221,22 @@ Optional feature-strip width in pixels. Zero uses the template default width.
 
 ```yaml
 Type: Int32
+Parameter Sets: __AllParameterSets
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FontFamilyName
+Font family for hero and tile text. Unset inherits the active wallpaper theme.
+
+```yaml
+Type: String
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:

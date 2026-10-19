@@ -19,6 +19,7 @@ Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
 #region Data: your logic goes here
 function Get-AdminWorkstationData {
     [pscustomobject] @{
+        Available     = $true
         Name          = 'PAW-T0-03'
         Operator      = 'adm.jsmith'
         Domain        = 'corp.contoso.com'
@@ -43,7 +44,7 @@ function Get-AdminWorkstationData {
 }
 
 $paw = Invoke-BGInfoDataSource -Name 'Workstation data' -TimeoutSeconds 15 -ScriptBlock ${function:Get-AdminWorkstationData} -Default ([pscustomobject] @{
-        Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'; Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0
+        Available = $false; Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'; Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0
         Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = 0; Elevation = 'unknown'; SignIns = @(0); Changes = @(0)
         Alerts = [ordered] @{ High = 0 }; ReplicaLag = ''
     })
@@ -64,6 +65,26 @@ $bottomHeight = [int](210 * $scale)
 $diagramTop = [int](360 * $scale)
 $diagramHeight = $Height - $diagramTop - $look.MarginY - $bottomHeight - 32
 
+$smartCard = if ($paw.Available) {
+    @{
+        Value = "Expires in $($paw.SmartCardDays) days"
+        Detail = 'Renew before 11 Nov'
+        StatusValue = $paw.SmartCardDays
+        WarningThreshold = 30
+        CriticalThreshold = 7
+        ThresholdDirection = 'Below'
+    }
+} else {
+    @{ Value = 'Unknown'; Detail = 'Expiry unavailable'; Status = 'Info' }
+}
+$defenderStatus = switch ($paw.Defender) {
+    'Protected' { 'Ok' }
+    'Disabled' { 'Critical' }
+    'Real-time protection off' { 'Critical' }
+    default { 'Info' }
+}
+$heading = if ($paw.Available) { 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' } else { 'DATA UNAVAILABLE  ·  VALUES ARE FALLBACKS' }
+
 New-BGInfo -Theme $look -SpaceX $textX -Target File {
     $tile = @{ SurfaceStyle = 'Glass' }
     $tiles = @(
@@ -74,18 +95,17 @@ New-BGInfo -Theme $look -SpaceX $textX -Target File {
         New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' -Value "$($paw.SystemFreeGB) GB free" `
             -Detail 'BitLocker · TPM + PIN' -Progress $paw.SystemUsed
         New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' -Value $paw.Defender `
-            -Detail 'Signatures 2 h old' -Status Ok
+            -Detail ($(if ($paw.Defender -eq 'unknown') { 'Status unavailable' } else { 'Signatures 2 h old' })) -Status $defenderStatus
         New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'PATCH LEVEL' -Value $paw.PatchLevel `
-            -Detail 'Ring 0 · pilot' -Status Ok
+            -Detail 'Ring 0 · pilot' -Status ($(if ($paw.PatchLevel -eq 'unknown') { 'Info' } else { 'Ok' }))
         # Fewer than 30 days left is a warning, fewer than 7 is critical.
-        New-BGInfoVisualCanvasTile @tile -IconKind Domain -Label 'SMART CARD' -Value "Expires in $($paw.SmartCardDays) days" `
-            -Detail 'Renew before 11 Nov' -StatusValue $paw.SmartCardDays -WarningThreshold 30 -CriticalThreshold 7 -ThresholdDirection Below
+        New-BGInfoVisualCanvasTile @tile @smartCard -IconKind Domain -Label 'SMART CARD'
         New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' -Value $paw.Elevation `
-            -Detail 'Approved by S. Ortiz' -Status Warning
+            -Detail ($(if ($paw.Available) { 'Approved by S. Ortiz' } else { 'Approval unavailable' })) -Status ($(if ($paw.Available) { 'Warning' } else { 'Info' }))
     )
     New-BGInfoBackground -Width $Width -Height $Height
 
-    New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' -Status Critical -FontSize ([int](15 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name $heading -Status ($(if ($paw.Available) { 'Critical' } else { 'Warning' })) -FontSize ([int](15 * $scale)) -FontWeight 700
     New-BGInfoLabel -Name $paw.Name -FontSize ([int](64 * $scale)) -FontWeight 600
     New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' -FontSize ([int](19 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'Operator' -Value $paw.Operator

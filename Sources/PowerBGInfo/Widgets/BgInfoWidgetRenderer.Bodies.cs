@@ -210,7 +210,7 @@ internal static partial class BgInfoWidgetRenderer {
         var chart = CreateChart(widget, style, width, height, axes: false)
             .WithLegend(false)
             .WithDataLabels(true)
-            .WithValueFormatter(value => value.ToString("0.#", CultureInfo.InvariantCulture) + suffix)
+            .WithValueFormatter(value => value.ToString("0.#", CultureInfo.CurrentCulture) + suffix)
             .ConfigureTreemap(options => {
                 options.ShowValues = widget.ShowValues;
                 options.ShowGroupLabels = groups.Count > 0;

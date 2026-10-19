@@ -375,7 +375,8 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
     private static string Resolve(string? value) => BgInfoVariableResolver.RenderTemplate(value, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
-    private static VisualTheme BuildTheme(BgInfoVisualCanvas visual) => VisualTheme.Graphite().Configure(builder => {
+    private static VisualTheme BuildTheme(BgInfoVisualCanvas visual) =>
+        (string.IsNullOrWhiteSpace(visual.FontFamilyName) ? VisualTheme.Graphite() : VisualTheme.Graphite().WithFontFamily(visual.FontFamilyName!)).Configure(builder => {
         var colors = builder.Colors(visual.ThemeMode);
         colors.Accent = visual.Accent;
         if (visual.SecondaryAccent.HasValue) colors.SecondaryAccent = visual.SecondaryAccent.Value;

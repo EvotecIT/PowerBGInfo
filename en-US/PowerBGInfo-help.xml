@@ -20846,6 +20846,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>FontFamilyName</maml:name>
+          <maml:description>
+            <maml:para>Font family for hero and tile text. Unset inherits the active wallpaper theme.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Height</maml:name>
           <maml:description>
             <maml:para>Canvas height in pixels. Zero uses the target wallpaper height.</maml:para>
@@ -21575,6 +21587,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
         <dev:type>
           <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>FontFamilyName</maml:name>
+        <maml:description>
+          <maml:para>Font family for hero and tile text. Unset inherits the active wallpaper theme.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>

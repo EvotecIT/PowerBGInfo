@@ -136,6 +136,9 @@ public sealed class BgInfoVisualCanvas {
     public int? RailMarginX { get; set; }
     /// <summary>Distance of the tile rails from the top edge of a transparent canvas. Unset uses 16 % of the height.</summary>
     public int? RailMarginY { get; set; }
+
+    /// <summary>Optional font family for hero and tile text. Unset uses the shared theme default.</summary>
+    public string? FontFamilyName { get; set; }
     /// <summary>Position in the region's flow. New-BGInfo numbers items in the order they are emitted; equal values keep chart, diagram, canvas, widget order.</summary>
     public int RegionOrder { get; set; }
     /// <summary>Top background color.</summary>

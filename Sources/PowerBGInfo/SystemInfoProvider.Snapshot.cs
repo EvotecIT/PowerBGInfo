@@ -98,8 +98,7 @@ public static partial class SystemInfoProvider {
     private static string LoadMachineDomain() {
         if (IsWindows()) {
             try {
-                using var searcher = new ManagementObjectSearcher("SELECT Domain FROM Win32_ComputerSystem");
-                foreach (ManagementObject computer in searcher.Get()) {
+                foreach (var computer in Query(@"root\cimv2", "SELECT Domain FROM Win32_ComputerSystem")) {
                     var domain = computer["Domain"]?.ToString();
                     if (!string.IsNullOrWhiteSpace(domain)) return ResolveMachineDomain(domain);
                 }
@@ -232,14 +231,6 @@ public static partial class SystemInfoProvider {
             return Unknown;
         }
         return Unknown;
-    }
-
-    private static List<ManagementBaseObject> Query(string scope, string query) {
-        var options = new System.Management.EnumerationOptions { Timeout = QueryTimeout, ReturnImmediately = true, Rewindable = false };
-        using var searcher = new ManagementObjectSearcher(new ManagementScope(scope), new ObjectQuery(query), options);
-        var results = new List<ManagementBaseObject>();
-        foreach (var obj in searcher.Get()) results.Add(obj);
-        return results;
     }
 
     private static string OrUnknown(string? value) => string.IsNullOrWhiteSpace(value) ? Unknown : value!.Trim();

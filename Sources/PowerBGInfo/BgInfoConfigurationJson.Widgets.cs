@@ -42,6 +42,7 @@ public static partial class BgInfoConfigurationJson {
                 model.VisualCanvases[i].RegionOrder = visuals[i].RegionOrder == 0 ? null : visuals[i].RegionOrder;
                 model.VisualCanvases[i].RailMarginX = visuals[i].RailMarginX;
                 model.VisualCanvases[i].RailMarginY = visuals[i].RailMarginY;
+                model.VisualCanvases[i].FontFamilyName = visuals[i].FontFamilyName;
             }
         }
         if (configuration.Widgets.Count > 0) {
@@ -357,9 +358,9 @@ public static partial class BgInfoConfigurationJson {
     private static DateTime? ParseDate(string? text) {
         if (string.IsNullOrWhiteSpace(text)) return null;
         const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.RoundtripKind;
-        if (DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized)) return localized;
         string[] invariantFormats = { "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" };
-        return DateTime.TryParseExact(text, invariantFormats, CultureInfo.InvariantCulture, styles, out var invariant) ? invariant : null;
+        if (DateTime.TryParseExact(text, invariantFormats, CultureInfo.InvariantCulture, styles, out var invariant)) return invariant;
+        return DateTime.TryParse(text, CultureInfo.CurrentCulture, styles, out var localized) ? localized : null;
     }
 
     internal sealed class BgInfoLayoutFile {

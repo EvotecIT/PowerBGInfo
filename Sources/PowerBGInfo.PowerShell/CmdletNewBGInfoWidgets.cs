@@ -174,7 +174,9 @@ public sealed class CmdletNewBGInfoTable : BgInfoWidgetCmdlet {
         var columns = new List<(string Name, Func<object, object?> Read)>();
         var selection = Property != null && Property.Length > 0
             ? Property
-            : _items.Count == 0 ? Array.Empty<object>() : PSObject.AsPSObject(_items[0]).Properties.Select(p => (object)p.Name).ToArray();
+            : _items.Count == 0 ? Array.Empty<object>()
+            : BgInfoValueReader.Unwrap(_items[0]) is IDictionary dictionary ? dictionary.Keys.Cast<object>().ToArray()
+            : PSObject.AsPSObject(_items[0]).Properties.Select(p => (object)p.Name).ToArray();
         foreach (var entry in selection) {
             var value = BgInfoValueReader.Unwrap(entry);
             if (value is IDictionary calculated) {

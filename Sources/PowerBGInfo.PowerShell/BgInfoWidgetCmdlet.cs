@@ -187,23 +187,32 @@ public abstract class BgInfoWidgetCmdlet : PSCmdlet {
 /// <summary>Reads values from hashtables, PSCustomObjects and .NET objects for the widget cmdlets.</summary>
 internal static class BgInfoValueReader {
     /// <summary>Reads a named property from a hashtable, PSCustomObject or .NET object.</summary>
-    public static object? GetProperty(object? item, params string[] names) {
-        if (item == null) return null;
+    public static object? GetProperty(object? item, params string[] names) =>
+        TryGetProperty(item, out var result, names) ? result : null;
+
+    /// <summary>Distinguishes a missing property from a present null or malformed value.</summary>
+    public static bool TryGetProperty(object? item, out object? result, params string[] names) {
+        result = null;
+        if (item == null) return false;
         var value = Unwrap(item);
         if (value is System.Collections.IDictionary dictionary) {
             foreach (System.Collections.DictionaryEntry entry in dictionary) {
                 if (entry.Key is string key && names.Any(name => string.Equals(name, key, StringComparison.OrdinalIgnoreCase))) {
-                    return Unwrap(entry.Value);
+                    result = Unwrap(entry.Value);
+                    return true;
                 }
             }
-            return null;
+            return false;
         }
         var psObject = item as PSObject ?? PSObject.AsPSObject(value);
         foreach (var name in names) {
             var property = psObject.Properties[name];
-            if (property != null) return Unwrap(property.Value);
+            if (property != null) {
+                result = Unwrap(property.Value);
+                return true;
+            }
         }
-        return null;
+        return false;
     }
 
     /// <summary>Returns the base object, except for PSCustomObject, whose properties live on the PSObject wrapper.</summary>

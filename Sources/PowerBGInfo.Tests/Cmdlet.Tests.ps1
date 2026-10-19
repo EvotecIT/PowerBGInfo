@@ -92,17 +92,17 @@ Describe 'New-BGInfoValue cmdlet' {
         { New-BGInfoValue -Name 'Test' -Value 'X' -ValueFontWeight 901 -ErrorAction Stop } | Should -Throw
     }
 
-    It 'resolves builtin values' {
+    It 'defers builtin values to the renderer' {
         $entry = New-BGInfoValue -BuiltinValue 'HostName'
         $entry.Name | Should -Be 'HostName'
-        $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.Value | Should -BeNullOrEmpty
         $entry.BuiltinValue | Should -Be 'HostName'
     }
 
-    It 'resolves WMI-backed builtin values in the PowerShell host' {
+    It 'defers WMI-backed builtin values to the renderer' {
         $entry = New-BGInfoValue -BuiltinValue 'OSName'
         $entry.Name | Should -Be 'OSName'
-        $entry.Value | Should -Not -BeNullOrEmpty
+        $entry.Value | Should -BeNullOrEmpty
         $entry.BuiltinValue | Should -Be 'OSName'
     }
 

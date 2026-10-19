@@ -171,7 +171,8 @@ public static class BgInfoLayoutEngine {
     }
 
     private static (double Start, double End)? BandSpan(double start, double end, double y, double height, ChartRect? text, double gap) {
-        if (text is not { } block || !Overlaps(y, y + height, block.Y, block.Y + block.Height)) return (start, end);
+        if (text is not { } block || !Overlaps(y, y + height, block.Y, block.Y + block.Height)
+            || !Overlaps(start, end, block.X, block.X + block.Width)) return (start, end);
         var before = block.X - gap - start;
         var after = end - (block.X + block.Width + gap);
         if (before <= 0 && after <= 0) return null;

@@ -153,13 +153,13 @@ public class CmdletNewBGInfoValue : PSCmdlet {
 
     /// <summary>Emits a BGInfo value entry.</summary>
     protected override void EndProcessing() {
-        string finalValue = string.IsNullOrEmpty(BuiltinValue) ? Value : SystemInfoProvider.GetValue(BuiltinValue);
         bool isTemplate = string.Equals(ParameterSetName, "Template", StringComparison.OrdinalIgnoreCase);
         var entry = new BgInfoEntry
         {
             Type = BgInfoEntryType.Value,
             Name = string.IsNullOrEmpty(Name) ? BuiltinValue : Name,
-            Value = isTemplate ? Value : finalValue,
+            // Built-in tokens are resolved by the generator, once for each rendered wallpaper.
+            Value = isTemplate || string.IsNullOrEmpty(BuiltinValue) ? Value : null,
             BuiltinValue = isTemplate ? null : string.IsNullOrEmpty(BuiltinValue) ? null : BuiltinValue,
             ForEach = isTemplate ? ForEach : null,
             Color = IsParameterBound(nameof(Color)) ? PowerShellColorConverter.ConvertRequired(Color, nameof(Color)) : null,

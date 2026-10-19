@@ -1061,6 +1061,7 @@ public static partial class BgInfoConfigurationJson {
         visual.RegionOrder = model.RegionOrder ?? 0;
         visual.RailMarginX = model.RailMarginX;
         visual.RailMarginY = model.RailMarginY;
+        visual.FontFamilyName = model.FontFamilyName;
 
         return visual;
     }
@@ -1478,6 +1479,7 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasFile {
+        public string? FontFamilyName { get; set; }
         public string? Region { get; set; }
         public int? RegionOrder { get; set; }
         public int? RailMarginX { get; set; }

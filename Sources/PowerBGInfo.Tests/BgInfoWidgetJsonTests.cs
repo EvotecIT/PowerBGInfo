@@ -117,7 +117,7 @@ public class BgInfoWidgetJsonTests
             Threshold = new BgInfoThreshold { Warning = 80, Critical = 90, Colors = theme.StatusColors }
         });
         config.Topologies.Add(new BgInfoTopology { Region = BgInfoRegion.Center, RegionOrder = 4, Accent = ChartColor.FromHex("#F020A0"), FontFamilyName = "Arial" });
-        config.VisualCanvases.Add(new BgInfoVisualCanvas { Region = BgInfoRegion.Left, RailMarginX = 64, RailMarginY = 56 });
+        config.VisualCanvases.Add(new BgInfoVisualCanvas { Region = BgInfoRegion.Left, RailMarginX = 64, RailMarginY = 56, FontFamilyName = "Courier New" });
 
         var metric = new BgInfoMetricWidget {
             Label = "CPU", Value = "38", Unit = "%", NumericValue = 38, History = new double[] { 1, 2, 3 },
@@ -159,6 +159,8 @@ public class BgInfoWidgetJsonTests
             Assert.Equal(ChartColor.FromHex("#F020A0"), loaded.Topologies[0].Accent);
             Assert.Equal("Arial", loaded.Topologies[0].FontFamilyName);
             Assert.Equal(64, loaded.VisualCanvases[0].RailMarginX);
+            Assert.Equal(56, loaded.VisualCanvases[0].RailMarginY);
+            Assert.Equal("Courier New", loaded.VisualCanvases[0].FontFamilyName);
             Assert.Equal(BgInfoRegion.Left, loaded.VisualCanvases[0].Region);
 
             Assert.Equal(8, loaded.Widgets.Count);

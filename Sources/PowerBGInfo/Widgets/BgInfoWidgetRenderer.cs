@@ -108,6 +108,7 @@ internal static partial class BgInfoWidgetRenderer {
     /// <summary>Logical size and output density for a body rendered at <see cref="BgInfoWidget.Scale"/>.</summary>
     internal static (int Width, int Height, int OutputScale) Density(BgInfoWidget widget, int width, int height) {
         var scale = widget.Scale;
+        if (widget.NaturalBodyHeight > 0) scale = Math.Min(scale, height / widget.NaturalBodyHeight);
         var logicalWidth = Math.Max(1, (int)Math.Round(width / scale));
         var logicalHeight = Math.Max(1, (int)Math.Round(height / scale));
         var output = Math.Max(1, Math.Min(4, (int)Math.Ceiling(scale)));
