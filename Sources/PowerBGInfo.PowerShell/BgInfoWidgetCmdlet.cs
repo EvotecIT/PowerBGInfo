@@ -226,8 +226,9 @@ internal static class BgInfoValueReader {
         value = Unwrap(value);
         if (value == null) return null;
         if (value is string text) {
-            return double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var invariant) ? invariant
-                : double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var local) ? local : null;
+            var styles = System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands;
+            return double.TryParse(text, styles, System.Globalization.CultureInfo.CurrentCulture, out var local) ? local
+                : double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var invariant) ? invariant : null;
         }
         return LanguagePrimitives.TryConvertTo<double>(value, out var number) ? number : null;
     }

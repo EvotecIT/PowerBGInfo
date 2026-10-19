@@ -17,7 +17,7 @@ public static partial class SystemInfoProvider
     private static readonly Lazy<OsInfo> OsInfoCache = new(LoadOsInfo, true);
     private static readonly Lazy<NetworkInfo> NetworkInfoCache = new(LoadNetworkInfo, true);
     private static readonly Lazy<string> FqdnCache = new(LoadFqdn, true);
-    private static readonly Lazy<string> MachineDomainCache = new(LoadMachineDomain, true);
+    private static string? _machineDomain;
 
     private static readonly Dictionary<string, Func<string>> Handlers = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -49,7 +49,7 @@ public static partial class SystemInfoProvider
         ["DefenderStatus"] = () => GetDefender().Status,
         ["BitLockerStatus"] = GetBitLockerStatus,
         ["LoggedOnUser"] = GetLoggedOnUser,
-        ["Domain"] = () => MachineDomainCache.Value,
+        ["Domain"] = GetMachineDomain,
         ["DiskSummary"] = () => FormatDiskSummary(GetDisks())
     };
 

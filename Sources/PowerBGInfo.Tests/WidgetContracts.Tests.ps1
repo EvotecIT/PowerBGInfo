@@ -11,6 +11,71 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'cancels provider and capacity waits without releasing a running provider' {
+        $release = [System.Threading.ManualResetEventSlim]::new($false)
+        $started = [System.Threading.ManualResetEventSlim]::new($false)
+        $finished = [System.Threading.ManualResetEventSlim]::new($false)
+        $unexpected = [System.Threading.ManualResetEventSlim]::new($false)
+        $first = [powershell]::Create()
+        $second = [powershell]::Create()
+        try {
+            $module = (Get-Command Invoke-BGInfoDataSource).Module.Path
+            $null = $first.AddScript({
+                param($module, $started, $release, $finished)
+                Import-Module $module
+                Invoke-BGInfoDataSource -TimeoutSeconds 10 -ScriptBlock {
+                    param($started, $release, $finished)
+                    $started.Set()
+                    try { $release.Wait(); 'late' } finally { $finished.Set() }
+                } -ArgumentList $started,$release,$finished
+            }).AddArgument($module).AddArgument($started).AddArgument($release).AddArgument($finished)
+            $firstHandle = $first.BeginInvoke()
+            $started.Wait(5000) | Should -BeTrue
+            $firstStop = $first.BeginStop($null, $null)
+            $firstStop.AsyncWaitHandle.WaitOne(2000) | Should -BeTrue
+            $first.EndStop($firstStop)
+            $null = $second.AddScript({
+                param($module, $unexpected)
+                Import-Module $module
+                Invoke-BGInfoDataSource -TimeoutSeconds 10 -ScriptBlock { param($entered) $entered.Set() } -ArgumentList $unexpected
+            }).AddArgument($module).AddArgument($unexpected)
+            $secondHandle = $second.BeginInvoke()
+            # Let the second pipeline enter its capacity wait before cancelling it.
+            [Threading.Thread]::Sleep(150)
+            $secondStop = $second.BeginStop($null, $null)
+            $secondStop.AsyncWaitHandle.WaitOne(2000) | Should -BeTrue
+            $second.EndStop($secondStop)
+            $unexpected.IsSet | Should -BeFalse
+        } finally {
+            $release.Set()
+            $finished.Wait(5000) | Should -BeTrue
+            $first.Dispose()
+            $second.Dispose()
+            $release.Dispose(); $started.Dispose(); $finished.Dispose(); $unexpected.Dispose()
+        }
+        Invoke-BGInfoDataSource -TimeoutSeconds 5 -ScriptBlock { 'recovered' } | Should -Be 'recovered'
+    }
+
+    It 'uses localized numeric grouping and decimals in metric calendar and treemap inputs' {
+        $previous = [Globalization.CultureInfo]::CurrentCulture
+        try {
+            foreach ($case in @(
+                @{ Culture='de-DE'; Number='1.234'; Expected=1234 }
+                @{ Culture='de-DE'; Number='1.234,5'; Expected=1234.5 }
+                @{ Culture='pl-PL'; Number='1234,5'; Expected=1234.5 }
+                @{ Culture='en-US'; Number='1,234.5'; Expected=1234.5 }
+            )) {
+                [Globalization.CultureInfo]::CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo($case.Culture)
+                $metric = New-BGInfoMetric -Label CPU -Value $case.Number
+                $metric.NumericValue | Should -Be $case.Expected
+                $calendar = @{ Date='2026-10-12'; Value=$case.Number } | New-BGInfoCalendarHeatmap
+                $calendar.Items[0].Value | Should -Be $case.Expected
+                $treemap = New-BGInfoTreemap -Data @{ Service=$case.Number }
+                $treemap.Items[0].Value | Should -Be $case.Expected
+            }
+        } finally { [Globalization.CultureInfo]::CurrentCulture = $previous }
+    }
+
     It 'bounds pending data source cleanup and recovers after a noncooperative call exits' {
         $release = [System.Threading.ManualResetEventSlim]::new($false)
         $finished = [System.Threading.ManualResetEventSlim]::new($false)

@@ -113,8 +113,15 @@ public static class BgInfoLayoutEngine {
         var separatorCount = hasMiddleRegions
             ? (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0)
             : top.Length > 0 && bottom.Length > 0 ? 1 : 0;
-        var bandBudget = Math.Max(0, safe.Height - gap * separatorCount);
         var bandTotal = topHeight + bottomHeight;
+        var verticalRegionCount = (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0) + (hasMiddleRegions ? 1 : 0);
+        if (safe.Height < verticalRegionCount) return result;
+        var middleReserve = hasMiddleRegions ? Math.Min(120, safe.Height) : 0;
+        var bandReserve = Math.Min(120, topHeight) + Math.Min(120, bottomHeight);
+        var bandGap = separatorCount > 0
+            ? Math.Min(gap, Math.Max(0, safe.Height - bandReserve - middleReserve) / separatorCount)
+            : 0;
+        var bandBudget = Math.Max(0, safe.Height - bandGap * separatorCount - middleReserve);
         if (bandTotal > bandBudget && bandTotal > 0) {
             var bandScale = bandBudget / bandTotal;
             topHeight *= bandScale;
@@ -133,8 +140,8 @@ public static class BgInfoLayoutEngine {
             if (span is { } available) FlowRow(requests, bottom, result, available.Start, available.End, y, bottomHeight, gap, alignBottom: true);
         }
 
-        var columnTop = Math.Min(safeBottom, Math.Max(safe.Y, safe.Y + (top.Length > 0 ? topHeight + gap : 0)));
-        var columnBottom = Math.Min(safeBottom, Math.Max(safe.Y, safeBottom - (bottom.Length > 0 ? bottomHeight + gap : 0)));
+        var columnTop = Math.Min(safeBottom, Math.Max(safe.Y, safe.Y + (top.Length > 0 ? topHeight + bandGap : 0)));
+        var columnBottom = Math.Min(safeBottom, Math.Max(safe.Y, safeBottom - (bottom.Length > 0 ? bottomHeight + bandGap : 0)));
         var columnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : Clamp(width * 0.24, 340, 620);
         var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
         var columnGapCount = center.Length > 0 ? sideColumns : Math.Max(0, sideColumns - 1);

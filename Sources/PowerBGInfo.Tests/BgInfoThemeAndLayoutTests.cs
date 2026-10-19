@@ -288,6 +288,28 @@ public class BgInfoThemeAndLayoutTests
         Assert.True(slots[1].Width > 0);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OversizedVerticalGapPreservesBandsAndRequestedMiddle(bool includeMiddle)
+    {
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, TaskbarReserve = 0, IconAreaWidth = 0, Gap = 1024 };
+        var requests = new List<BgInfoLayoutRequest> {
+            new(BgInfoRegion.Top, 0, 160), new(BgInfoRegion.Bottom, 0, 160)
+        };
+        if (includeMiddle) requests.Add(new(BgInfoRegion.Center, 0, 120));
+        var slots = BgInfoLayoutEngine.Resolve(640, 480, layout, null, requests);
+        Assert.All(slots, slot => {
+            Assert.True(slot.Height >= 120, "Separators must not consume the panel content height.");
+            Assert.True(slot.Y >= 0 && slot.Y + slot.Height <= 480);
+        });
+        Assert.True(slots[0].Y + slots[0].Height <= slots[1].Y);
+        if (includeMiddle) {
+            Assert.True(slots[0].Y + slots[0].Height <= slots[2].Y);
+            Assert.True(slots[2].Y + slots[2].Height <= slots[1].Y);
+        }
+    }
+
     [Fact]
     public void EmptyRegionChartsDoNotReserveSpaceForOtherPanels()
     {

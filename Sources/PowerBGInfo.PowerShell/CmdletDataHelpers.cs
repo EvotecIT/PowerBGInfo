@@ -40,6 +40,9 @@ public sealed class CmdletGetBGInfoSystemInfo : PSCmdlet {
 [OutputType(typeof(object))]
 public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
     private static readonly SemaphoreSlim InvocationCapacity = new(1, 1);
+    private readonly CancellationTokenSource _stop = new();
+    private readonly object _stopGate = new();
+    private bool _finished;
     /// <para>Your data-collection code.</para>
     [Parameter(Mandatory = true, Position = 0)]
     public ScriptBlock ScriptBlock { get; set; } = null!;
@@ -64,9 +67,27 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
 
     /// <summary>Runs the code and emits its output or the fallback.</summary>
     protected override void EndProcessing() {
+        try { RunWithCapacity(_stop.Token); }
+        finally {
+            lock (_stopGate) {
+                _finished = true;
+                _stop.Dispose();
+            }
+        }
+    }
+
+    /// <summary>Interrupts both waits without releasing resources still owned by the provider.</summary>
+    protected override void StopProcessing() {
+        lock (_stopGate) if (!_finished) _stop.Cancel();
+    }
+
+    private void RunWithCapacity(CancellationToken cancellation) {
         var timer = Stopwatch.StartNew();
         var timeout = TimeSpan.FromSeconds(TimeoutSeconds);
-        if (!InvocationCapacity.Wait(timeout)) {
+        bool acquired;
+        try { acquired = InvocationCapacity.Wait(timeout, cancellation); }
+        catch (OperationCanceledException) { return; }
+        if (!acquired) {
             Fallback("could not start while another data source is still running or cleaning up");
             return;
         }
@@ -98,7 +119,7 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
             }
 
             var remaining = timeout - timer.Elapsed;
-            if (remaining <= TimeSpan.Zero || !handle.AsyncWaitHandle.WaitOne(remaining)) {
+            if (remaining <= TimeSpan.Zero || WaitHandle.WaitAny(new[] { handle.AsyncWaitHandle, cancellation.WaitHandle }, remaining) != 0) {
                 // Retain the single capacity slot until cooperative stop, completion and
                 // disposal actually finish. A stuck provider cannot accumulate runspaces.
                 var expiredShell = shell;
@@ -113,7 +134,7 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
                         finally { InvocationCapacity.Release(); }
                     }
                 });
-                Fallback($"did not finish within {TimeoutSeconds} s");
+                if (!cancellation.IsCancellationRequested) Fallback($"did not finish within {TimeoutSeconds} s");
                 return;
             }
 
