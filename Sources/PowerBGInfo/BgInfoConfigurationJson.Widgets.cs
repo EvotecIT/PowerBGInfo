@@ -88,15 +88,19 @@ public static partial class BgInfoConfigurationJson {
     };
 
     private static BgInfoThreshold? MapThreshold(BgInfoThresholdFile? model, VisualThemeMode mode) {
-        if (model == null || (!model.Warning.HasValue && !model.Critical.HasValue)) return null;
+        if (model == null) return null;
         var threshold = new BgInfoThreshold { Warning = model.Warning, Critical = model.Critical };
         ApplyEnum<BgInfoThresholdDirection>(model.Direction, value => threshold.Direction = value);
         threshold.Colors = MapStatusColors(model.Ok, model.WarningColor, model.CriticalColor, model.Info, mode);
         threshold.Validate();
-        return threshold;
+        return threshold.IsDefined ? threshold : null;
     }
 
-    private static BgInfoThresholdFile? MapThresholdFile(BgInfoThreshold? threshold) => threshold is not { IsDefined: true } ? null : new BgInfoThresholdFile {
+    private static BgInfoThresholdFile? MapThresholdFile(BgInfoThreshold? threshold) {
+        if (threshold == null) return null;
+        threshold.Validate();
+        if (!threshold.IsDefined) return null;
+        return new BgInfoThresholdFile {
         Warning = threshold.Warning,
         Critical = threshold.Critical,
         Direction = threshold.Direction == BgInfoThresholdDirection.Above ? null : threshold.Direction.ToString(),
@@ -104,7 +108,8 @@ public static partial class BgInfoConfigurationJson {
         WarningColor = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Warning),
         CriticalColor = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Critical),
         Info = threshold.Colors == null ? null : BgInfoColorParser.ToHex(threshold.Colors.Info)
-    };
+        };
+    }
 
     private static BgInfoStatusColors? MapStatusColors(string? ok, string? warning, string? critical, string? info, VisualThemeMode mode) {
         if (ok == null && warning == null && critical == null && info == null) return null;

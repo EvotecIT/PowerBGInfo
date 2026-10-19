@@ -77,6 +77,7 @@ public sealed class BgInfoThreshold {
 
     /// <summary>Evaluates a value. Values that cross no threshold are <see cref="BgInfoStatus.Ok"/>.</summary>
     public BgInfoStatus Evaluate(double value) {
+        Validate();
         if (!IsDefined || double.IsNaN(value)) return BgInfoStatus.None;
         if (Critical.HasValue && Crosses(value, Critical.Value)) return BgInfoStatus.Critical;
         if (Warning.HasValue && Crosses(value, Warning.Value)) return BgInfoStatus.Warning;

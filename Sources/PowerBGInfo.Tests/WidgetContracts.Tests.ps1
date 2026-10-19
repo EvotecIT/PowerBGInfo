@@ -11,6 +11,74 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'expires a queued source without running it and recovers capacity' {
+        $entered = [Threading.ManualResetEventSlim]::new($false)
+        $release = [Threading.ManualResetEventSlim]::new($false)
+        $unexpected = [Threading.ManualResetEventSlim]::new($false)
+        $first = [powershell]::Create()
+        try {
+            $null = $first.AddScript({
+                param($module, $entered, $release)
+                Import-Module $module
+                Invoke-BGInfoDataSource -TimeoutSeconds 10 -ScriptBlock {
+                    param($entered, $release)
+                    $entered.Set(); $release.Wait(); 'first completed'
+                } -ArgumentList $entered,$release
+            }).AddArgument((Get-Command Invoke-BGInfoDataSource).Module.Path).AddArgument($entered).AddArgument($release)
+            $handle = $first.BeginInvoke()
+            $entered.Wait(5000) | Should -BeTrue
+            $warnings = @()
+            Invoke-BGInfoDataSource -TimeoutSeconds 1 -Default 'expired' -WarningVariable warnings -WarningAction SilentlyContinue -ScriptBlock {
+                param($unexpected) $unexpected.Set(); 'must not run'
+            } -ArgumentList $unexpected | Should -Be 'expired'
+            $warnings.Count | Should -Be 1
+            $unexpected.IsSet | Should -BeFalse
+            $release.Set()
+            $handle.AsyncWaitHandle.WaitOne(5000) | Should -BeTrue
+            @($first.EndInvoke($handle))[0] | Should -Be 'first completed'
+            Invoke-BGInfoDataSource -TimeoutSeconds 5 -ScriptBlock { 'recovered' } | Should -Be 'recovered'
+        } finally {
+            $release.Set(); $first.Dispose()
+            $entered.Dispose(); $release.Dispose(); $unexpected.Dispose()
+        }
+    }
+
+    It 'rejects thresholds mutated after metric creation through the public model' {
+        $metric = New-BGInfoMetric -Label CPU -Value 85 -WarningThreshold 80 -CriticalThreshold 90
+        $metric.ResolveStatus().ToString() | Should -Be 'Warning'
+        $metric.Threshold.Critical = 70
+        { $metric.Validate() } | Should -Throw '*critical threshold*'
+        { $metric.ResolveStatus() } | Should -Throw '*critical threshold*'
+        $metric.NumericValue = $null
+        { $metric.ResolveStatus() } | Should -Throw '*critical threshold*'
+        $metric.Threshold.Critical = 90
+        $metric.NumericValue = 85
+        $metric.Validate()
+        $metric.ResolveStatus().ToString() | Should -Be 'Warning'
+        $metric.NumericValue = $null; $metric.Status = 'Ok'
+        $metric.ResolveStatus().ToString() | Should -Be 'Ok'
+    }
+
+    It 'preserves an existing usable export when a nested threshold becomes invalid' {
+        $core = (New-BGInfoMetric -Label CPU -Value 85).GetType().Assembly
+        $loader = $core.GetType('PowerBGInfo.BgInfoConfigurationJson')
+        foreach ($kind in @('Metric', 'Chart')) {
+            $item = if ($kind -eq 'Metric') { New-BGInfoMetric -Label CPU -Value 85 -WarningThreshold 80 -CriticalThreshold 90 }
+                else { New-BGInfoChart -Values 85 -WarningThreshold 80 -CriticalThreshold 90 }
+            $config = [Activator]::CreateInstance($core.GetType('PowerBGInfo.BgInfoConfiguration'))
+            if ($kind -eq 'Metric') { $config.Widgets.Add($item) } else { $config.Charts.Add($item) }
+            $path = Join-Path $TestDrive "$kind-preserved.json"
+            Export-BGInfoConfiguration -InputObject $config -Path $path
+            $before = (Get-FileHash $path).Hash
+            $item.Threshold.Critical = 70
+            { Export-BGInfoConfiguration -InputObject $config -Path $path -Force } | Should -Throw '*critical threshold*'
+            (Get-FileHash $path).Hash | Should -Be $before
+            $loaded = $loader::Load($path)
+            $threshold = if ($kind -eq 'Metric') { $loaded.Widgets[0].Threshold } else { $loaded.Charts[0].Threshold }
+            $threshold.Critical | Should -Be 90
+        }
+    }
+
     It 'preserves interleaved panel emission order without mutating reusable definitions' {
         $core = (New-BGInfoMetric -Label QUEUE -Value 42).GetType().Assembly
         $loader = $core.GetType('PowerBGInfo.BgInfoConfigurationJson')

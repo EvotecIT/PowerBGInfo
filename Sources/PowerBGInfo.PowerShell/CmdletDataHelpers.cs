@@ -105,12 +105,14 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
         }
 
         void Run() {
+            if (!CanStart()) return;
             shell = System.Management.Automation.PowerShell.Create();
             shell.AddScript(ScriptBlock.ToString(), useLocalScope: true);
             foreach (var argument in ArgumentList ?? Array.Empty<object>()) shell.AddArgument(argument);
 
             output = new PSDataCollection<PSObject>();
             IAsyncResult handle;
+            if (!CanStart()) return;
             try {
                 handle = shell.BeginInvoke<PSObject, PSObject>(null, output);
             } catch (Exception exception) {
@@ -155,6 +157,13 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
                 return;
             }
             foreach (var item in output) WriteObject(item);
+        }
+
+        bool CanStart() {
+            if (cancellation.IsCancellationRequested) return false;
+            if (timer.Elapsed < timeout) return true;
+            Fallback($"did not start within {TimeoutSeconds} s");
+            return false;
         }
     }
 

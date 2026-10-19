@@ -51,6 +51,7 @@ public sealed class BgInfoMetricWidget : BgInfoWidget {
     /// <inheritdoc />
     public override void Validate() {
         base.Validate();
+        Threshold?.Validate();
         if (History == null) throw new ArgumentNullException(nameof(History));
         foreach (var value in History) {
             if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(History), "Metric history must contain finite values.");
@@ -65,6 +66,7 @@ public sealed class BgInfoMetricWidget : BgInfoWidget {
 
     /// <summary>The status after thresholds are applied.</summary>
     public BgInfoStatus ResolveStatus() {
+        Threshold?.Validate();
         if (Threshold is { IsDefined: true } threshold && NumericValue.HasValue) return threshold.Evaluate(NumericValue.Value);
         return Status;
     }

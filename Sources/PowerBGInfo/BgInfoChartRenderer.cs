@@ -20,6 +20,7 @@ internal static class BgInfoChartRenderer {
     public static BgInfoRasterImage Render(BgInfoChart chart, IReadOnlyList<double> values, BgInfoConfiguration config, int requestedWidth, int requestedHeight) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (config == null) throw new ArgumentNullException(nameof(config));
+        chart.Threshold?.Validate();
 
         var width = Math.Max(1, requestedWidth);
         var height = Math.Max(1, requestedHeight);

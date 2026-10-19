@@ -15,6 +15,7 @@ internal sealed class SystemInfoQueryExecutor {
     private bool _stalled;
 
     internal T? Run<T>(Func<T> operation, TimeSpan timeout) where T : class {
+        if (timeout <= TimeSpan.Zero) return null;
         var timer = Stopwatch.StartNew();
         lock (_gate) if (_stalled) return null;
         if (!_capacity.Wait(timeout)) return null;
@@ -34,6 +35,10 @@ internal sealed class SystemInfoQueryExecutor {
             }
         }) { IsBackground = true, Name = "PowerBGInfo WMI query" };
         try {
+            if (timer.Elapsed >= timeout) {
+                _capacity.Release();
+                return null;
+            }
             worker.Start();
         } catch {
             _capacity.Release();
