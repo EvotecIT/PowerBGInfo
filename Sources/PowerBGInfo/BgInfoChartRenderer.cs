@@ -115,9 +115,9 @@ internal static class BgInfoChartRenderer {
             .WithTransparentBackground()
             .WithHeader(false)
             .WithLegend(false)
-            .WithAxes(false)
+            .WithAxes(chart.Kind == BgInfoChartKind.HorizontalBar)
             .WithXAxisVisible(false)
-            .WithYAxisVisible(false)
+            .WithYAxisVisible(chart.Kind == BgInfoChartKind.HorizontalBar)
             .WithAxisLines(false)
             .WithCard(false)
             .WithPlotBackground(false)
@@ -156,6 +156,13 @@ internal static class BgInfoChartRenderer {
                 plot.AddSeries(WithPointColors(ChartSeries.CreateBar(SeriesId(chart), chart.Title, BuildIndexedPoints(values), accent), palette, values.Count));
                 break;
             case BgInfoChartKind.HorizontalBar:
+                var labels = BuildLabels(chart, values.Count);
+                plot.ConfigureYAxis(axis => {
+                    axis.TickCount = Math.Max(2, labels.Length);
+                    axis.LabelDensity = ChartLabelDensity.All;
+                    axis.Labels.Clear();
+                    for (var index = 0; index < labels.Length; index++) axis.Labels.Add(new ChartAxisLabel(index + 1, labels[index]));
+                });
                 plot.AddSeries(WithPointColors(new ChartSeries(SeriesId(chart), chart.Title, ChartSeriesKind.HorizontalBar, BuildIndexedPoints(values)) { Color = accent }, palette, values.Count));
                 break;
             case BgInfoChartKind.Line:

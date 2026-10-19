@@ -56,6 +56,7 @@ internal sealed class BgInfoWidgetStyle {
         colors.Accent = Accent;
         colors.SecondaryAccent = SecondaryAccent;
         colors.Positive = Status.Ok;
+        colors.Info = Status.Info;
         colors.Warning = Status.Warning;
         colors.Negative = Status.Critical;
         colors.Border = WithAlpha(Grid, 90);

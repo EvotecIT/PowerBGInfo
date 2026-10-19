@@ -153,13 +153,14 @@ New-BGInfo -Theme $look -Target File {
         -GroupProperty Workload -ValueSuffix ' GB' -ColorProperty Cpu `
         -WarningThreshold 60 -CriticalThreshold 85
 
-    # Right column: where else VMs could go, today's live migrations and
-    # the checkpoints left behind.
+    # Right column: cluster memory by node, today's live migrations and the
+    # checkpoints left behind. Each node keeps its label and palette color.
     New-BGInfoChart -Region Right -Id 'nodes' -Title 'Cluster memory' `
-        -Kind ProgressBar -Values @($hv.Nodes.Values) `
-        -Labels @($hv.Nodes.Keys) -Maximum 100 -ValueSuffix ' %' `
-        -NoProgressHandles -ShowLatestValue:$false -NoHistory `
-        -WarningThreshold 80 -CriticalThreshold 90 `
+        -Kind HorizontalBar -Values @($hv.Nodes.Values) `
+        -Labels @($hv.Nodes.Keys) `
+        -Palette @($look.Accent, $look.SecondaryAccent, $look.Ok, `
+            $look.Warning, $look.Critical, $look.Info) `
+        -Maximum 100 -ValueSuffix ' %' -NoHistory `
         -Height ([int](250 * $scale))
     $hv.Moves | New-BGInfoTable -Region Right -Title 'Live migrations' `
         -Note 'today' -Property Time, VM, Result -StatusColumn Result
