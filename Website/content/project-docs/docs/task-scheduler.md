@@ -94,7 +94,11 @@ What the pieces do:
 
 - `Parallel` preserves a second user's trigger while another session is
   rendering. Each user writes to their own output directory; a group task
-  using `IgnoreNew` would discard that second user's run.
+  using `IgnoreNew` would discard that second user's run. PowerBGInfo
+  serializes generation for the same Windows user across processes and
+  sessions, holding the lock through image rendering, origin tracking and
+  application. Different users use separate locks. A run waits up to five
+  minutes for an earlier run; an exited owner releases the lock.
 - `-AtLogOn` without `-User` fires for any user who signs in.
 - The unlock trigger is a `SessionStateChangeTrigger` with
   `StateChange = 8` (`TASK_SESSION_UNLOCK`). `New-ScheduledTaskTrigger` has

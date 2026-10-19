@@ -41,12 +41,7 @@ public partial class BgInfoGenerator
         _wallpaperService = wallpaperService;
     }
 
-    /// <summary>
-    /// Generates the BGInfo image and returns the output file path.
-    /// </summary>
-    /// <param name="config">Configuration controlling layout and output.</param>
-    /// <returns>Path to the generated image.</returns>
-    public string Generate(BgInfoConfiguration config)
+    private string GenerateCore(BgInfoConfiguration config)
     {
         Directory.CreateDirectory(config.ConfigurationDirectory);
 
