@@ -11,6 +11,29 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'bounds pending data source cleanup and recovers after a noncooperative call exits' {
+        $release = [System.Threading.ManualResetEventSlim]::new($false)
+        $finished = [System.Threading.ManualResetEventSlim]::new($false)
+        $secondStarted = [System.Threading.ManualResetEventSlim]::new($false)
+        try {
+            Invoke-BGInfoDataSource -ScriptBlock {
+                param($release, $finished)
+                try { $release.Wait(); 'late' } finally { $finished.Set() }
+            } -ArgumentList $release,$finished -TimeoutSeconds 1 -Default 'timeout' -WarningAction SilentlyContinue | Should -Be 'timeout'
+            Invoke-BGInfoDataSource -ScriptBlock {
+                param($started) $started.Set(); 'unexpected extra worker'
+            } -ArgumentList $secondStarted -TimeoutSeconds 1 -Default 'busy' -WarningAction SilentlyContinue | Should -Be 'busy'
+            $secondStarted.IsSet | Should -BeFalse
+        } finally {
+            $release.Set()
+            $finished.Wait(5000) | Should -BeTrue
+            $release.Dispose()
+            $finished.Dispose()
+            $secondStarted.Dispose()
+        }
+        Invoke-BGInfoDataSource -ScriptBlock { 'recovered' } -TimeoutSeconds 5 -Default 'still busy' -WarningAction SilentlyContinue | Should -Be 'recovered'
+    }
+
     It 'uses both theme accents for categorical charts while preserving explicit paint overrides' {
         $theme = New-BGInfoTheme Ember -Mode Dark -Accent '#ED1545' -SecondaryAccent '#17BAA5'
         $config = New-BGInfo -Theme $theme -PassThru -ConfigurationDirectory $TestDrive {

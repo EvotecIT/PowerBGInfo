@@ -59,6 +59,12 @@ public sealed class BgInfoDiskInfo {
 }
 
 public static partial class SystemInfoProvider {
+#if NET472
+    // The 32-bit Environment.TickCount wraps after49.7 days. This native clock is
+    // available on supported Windows hosts and includes the full boot duration.
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", ExactSpelling = true)]
+    private static extern ulong GetTickCount64();
+#endif
     /// <summary>Text used when a fact cannot be read.</summary>
     public const string Unknown = "Unknown";
 

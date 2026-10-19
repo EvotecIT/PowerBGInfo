@@ -326,7 +326,7 @@ public static partial class BgInfoConfigurationJson {
                 model.Color = Hex(calendar.Color);
                 model.FirstDayOfWeek = calendar.FirstDayOfWeek == DayOfWeek.Monday ? null : calendar.FirstDayOfWeek.ToString();
                 model.ShowLegend = calendar.ShowLegend ? true : null;
-                model.Dates = calendar.Items.Select(item => new BgInfoDatedValueFile { Date = FormatDate(item.Date), Value = item.Value }).ToList();
+                model.Dates = calendar.Items.Select(item => new BgInfoDatedValueFile { Date = item.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Value = item.Value }).ToList();
                 break;
             case BgInfoTimelineWidget timeline:
                 model.Now = timeline.Now.HasValue ? FormatDate(timeline.Now.Value) : null;
@@ -357,7 +357,7 @@ public static partial class BgInfoConfigurationJson {
 
     private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
-    private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+    private static string FormatDate(DateTime value) => value.ToString("O", CultureInfo.InvariantCulture);
 
     private static DateTime? ParseDate(string? text) {
         if (string.IsNullOrWhiteSpace(text)) return null;

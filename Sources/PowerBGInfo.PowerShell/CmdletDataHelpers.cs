@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Diagnostics;
+using System.Threading;
 using PowerBGInfo;
 
 namespace PowerBGInfo.PowerShell;
@@ -23,6 +25,7 @@ public sealed class CmdletGetBGInfoSystemInfo : PSCmdlet {
 /// <summary>Runs your data-collection code with a time limit and a fallback value.</summary>
 /// <para>A wallpaper must never fail or hang at logon because one source is slow or down. The script block runs in its own runspace; when it reports an error, returns nothing or exceeds -TimeoutSeconds, the cmdlet writes a warning and returns -Default instead. Partial output from a failed source is discarded.</para>
 /// <para>Variables of the calling script are not visible inside the script block. Pass what it needs with -ArgumentList and read it with param().</para>
+/// <para>Run only trusted code: the runspace is not a security sandbox. Cancellation is cooperative. One invocation, including its pending stop and cleanup, is allowed per process; concurrent callers wait within their own time limit and use the fallback if capacity is still occupied.</para>
 /// <example>
 /// <code>
 /// $patch = Invoke-BGInfoDataSource -Name 'Patch level' -TimeoutSeconds 10 -Default 'unknown' -ScriptBlock {
@@ -36,6 +39,7 @@ public sealed class CmdletGetBGInfoSystemInfo : PSCmdlet {
 [Cmdlet(VerbsLifecycle.Invoke, "BGInfoDataSource")]
 [OutputType(typeof(object))]
 public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
+    private static readonly SemaphoreSlim InvocationCapacity = new(1, 1);
     /// <para>Your data-collection code.</para>
     [Parameter(Mandatory = true, Position = 0)]
     public ScriptBlock ScriptBlock { get; set; } = null!;
@@ -60,45 +64,77 @@ public sealed class CmdletInvokeBGInfoDataSource : PSCmdlet {
 
     /// <summary>Runs the code and emits its output or the fallback.</summary>
     protected override void EndProcessing() {
-        var shell = System.Management.Automation.PowerShell.Create();
-        shell.AddScript(ScriptBlock.ToString(), useLocalScope: true);
-        foreach (var argument in ArgumentList ?? Array.Empty<object>()) shell.AddArgument(argument);
+        var timer = Stopwatch.StartNew();
+        var timeout = TimeSpan.FromSeconds(TimeoutSeconds);
+        if (!InvocationCapacity.Wait(timeout)) {
+            Fallback("could not start while another data source is still running or cleaning up");
+            return;
+        }
 
-        var output = new PSDataCollection<PSObject>();
-        IAsyncResult handle;
+        System.Management.Automation.PowerShell? shell = null;
+        PSDataCollection<PSObject>? output = null;
+        var releaseHere = true;
         try {
-            handle = shell.BeginInvoke<PSObject, PSObject>(null, output);
-        } catch (Exception exception) {
-            shell.Dispose();
-            Fallback($"could not start: {exception.Message}");
-            return;
+            Run();
+        } finally {
+            if (releaseHere) {
+                try { output?.Dispose(); shell?.Dispose(); }
+                finally { InvocationCapacity.Release(); }
+            }
         }
 
-        if (!handle.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds))) {
-            // Stop in the background and release the runspace when it ends; a stuck source never blocks the wallpaper.
-            try { shell.BeginStop(result => { try { shell.Dispose(); } catch (Exception) { } }, null); } catch (Exception) { }
-            Fallback($"did not finish within {TimeoutSeconds} s");
-            return;
-        }
+        void Run() {
+            shell = System.Management.Automation.PowerShell.Create();
+            shell.AddScript(ScriptBlock.ToString(), useLocalScope: true);
+            foreach (var argument in ArgumentList ?? Array.Empty<object>()) shell.AddArgument(argument);
 
-        using var completed = shell;
-        try {
-            shell.EndInvoke(handle);
-        } catch (Exception exception) {
-            Fallback(exception is RuntimeException runtime ? runtime.Message : exception.Message);
-            return;
-        }
+            output = new PSDataCollection<PSObject>();
+            IAsyncResult handle;
+            try {
+                handle = shell.BeginInvoke<PSObject, PSObject>(null, output);
+            } catch (Exception exception) {
+                Fallback($"could not start: {exception.Message}");
+                return;
+            }
 
-        if (shell.HadErrors) {
-            var error = shell.Streams.Error.Count > 0 ? shell.Streams.Error[0].ToString() : "failed";
-            Fallback(error);
-            return;
+            var remaining = timeout - timer.Elapsed;
+            if (remaining <= TimeSpan.Zero || !handle.AsyncWaitHandle.WaitOne(remaining)) {
+                // Retain the single capacity slot until cooperative stop, completion and
+                // disposal actually finish. A stuck provider cannot accumulate runspaces.
+                var expiredShell = shell;
+                var expiredOutput = output;
+                releaseHere = false;
+                ThreadPool.QueueUserWorkItem(_ => {
+                    try {
+                        try { expiredShell.Stop(); } catch (Exception) { }
+                        try { expiredShell.EndInvoke(handle); } catch (Exception) { }
+                    } finally {
+                        try { expiredOutput.Dispose(); expiredShell.Dispose(); } catch (Exception) { }
+                        finally { InvocationCapacity.Release(); }
+                    }
+                });
+                Fallback($"did not finish within {TimeoutSeconds} s");
+                return;
+            }
+
+            try {
+                shell.EndInvoke(handle);
+            } catch (Exception exception) {
+                Fallback(exception is RuntimeException runtime ? runtime.Message : exception.Message);
+                return;
+            }
+
+            if (shell.HadErrors) {
+                var error = shell.Streams.Error.Count > 0 ? shell.Streams.Error[0].ToString() : "failed";
+                Fallback(error);
+                return;
+            }
+            if (output.Count == 0) {
+                Fallback("returned nothing");
+                return;
+            }
+            foreach (var item in output) WriteObject(item);
         }
-        if (output.Count == 0) {
-            Fallback("returned nothing");
-            return;
-        }
-        foreach (var item in output) WriteObject(item);
     }
 
     private void Fallback(string reason) {

@@ -19,6 +19,8 @@ A wallpaper must never fail or hang at logon because one source is slow or down.
 
 Variables of the calling script are not visible inside the script block. Pass what it needs with -ArgumentList and read it with param().
 
+Run only trusted code: the runspace is not a security sandbox. Cancellation is cooperative. One invocation, including its pending stop and cleanup, is allowed per process; concurrent callers wait within their own time limit and use the fallback if capacity is still occupied.
+
 ## EXAMPLES
 
 ### EXAMPLE 1

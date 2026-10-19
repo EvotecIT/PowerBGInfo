@@ -539,7 +539,7 @@ public static partial class SystemInfoProvider
 
         try {
 #if NET472
-            var ms = unchecked((uint)Environment.TickCount);
+            var ms = IsWindows() ? (double)GetTickCount64() : -1;
 #else
             var ms = Environment.TickCount64;
 #endif
