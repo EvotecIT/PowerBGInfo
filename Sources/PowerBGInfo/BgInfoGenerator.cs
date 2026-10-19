@@ -201,7 +201,7 @@ public partial class BgInfoGenerator
         // The desktop-icon area of a layout also keeps a left-aligned text block clear.
         if (config.Layout is { IconAreaWidth: > 0 } iconLayout && config.TextPosition is BgInfoTextPosition.TopLeft or BgInfoTextPosition.MiddleLeft or BgInfoTextPosition.BottomLeft)
         {
-            posX += iconLayout.IconAreaWidth;
+            posX += Math.Min(iconLayout.IconAreaWidth, Math.Max(0, image.Width - totalWidth - posX));
         }
 
         textStartX = posX;

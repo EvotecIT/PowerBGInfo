@@ -136,8 +136,8 @@ public static partial class BgInfoConfigurationJson {
         widget.Id = model.Id ?? string.Empty;
         widget.Title = model.Title ?? string.Empty;
         widget.Note = model.Note ?? string.Empty;
-        if (model.Width.HasValue) widget.Width = Math.Max(0, model.Width.Value);
-        if (model.Height.HasValue) widget.Height = Math.Max(0, model.Height.Value);
+        if (model.Width.HasValue) widget.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) widget.Height = ImportRasterDimension(model.Height.Value);
         widget.Region = ParseRegion(model.Region);
         widget.RegionOrder = model.RegionOrder ?? 0;
         ApplyEnum<BgInfoTextPosition>(model.Anchor, value => widget.Anchor = value);

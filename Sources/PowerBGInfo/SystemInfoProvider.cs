@@ -531,9 +531,11 @@ public static partial class SystemInfoProvider
         return true;
     }
 
-    private static TimeSpan? GetUptime() {
+    private static TimeSpan? GetUptime() => GetUptime(IsWindows() ? OsInfoCache.Value : null);
+
+    private static TimeSpan? GetUptime(OsInfo? osInfo) {
         if (IsWindows()) {
-            var lastBoot = OsInfoCache.Value.LastBootUpTime;
+            var lastBoot = osInfo?.LastBootUpTime;
             if (lastBoot.HasValue) {
                 var lastBootUtc = lastBoot.Value.Kind == DateTimeKind.Unspecified
                     ? DateTime.SpecifyKind(lastBoot.Value, DateTimeKind.Local).ToUniversalTime()

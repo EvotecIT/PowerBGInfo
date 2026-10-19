@@ -628,8 +628,8 @@ public static partial class BgInfoConfigurationJson {
         ApplyEnum<BgInfoTextPosition>(model.Anchor, value => chart.Anchor = value);
         ApplyEnum<BgInfoChartMetric>(model.Metric, value => chart.Metric = value);
 
-        if (model.Width.HasValue) chart.Width = model.Width.Value;
-        if (model.Height.HasValue) chart.Height = model.Height.Value;
+        if (model.Width.HasValue) chart.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) chart.Height = ImportRasterDimension(model.Height.Value);
         if (model.OffsetX.HasValue) chart.OffsetX = model.OffsetX.Value;
         if (model.OffsetY.HasValue) chart.OffsetY = model.OffsetY.Value;
 
@@ -728,10 +728,10 @@ public static partial class BgInfoConfigurationJson {
         };
 
         if (model.Width.HasValue) {
-            topology.Width = model.Width.Value;
+            topology.Width = ImportRasterDimension(model.Width.Value);
         }
         if (model.Height.HasValue) {
-            topology.Height = model.Height.Value;
+            topology.Height = ImportRasterDimension(model.Height.Value);
         }
         ApplyEnum<BgInfoTextPosition>(model.Anchor, value => topology.Anchor = value);
         if (model.OffsetX.HasValue) {
@@ -919,8 +919,8 @@ public static partial class BgInfoConfigurationJson {
 
         ApplyEnum<BgInfoVisualCanvasTemplate>(model.Template, value => visual.Template = value);
         ApplyEnum<BgInfoVisualCanvasLayoutPreset>(model.LayoutPreset, value => visual.LayoutPreset = value);
-        if (model.Width.HasValue) visual.Width = model.Width.Value;
-        if (model.Height.HasValue) visual.Height = model.Height.Value;
+        if (model.Width.HasValue) visual.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) visual.Height = ImportRasterDimension(model.Height.Value);
         if (model.PositionX.HasValue) visual.PositionX = model.PositionX.Value;
         if (model.PositionY.HasValue) visual.PositionY = model.PositionY.Value;
         if (model.Transparent.HasValue) visual.Transparent = model.Transparent.Value;
@@ -1069,8 +1069,8 @@ public static partial class BgInfoConfigurationJson {
         var image = new BgInfoImage {
             Path = ResolvePath(model.Path, baseDirectory)
         };
-        if (model.Width.HasValue) image.Width = model.Width.Value;
-        if (model.Height.HasValue) image.Height = model.Height.Value;
+        if (model.Width.HasValue) image.Width = ImportRasterDimension(model.Width.Value);
+        if (model.Height.HasValue) image.Height = ImportRasterDimension(model.Height.Value);
         ApplyEnum<BgInfoTextPosition>(model.Anchor, value => image.Anchor = value);
         if (model.OffsetX.HasValue) image.OffsetX = model.OffsetX.Value;
         if (model.OffsetY.HasValue) image.OffsetY = model.OffsetY.Value;

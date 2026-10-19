@@ -76,8 +76,9 @@ public static partial class SystemInfoProvider {
 
     /// <summary>Collects every fact. Each probe fails on its own; the snapshot is always returned.</summary>
     public static BgInfoSystemInfo GetSnapshot() {
-        var uptime = GetUptime();
-        var lastBoot = OsInfoCache.Value.LastBootUpTime;
+        var osInfo = OsInfoCache.Value;
+        var uptime = GetUptime(osInfo);
+        var lastBoot = osInfo.LastBootUpTime;
         var patch = GetLastPatch();
         var defender = GetDefender();
         return new BgInfoSystemInfo {
@@ -85,9 +86,9 @@ public static partial class SystemInfoProvider {
             UserName = Environment.UserName,
             LoggedOnUser = GetLoggedOnUser(),
             Domain = MachineDomainCache.Value,
-            OSName = OrUnknown(OsInfoCache.Value.Name),
-            OSVersion = OrUnknown(OsInfoCache.Value.Version),
-            OSBuild = OrUnknown(OsInfoCache.Value.Build),
+            OSName = OrUnknown(osInfo.Name),
+            OSVersion = OrUnknown(osInfo.Version),
+            OSBuild = OrUnknown(osInfo.Build),
             LastBootTime = lastBoot,
             Uptime = uptime,
             UptimeText = FormatUptime(uptime),

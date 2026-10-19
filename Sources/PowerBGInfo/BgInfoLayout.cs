@@ -116,7 +116,7 @@ public static class BgInfoLayoutEngine {
         var bandTotal = topHeight + bottomHeight;
         var verticalRegionCount = (top.Length > 0 ? 1 : 0) + (bottom.Length > 0 ? 1 : 0) + (hasMiddleRegions ? 1 : 0);
         if (safe.Height < verticalRegionCount) return result;
-        var middleReserve = hasMiddleRegions ? Math.Min(120, safe.Height) : 0;
+        var middleReserve = hasMiddleRegions ? Math.Min(120, safe.Height / verticalRegionCount) : 0;
         var bandReserve = Math.Min(120, topHeight) + Math.Min(120, bottomHeight);
         var bandGap = separatorCount > 0
             ? Math.Min(gap, Math.Max(0, safe.Height - bandReserve - middleReserve) / separatorCount)
@@ -124,8 +124,10 @@ public static class BgInfoLayoutEngine {
         var bandBudget = Math.Max(0, safe.Height - bandGap * separatorCount - middleReserve);
         if (bandTotal > bandBudget && bandTotal > 0) {
             var bandScale = bandBudget / bandTotal;
-            topHeight *= bandScale;
-            bottomHeight *= bandScale;
+            topHeight = top.Length > 0
+                ? Math.Max(1, Math.Min(bandBudget - (bottom.Length > 0 ? 1 : 0), topHeight * bandScale))
+                : 0;
+            bottomHeight = bottom.Length > 0 ? bandBudget - topHeight : 0;
         }
         var safeRight = safe.X + safe.Width;
         var safeBottom = safe.Y + safe.Height;
@@ -188,7 +190,8 @@ public static class BgInfoLayoutEngine {
 
     private static void FlowRow(IReadOnlyList<BgInfoLayoutRequest> requests, int[] indexes, ChartRect[] result, double start, double end, double y, double height, double gap, bool alignBottom) {
         if (height <= 0 || end <= start) return;
-        var available = Math.Max(1, end - start);
+        var available = end - start;
+        if (available < indexes.Length) return;
         var effectiveGap = FitGap(available, indexes.Length, gap);
         var widths = Share(indexes.Select(i => (double)requests[i].Width).ToArray(), available, effectiveGap);
         // A row of fixed-width panels that does not fill the band is centered in it.
@@ -212,7 +215,8 @@ public static class BgInfoLayoutEngine {
 
         if (top >= bottom) return;
 
-        var available = Math.Max(1, bottom - top);
+        var available = bottom - top;
+        if (available < indexes.Length) return;
         var effectiveGap = FitGap(available, indexes.Length, gap);
         var heights = Share(indexes.Select(i => (double)requests[i].Height).ToArray(), available, effectiveGap, maximumShare);
         var used = heights.Sum() + effectiveGap * Math.Max(0, indexes.Length - 1);
@@ -238,15 +242,35 @@ public static class BgInfoLayoutEngine {
     /// <summary>Keeps fixed sizes when they fit, scales them proportionally when their combined size and gaps exceed the region, and splits remaining space among zero-size items.</summary>
     internal static double[] Share(double[] requested, double available, double gap, double maximumShare = double.MaxValue) {
         var sizes = new double[requested.Length];
-        if (requested.Length == 0) return sizes;
+        if (requested.Length == 0 || available < requested.Length) return sizes;
         gap = FitGap(available, requested.Length, gap);
         var fixedTotal = requested.Where(v => v > 0).Sum();
         var automatic = requested.Count(v => v <= 0);
         var fixedBudget = Math.Max(0, available - gap * (requested.Length - 1) - automatic);
         var fixedScale = fixedTotal > fixedBudget && fixedTotal > 0 ? fixedBudget / fixedTotal : 1;
+        var minimums = new bool[requested.Length];
+        var unallocated = fixedBudget;
+        var weight = fixedTotal;
+        // Lock subpixel fixed requests at one pixel, then rescale only the others.
+        // Sizes that already fit keep their authored proportions and rounding.
+        while (fixedScale < 1 && weight > 0) {
+            var changed = false;
+            for (var i = 0; i < requested.Length; i++) {
+                if (requested[i] <= 0 || minimums[i] || requested[i] * fixedScale >= 1) continue;
+                sizes[i] = 1;
+                minimums[i] = true;
+                unallocated -= 1;
+                weight -= requested[i];
+                changed = true;
+            }
+            if (!changed) break;
+            fixedScale = weight > 0 ? unallocated / weight : 0;
+        }
         var remaining = available - Math.Min(fixedTotal, fixedBudget) - gap * (requested.Length - 1);
         var share = automatic > 0 ? Math.Max(1, Math.Min(maximumShare, remaining / automatic)) : 0;
-        for (var i = 0; i < requested.Length; i++) sizes[i] = requested[i] > 0 ? Math.Min(requested[i] * fixedScale, available) : share;
+        for (var i = 0; i < requested.Length; i++) {
+            if (!minimums[i]) sizes[i] = requested[i] > 0 ? Math.Min(requested[i] * fixedScale, available) : share;
+        }
         return sizes;
     }
 
@@ -261,10 +285,12 @@ public static class BgInfoLayoutEngine {
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 
     private static ChartRect Round(double x, double y, double width, double height) {
-        var left = Math.Round(x);
-        var top = Math.Round(y);
-        var right = Math.Round(x + width);
-        var bottom = Math.Round(y + height);
-        return new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+        // Round shared edges consistently: ties-to-even can collapse a one-pixel
+        // span at half-pixel origins and force it into its neighbor's rectangle.
+        var left = Math.Floor(x + 0.5);
+        var top = Math.Floor(y + 0.5);
+        var right = Math.Floor(x + width + 0.5);
+        var bottom = Math.Floor(y + height + 0.5);
+        return new ChartRect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
     }
 }
