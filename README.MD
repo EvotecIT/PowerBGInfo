@@ -414,6 +414,12 @@ widgets, layout and target settings. It does not keep PowerShell code: a
 `foreach` or a data function runs once at export and its results are
 stored as fixed values. Sample files are in `Examples/Configuration`.
 
+The NativeAOT CLI resolves `CpuName` and `RAMSize` through Windows when WMI
+is unavailable. In that case, `RAMSize` reports total installed memory;
+per-module memory sizes, speed and part numbers still require WMI. Other
+WMI-backed facts and live CPU/memory percentages may remain unavailable in
+NativeAOT.
+
 ## Known issues
 
 The VS Code PowerShell extension has a known problem with the module in
