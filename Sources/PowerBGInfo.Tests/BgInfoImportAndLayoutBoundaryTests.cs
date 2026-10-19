@@ -4,6 +4,25 @@ namespace PowerBGInfo.Tests;
 
 public sealed class BgInfoImportAndLayoutBoundaryTests {
     [Theory]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(2, true)]
+    [InlineData(2, false)]
+    public void ExhaustedHorizontalGroupsNeverInventSlotsOutsideTheSafeArea(int safeWidth, bool right) {
+        var requests = new List<BgInfoLayoutRequest> { new(BgInfoRegion.Top, 0, 10), new(BgInfoRegion.Left, 0, 20), new(BgInfoRegion.Center, 0, 20) };
+        if (right) requests.Add(new(BgInfoRegion.Right, 0, 20));
+        var layout = new BgInfoLayout { MarginX = 0, MarginY = 0, IconAreaWidth = 640 - safeWidth, TaskbarReserve = 0, Gap = 0 };
+        var safe = BgInfoLayoutEngine.GetSafeArea(640, 100, layout);
+        var slots = BgInfoLayoutEngine.Resolve(640, 100, layout, null, requests);
+        Assert.True(slots[0].Width >= 1 && slots[0].Height >= 1); // Independent top band still fits.
+        if (safeWidth < (right ? 3 : 2)) Assert.All(slots.Skip(1), slot => Assert.True(slot.Width == 0 || slot.Height == 0));
+        else Assert.All(slots.Skip(1), slot => Assert.True(slot.Width >= 1 && slot.Height >= 1));
+        foreach (var slot in slots.Where(slot => slot.Width > 0 && slot.Height > 0)) {
+            Assert.True(slot.X >= safe.X && slot.X + slot.Width <= safe.X + safe.Width);
+        }
+    }
+
+    [Theory]
     [InlineData(100, false, 200)]
     [InlineData(100, true, 200)]
     [InlineData(3, true, 200)]

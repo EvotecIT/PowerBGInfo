@@ -226,7 +226,7 @@ Accept wildcard characters: False
 ```
 
 ### -Status
-Explicit status: Ok, Warning, Critical or Info. The tile accent takes the status color.
+Semantic status: Ok, Warning, Critical or Info. The owning canvas supplies its status color at render time; an explicit Accent takes priority.
 
 ```yaml
 Type: BgInfoStatus

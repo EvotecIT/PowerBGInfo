@@ -22511,7 +22511,7 @@ New-BGInfo -Target File {&#xD;
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Status</maml:name>
           <maml:description>
-            <maml:para>Explicit status: Ok, Warning, Critical or Info. The tile accent takes the status color.</maml:para>
+            <maml:para>Semantic status: Ok, Warning, Critical or Info. The owning canvas supplies its status color at render time; an explicit Accent takes priority.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">BgInfoStatus</command:parameterValue>
           <command:parameterValueGroup>
@@ -22801,7 +22801,7 @@ New-BGInfo -Target File {&#xD;
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Status</maml:name>
         <maml:description>
-          <maml:para>Explicit status: Ok, Warning, Critical or Info. The tile accent takes the status color.</maml:para>
+          <maml:para>Semantic status: Ok, Warning, Critical or Info. The owning canvas supplies its status color at render time; an explicit Accent takes priority.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">BgInfoStatus</command:parameterValue>
         <command:parameterValueGroup>

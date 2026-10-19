@@ -469,6 +469,10 @@ public static partial class BgInfoConfigurationJson {
                     BackgroundBottom = visual.CustomBackgroundBottom.HasValue ? BgInfoColorParser.ToHex(visual.CustomBackgroundBottom.Value) : null,
                     Accent = visual.CustomAccent.HasValue ? BgInfoColorParser.ToHex(visual.CustomAccent.Value) : null,
                     SecondaryAccent = visual.SecondaryAccent.HasValue ? BgInfoColorParser.ToHex(visual.SecondaryAccent.Value) : null,
+                    StatusOk = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Ok),
+                    StatusWarning = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Warning),
+                    StatusCritical = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Critical),
+                    StatusInfo = visual.StatusColors == null ? null : BgInfoColorParser.ToHex(visual.StatusColors.Info),
                     TitleColor = visual.TitleColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleColor.Value) : null,
                     TitleAccentColor = visual.TitleAccentColor.HasValue ? BgInfoColorParser.ToHex(visual.TitleAccentColor.Value) : null,
                     SubtitleColor = visual.SubtitleColor.HasValue ? BgInfoColorParser.ToHex(visual.SubtitleColor.Value) : null,
@@ -916,6 +920,7 @@ public static partial class BgInfoConfigurationJson {
             Subtitle = model.Subtitle ?? "Desktop background insights for Windows and PowerShell"
         };
         ApplyEnum<VisualThemeMode>(model.ThemeMode, value => visual.ThemeMode = value);
+        visual.StatusColors = MapStatusColors(model.StatusOk, model.StatusWarning, model.StatusCritical, model.StatusInfo, visual.ThemeMode);
 
         ApplyEnum<BgInfoVisualCanvasTemplate>(model.Template, value => visual.Template = value);
         ApplyEnum<BgInfoVisualCanvasLayoutPreset>(model.LayoutPreset, value => visual.LayoutPreset = value);
@@ -1003,6 +1008,7 @@ public static partial class BgInfoConfigurationJson {
             tile.Side = side;
         }
         ApplyEnum<BgInfoVisualCanvasTileSurfaceStyle>(model.SurfaceStyle, value => tile.SurfaceStyle = value);
+        ApplyEnum<BgInfoStatus>(model.Status, value => tile.Status = value);
         ApplyEnum<BgInfoVisualCanvasTileIconKind>(model.IconKind, value => tile.IconKind = value);
         ApplyEnum<BgInfoVisualCanvasTileMiniChartKind>(model.MiniChartKind, value => tile.MiniChartKind = value);
         ApplyEnum<BgInfoVisualCanvasTileTextFitPolicy>(model.TextFitPolicy, value => tile.TextFitPolicy = value);
@@ -1047,6 +1053,7 @@ public static partial class BgInfoConfigurationJson {
         Width = tile.Width == 0 ? null : tile.Width,
         Height = tile.Height == 0 ? null : tile.Height,
         Accent = tile.Accent.HasValue ? BgInfoColorParser.ToHex(tile.Accent.Value) : null,
+        Status = tile.Status == BgInfoStatus.None ? null : tile.Status.ToString(),
         Progress = tile.Progress,
         SurfaceStyle = tile.SurfaceStyle.ToString(),
         IconKind = tile.IconKind.ToString(),
@@ -1388,6 +1395,10 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasFile {
+        public string? StatusOk { get; set; }
+        public string? StatusWarning { get; set; }
+        public string? StatusCritical { get; set; }
+        public string? StatusInfo { get; set; }
         public string? FontFamilyName { get; set; }
         public string? Region { get; set; }
         public int? RegionOrder { get; set; }
@@ -1450,6 +1461,7 @@ public static partial class BgInfoConfigurationJson {
     }
 
     internal sealed class BgInfoVisualCanvasTileFile {
+        public string? Status { get; set; }
         public string? Side { get; set; }
         public string? Icon { get; set; }
         public string? Label { get; set; }

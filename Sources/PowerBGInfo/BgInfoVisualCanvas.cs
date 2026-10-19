@@ -149,6 +149,8 @@ public sealed class BgInfoVisualCanvas {
     public Color Accent { get => _accent ?? DesignTokens.Accent; set => _accent = value; }
     /// <summary>Secondary accent color for badge and backdrop highlights.</summary>
     public Color? SecondaryAccent { get; set; }
+    /// <summary>Status palette for semantic tiles. Unset uses the defaults for <see cref="ThemeMode"/>.</summary>
+    public BgInfoStatusColors? StatusColors { get; set; }
     /// <summary>Primary hero title color.</summary>
     public Color? TitleColor { get; set; }
     /// <summary>Accent hero title color.</summary>
@@ -235,6 +237,12 @@ public sealed class BgInfoVisualCanvas {
 
 /// <summary>Defines one visual canvas tile.</summary>
 public sealed class BgInfoVisualCanvasTile {
+    private BgInfoStatus _status;
+    /// <summary>Semantic status resolved by the owning canvas. An explicit <see cref="Accent"/> takes priority.</summary>
+    public BgInfoStatus Status {
+        get => _status;
+        set => _status = BgInfoTextStyleValidation.ValidateEnum(value, nameof(value));
+    }
     /// <summary>Tile lane placement.</summary>
     public BgInfoVisualCanvasSide Side { get; set; }
     /// <summary>Compact tile icon or symbol.</summary>

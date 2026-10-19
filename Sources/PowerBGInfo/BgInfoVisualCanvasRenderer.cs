@@ -129,6 +129,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
         }
     }
 
+    private static Color? ResolveTileAccent(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile) {
+        if (tile.Accent.HasValue || tile.Status == BgInfoStatus.None) return tile.Accent;
+        return (visual.StatusColors ?? BgInfoStatusColors.Default(visual.ThemeMode)).Resolve(tile.Status);
+    }
+
     private static void AddTiles(VisualCanvas canvas, BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double x, double y, double width, double defaultTileWidth, double height, double gap) {
         var cursorY = y;
         foreach (var tile in visual.Tiles) {
@@ -156,7 +161,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Label),
                 Resolve(tile.Value),
                 Resolve(tile.Detail),
-                tile.Accent,
+                ResolveTileAccent(visual, tile),
                 tile.Progress,
                 MapSurfaceStyle(tile.SurfaceStyle),
                 MapIconKind(tile.IconKind),

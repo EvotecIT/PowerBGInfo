@@ -146,6 +146,7 @@ public static class BgInfoLayoutEngine {
         var columnBottom = Math.Min(safeBottom, Math.Max(safe.Y, safeBottom - (bottom.Length > 0 ? bottomHeight + bandGap : 0)));
         var columnWidth = layout.ColumnWidth > 0 ? layout.ColumnWidth : Clamp(width * 0.24, 340, 620);
         var sideColumns = (left.Length > 0 ? 1 : 0) + (right.Length > 0 ? 1 : 0);
+        if (safe.Width < sideColumns + (center.Length > 0 ? 1 : 0)) return result;
         var columnGapCount = center.Length > 0 ? sideColumns : Math.Max(0, sideColumns - 1);
         var centerReserve = center.Length > 0 && sideColumns > 0 ? Math.Min(120, safe.Width) : 0;
         var columnGap = columnGapCount > 0
@@ -165,7 +166,8 @@ public static class BgInfoLayoutEngine {
         if (center.Length > 0) {
             var centerLeft = left.Length > 0 ? leftX + columnWidth + columnGap : safe.X;
             var centerRight = right.Length > 0 ? rightX - columnGap : safeRight;
-            FlowColumn(requests, center, result, centerLeft, Math.Max(1, centerRight - centerLeft), columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
+            if (centerRight > centerLeft)
+                FlowColumn(requests, center, result, centerLeft, centerRight - centerLeft, columnTop, columnBottom, text, gap, CrossAlign.Middle, BgInfoColumnAlignment.Center, maximumShare);
         }
 
         return result;

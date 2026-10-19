@@ -180,9 +180,12 @@ Describe 'Thresholds' {
         { New-BGInfoChart -Values 1 -WarningThreshold 20 -CriticalThreshold 10 -ThresholdDirection Below } | Should -Not -Throw
     }
 
-    It 'colors tiles from a status value' {
+    It 'preserves tile status until the owning canvas supplies the color' {
         $tile = New-BGInfoVisualCanvasTile -Label 'Disk' -Value '91 %' -StatusValue 91 -WarningThreshold 80 -CriticalThreshold 90
-        $tile.Accent.ToHex() | Should -Be '#F87171'
+        $tile.Status.ToString() | Should -Be 'Critical'
+        $tile.Accent | Should -BeNullOrEmpty
+        $explicit = New-BGInfoVisualCanvasTile -Label 'Disk' -Value '91 %' -Status Critical -Accent '#123456'
+        $explicit.Accent.ToHex() | Should -Be '#123456'
         { New-BGInfoVisualCanvasTile -Label 'Disk' -Value 'x' -WarningThreshold 80 } | Should -Throw '*StatusValue*'
     }
 

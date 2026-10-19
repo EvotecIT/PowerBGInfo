@@ -355,6 +355,7 @@ public class CmdletNewBGInfoVisualCanvas : PSCmdlet {
         if (!IsBound(nameof(FontFamilyName))) visual.FontFamilyName = theme.FontFamilyName;
         if (!IsBound(nameof(Accent))) visual.Accent = theme.Accent;
         if (!IsBound(nameof(SecondaryAccent))) visual.SecondaryAccent = theme.SecondaryAccent;
+        visual.StatusColors = theme.StatusColors;
         if (!IsBound(nameof(TileGlassTop))) visual.TileGlassTop = theme.TileGlassTop;
         if (!IsBound(nameof(TileGlassBottom))) visual.TileGlassBottom = theme.TileGlassBottom;
         if (!IsBound(nameof(TileLabelColor))) visual.TileLabelColor = theme.Muted;
