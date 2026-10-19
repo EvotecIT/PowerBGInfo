@@ -292,6 +292,38 @@ Describe 'Widget cmdlets' {
         $fromObjects.Items[0].Group | Should -Be 'g'
     }
 
+    It 'colors treemap items by -ColorProperty and its thresholds' {
+        $vms = @(
+            [pscustomobject] @{ Name = 'SQL'; MemoryGB = 128; Cpu = 71 }
+            [pscustomobject] @{ Name = 'WEB'; MemoryGB = 16; Cpu = 9 }
+        )
+        $treemap = $vms | New-BGInfoTreemap -ValueProperty MemoryGB `
+            -ColorProperty Cpu -WarningThreshold 60 -CriticalThreshold 85
+        $treemap.Items[0].Value | Should -Be 128
+        $treemap.Items[0].ColorValue | Should -Be 71
+        $treemap.Threshold.Warning | Should -Be 60
+        $treemap.HasColorValues | Should -BeTrue
+        # Thresholds alone compare the sizes.
+        $sized = New-BGInfoTreemap -Data @{ A = 3 } -WarningThreshold 2
+        $sized.Items[0].ColorValue | Should -Be 3
+        # A property that is not a number warns and keeps the default colors.
+        $plain = $vms | New-BGInfoTreemap -ValueProperty MemoryGB `
+            -ColorProperty Missing -WarningVariable warned -WarningAction SilentlyContinue
+        $plain.HasColorValues | Should -BeFalse
+        $warned | Should -Not -BeNullOrEmpty
+    }
+
+    It 'reads a timeline item color from piped objects' {
+        $timeline = New-BGInfoTimeline -Item @(
+            [pscustomobject] @{ Lane = 'A'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '#F59E0B' }
+            [pscustomobject] @{ Lane = 'B'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '' }
+        )
+        $timeline.Items[0].Color.ToHex() | Should -Be '#F59E0B'
+        $timeline.Items[1].Color | Should -BeNullOrEmpty
+    }
+
     It 'validates Mermaid source when the widget is created' {
         (New-BGInfoMermaid -Definition "flowchart LR`n  A --> B").Definition | Should -Match 'A --> B'
         $piped = 'flowchart LR', '  A --> B' | New-BGInfoMermaid
@@ -312,7 +344,8 @@ Describe 'Widget cmdlets' {
             New-BGInfoList -Region Left -Item 'one'
             New-BGInfoCalendarHeatmap -Region Bottom -Data @{ '2026-10-01' = 1; '2026-10-08' = 4 }
             New-BGInfoTimeline -Region Bottom -Item @{ Lane = 'L'; Start = '2026-10-16'; End = '2026-10-17' }
-            New-BGInfoTreemap -Region Center -Data @{ A = 1; B = 2 }
+            New-BGInfoTreemap -Region Center -Data @{ A = 1; B = 2 } `
+                -WarningThreshold 2
             New-BGInfoMermaid -Region Center -Definition "flowchart LR`n  A --> B"
             New-BGInfoQRCode -Region Left -Url 'https://help.contoso.com'
         }

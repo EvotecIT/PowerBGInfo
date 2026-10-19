@@ -27,7 +27,11 @@ function Get-ServerStatus {
         # (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
         Uptime      = New-TimeSpan -Days 41 -Hours 6
         # Get-Volume | Where-Object DriveLetter
-        Volumes     = [ordered] @{ 'C: System' = 61; 'D: Data' = 88; 'L: Logs' = 47 }
+        Volumes     = [ordered] @{
+            'C: System' = 61
+            'D: Data'   = 88
+            'L: Logs'   = 47
+        }
         # Get-Counter '\Processor(_Total)\% Processor Time'
         Cpu         = @(12, 28, 19, 44, 31, 38, 27, 23)
         Memory      = @{ UsedGB = 100; TotalGB = 128 }
@@ -39,18 +43,29 @@ function Get-ServerStatus {
 }
 
 # A slow or broken source must not block logon: time-box it and fall back.
-$server = Invoke-BGInfoDataSource -Name 'Server status' -TimeoutSeconds 15 -ScriptBlock ${function:Get-ServerStatus} -Default ([pscustomobject] @{
-        Name = $env:COMPUTERNAME; Role = 'unknown'; Owner = 'unknown'; Maintenance = 'unknown'; OnCall = 'unknown'
-        Uptime = [timespan]::Zero; Volumes = @{ 'C:' = 0 }; Cpu = @(0); Memory = @{ UsedGB = 0; TotalGB = 1 }; Network = @(0)
-        Services = @{ Running = 0; Stopped = 0 }
-    })
+$fallback = [pscustomobject] @{
+    Name = $env:COMPUTERNAME; Role = 'unknown'; Owner = 'unknown'
+    Maintenance = 'unknown'; OnCall = 'unknown'; Uptime = [timespan]::Zero
+    Volumes = @{ 'C:' = 0 }; Cpu = @(0); Memory = @{ UsedGB = 0; TotalGB = 1 }
+    Network = @(0); Services = @{ Running = 0; Stopped = 0 }
+}
+$source = @{
+    Name           = 'Server status'
+    TimeoutSeconds = 15
+    ScriptBlock    = ${function:Get-ServerStatus}
+    Default        = $fallback
+}
+$server = Invoke-BGInfoDataSource @source
 #endregion
 
 #region Presentation: reads only $server
 $scale = [Math]::Round($Height / 1080, 2)
 $look = New-BGInfoTheme Aurora -Mode $Theme -Scale $scale
-$fullest = $server.Volumes.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 1
+$fullest = $server.Volumes.GetEnumerator() |
+    Sort-Object Value -Descending | Select-Object -First 1
 $memory = $server.Memory.UsedGB / $server.Memory.TotalGB
+$uptime = "$($server.Uptime.Days) days $($server.Uptime.Hours) h"
+$memoryText = "$($server.Memory.UsedGB) of $($server.Memory.TotalGB) GB"
 
 New-BGInfo -Theme $look -Target File {
     $tile = @{ SurfaceStyle = 'Glass' }
@@ -70,10 +85,13 @@ New-BGInfo -Theme $look -Target File {
     )
     New-BGInfoBackground -Width $Width -Height $Height
 
-    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Accent -FontWeight 700 -FontSize ([int](15 * $scale))
-    New-BGInfoLabel -Name $server.Name -FontSize ([int](72 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Accent `
+        -FontWeight 700 -FontSize ([int](15 * $scale))
+    New-BGInfoLabel -Name $server.Name -FontSize ([int](72 * $scale)) `
+        -FontWeight 600
     if ($fullest.Value -ge 80) {
-        New-BGInfoLabel -Name "●  1 warning · $($fullest.Key) is $($fullest.Value) % full" -Status Warning -FontWeight 600
+        $warning = "1 warning · $($fullest.Key) is $($fullest.Value) % full"
+        New-BGInfoLabel -Name "●  $warning" -Status Warning -FontWeight 600
     }
     New-BGInfoValue -Name 'Role' -Value $server.Role
     New-BGInfoValue -Name 'Owner' -Value $server.Owner
@@ -83,16 +101,25 @@ New-BGInfo -Theme $look -Target File {
     # The tiles stack in the right column; three panels share the bottom band.
     New-BGInfoVisualCanvas -Region Right -Tile $tiles
 
-    $band = @{ Region = 'Bottom'; Height = [int](300 * $scale); NoHistory = $true }
-    New-BGInfoChart @band -Id 'volumes' -Title 'Volumes used' -Kind ProgressBar `
-        -Values @($server.Volumes.Values) -Labels @($server.Volumes.Keys) -Maximum 100 `
-        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false -WarningThreshold 80 -CriticalThreshold 90
-    New-BGInfoChart @band -Id 'network' -Title 'Network' -Kind Area -Values $server.Network `
-        -ShowGrid -GridLineCount 4 -ValueSuffix ' Mbps'
-    New-BGInfoChart @band -Id 'services' -Title 'Critical services' -Kind Pictorial `
-        -Values $server.Services.Running, $server.Services.Stopped -Labels 'Running', 'Stopped' `
-        -Palette $look.Ok, $look.Critical -PictorialSymbol Circle -PictorialColumns 12 `
-        -Maximum ($server.Services.Running + $server.Services.Stopped) -ShowDataLabels -ShowLatestValue:$false
+    $band = @{
+        Region    = 'Bottom'
+        Height    = [int](300 * $scale)
+        NoHistory = $true
+    }
+    New-BGInfoChart @band -Id 'volumes' -Title 'Volumes used' `
+        -Kind ProgressBar -Values @($server.Volumes.Values) `
+        -Labels @($server.Volumes.Keys) -Maximum 100 -ValueSuffix ' %' `
+        -NoProgressHandles -ShowLatestValue:$false `
+        -WarningThreshold 80 -CriticalThreshold 90
+    New-BGInfoChart @band -Id 'network' -Title 'Network' -Kind Area `
+        -Values $server.Network -ShowGrid -GridLineCount 4 -ValueSuffix ' Mbps'
+    $services = $server.Services
+    New-BGInfoChart @band -Id 'services' -Title 'Critical services' `
+        -Kind Pictorial -Values $services.Running, $services.Stopped `
+        -Labels 'Running', 'Stopped' -Palette $look.Ok, $look.Critical `
+        -PictorialSymbol Circle -PictorialColumns 12 `
+        -Maximum ($services.Running + $services.Stopped) `
+        -ShowDataLabels -ShowLatestValue:$false
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "server-status-$($Theme.ToLower()).png"
 #endregion

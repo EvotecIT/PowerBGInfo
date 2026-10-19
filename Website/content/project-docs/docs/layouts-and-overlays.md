@@ -24,7 +24,7 @@ Use `New-BGInfoValue` for built-in or custom data and `New-BGInfoLabel` for sect
 
 ## Widgets
 
-`New-BGInfoMetric`, `New-BGInfoTable`, `New-BGInfoList`, `New-BGInfoCalendarHeatmap`, `New-BGInfoTimeline`, `New-BGInfoTreemap`, `New-BGInfoMermaid` and `New-BGInfoQRCode` share the panel, header, placement and theme of the other panels. `-WarningThreshold` and `-CriticalThreshold` colour values by status.
+`New-BGInfoMetric`, `New-BGInfoTable`, `New-BGInfoList`, `New-BGInfoCalendarHeatmap`, `New-BGInfoTimeline`, `New-BGInfoTreemap`, `New-BGInfoMermaid` and `New-BGInfoQRCode` share the panel, header, placement and theme of the other panels. `-WarningThreshold` and `-CriticalThreshold` colour values by status. `New-BGInfoTreemap -ColorProperty` sizes rectangles by one measure and colours them by another, for example VM memory and CPU; with thresholds the colours are the status colours. A region column whose panels add up to more than its height shrinks them to stay inside the safe area.
 
 ## Images and tiles
 

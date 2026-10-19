@@ -56,7 +56,8 @@ $look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale
 
 # Seven tiles fill the left rail from the top margin to the bottom margin.
 $railWidth = [int](460 * $scale)
-$tileHeight = [Math]::Floor(($Height - 2 * $look.MarginY - 6 * $look.TileGap) / 7)
+$railHeight = $Height - 2 * $look.MarginY - 6 * $look.TileGap
+$tileHeight = [Math]::Floor($railHeight / 7)
 # The text block and the content column start right of the rail.
 $textX = 2 * $look.MarginX + $railWidth
 $column = $Width - $textX - $look.MarginX
@@ -64,6 +65,7 @@ $half = [int](($column - $look.Gap) / 2)
 $bottomHeight = [int](210 * $scale)
 $diagramTop = [int](360 * $scale)
 $diagramHeight = $Height - $diagramTop - $look.MarginY - $bottomHeight - 32
+$diagramScale = if ($Height -ge 1440) { 2 } else { 1 }
 
 $smartCard = if ($paw.Available) {
     @{
@@ -110,40 +112,76 @@ New-BGInfo -Theme $look -SpaceX $textX -Target File {
     New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' -FontSize ([int](19 * $scale)) -FontWeight 600
     New-BGInfoValue -Name 'Operator' -Value $paw.Operator
     New-BGInfoValue -Name 'Domain' -Value $paw.Domain
-    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'
+    if ($paw.Available) {
+        New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'
+    }
 
-    # The theme puts the canvas rails on its margins; only the tile size is set here.
-    New-BGInfoVisualCanvas -Tile ($tiles | ForEach-Object { $_.Side = 'Left'; $_ }) -LeftTileWidth $railWidth -TileHeight $tileHeight
+    if ($paw.Available) {
+    # The theme puts the canvas rails on its margins; only sizes are set.
+    $rail = $tiles | ForEach-Object { $_.Side = 'Left'; $_ }
+    New-BGInfoVisualCanvas -Tile $rail -LeftTileWidth $railWidth `
+        -TileHeight $tileHeight
 
-    New-BGInfoChart -Id 'signins' -Title 'Privileged sign-ins' -Kind Bar -Values $paw.SignIns `
-        -ShowGrid -GridLineCount 3 -ValueSuffix ' today' -NoHistory `
-        -Width ([int](560 * $scale)) -Height ([int](270 * $scale)) -Anchor TopRight -OffsetX $look.MarginX -OffsetY $look.MarginY
+    New-BGInfoChart -Id 'signins' -Title 'Privileged sign-ins' -Kind Bar `
+        -Values $paw.SignIns -ShowGrid -GridLineCount 3 `
+        -ValueSuffix ' today' -NoHistory `
+        -Width ([int](560 * $scale)) -Height ([int](270 * $scale)) `
+        -Anchor TopRight -OffsetX $look.MarginX -OffsetY $look.MarginY
 
-    New-BGInfoTopology -Title 'Allowed admin path' -Subtitle '2 hops to tier 0' -Layout DenseGrouped `
-        -Scale ($(if ($Height -ge 1440) { 2 } else { 1 })) -NodeDisplayMode Card -Width $column -Height $diagramHeight `
-        -Anchor TopRight -OffsetX $look.MarginX -OffsetY $diagramTop -TopologyDefinition {
+    $diagram = @{
+        Title           = 'Allowed admin path'
+        Subtitle        = '2 hops to tier 0'
+        Layout          = 'DenseGrouped'
+        Scale           = $diagramScale
+        NodeDisplayMode = 'Card'
+        Width           = $column
+        Height          = $diagramHeight
+        Anchor          = 'TopRight'
+        OffsetX         = $look.MarginX
+        OffsetY         = $diagramTop
+    }
+    New-BGInfoTopology @diagram -TopologyDefinition {
         $node = @{ Status = 'Healthy' }
         New-BGInfoTopologyGroup -Id 'paw' -Label 'This workstation'
         New-BGInfoTopologyGroup -Id 'jump' -Label 'Jump hosts'
         New-BGInfoTopologyGroup -Id 't0' -Label 'Tier 0'
-        New-BGInfoTopologyNode @node -Id 'paw' -Label $paw.Name -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'
-        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'
-        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'
-        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'
-        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' -Kind Server -GroupId 't0' -Status Warning
+        New-BGInfoTopologyNode @node -Id 'paw' -Label $paw.Name `
+            -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'
+        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' `
+            -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'
+        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' `
+            -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'
+        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' `
+            -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'
+        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' `
+            -Kind Server -GroupId 't0' -Status Warning
         $link = @{ Kind = 'Connectivity'; Status = 'Healthy' }
-        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' -Label 'RDP + MFA' -Direction Forward
-        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' -Direction Forward
-        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' -Direction Forward
-        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' -Label $paw.ReplicaLag -Kind Replication -Status Warning
+        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' `
+            -Label 'RDP + MFA' -Direction Forward
+        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' `
+            -Direction Forward
+        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' `
+            -Direction Forward
+        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' `
+            -Label $paw.ReplicaLag -Kind Replication -Status Warning
     }
 
-    $bottom = @{ Anchor = 'BottomRight'; Width = $half; Height = $bottomHeight; OffsetY = $look.MarginY; NoHistory = $true }
-    New-BGInfoChart @bottom -Id 'changes' -Title 'Tier 0 changes' -Kind Area -Values $paw.Changes `
-        -ShowGrid -GridLineCount 3 -ValueSuffix ' this hour' -OffsetX ($look.MarginX + $half + $look.Gap)
-    New-BGInfoChart @bottom -Id 'alerts' -Title 'Open security alerts' -Kind ProgressBar -Values @($paw.Alerts.Values) `
-        -Labels @($paw.Alerts.Keys) -Palette $look.Critical, $look.Warning, $look.Accent -Maximum 10 `
+    $bottom = @{
+        Anchor    = 'BottomRight'
+        Width     = $half
+        Height    = $bottomHeight
+        OffsetY   = $look.MarginY
+        NoHistory = $true
+    }
+    New-BGInfoChart @bottom -Id 'changes' -Title 'Tier 0 changes' -Kind Area `
+        -Values $paw.Changes -ShowGrid -GridLineCount 3 `
+        -ValueSuffix ' this hour' -OffsetX ($look.MarginX + $half + $look.Gap)
+    New-BGInfoChart @bottom -Id 'alerts' -Title 'Open security alerts' `
+        -Kind ProgressBar -Values @($paw.Alerts.Values) `
+        -Labels @($paw.Alerts.Keys) -Maximum 10 `
+        -Palette $look.Critical, $look.Warning, $look.Accent `
         -NoProgressHandles -ShowLatestValue:$false -OffsetX $look.MarginX
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "admin-workstation-$($Theme.ToLower()).png"
 #endregion
