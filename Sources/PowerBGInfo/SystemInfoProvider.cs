@@ -162,9 +162,14 @@ public static partial class SystemInfoProvider
         }
         catch
         {
-            return info;
+            // WMI is unavailable in NativeAOT and can also fail on an ordinary host.
         }
 
+        if (string.IsNullOrWhiteSpace(info.Name))
+        {
+            info.Name = ReadNativeCpuName();
+            // Do not cache a failed WMI read: module/core details can recover on a later request.
+        }
         return info;
     }
 
@@ -203,10 +208,14 @@ public static partial class SystemInfoProvider
         }
         catch
         {
-            return info;
+            // Preserve available module details, then recover the total installed memory below.
         }
 
         info.Size = string.Join(" / ", info.Sizes.Select(size => $"{Math.Round(size / (1024d * 1024d * 1024d), 0).ToString("N0", CultureInfo.CurrentCulture)}GB"));
+        if (info.Sizes.Count == 0 && TryReadNativeInstalledMemory(out var kilobytes))
+        {
+            info.Size = $"{Math.Round(kilobytes / (1024d * 1024d), 0).ToString("N0", CultureInfo.CurrentCulture)}GB";
+        }
         info.Speed = string.Join(" / ", info.Speeds.Select(speed => $"{speed.ToString("N0", CultureInfo.CurrentCulture)}MHz"));
         info.PartNumber = string.Join(", ", info.PartNumbers);
         return info;

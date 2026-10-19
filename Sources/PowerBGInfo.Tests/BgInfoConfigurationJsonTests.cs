@@ -805,7 +805,7 @@ public class BgInfoConfigurationJsonTests
             var chart = Assert.Single(loaded.Charts);
             var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 42d }, loaded, 320, 180);
             Assert.Equal(tokens.Foreground, rendered.Options.TitleStyle.Color);
-            Assert.Equal(tokens.Foreground, rendered.Options.DataLabelStyle.Color);
+            Assert.Null(rendered.Options.DataLabelStyle.Color);
             Assert.Equal(VisualTheme.Graphite().Typography.Family, rendered.Options.TitleStyle.FontFamily);
             Assert.Equal(VisualTheme.Graphite().Typography.Family, rendered.Options.DataLabelStyle.FontFamily);
 

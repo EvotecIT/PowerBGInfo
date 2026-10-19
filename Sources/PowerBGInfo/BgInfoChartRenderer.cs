@@ -127,7 +127,12 @@ internal static class BgInfoChartRenderer {
 
         plot.ConfigureTitleStyle(style => ApplyTextStyle(style, ResolveChartTitleStyle(chart, config), chart.TitleFontSize));
         var valueStyle = ResolveChartValueStyle(chart, config);
-        plot.ConfigureDataLabelStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
+        plot.ConfigureDataLabelStyle(style => {
+            ApplyTextStyle(style, valueStyle, chart.ValueFontSize);
+            // An inherited foreground is not an authored override: let the chart owner choose
+            // contrasting ink when a data label is placed inside a painted mark.
+            style.Color = chart.ValueColor ?? chart.TextColor ?? config.CustomValueColor;
+        });
         plot.ConfigureLegendStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
         plot.ConfigureTickLabelStyle(style => ApplyTextStyle(style, valueStyle, chart.ValueFontSize));
         plot.ConfigureAxisTitleStyle(style => ApplyTextStyle(style, ResolveChartTitleStyle(chart, config), chart.TitleFontSize));

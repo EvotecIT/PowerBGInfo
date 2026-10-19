@@ -51,7 +51,7 @@ public class BgInfoChartRendererTests
 
         Assert.Equal(tokens.Palette, rendered.Options.Theme.Resolve(mode).Palette);
         Assert.Equal(tokens.Foreground, rendered.Options.TitleStyle.Color);
-        Assert.Equal(tokens.Foreground, rendered.Options.DataLabelStyle.Color);
+        Assert.Null(rendered.Options.DataLabelStyle.Color);
         Assert.Equal(VisualTheme.Graphite().Typography.LegendSize, rendered.Options.Theme.Typography.LegendSize);
 
         configuration.Color = ChartColors.Gold;
