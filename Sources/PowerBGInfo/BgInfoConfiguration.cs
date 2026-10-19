@@ -210,6 +210,10 @@ public class BgInfoConfiguration {
     /// </summary>
     public Color? BackgroundColor { get; set; }
     /// <summary>
+    /// Gets or sets a generated backdrop. When set, it replaces <see cref="FilePath"/>, the current wallpaper and slideshow sources.
+    /// </summary>
+    public BgInfoBackground? Background { get; set; }
+    /// <summary>
     /// Gets or sets the vertical spacing between rows.
     /// </summary>
     public int SpaceBetweenLines { get; set; } = 10;

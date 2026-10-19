@@ -236,6 +236,10 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     [Alias("VisualCanvas")]
     public BgInfoVisualCanvas[] VisualCanvases { get; set; } = System.Array.Empty<BgInfoVisualCanvas>();
 
+    /// <para>Generated backdrop created with New-BGInfoBackground. It replaces FilePath and the current wallpaper.</para>
+    [Parameter]
+    public BgInfoBackground? Background { get; set; }
+
     /// <summary>Creates the configuration object.</summary>
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
@@ -309,6 +313,7 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
         if (IsParameterBound(nameof(VisualCanvases)) && VisualCanvases.Length > 0) {
             foreach (var visual in VisualCanvases) if (visual != null) config.VisualCanvases.Add(visual);
         }
+        if (IsParameterBound(nameof(Background))) config.Background = Background;
 
         WriteObject(config);
     }

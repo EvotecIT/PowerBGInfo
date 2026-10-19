@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Color = ChartForgeX.Primitives.ChartColor;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 
 namespace PowerBGInfo;
 
@@ -49,10 +51,40 @@ public sealed class BgInfoTopology {
     public bool ShowStatusBadges { get; set; } = true;
     /// <summary>Whether to fit content into the requested viewport.</summary>
     public bool FitContentToViewport { get; set; } = true;
+    /// <summary>Whole-number render scale from 1 to 4. Larger values lay the diagram out at
+    /// Width/Scale by Height/Scale and render it crisply at the requested size, enlarging text and nodes.</summary>
+    public int Scale { get; set; } = 1;
+    /// <summary>Panel fill. Setting a fill or border draws the topology inside the same panel as charts,
+    /// with a PowerBGInfo header instead of the ChartForgeX title block.</summary>
+    public Color? BackgroundColor { get; set; }
+    /// <summary>Optional one-pixel panel outline.</summary>
+    public Color? BorderColor { get; set; }
+    /// <summary>Panel corner radius in pixels.</summary>
+    public double CornerRadius { get; set; }
+    /// <summary>Space between the panel edge and its header and diagram.</summary>
+    public int Padding { get; set; } = 20;
+    /// <summary>Panel header color. Unset uses the global label color, then the theme's muted text.</summary>
+    public Color? TitleColor { get; set; }
+    /// <summary>Panel header font size. Unset uses the global label font size.</summary>
+    public float? TitleFontSize { get; set; }
+    /// <summary>Panel header font weight from 100 through 900. Unset uses 600.</summary>
+    public int? TitleFontWeight {
+        get => _titleFontWeight;
+        set => _titleFontWeight = BgInfoTextStyleValidation.ValidateFontWeight(value, nameof(value));
+    }
+    private int? _titleFontWeight;
+    /// <summary>Panel header casing.</summary>
+    public TextCaseTransform? TitleTextCase { get; set; }
+    /// <summary>Whether the overlay is drawn inside a panel.</summary>
+    public bool HasPanel => BackgroundColor.HasValue || BorderColor.HasValue;
     /// <summary>Topology groups.</summary>
     public List<TopologyGroup> Groups { get; } = new();
     /// <summary>Topology nodes.</summary>
     public List<TopologyNode> Nodes { get; } = new();
     /// <summary>Topology edges.</summary>
     public List<TopologyEdge> Edges { get; } = new();
+
+    internal static int ValidateScale(int scale) => scale is >= 1 and <= 4
+        ? scale
+        : throw new System.ArgumentOutOfRangeException(nameof(scale), scale, "Topology scale must be between 1 and 4.");
 }

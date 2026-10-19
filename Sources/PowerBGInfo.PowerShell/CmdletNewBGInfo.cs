@@ -338,6 +338,16 @@ public class CmdletNewBGInfo : PSCmdlet {
                 continue;
             }
 
+            if (item?.BaseObject is BgInfoBackground background)
+            {
+                if (config.Background != null)
+                {
+                    WriteWarning("More than one New-BGInfoBackground was emitted; the last one is used.");
+                }
+                config.Background = background;
+                continue;
+            }
+
             if (item != null && TryConvertLegacyEntry(item, out var legacyEntry))
             {
                 config.Entries.Add(legacyEntry);

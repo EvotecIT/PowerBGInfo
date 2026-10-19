@@ -1906,6 +1906,517 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>New-BGInfoBackground</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>BGInfoBackground</command:noun>
+      <maml:description>
+        <maml:para>Creates a generated backdrop that replaces the wallpaper image.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Emit the result inside the New-BGInfo script block. Layers paint in order: color, image, gradient, glows, pattern.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>New-BGInfoBackground</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Color</maml:name>
+          <maml:description>
+            <maml:para>Base fill painted before every other layer. Defaults to black.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Glow</maml:name>
+          <maml:description>
+            <maml:para>Soft radial lights created with New-BGInfoBackgroundGlow.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoBackgroundGlow[]</command:parameterValue>
+          <dev:type>
+            <maml:name>BgInfoBackgroundGlow[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Gradient</maml:name>
+          <maml:description>
+            <maml:para>Two gradient colors: start and end. Translucent colors tint an image underneath.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
+          <dev:type>
+            <maml:name>Object[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>GradientAngle</maml:name>
+          <maml:description>
+            <maml:para>Gradient direction in degrees clockwise from the rightward horizontal axis. 0 paints left to right; 90 paints top to bottom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Height</maml:name>
+          <maml:description>
+            <maml:para>Output height in pixels. Zero uses the target monitor height.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ImageFit</maml:name>
+          <maml:description>
+            <maml:para>How the image fills the backdrop. Cover fills the whole area and crops the overflow.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoImageFit</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Stretch</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Contain</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Cover</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Center</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Tile</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>BgInfoImageFit</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ImageOpacity</maml:name>
+          <maml:description>
+            <maml:para>Image opacity from zero to one.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ImagePath</maml:name>
+          <maml:description>
+            <maml:para>Optional image painted over the base color, for example a company wallpaper.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Pattern</maml:name>
+          <maml:description>
+            <maml:para>Optional repeating pattern painted last.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoBackgroundPattern</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Dots</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Grid</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>BgInfoBackgroundPattern</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>PatternColor</maml:name>
+          <maml:description>
+            <maml:para>Pattern ink. Keep the alpha low so the pattern stays behind the content.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>PatternSpacing</maml:name>
+          <maml:description>
+            <maml:para>Distance between pattern dots or lines in pixels.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>Output width in pixels. Zero uses the target monitor width.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Color</maml:name>
+        <maml:description>
+          <maml:para>Base fill painted before every other layer. Defaults to black.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Glow</maml:name>
+        <maml:description>
+          <maml:para>Soft radial lights created with New-BGInfoBackgroundGlow.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">BgInfoBackgroundGlow[]</command:parameterValue>
+        <dev:type>
+          <maml:name>BgInfoBackgroundGlow[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Gradient</maml:name>
+        <maml:description>
+          <maml:para>Two gradient colors: start and end. Translucent colors tint an image underneath.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object[]</command:parameterValue>
+        <dev:type>
+          <maml:name>Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>GradientAngle</maml:name>
+        <maml:description>
+          <maml:para>Gradient direction in degrees clockwise from the rightward horizontal axis. 0 paints left to right; 90 paints top to bottom.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Height</maml:name>
+        <maml:description>
+          <maml:para>Output height in pixels. Zero uses the target monitor height.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ImageFit</maml:name>
+        <maml:description>
+          <maml:para>How the image fills the backdrop. Cover fills the whole area and crops the overflow.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">BgInfoImageFit</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Stretch</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Contain</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Cover</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Center</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Tile</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>BgInfoImageFit</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ImageOpacity</maml:name>
+        <maml:description>
+          <maml:para>Image opacity from zero to one.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ImagePath</maml:name>
+        <maml:description>
+          <maml:para>Optional image painted over the base color, for example a company wallpaper.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Pattern</maml:name>
+        <maml:description>
+          <maml:para>Optional repeating pattern painted last.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">BgInfoBackgroundPattern</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Dots</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Grid</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>BgInfoBackgroundPattern</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>PatternColor</maml:name>
+        <maml:description>
+          <maml:para>Pattern ink. Keep the alpha low so the pattern stays behind the content.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>PatternSpacing</maml:name>
+        <maml:description>
+          <maml:para>Distance between pattern dots or lines in pixels.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Width</maml:name>
+        <maml:description>
+          <maml:para>Output width in pixels. Zero uses the target monitor width.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>PowerBGInfo.BgInfoBackground</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>New-BGInfo -Target File {&#xD;
+    New-BGInfoBackground -Width 1920 -Height 1080 -Gradient '#0B1022', '#05070F' -Glow @(&#xD;
+        New-BGInfoBackgroundGlow -X 0.15 -Y 0.1 -Radius 0.55 -Color '#4F46E566'&#xD;
+    ) -Pattern Dots&#xD;
+    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME&#xD;
+} -ConfigurationDirectory $PSScriptRoot -OutputFileName 'Generated.png'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>New-BGInfoBackgroundGlow</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>BGInfoBackgroundGlow</command:noun>
+      <maml:description>
+        <maml:para>Creates a soft radial light for New-BGInfoBackground.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Positions are fractions of the backdrop, so the same glow works at any resolution.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>New-BGInfoBackgroundGlow</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Color</maml:name>
+          <maml:description>
+            <maml:para>Center color. The glow fades to transparent at the radius, so use alpha to set its strength.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Radius</maml:name>
+          <maml:description>
+            <maml:para>Radius as a fraction of the longest backdrop side.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>X</maml:name>
+          <maml:description>
+            <maml:para>Horizontal center from 0 (left edge) to 1 (right edge).</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Y</maml:name>
+          <maml:description>
+            <maml:para>Vertical center from 0 (top edge) to 1 (bottom edge).</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Color</maml:name>
+        <maml:description>
+          <maml:para>Center color. The glow fades to transparent at the radius, so use alpha to set its strength.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Radius</maml:name>
+        <maml:description>
+          <maml:para>Radius as a fraction of the longest backdrop side.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>X</maml:name>
+        <maml:description>
+          <maml:para>Horizontal center from 0 (left edge) to 1 (right edge).</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Y</maml:name>
+        <maml:description>
+          <maml:para>Vertical center from 0 (top edge) to 1 (bottom edge).</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>PowerBGInfo.BgInfoBackgroundGlow</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>New-BGInfoBackgroundGlow -X 0.85 -Y 0.9 -Radius 0.6 -Color '#06B6D455'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>New-BGInfoChart</command:name>
       <command:verb>New</command:verb>
       <command:noun>BGInfoChart</command:noun>
@@ -1962,6 +2473,30 @@
           <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
           <dev:type>
             <maml:name>Single</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>BorderColor</maml:name>
+          <maml:description>
+            <maml:para>Optional one-pixel outline drawn around the chart panel.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>CornerRadius</maml:name>
+          <maml:description>
+            <maml:para>Corner radius of the chart panel in pixels. Zero keeps square corners.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -2934,6 +3469,30 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>BorderColor</maml:name>
+          <maml:description>
+            <maml:para>Optional one-pixel outline drawn around the chart panel.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>CornerRadius</maml:name>
+          <maml:description>
+            <maml:para>Corner radius of the chart panel in pixels. Zero keeps square corners.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>DonutCenterLabel</maml:name>
           <maml:description>
             <maml:para>Donut center label text.</maml:para>
@@ -3896,6 +4455,30 @@
         <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
         <dev:type>
           <maml:name>Single</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>BorderColor</maml:name>
+        <maml:description>
+          <maml:para>Optional one-pixel outline drawn around the chart panel.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>CornerRadius</maml:name>
+        <maml:description>
+          <maml:para>Corner radius of the chart panel in pixels. Zero keeps square corners.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -4888,6 +5471,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Background</maml:name>
+          <maml:description>
+            <maml:para>Generated backdrop created with New-BGInfoBackground. It replaces FilePath and the current wallpaper.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoBackground</command:parameterValue>
+          <dev:type>
+            <maml:name>BgInfoBackground</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>BackgroundColor</maml:name>
           <maml:description>
             <maml:para>Background color to use when no wallpaper image is available.</maml:para>
@@ -5660,6 +6255,18 @@
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
           <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Background</maml:name>
+        <maml:description>
+          <maml:para>Generated backdrop created with New-BGInfoBackground. It replaces FilePath and the current wallpaper.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">BgInfoBackground</command:parameterValue>
+        <dev:type>
+          <maml:name>BgInfoBackground</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -7240,6 +7847,42 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>BackgroundColor</maml:name>
+          <maml:description>
+            <maml:para>Panel fill. A fill or border draws the diagram in the same panel style as New-BGInfoChart, with a matching header.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>BorderColor</maml:name>
+          <maml:description>
+            <maml:para>Optional one-pixel panel outline.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>CornerRadius</maml:name>
+          <maml:description>
+            <maml:para>Panel corner radius in pixels.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Direction</maml:name>
           <maml:description>
             <maml:para>Topology layout direction.</maml:para>
@@ -7389,6 +8032,18 @@
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Padding</maml:name>
+          <maml:description>
+            <maml:para>Space between the panel edge and its content.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>PositionX</maml:name>
           <maml:description>
             <maml:para>Absolute X position.</maml:para>
@@ -7404,6 +8059,18 @@
           <maml:name>PositionY</maml:name>
           <maml:description>
             <maml:para>Absolute Y position.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Scale</maml:name>
+          <maml:description>
+            <maml:para>Whole-number render scale from 1 to 4. Use 2 to enlarge nodes and text on high-resolution wallpapers.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -7436,10 +8103,10 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="ThemeMode">
           <maml:name>Theme</maml:name>
           <maml:description>
-            <maml:para>Theme name.</maml:para>
+            <maml:para>Theme name. ThemeMode is accepted as an alias to match charts and visual canvases.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <command:parameterValueGroup>
@@ -7460,6 +8127,62 @@
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleColor</maml:name>
+          <maml:description>
+            <maml:para>Panel header color.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+          <dev:type>
+            <maml:name>Object</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleFontSize</maml:name>
+          <maml:description>
+            <maml:para>Panel header font size.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+          <dev:type>
+            <maml:name>Single</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleFontWeight</maml:name>
+          <maml:description>
+            <maml:para>Panel header font weight from 100 through 900.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TitleTextCase</maml:name>
+          <maml:description>
+            <maml:para>Panel header casing.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>TextCaseTransform</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -7510,6 +8233,42 @@
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>BgInfoTextPosition</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>BackgroundColor</maml:name>
+        <maml:description>
+          <maml:para>Panel fill. A fill or border draws the diagram in the same panel style as New-BGInfoChart, with a matching header.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>BorderColor</maml:name>
+        <maml:description>
+          <maml:para>Optional one-pixel panel outline.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>CornerRadius</maml:name>
+        <maml:description>
+          <maml:para>Panel corner radius in pixels.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -7664,6 +8423,18 @@
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Padding</maml:name>
+        <maml:description>
+          <maml:para>Space between the panel edge and its content.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>PositionX</maml:name>
         <maml:description>
           <maml:para>Absolute X position.</maml:para>
@@ -7679,6 +8450,18 @@
         <maml:name>PositionY</maml:name>
         <maml:description>
           <maml:para>Absolute Y position.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Scale</maml:name>
+        <maml:description>
+          <maml:para>Whole-number render scale from 1 to 4. Use 2 to enlarge nodes and text on high-resolution wallpapers.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -7711,10 +8494,10 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="ThemeMode">
         <maml:name>Theme</maml:name>
         <maml:description>
-          <maml:para>Theme name.</maml:para>
+          <maml:para>Theme name. ThemeMode is accepted as an alias to match charts and visual canvases.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <command:parameterValueGroup>
@@ -7735,6 +8518,62 @@
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleColor</maml:name>
+        <maml:description>
+          <maml:para>Panel header color.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleFontSize</maml:name>
+        <maml:description>
+          <maml:para>Panel header font size.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Single</command:parameterValue>
+        <dev:type>
+          <maml:name>Single</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleFontWeight</maml:name>
+        <maml:description>
+          <maml:para>Panel header font weight from 100 through 900.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TitleTextCase</maml:name>
+        <maml:description>
+          <maml:para>Panel header casing.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">TextCaseTransform</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">None</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Uppercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Lowercase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">TitleCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SentenceCase</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ToggleCase</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>TextCaseTransform</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>

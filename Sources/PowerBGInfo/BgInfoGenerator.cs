@@ -80,7 +80,7 @@ public class BgInfoGenerator
 
     private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<Monitors?> getMonitors, bool applyTargets)
     {
-        var imagePath = ResolveBaseImagePath(config, getWallpaperPath);
+        var imagePath = config.Background == null ? ResolveBaseImagePath(config, getWallpaperPath) : null;
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
@@ -90,16 +90,17 @@ public class BgInfoGenerator
             Directory.CreateDirectory(outputDirectory);
         }
 
-        using var image = hasBaseImage
-            ? LoadBaseImage(imagePath!)
-            : CreateBaseImage(config, getMonitors(), outputPath);
+        using var image = config.Background != null
+            ? CreateBackgroundImage(config.Background, config, getMonitors)
+            : hasBaseImage
+                ? LoadBaseImage(imagePath!)
+                : CreateBaseImage(config, getMonitors(), outputPath);
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
         var entryLayouts = BuildEntryLayouts(image, config, expandedEntries);
-        double highestWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.LabelWidth);
-        double highestValueWidth = entryLayouts.Count == 0 ? 0f : entryLayouts.Max(layout => layout.ValueWidth);
-        bool hasValueEntries = entryLayouts.Any(layout => layout.Entry.Type != BgInfoEntryType.Label);
-        var totalWidth = highestWidth + (hasValueEntries ? config.SpaceBetweenColumns + highestValueWidth : 0f);
+        var (highestWidth, totalWidth) = MeasureTextColumns(
+            entryLayouts.Select(layout => (layout.Entry.Type == BgInfoEntryType.Label, layout.LabelWidth, layout.ValueWidth)),
+            config.SpaceBetweenColumns);
         var textBlockHeight = GetTextBlockHeight(config, entryLayouts);
 
         double posX;
@@ -311,6 +312,7 @@ public class BgInfoGenerator
     private static bool ShouldPreserveWallpaperSlideshow(BgInfoConfiguration config)
     {
         return config.PreserveWallpaperSlideshow
+            && config.Background == null
             && config.Target.HasFlag(BgInfoTarget.Wallpaper)
             && string.IsNullOrWhiteSpace(config.FilePath);
     }
@@ -408,6 +410,8 @@ public class BgInfoGenerator
             UseHistory = false,
             AppendValues = false,
             BackgroundColor = source.BackgroundColor,
+            CornerRadius = source.CornerRadius,
+            BorderColor = source.BorderColor,
             LineColor = source.LineColor,
             FillColor = source.FillColor,
             Palette = source.Palette.ToArray(),
@@ -537,6 +541,20 @@ public class BgInfoGenerator
         var image = new BgInfoRasterImage();
         image.Create(outputPath, width, height, background);
         return image;
+    }
+
+    private static BgInfoRasterImage CreateBackgroundImage(BgInfoBackground background, BgInfoConfiguration config, Func<Monitors?> getMonitors)
+    {
+        var width = background.Width;
+        var height = background.Height;
+        if (width <= 0 || height <= 0)
+        {
+            var monitorSize = GetMonitorSize(getMonitors(), config.MonitorIndex);
+            if (width <= 0) width = monitorSize.Width;
+            if (height <= 0) height = monitorSize.Height;
+        }
+
+        return BgInfoBackgroundRenderer.Render(background, width, height);
     }
 
     internal static string? ResolveBaseImagePath(BgInfoConfiguration config, Func<int, string?> getWallpaper)
@@ -1332,6 +1350,33 @@ public class BgInfoGenerator
         }
 
         return entry.Value;
+    }
+
+    /// <summary>
+    /// Section labels without values span both columns, so a large heading does not push the value column away.
+    /// </summary>
+    internal static (double LabelColumnWidth, double TotalWidth) MeasureTextColumns(
+        IEnumerable<(bool IsHeading, double LabelWidth, double ValueWidth)> rows, double columnGap)
+    {
+        double labelColumn = 0;
+        double valueColumn = 0;
+        double heading = 0;
+        bool hasValueEntries = false;
+        foreach (var row in rows)
+        {
+            if (row.IsHeading)
+            {
+                heading = Math.Max(heading, row.LabelWidth);
+                continue;
+            }
+
+            hasValueEntries = true;
+            labelColumn = Math.Max(labelColumn, row.LabelWidth);
+            valueColumn = Math.Max(valueColumn, row.ValueWidth);
+        }
+
+        var columns = hasValueEntries ? labelColumn + columnGap + valueColumn : 0;
+        return (labelColumn, Math.Max(columns, heading));
     }
 
     private static double GetTextBlockHeight(BgInfoConfiguration config, IReadOnlyList<EntryLayout> entryLayouts)

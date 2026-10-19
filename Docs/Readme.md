@@ -19,6 +19,12 @@ Runs BGInfo from a JSON configuration file.
 ### [New-BGInfo](New-BGInfo.md)
 Creates a BGInfo overlay image and optionally applies it as wallpaper.
 
+### [New-BGInfoBackground](New-BGInfoBackground.md)
+Creates a generated backdrop that replaces the wallpaper image.
+
+### [New-BGInfoBackgroundGlow](New-BGInfoBackgroundGlow.md)
+Creates a soft radial light for New-BGInfoBackground.
+
 ### [New-BGInfoChart](New-BGInfoChart.md)
 Creates a BGInfo chart definition.
 
