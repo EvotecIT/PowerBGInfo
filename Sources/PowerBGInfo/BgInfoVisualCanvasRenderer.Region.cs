@@ -18,14 +18,8 @@ internal static partial class BgInfoVisualCanvasRenderer {
     /// <summary>Natural height of a region stack: every tile plus the gaps between them.</summary>
     internal static int MeasureRegionHeight(BgInfoVisualCanvas visual, int imageHeight) {
         var (tileHeight, gap) = ResolveRegionTileMetrics(visual, imageHeight);
-        double total = 0;
-        var count = 0;
-        foreach (var tile in visual.Tiles) {
-            total += tile.Height > 0 ? tile.Height : tileHeight;
-            count++;
-        }
-        if (count == 0) return 1;
-        return (int)Math.Ceiling(total + gap * (count - 1));
+        if (visual.Tiles.Count == 0) return 1;
+        return (int)Math.Ceiling(MeasureTileStackHeight(visual, visual.Tiles, tileHeight, gap));
     }
 
     /// <summary>Renders the tiles as one column that fills the region slot, ignoring tile sides and rail offsets.</summary>
@@ -36,7 +30,6 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var (tileHeight, gap) = ResolveRegionTileMetrics(visual, imageHeight);
         var naturalHeight = MeasureRegionHeight(visual, imageHeight);
         var scale = Math.Min(1d, (double)height / naturalHeight);
-        var scaledGap = gap * scale;
         var canvas = VisualCanvas.Create(width, height)
             .WithTitle(string.Empty)
             .WithTheme(BuildTheme(visual), visual.ThemeMode)
@@ -45,14 +38,20 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
         var y = 0d;
         foreach (var tile in visual.Tiles) {
-            var itemHeight = (tile.Height > 0 ? tile.Height : tileHeight) * scale;
+            var itemHeight = ResolveTileHeight(visual, tile, tileHeight) * scale;
             var itemWidth = tile.Width > 0 ? Math.Min(tile.Width, width) : width;
-            canvas.AddInfoTile(0, y, itemWidth, itemHeight,
-                Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value), Resolve(tile.Detail),
-                ResolveTileAccent(visual, tile), tile.Progress, MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
-                MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues, tile.MiniChartMaximum,
-                ResolveTextFitPolicy(visual, tile));
-            y += itemHeight + scaledGap;
+            canvas.AddInfoTileWithTextOptions(0, y, itemWidth, itemHeight,
+                Resolve(tile.Icon), Resolve(tile.Label), Resolve(tile.Value),
+                new VisualCanvasInfoTileTextOptions(
+                    textScale: tile.TextScale ?? visual.TileTextScale,
+                    labelFontSize: tile.LabelFontSize,
+                    valueFontSize: tile.ValueFontSize,
+                    detailFontSize: tile.DetailFontSize),
+                Resolve(tile.Detail), ResolveTileAccent(visual, tile), tile.Progress,
+                MapSurfaceStyle(tile.SurfaceStyle), MapIconKind(tile.IconKind),
+                MapMiniChartKind(tile.MiniChartKind), tile.MiniChartValues,
+                tile.MiniChartMaximum, ResolveTextFitPolicy(visual, tile));
+            y += itemHeight + ResolveTileGap(visual, tile, gap) * scale;
         }
 
         var image = new BgInfoRasterImage();

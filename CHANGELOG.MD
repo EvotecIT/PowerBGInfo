@@ -6,17 +6,29 @@
 - Added layout regions: `-Region Left|Right|Top|Bottom|Center` on charts, topology, visual canvases and widgets, and `New-BGInfoLayout` for margins, gap, column width, band height, taskbar reserve, desktop-icon area, panel height cap and column alignment.
 - Added widget cmdlets on ChartForgeX: `New-BGInfoMetric`, `New-BGInfoTable`, `New-BGInfoList`, `New-BGInfoCalendarHeatmap`, `New-BGInfoTimeline` with `New-BGInfoTimelineItem`, `New-BGInfoTreemap`, `New-BGInfoMermaid` (ChartForgeX.Mermaid) and `New-BGInfoQRCode` (CodeGlyphX).
 - Added status thresholds: `-WarningThreshold`, `-CriticalThreshold` and `-ThresholdDirection` on `New-BGInfoChart`, `New-BGInfoMetric` and `New-BGInfoVisualCanvasTile` (with `-StatusValue`), and `-Status`, `-Accent` and `-Muted` color roles on `New-BGInfoLabel`.
-- Added `Get-BGInfoSystemInfo`, a read-only snapshot of uptime, OS, IPv4, disks, last update, Defender, BitLocker and console user, and the built-in value tokens `Uptime`, `LastPatch`, `DefenderStatus`, `BitLockerStatus`, `LoggedOnUser`, `Domain` and `DiskSummary`.
+- Added `Get-BGInfoSystemInfo`, a read-only snapshot of uptime, OS, IPv4, disks, last update, Defender, BitLocker and the signed-in user, and the built-in value tokens `Uptime`, `LastPatch`, `DefenderStatus`, `BitLockerStatus`, `LoggedOnUser`, `Domain` and `DiskSummary`.
+- Added `Get-BGInfoMonitor`, which lists each monitor's index, device name, bounds, primary flag and display scale, so per-monitor scripts no longer need DesktopManager types (blocked in Constrained Language Mode). `Examples/Run.BGInfo.PerMonitor.ps1` renders one image per monitor.
 - Added `Invoke-BGInfoDataSource`, which runs data-collection code with a time limit and a fallback value.
 - Added one example per feature under `Examples/Features`, `Examples/Run.BGInfo.Features.ps1` to render them all, and the fill-in template `Examples/Run.BGInfo.Template.ps1`.
 - JSON configurations now carry `Layout`, `Widgets`, regions, region order and thresholds.
 - Added `New-BGInfoBackground` and `New-BGInfoBackgroundGlow` for generated backgrounds built from gradients, soft glows, dot or grid patterns, and an optional image with a scrim. A background replaces the wallpaper image and slideshow sources, and round-trips through JSON.
 - Added `-CornerRadius` and `-BorderColor` to `New-BGInfoChart`, plus the same panel parameters, header styling and `-Scale` to `New-BGInfoTopology`, so charts, diagrams and visual canvas tiles share one panel style.
 - Added four showcase scenarios (server status, help desk, lab or classroom, admin workstation) with a shared HUD theme and `Examples/Run.BGInfo.Showcase.ps1`, which renders all of them in light and dark with a manifest.
+- Added eight more showcase scenarios: domain controller, Hyper-V host, NOC and on call, branch office PC, meeting room, build agent, patch day, and kiosk or signage. `Examples/Run.BGInfo.Showcase.ps1` renders all twelve at every `-Size`, plus an ultrawide on-call and a portrait signage render, and its manifest now records the preset, size and PowerBGInfo features of each render.
+- `New-BGInfoTreemap -ColorProperty` colors each rectangle by a second measure, for example CPU while the size is memory. With `-WarningThreshold`, `-CriticalThreshold` and `-ThresholdDirection` the colors are the status colors (healthy rectangles muted); without them they shade from a faint to the full accent. Thresholds without `-ColorProperty` compare the sizes. Color values and thresholds round-trip through JSON.
+- Timeline items piped as objects or hashtables may carry a `Color`, like `New-BGInfoTimelineItem -Color`.
 - Added independent bold and underline controls for labels, values, chart headers, global defaults, and JSON configurations.
 
 ### Fixed
 
+- Timeline axes read `Wed 14` or `14:00` instead of ISO dates such as `2026-10-14`.
+- Info items in lists, tables and metric cards use the info color instead of the accent, so an Info row under a red or orange accent no longer looks like an alert. List numbers, checks and bullets use one color instead of cycling through the palette.
+- A region column whose panels add up to more than its height shrinks them to fit instead of running past the taskbar or off the image.
+- The showcase and template scripts are saved as UTF-8 with a byte-order mark, so Windows PowerShell 5.1 reads characters such as `·` and `–` correctly, and their lines fit in 80 columns.
+
+- Repeated runs no longer draw the text again on top of the previous run. PowerBGInfo records each image it writes, with the base it was drawn on, in `PowerBgInfo.outputs.txt` next to the image; when the current wallpaper or a slideshow image is one of those outputs, it draws on the recorded original. An output without a record is not used, and a warning says so.
+- `LoggedOnUser` is the user of the session the wallpaper is rendered for, read through `WTSQuerySessionInformation`, instead of the console user. In session 0 (a SYSTEM task) it is the console session's user.
+- `-Target LogonScreen` under PowerShell 7 warns on editions other than Enterprise, Education and Server: there the lock screen is set through the policy value `LockScreenImage`, which those editions ignore.
 - Section labels without a value span both text columns instead of widening the label column.
 - Progress, gauge, circle and pictorial chart tracks stay visible on transparent and panelled charts.
 - `New-BGInfoTopology` accepts `-ThemeMode` like charts and visual canvases.

@@ -94,7 +94,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var layout = ResolveOverlayRailLayout(visual, width, height);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Left, layout.LeftRailX, layout.RailY + visual.LeftTileOffsetY, layout.LeftRailWidth, layout.LeftTileWidth, layout.TileHeight, layout.TileGap);
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Right, layout.RightRailX, layout.RailY + visual.RightTileOffsetY, layout.RightRailWidth, layout.RightTileWidth, layout.TileHeight, layout.TileGap);
-        var centerTileWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
+        var centerTileWidth = layout.CenterRailWidth;
         var centerDefaultTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Center, layout.TemplateTileWidth) * layout.LaneWidthScale;
         AddTiles(canvas, visual, BgInfoVisualCanvasSide.Center, ResolveCenteredLaneX(visual, width, layout.MarginX, layout.LaneGap, centerTileWidth, layout.LeftRailX, layout.LeftRailWidth, layout.RightRailX), layout.RailY + visual.CenterTileOffsetY, centerTileWidth, centerDefaultTileWidth, layout.TileHeight, layout.TileGap);
 
@@ -152,7 +152,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
                     tileX = x;
                     break;
             }
-            canvas.AddInfoTile(
+            canvas.AddInfoTileWithTextOptions(
                 tileX,
                 cursorY,
                 tileWidth,
@@ -160,6 +160,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 Resolve(tile.Icon),
                 Resolve(tile.Label),
                 Resolve(tile.Value),
+                new VisualCanvasInfoTileTextOptions(
+                    textScale: tile.TextScale ?? visual.TileTextScale,
+                    labelFontSize: tile.LabelFontSize,
+                    valueFontSize: tile.ValueFontSize,
+                    detailFontSize: tile.DetailFontSize),
                 Resolve(tile.Detail),
                 ResolveTileAccent(visual, tile),
                 tile.Progress,
@@ -169,14 +174,17 @@ internal static partial class BgInfoVisualCanvasRenderer {
                 tile.MiniChartValues,
                 tile.MiniChartMaximum,
                 ResolveTextFitPolicy(visual, tile));
-            cursorY += tileHeight + gap;
+            cursorY += tileHeight + ResolveTileGap(visual, tile, gap);
         }
     }
 
-    private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
+    private static double ResolveRailWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth, double implicitMaximum = double.MaxValue) {
         var width = ResolveSideTileWidth(visual, side, defaultWidth);
         foreach (var tile in visual.Tiles) {
-            if (tile.Side == side && tile.Width > width) width = tile.Width;
+            if (tile.Side != side) continue;
+            var tileWidth = ResolveTileWidth(visual, tile, defaultWidth);
+            if (tile.Width <= 0 && !HasExplicitSideTileWidth(visual, side)) tileWidth = Math.Min(tileWidth, implicitMaximum);
+            if (tileWidth > width) width = tileWidth;
         }
 
         return width;
@@ -184,13 +192,29 @@ internal static partial class BgInfoVisualCanvasRenderer {
 
     private static double ResolveTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultWidth) {
         if (tile.Width > 0) return tile.Width;
-        return ResolveSideTileWidth(visual, tile.Side, defaultWidth);
+        if (HasExplicitSideTileWidth(visual, tile.Side)) {
+            return ResolveSideTileWidth(visual, tile.Side, defaultWidth);
+        }
+
+        return defaultWidth * ResolveTileTextScale(visual, tile);
     }
 
     private static double ResolveTileHeight(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultHeight) {
         if (tile.Height > 0) return tile.Height;
-        return visual.TileHeight > 0 ? visual.TileHeight : defaultHeight;
+        return visual.TileHeight > 0 ? visual.TileHeight : defaultHeight * ResolveTileTextScale(visual, tile);
     }
+
+    private static bool HasExplicitSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side) =>
+        visual.TileWidth > 0 ||
+        (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) ||
+        (side == BgInfoVisualCanvasSide.Right && visual.RightTileWidth > 0) ||
+        (side == BgInfoVisualCanvasSide.Center && visual.CenterTileWidth > 0);
+
+    private static double ResolveTileTextScale(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile) =>
+        tile.TextScale ?? visual.TileTextScale;
+
+    private static double ResolveTileGap(BgInfoVisualCanvas visual, BgInfoVisualCanvasTile tile, double defaultGap) =>
+        visual.TileGap > 0 ? visual.TileGap : defaultGap * ResolveTileTextScale(visual, tile);
 
     private static double ResolveSideTileWidth(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side, double defaultWidth) {
         if (side == BgInfoVisualCanvasSide.Left && visual.LeftTileWidth > 0) return visual.LeftTileWidth;
@@ -200,6 +224,18 @@ internal static partial class BgInfoVisualCanvasRenderer {
     }
 
     private static double ResolveTileGap(BgInfoVisualCanvas visual, double defaultGap) => visual.TileGap > 0 ? visual.TileGap : defaultGap;
+
+    /// <summary>Measures the same tile heights and preceding-tile gaps used when drawing a stack.</summary>
+    private static double MeasureTileStackHeight(BgInfoVisualCanvas visual, IEnumerable<BgInfoVisualCanvasTile> tiles, double defaultHeight, double defaultGap) {
+        double total = 0;
+        BgInfoVisualCanvasTile? previous = null;
+        foreach (var tile in tiles) {
+            if (previous != null) total += ResolveTileGap(visual, previous, defaultGap);
+            total += ResolveTileHeight(visual, tile, defaultHeight);
+            previous = tile;
+        }
+        return total;
+    }
 
     private static bool HasTiles(BgInfoVisualCanvas visual, BgInfoVisualCanvasSide side) {
         foreach (var tile in visual.Tiles) {
@@ -260,14 +296,14 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var tileGap = ResolveTileGap(visual, Clamp(ApplyTileGapPreset(visual.LayoutPreset, height * 0.018), Math.Min(8, height * 0.02), Math.Min(28, height * 0.045)));
         var requestedRailY = visual.RailMarginY.HasValue ? Math.Max(0, visual.RailMarginY.Value) : Clamp(height * 0.16, Math.Min(32, height * 0.08), Math.Min(190, height * 0.25));
         var laneHeight = visual.Tiles.GroupBy(tile => tile.Side)
-            .Select(group => group.Sum(tile => ResolveTileHeight(visual, tile, tileHeight)) + tileGap * Math.Max(0, group.Count() - 1))
+            .Select(group => MeasureTileStackHeight(visual, group, tileHeight, tileGap))
             .DefaultIfEmpty(tileHeight).Max();
         var railY = Math.Min(requestedRailY, Math.Max(0, height - laneHeight));
         var leftTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
         var rightTileWidth = ResolveSideTileWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
-        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth);
-        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth);
-        var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth);
+        var leftRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Left, templateTileWidth, railBudget);
+        var rightRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Right, templateTileWidth, railBudget);
+        var centerRailWidth = ResolveRailWidth(visual, BgInfoVisualCanvasSide.Center, templateTileWidth, railBudget);
         var laneWidthScale = ResolveCenteredLaneWidthScale(visual, width, marginX, laneGap, leftRailWidth, centerRailWidth, rightRailWidth);
         leftTileWidth *= laneWidthScale;
         rightTileWidth *= laneWidthScale;
@@ -277,11 +313,11 @@ internal static partial class BgInfoVisualCanvasRenderer {
         var rightRailX = width - marginX - rightRailWidth - visual.RightTileOffsetX;
         var centerLeft = leftRailX + leftRailWidth + laneGap;
         var centerRight = rightRailX - laneGap;
-        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft), laneGap);
+        return new OverlayRailLayout(leftRailX, rightRailX, railY, leftRailWidth, rightRailWidth, leftTileWidth, rightTileWidth, templateTileWidth, laneWidthScale, centerRailWidth * laneWidthScale, marginX, tileHeight, tileGap, centerLeft, Math.Max(1, centerRight - centerLeft), laneGap);
     }
 
     private readonly struct OverlayRailLayout {
-        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth, double laneGap) {
+        public OverlayRailLayout(double leftRailX, double rightRailX, double railY, double leftRailWidth, double rightRailWidth, double leftTileWidth, double rightTileWidth, double templateTileWidth, double laneWidthScale, double centerRailWidth, double marginX, double tileHeight, double tileGap, double centerLeft, double centerWidth, double laneGap) {
             LeftRailX = leftRailX;
             RightRailX = rightRailX;
             RailY = railY;
@@ -291,6 +327,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
             RightTileWidth = rightTileWidth;
             TemplateTileWidth = templateTileWidth;
             LaneWidthScale = laneWidthScale;
+            CenterRailWidth = centerRailWidth;
             MarginX = marginX;
             TileHeight = tileHeight;
             TileGap = tileGap;
@@ -308,6 +345,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
         public double RightTileWidth { get; }
         public double TemplateTileWidth { get; }
         public double LaneWidthScale { get; }
+        public double CenterRailWidth { get; }
         public double MarginX { get; }
         public double TileHeight { get; }
         public double TileGap { get; }
@@ -399,6 +437,7 @@ internal static partial class BgInfoVisualCanvasRenderer {
     });
 
     private static void ApplyStyle(VisualCanvasStyleOptions style, BgInfoVisualCanvas visual) {
+        style.TileTextScale = visual.TileTextScale;
         style.ImagePlaceholderStroke = visual.Accent.WithOpacity(0.34);
         style.TileGlassTop = visual.TileGlassTop;
         style.TileGlassBottom = visual.TileGlassBottom;

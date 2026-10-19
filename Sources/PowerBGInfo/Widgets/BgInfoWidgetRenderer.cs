@@ -35,8 +35,17 @@ internal sealed class BgInfoWidgetStyle {
 
     public ChartColor[] Palette => new[] { Accent, SecondaryAccent, Status.Info, Status.Ok, Status.Warning, Status.Critical, Muted };
 
+    /// <summary>
+    /// Palette for metric cards, tables and lists. These blocks color the Info status with the first palette entry and
+    /// list markers by cycling the palette, so an Info row under a red accent read as an alert and a checklist came out
+    /// in rainbow colors. One entry fixes both: the info color when an Info status is shown, otherwise the accent.
+    /// </summary>
+    public ChartColor[] StatusBlockPalette(bool showsInfo) => new[] { showsInfo ? Status.Info : Accent };
+
     /// <summary>A transparent ChartForgeX theme that inherits the widget colors.</summary>
-    public VisualTheme CreateTheme(ChartColor? surface = null) => VisualTheme.Graphite().WithFontFamily(FontFamily).Configure(builder => {
+    /// <param name="surface">Table header and striping surface.</param>
+    /// <param name="palette">Series palette; defaults to <see cref="Palette"/>. See <see cref="StatusBlockPalette"/>.</param>
+    public VisualTheme CreateTheme(ChartColor? surface = null, ChartColor[]? palette = null) => VisualTheme.Graphite().WithFontFamily(FontFamily).Configure(builder => {
         var colors = builder.Colors(Mode);
         colors.Background = ChartColor.Transparent;
         // Table headers and striping read the surface; a mid-tone keeps both subtle on glass panels.
@@ -47,13 +56,14 @@ internal sealed class BgInfoWidgetStyle {
         colors.Accent = Accent;
         colors.SecondaryAccent = SecondaryAccent;
         colors.Positive = Status.Ok;
+        colors.Info = Status.Info;
         colors.Warning = Status.Warning;
         colors.Negative = Status.Critical;
         colors.Border = WithAlpha(Grid, 90);
         colors.PlotBorder = ChartColor.Transparent;
         colors.Grid = WithAlpha(Grid, 70);
         colors.Axis = WithAlpha(Grid, 110);
-        colors.Palette = Palette;
+        colors.Palette = palette ?? Palette;
         builder.CardShadowOpacity = 0;
     });
 

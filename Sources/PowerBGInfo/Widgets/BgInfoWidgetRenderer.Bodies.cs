@@ -27,7 +27,7 @@ internal static partial class BgInfoWidgetRenderer {
         // The panel owns the frame. Without a card, the status bar runs the full body height
         // (the carded status bar is shorter than the card, see design.md), and the left inset clears it.
         var card = MetricCard.Create()
-            .WithTheme(style.CreateTheme(), style.Mode)
+            .WithTheme(style.CreateTheme(palette: style.StatusBlockPalette(status == BgInfoStatus.Info)), style.Mode)
             .WithTransparentBackground()
             .WithCard(false)
             .WithSize(w, h)
@@ -57,7 +57,7 @@ internal static partial class BgInfoWidgetRenderer {
         if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var table = ChartTable.Create()
-            .WithTheme(style.CreateTheme(), style.Mode)
+            .WithTheme(style.CreateTheme(palette: style.StatusBlockPalette(showsInfo: true)), style.Mode)
             .WithTransparentBackground()
             .WithCard(false)
             .WithSize(w, h)
@@ -76,7 +76,7 @@ internal static partial class BgInfoWidgetRenderer {
         if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var list = ChartList.Create()
-            .WithTheme(style.CreateTheme(), style.Mode)
+            .WithTheme(style.CreateTheme(palette: style.StatusBlockPalette(widget.Items.Any(item => item.Status == BgInfoStatus.Info))), style.Mode)
             .WithTransparentBackground()
             .WithCard(false)
             .WithSize(w, h)
@@ -155,10 +155,19 @@ internal static partial class BgInfoWidgetRenderer {
         var categories = ResolveTimelineCategories(widget.Items, style);
         var keys = categories.ToDictionary(category => category.Label, category => category.Key, StringComparer.OrdinalIgnoreCase);
 
+        // The lane axis defaults to ISO dates (2026-10-14); a wallpaper reads better with "Wed 14" or "14:00".
+        var first = widget.Items.Min(item => item.Start);
+        var last = widget.Items.Max(item => item.End ?? item.Start);
+        if (widget.Now is { } now) {
+            if (now < first) first = now;
+            if (now > last) last = now;
+        }
+        var multiDay = first.Date != last.Date;
         var chart = CreateChart(widget, style, width, height, axes: true)
             .WithLegend(widget.ShowLegend)
             .WithDataLabels(true)
-            .WithStateCategories(categories);
+            .WithStateCategories(categories)
+            .ConfigureXAxis(axis => axis.LabelFormatter = value => FormatTimelineTick(value, multiDay));
         if (widget.Now.HasValue) chart.WithGanttLaneNow(widget.Now.Value);
         foreach (var lane in widget.Items.GroupBy(item => item.Lane.Trim(), StringComparer.OrdinalIgnoreCase)) {
             chart.AddGanttLane(lane.Key, lane.Select(item => new ChartGanttLaneItem(item.Start, item.End,
@@ -191,33 +200,14 @@ internal static partial class BgInfoWidgetRenderer {
     private static string NormalizeTimelineCategory(string? category) =>
         string.IsNullOrWhiteSpace(category) ? "Scheduled" : category!.Trim();
 
-    private static RgbaImage RenderTreemap(BgInfoTreemapWidget widget, BgInfoWidgetStyle style, int width, int height) {
-        var items = new List<ChartHierarchyItem>();
-        var groups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var index = 0;
-        foreach (var item in widget.Items) {
-            string? parent = null;
-            if (!string.IsNullOrWhiteSpace(item.Group)) {
-                var groupName = item.Group!.Trim();
-                if (!groups.TryGetValue(groupName, out parent)) {
-                    parent = "group:" + groupName;
-                    groups.Add(groupName, parent);
-                    items.Add(new ChartHierarchyItem(parent, groupName));
-                }
-            }
-            items.Add(new ChartHierarchyItem("item:" + (index++).ToString(CultureInfo.InvariantCulture), item.Name, parent, item.Value));
-        }
-
-        var suffix = widget.ValueSuffix ?? string.Empty;
-        var chart = CreateChart(widget, style, width, height, axes: false)
-            .WithLegend(false)
-            .WithDataLabels(true)
-            .WithValueFormatter(value => value.ToString("0.#", CultureInfo.CurrentCulture) + suffix)
-            .ConfigureTreemap(options => {
-                options.ShowValues = widget.ShowValues;
-                options.ShowGroupLabels = groups.Count > 0;
-            })
-            .AddTreemap(widget.Title.Length > 0 ? widget.Title : "Treemap", items);
-        return chart.ToRgbaImage();
+    /// <summary>Formats a lane-axis tick: the day at midnight of a multi-day range, otherwise the 24-hour time of day.</summary>
+    internal static string FormatTimelineTick(double value, bool multiDay) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < -657435 || value > 2958465) return string.Empty;
+        var time = DateTime.FromOADate(value);
+        // Ticks are computed in floating point; snap to the minute so 13:59:59.999 reads 14:00.
+        time = new DateTime((long)Math.Round(time.Ticks / (double)TimeSpan.TicksPerMinute) * TimeSpan.TicksPerMinute);
+        var culture = CultureInfo.CurrentCulture;
+        if (!multiDay) return time.ToString("HH:mm", culture);
+        return time.TimeOfDay == TimeSpan.Zero ? time.ToString("ddd d", culture) : time.ToString("ddd HH:mm", culture);
     }
 }

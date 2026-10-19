@@ -143,6 +143,19 @@ Describe 'Wallpaper widget data and theme contracts' {
     }
 
     It 'cancels provider and capacity waits without releasing a running provider' {
+        # BeginStop uses an engine-owned stop thread that can race pipeline disposal.
+        # Keep the same bounded stop contract through the synchronous API on a task.
+        if (-not ('PowerBGInfoTests.PipelineStop' -as [type])) {
+            Add-Type -ReferencedAssemblies ([powershell].Assembly.Location) -TypeDefinition @"
+namespace PowerBGInfoTests {
+    public static class PipelineStop {
+        public static System.Threading.Tasks.Task Request(System.Management.Automation.PowerShell pipeline) {
+            return System.Threading.Tasks.Task.Run(() => pipeline.Stop());
+        }
+    }
+}
+"@
+        }
         $release = [System.Threading.ManualResetEventSlim]::new($false)
         $started = [System.Threading.ManualResetEventSlim]::new($false)
         $finished = [System.Threading.ManualResetEventSlim]::new($false)
@@ -162,9 +175,8 @@ Describe 'Wallpaper widget data and theme contracts' {
             }).AddArgument($module).AddArgument($started).AddArgument($release).AddArgument($finished)
             $firstHandle = $first.BeginInvoke()
             $started.Wait(5000) | Should -BeTrue
-            $firstStop = $first.BeginStop($null, $null)
-            $firstStop.AsyncWaitHandle.WaitOne(2000) | Should -BeTrue
-            $first.EndStop($firstStop)
+            $firstStop = $([PowerBGInfoTests.PipelineStop]::Request($first))
+            $firstStop.Wait(2000) | Should -BeTrue
             $null = $second.AddScript({
                 param($module, $unexpected)
                 Import-Module $module
@@ -173,9 +185,8 @@ Describe 'Wallpaper widget data and theme contracts' {
             $secondHandle = $second.BeginInvoke()
             # Let the second pipeline enter its capacity wait before cancelling it.
             [Threading.Thread]::Sleep(150)
-            $secondStop = $second.BeginStop($null, $null)
-            $secondStop.AsyncWaitHandle.WaitOne(2000) | Should -BeTrue
-            $second.EndStop($secondStop)
+            $secondStop = $([PowerBGInfoTests.PipelineStop]::Request($second))
+            $secondStop.Wait(2000) | Should -BeTrue
             $unexpected.IsSet | Should -BeFalse
         } finally {
             $release.Set()

@@ -122,6 +122,53 @@ public class BgInfoVisualCanvasRendererTests
         Assert.True(CountOpaquePixels(pixels, 360, 88, 28, 72) > 0);
     }
 
+    [Theory]
+    [InlineData(1.25, 1.25)]
+    [InlineData(1.5, 1.5)]
+    public void ImplicitTileSizeAndRailGapGrowWithTextScale(double scale, double expectedScale)
+    {
+        var visual = new BgInfoVisualCanvas { TileTextScale = scale };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Left,
+            IconKind = BgInfoVisualCanvasTileIconKind.Computer,
+            Label = "HOSTNAME",
+            Value = "WORKSTATION-01",
+            Detail = "Windows desktop"
+        });
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Side = BgInfoVisualCanvasSide.Left,
+            IconKind = BgInfoVisualCanvasTileIconKind.Computer,
+            Label = "DOMAIN",
+            Value = "CONTOSO"
+        });
+
+        var baseline = new BgInfoVisualCanvas();
+        baseline.Tiles.AddRange(visual.Tiles.Select(tile => new BgInfoVisualCanvasTile {
+            Label = tile.Label,
+            Value = tile.Value,
+            Detail = tile.Detail
+        }));
+        var baseHeight = BgInfoVisualCanvasRenderer.MeasureRegionHeight(baseline, 1080);
+        var scaledHeight = BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080);
+
+        Assert.InRange(scaledHeight, Math.Floor(baseHeight * expectedScale),
+            Math.Ceiling(baseHeight * expectedScale));
+    }
+
+    [Fact]
+    public void ExplicitTileDimensionsAreNotExpandedByTextScale()
+    {
+        var visual = new BgInfoVisualCanvas { TileTextScale = 1.5 };
+        visual.Tiles.Add(new BgInfoVisualCanvasTile {
+            Height = 80,
+            Width = 220,
+            Label = "HOSTNAME",
+            Value = "WORKSTATION-01"
+        });
+
+        Assert.Equal(80, BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080));
+    }
+
     [Fact]
     public void RenderUsesVisualCanvasRailControls()
     {

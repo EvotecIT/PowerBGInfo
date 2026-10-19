@@ -50,7 +50,7 @@ public sealed class CmdletInvokeBGInfo : PSCmdlet {
             config.Target = BgInfoTarget.File;
         }
 
-        var path = BgInfoRunner.Run(config);
+        var path = BgInfoRunner.Run(config, WriteWarning);
         WriteObject(path);
     }
 }

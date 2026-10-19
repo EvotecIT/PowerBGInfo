@@ -508,6 +508,7 @@ public static partial class BgInfoConfigurationJson {
                     CenterTileOffsetX = visual.CenterTileOffsetX == 0 ? null : visual.CenterTileOffsetX,
                     CenterTileOffsetY = visual.CenterTileOffsetY == 0 ? null : visual.CenterTileOffsetY,
                     TileTextFitPolicy = visual.TileTextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : visual.TileTextFitPolicy.ToString(),
+                    TileTextScale = visual.TileTextScale == 1 ? null : ValidateTileTextScale(visual.TileTextScale),
                     FeatureOffsetX = visual.FeatureOffsetX == 0 ? null : visual.FeatureOffsetX,
                     FeatureOffsetY = visual.FeatureOffsetY == 0 ? null : visual.FeatureOffsetY,
                     Transparent = visual.Transparent,
@@ -953,6 +954,7 @@ public static partial class BgInfoConfigurationJson {
         if (model.CenterTileOffsetX.HasValue) visual.CenterTileOffsetX = model.CenterTileOffsetX.Value;
         if (model.CenterTileOffsetY.HasValue) visual.CenterTileOffsetY = model.CenterTileOffsetY.Value;
         ApplyEnum<BgInfoVisualCanvasTileTextFitPolicy>(model.TileTextFitPolicy, value => visual.TileTextFitPolicy = value);
+        if (model.TileTextScale.HasValue) visual.TileTextScale = ValidateTileTextScale(model.TileTextScale.Value);
         if (model.FeatureOffsetX.HasValue) visual.FeatureOffsetX = model.FeatureOffsetX.Value;
         if (model.FeatureOffsetY.HasValue) visual.FeatureOffsetY = model.FeatureOffsetY.Value;
         ApplyColor(model.BackgroundTop, value => visual.BackgroundTop = value);
@@ -1012,6 +1014,10 @@ public static partial class BgInfoConfigurationJson {
         ApplyEnum<BgInfoVisualCanvasTileIconKind>(model.IconKind, value => tile.IconKind = value);
         ApplyEnum<BgInfoVisualCanvasTileMiniChartKind>(model.MiniChartKind, value => tile.MiniChartKind = value);
         ApplyEnum<BgInfoVisualCanvasTileTextFitPolicy>(model.TextFitPolicy, value => tile.TextFitPolicy = value);
+        if (model.TextScale.HasValue) tile.TextScale = ValidateTileTextScale(model.TextScale.Value);
+        if (model.LabelFontSize.HasValue) tile.LabelFontSize = ValidateTileFontSize(model.LabelFontSize.Value);
+        if (model.ValueFontSize.HasValue) tile.ValueFontSize = ValidateTileFontSize(model.ValueFontSize.Value);
+        if (model.DetailFontSize.HasValue) tile.DetailFontSize = ValidateTileFontSize(model.DetailFontSize.Value);
         ApplyColor(model.Accent, value => tile.Accent = value);
         if (model.Progress.HasValue) tile.Progress = model.Progress.Value;
         if (model.MiniChartValues != null) tile.MiniChartValues = model.MiniChartValues;
@@ -1059,6 +1065,10 @@ public static partial class BgInfoConfigurationJson {
         IconKind = tile.IconKind.ToString(),
         MiniChartKind = tile.MiniChartKind.ToString(),
         TextFitPolicy = tile.TextFitPolicy == BgInfoVisualCanvasTileTextFitPolicy.Auto ? null : tile.TextFitPolicy.ToString(),
+        TextScale = tile.TextScale.HasValue ? ValidateTileTextScale(tile.TextScale.Value) : null,
+        LabelFontSize = tile.LabelFontSize.HasValue ? ValidateTileFontSize(tile.LabelFontSize.Value) : null,
+        ValueFontSize = tile.ValueFontSize.HasValue ? ValidateTileFontSize(tile.ValueFontSize.Value) : null,
+        DetailFontSize = tile.DetailFontSize.HasValue ? ValidateTileFontSize(tile.DetailFontSize.Value) : null,
         MiniChartValues = tile.MiniChartValues is null ? null : new List<double>(tile.MiniChartValues).ToArray(),
         MiniChartMaximum = tile.MiniChartMaximum
     };
@@ -1102,6 +1112,18 @@ public static partial class BgInfoConfigurationJson {
         }
 
         return opacity;
+    }
+
+    private static double ValidateTileTextScale(double scale) {
+        if (double.IsNaN(scale) || double.IsInfinity(scale) || scale < 0.5 || scale > 4)
+            throw new InvalidDataException("Visual canvas tile text scale must be between 0.5 and 4.");
+        return scale;
+    }
+
+    private static double ValidateTileFontSize(double size) {
+        if (double.IsNaN(size) || double.IsInfinity(size) || size < 1 || size > 256)
+            throw new InvalidDataException("Visual canvas tile font sizes must be between 1 and 256.");
+        return size;
     }
 
     private static void ApplyColor(string? text, Action<ChartForgeX.Primitives.ChartColor> setter) {
@@ -1452,6 +1474,7 @@ public static partial class BgInfoConfigurationJson {
         public int? CenterTileOffsetX { get; set; }
         public int? CenterTileOffsetY { get; set; }
         public string? TileTextFitPolicy { get; set; }
+        public double? TileTextScale { get; set; }
         public int? FeatureOffsetX { get; set; }
         public int? FeatureOffsetY { get; set; }
         public bool? Transparent { get; set; }
@@ -1475,6 +1498,10 @@ public static partial class BgInfoConfigurationJson {
         public string? IconKind { get; set; }
         public string? MiniChartKind { get; set; }
         public string? TextFitPolicy { get; set; }
+        public double? TextScale { get; set; }
+        public double? LabelFontSize { get; set; }
+        public double? ValueFontSize { get; set; }
+        public double? DetailFontSize { get; set; }
         public double[]? MiniChartValues { get; set; }
         public double? MiniChartMaximum { get; set; }
     }

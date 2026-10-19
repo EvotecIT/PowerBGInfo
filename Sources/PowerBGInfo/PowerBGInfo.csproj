@@ -11,6 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DesktopManagerVersion>4.5.0</DesktopManagerVersion>
         <ChartForgeXVersion>3.0.0</ChartForgeXVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(PublishAot)' == 'true'">
@@ -18,8 +19,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DesktopManager" Version="4.4.0" />
         <PackageReference Include="CodeGlyphX" Version="3.0.0" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(DesktopManagerProjectPath)' == ''">
+        <PackageReference Include="DesktopManager" Version="$(DesktopManagerVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(DesktopManagerProjectPath)' != ''">
+        <ProjectReference Include="$(DesktopManagerProjectPath)" />
     </ItemGroup>
     <PropertyGroup Condition="'$(ChartForgeXProjectPath)' != ''">
         <ChartForgeXVisualsProjectPath Condition="'$(ChartForgeXVisualsProjectPath)' == ''">$([MSBuild]::NormalizePath('$(ChartForgeXProjectPath)', '..', '..', 'ChartForgeX.Visuals', 'ChartForgeX.Visuals.csproj'))</ChartForgeXVisualsProjectPath>

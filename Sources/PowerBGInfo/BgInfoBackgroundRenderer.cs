@@ -6,7 +6,11 @@ using ChartForgeX.Primitives;
 namespace PowerBGInfo;
 
 internal static class BgInfoBackgroundRenderer {
-    public static BgInfoRasterImage Render(BgInfoBackground background, int width, int height) {
+    public static BgInfoRasterImage Render(BgInfoBackground background, int width, int height) =>
+        Render(background, width, height, background?.ImagePath);
+
+    /// <summary>Renders the backdrop with <paramref name="imagePath"/> in place of the background's own image (null: no image layer).</summary>
+    public static BgInfoRasterImage Render(BgInfoBackground background, int width, int height, string? imagePath) {
         if (background == null) throw new ArgumentNullException(nameof(background));
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Background width must be positive.");
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Background height must be positive.");
@@ -15,12 +19,12 @@ internal static class BgInfoBackgroundRenderer {
         image.Create(string.Empty, width, height, background.Color);
         var composition = image.Composition;
 
-        if (!string.IsNullOrWhiteSpace(background.ImagePath)) {
-            if (!File.Exists(background.ImagePath)) {
-                throw new FileNotFoundException("BGInfo background image file was not found.", background.ImagePath);
+        if (!string.IsNullOrWhiteSpace(imagePath)) {
+            if (!File.Exists(imagePath)) {
+                throw new FileNotFoundException("BGInfo background image file was not found.", imagePath);
             }
 
-            composition.DrawImageFile(background.ImagePath!, 0, 0, width, height,
+            composition.DrawImageFile(imagePath!, 0, 0, width, height,
                 BgInfoImageFitMapper.ToVisualCanvasFit(background.ImageFit), Clamp01(background.ImageOpacity));
         }
 

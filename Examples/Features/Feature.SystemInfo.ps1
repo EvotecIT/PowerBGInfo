@@ -1,7 +1,7 @@
 ﻿<#
     Feature: built-in data helpers. Get-BGInfoSystemInfo returns the facts
     support asks for first (uptime, OS build, IP, disks, last update,
-    Defender and BitLocker state, console user) as one plain object. Every
+    Defender and BitLocker state, signed-in user) as one plain object. Every
     probe is read-only and falls back to 'Unknown' without elevation.
 
     Run with -Live to read this machine. Without it, a sample object of the

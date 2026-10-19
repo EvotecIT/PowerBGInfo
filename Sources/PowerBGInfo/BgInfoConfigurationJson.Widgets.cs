@@ -133,7 +133,7 @@ public static partial class BgInfoConfigurationJson {
             BgInfoWidgetKind.List => MapList(model),
             BgInfoWidgetKind.CalendarHeatmap => MapCalendar(model),
             BgInfoWidgetKind.Timeline => MapTimeline(model),
-            BgInfoWidgetKind.Treemap => MapTreemap(model),
+            BgInfoWidgetKind.Treemap => MapTreemap(model, themeMode),
             BgInfoWidgetKind.Mermaid => new BgInfoMermaidWidget { Definition = model.Definition ?? string.Empty },
             _ => MapQrCode(model)
         };
@@ -242,11 +242,15 @@ public static partial class BgInfoConfigurationJson {
         return timeline;
     }
 
-    private static BgInfoTreemapWidget MapTreemap(BgInfoWidgetFile model) {
-        var treemap = new BgInfoTreemapWidget { ShowValues = model.ShowValues ?? true, ValueSuffix = model.ValueSuffix ?? string.Empty };
+    private static BgInfoTreemapWidget MapTreemap(BgInfoWidgetFile model, VisualThemeMode themeMode) {
+        var treemap = new BgInfoTreemapWidget {
+            ShowValues = model.ShowValues ?? true,
+            ValueSuffix = model.ValueSuffix ?? string.Empty,
+            Threshold = MapThreshold(model.Threshold, themeMode)
+        };
         foreach (var item in model.TreemapItems ?? new List<BgInfoTreemapItemFile>()) {
             if (item == null) continue;
-            treemap.Items.Add(new BgInfoTreemapItem { Name = item.Name ?? string.Empty, Value = item.Value ?? 0, Group = item.Group });
+            treemap.Items.Add(new BgInfoTreemapItem { Name = item.Name ?? string.Empty, Value = item.Value ?? 0, Group = item.Group, ColorValue = item.ColorValue });
         }
         return treemap;
     }
@@ -344,7 +348,8 @@ public static partial class BgInfoConfigurationJson {
             case BgInfoTreemapWidget treemap:
                 model.ShowValues = treemap.ShowValues ? null : false;
                 model.ValueSuffix = NullIfEmpty(treemap.ValueSuffix);
-                model.TreemapItems = treemap.Items.Select(item => new BgInfoTreemapItemFile { Name = item.Name, Value = item.Value, Group = item.Group }).ToList();
+                model.Threshold = MapThresholdFile(treemap.Threshold);
+                model.TreemapItems = treemap.Items.Select(item => new BgInfoTreemapItemFile { Name = item.Name, Value = item.Value, Group = item.Group, ColorValue = item.ColorValue }).ToList();
                 break;
             case BgInfoMermaidWidget mermaid:
                 model.Definition = mermaid.Definition;
@@ -488,5 +493,6 @@ public static partial class BgInfoConfigurationJson {
         public string? Name { get; set; }
         public double? Value { get; set; }
         public string? Group { get; set; }
+        public double? ColorValue { get; set; }
     }
 }

@@ -26,6 +26,7 @@ Describe 'Packaged AssemblyLoadContext isolation' {
 Import-Module PowerBGInfo -Force
 
 `$outputDir = Join-Path ([IO.Path]::GetTempPath()) ('powerbginfo-alc-' + [Guid]::NewGuid().ToString('N'))
+try {
 `$result = New-BGInfo -Target File -ConfigurationDirectory `$outputDir -OutputFileName 'alc.png' -BackgroundColor Black {
     New-BGInfoValue -Name 'ALC' -Value 'PowerBGInfo'
 }
@@ -41,8 +42,12 @@ Import-Module PowerBGInfo -Force
                 [pscustomobject]@{
                     Assembly = `$assembly.GetName().Name
                     Version = `$assembly.GetName().Version.ToString()
+                    Location = `$assembly.Location
                     ALC = `$alc.Name
                     IsDefault = [object]::ReferenceEquals(`$alc, [System.Runtime.Loader.AssemblyLoadContext]::Default)
+                    HasMonitorSnapshots = `$assembly.GetName().Name -eq 'DesktopManager' -and `$null -ne `$assembly.GetType('DesktopManager.Monitors').GetMethod('GetMonitorSnapshots')
+                    HasSessionUser = `$assembly.GetName().Name -eq 'DesktopManager' -and `$null -ne `$assembly.GetType('DesktopManager.DesktopSessionService').GetMethod('GetSessionUser')
+                    HasLogonResult = `$assembly.GetName().Name -eq 'DesktopManager' -and `$null -ne `$assembly.GetType('DesktopManager.Monitors').GetMethod('SetLogonWallpaperWithResult')
                 }
             }
         }
@@ -55,6 +60,11 @@ Import-Module PowerBGInfo -Force
     NewBGInfoALCIsDefault = [object]::ReferenceEquals(`$commandAlc, [System.Runtime.Loader.AssemblyLoadContext]::Default)
     LoadedAssemblies = @(`$loadedAssemblies)
 } | ConvertTo-Json -Depth 6 -Compress
+} finally {
+    if (Test-Path -LiteralPath `$outputDir) {
+        Remove-Item -LiteralPath `$outputDir -Recurse -ErrorAction Stop
+    }
+}
 "@
         $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
         $output = pwsh -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encoded 2>&1
@@ -72,10 +82,18 @@ Import-Module PowerBGInfo -Force
         $loadedAssemblies = @($result.LoadedAssemblies)
         $powerShellAssembly = $loadedAssemblies | Where-Object Assembly -eq 'PowerBGInfo.PowerShell' | Select-Object -First 1
         $coreAssembly = $loadedAssemblies | Where-Object Assembly -eq 'PowerBGInfo' | Select-Object -First 1
+        $desktopAssembly = $loadedAssemblies | Where-Object Assembly -eq 'DesktopManager' | Select-Object -First 1
 
         $powerShellAssembly.ALC | Should -Be 'PowerBGInfo'
         $powerShellAssembly.IsDefault | Should -BeFalse
         $coreAssembly.ALC | Should -Be 'PowerBGInfo'
         $coreAssembly.IsDefault | Should -BeFalse
+        $desktopAssembly | Should -Not -BeNullOrEmpty
+        $desktopAssembly.ALC | Should -Be 'PowerBGInfo'
+        $desktopAssembly.IsDefault | Should -BeFalse
+        $desktopAssembly.Location | Should -BeLike '*\Artefacts\Unpacked\Modules\PowerBGInfo\Lib\Core\DesktopManager.dll'
+        $desktopAssembly.HasMonitorSnapshots | Should -BeTrue
+        $desktopAssembly.HasSessionUser | Should -BeTrue
+        $desktopAssembly.HasLogonResult | Should -BeTrue
     }
 }

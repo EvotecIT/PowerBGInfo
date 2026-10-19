@@ -147,6 +147,87 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>Get-BGInfoMonitor</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>BGInfoMonitor</command:noun>
+      <maml:description>
+        <maml:para>Lists the monitors PowerBGInfo renders for.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Each object has the Index that New-BGInfo -MonitorIndex takes, the device name, the bounds in desktop coordinates, whether it is the primary monitor, and the display scale when Windows reports one. Loop over the output to render one image per monitor.</maml:para>
+      <maml:para>The cmdlet only reads the display configuration, needs no elevation and works in Constrained Language Mode. It returns nothing when no monitor can be read, for example in a session without a desktop.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-BGInfoMonitor</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Primary</maml:name>
+          <maml:description>
+            <maml:para>Return only the primary monitor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Primary</maml:name>
+        <maml:description>
+          <maml:para>Return only the primary monitor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>PowerBGInfo.BgInfoMonitor</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>foreach ($monitor in Get-BGInfoMonitor) {&#xD;
+    New-BGInfo -MonitorIndex $monitor.Index -Target File `&#xD;
+        -ConfigurationDirectory C:\Temp\BGInfo `&#xD;
+        -OutputFileName "wallpaper-$($monitor.Index).png" {&#xD;
+        New-BGInfoBackground&#xD;
+        New-BGInfoValue -Name 'Size' -Value "$($monitor.Width) x $($monitor.Height)"&#xD;
+    }&#xD;
+}</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>Get-BGInfoSystemInfo</command:name>
       <command:verb>Get</command:verb>
       <command:noun>BGInfoSystemInfo</command:noun>
@@ -155,7 +236,7 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the console user. Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.</maml:para>
+      <maml:para>Uptime, OS and build, IPv4, fixed disks, last installed update, Defender and BitLocker state, and the user signed in to this session (LoggedOnUser; under SYSTEM in session 0, the console user). Every probe is read-only and fails on its own: a missing WMI class, a timeout or a lack of elevation leaves that field Unknown or empty instead of failing the wallpaper.</maml:para>
       <maml:para>The object is plain data. Replace it with your own function that returns the same property names and the presentation code keeps working.</maml:para>
     </maml:description>
     <command:syntax>
@@ -17770,6 +17851,7 @@ New-BGInfo -Theme $theme -Target File {&#xD;
     </command:details>
     <maml:description>
       <maml:para>Pipe objects with Name, Value and an optional Group, or pass -Data @{ name = size }.</maml:para>
+      <maml:para>-ColorProperty colors each rectangle by a second measure; with -WarningThreshold and -CriticalThreshold the colors are the ok, warning and critical status colors.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem parameterSetName="Objects">
@@ -17834,9 +17916,33 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ColorProperty</maml:name>
+          <maml:description>
+            <maml:para>Property with a second number that colors each rectangle, for example CPU while the size is memory.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>CornerRadius</maml:name>
           <maml:description>
             <maml:para>Panel corner radius.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>CriticalThreshold</maml:name>
+          <maml:description>
+            <maml:para>Color value at which a rectangle takes the critical color. Without -ColorProperty the size is compared.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -18074,6 +18180,22 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ThresholdDirection</maml:name>
+          <maml:description>
+            <maml:para>Above: higher values are worse. Below: lower values are worse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoThresholdDirection</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Above</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Below</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>BgInfoThresholdDirection</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Title</maml:name>
           <maml:description>
             <maml:para>Panel header text.</maml:para>
@@ -18166,6 +18288,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>WarningThreshold</maml:name>
+          <maml:description>
+            <maml:para>Color value at which a rectangle takes the warning color. Without -ColorProperty the size is compared.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Width</maml:name>
           <maml:description>
             <maml:para>Width in pixels. With -Region and no width, the widget fills the region width or shares a band.</maml:para>
@@ -18243,6 +18377,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <maml:name>CornerRadius</maml:name>
           <maml:description>
             <maml:para>Panel corner radius.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>CriticalThreshold</maml:name>
+          <maml:description>
+            <maml:para>Color value at which a rectangle takes the critical color. Without -ColorProperty the size is compared.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -18456,6 +18602,22 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ThresholdDirection</maml:name>
+          <maml:description>
+            <maml:para>Above: higher values are worse. Below: lower values are worse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">BgInfoThresholdDirection</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Above</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Below</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>BgInfoThresholdDirection</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Title</maml:name>
           <maml:description>
             <maml:para>Panel header text.</maml:para>
@@ -18536,6 +18698,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>WarningThreshold</maml:name>
+          <maml:description>
+            <maml:para>Color value at which a rectangle takes the warning color. Without -ColorProperty the size is compared.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Width</maml:name>
           <maml:description>
             <maml:para>Width in pixels. With -Region and no width, the widget fills the region width or shares a band.</maml:para>
@@ -18610,9 +18784,33 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ColorProperty</maml:name>
+        <maml:description>
+          <maml:para>Property with a second number that colors each rectangle, for example CPU while the size is memory.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>CornerRadius</maml:name>
         <maml:description>
           <maml:para>Panel corner radius.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>CriticalThreshold</maml:name>
+        <maml:description>
+          <maml:para>Color value at which a rectangle takes the critical color. Without -ColorProperty the size is compared.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
         <dev:type>
@@ -18862,6 +19060,22 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ThresholdDirection</maml:name>
+        <maml:description>
+          <maml:para>Above: higher values are worse. Below: lower values are worse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">BgInfoThresholdDirection</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Above</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Below</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>BgInfoThresholdDirection</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Title</maml:name>
         <maml:description>
           <maml:para>Panel header text.</maml:para>
@@ -18954,6 +19168,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>WarningThreshold</maml:name>
+        <maml:description>
+          <maml:para>Color value at which a rectangle takes the warning color. Without -ColorProperty the size is compared.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Width</maml:name>
         <maml:description>
           <maml:para>Width in pixels. With -Region and no width, the widget fills the region width or shares a band.</maml:para>
@@ -18989,6 +19215,15 @@ New-BGInfo -Theme $theme -Target File {&#xD;
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
         <dev:code>New-BGInfoTreemap -Region Right -Title 'D: by folder' -ValueSuffix ' GB' -Data ([ordered]@{ Databases = 412; Logs = 96; Backups = 230 })</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>EXAMPLE 2</maml:title>
+        <dev:code>Get-VM | Select-Object Name, CPUUsage, @{ Name = 'MemoryGB'; Expression = { $_.MemoryAssigned / 1GB } } |&#xD;
+    New-BGInfoTreemap -Region Center -Title 'Memory by VM, colored by CPU' -ValueProperty MemoryGB -ValueSuffix ' GB' `&#xD;
+        -ColorProperty CPUUsage -WarningThreshold 70 -CriticalThreshold 90</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>
@@ -21363,6 +21598,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TileTextScale</maml:name>
+          <maml:description>
+            <maml:para>Default scale for tile text and its supporting layout.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>TileValueColor</maml:name>
           <maml:description>
             <maml:para>Tile value text color.</maml:para>
@@ -22109,6 +22356,18 @@ New-BGInfo -Theme $theme -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TileTextScale</maml:name>
+        <maml:description>
+          <maml:para>Default scale for tile text and its supporting layout.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>TileValueColor</maml:name>
         <maml:description>
           <maml:para>Tile value text color.</maml:para>
@@ -22377,6 +22636,18 @@ New-BGInfo -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>DetailFontSize</maml:name>
+          <maml:description>
+            <maml:para>Optional detail font size in logical pixels.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Height</maml:name>
           <maml:description>
             <maml:para>Optional tile height in pixels. Zero uses the visual canvas default or template default.</maml:para>
@@ -22433,6 +22704,18 @@ New-BGInfo -Target File {&#xD;
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>LabelFontSize</maml:name>
+          <maml:description>
+            <maml:para>Optional label font size in logical pixels.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -22576,6 +22859,18 @@ New-BGInfo -Target File {&#xD;
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>TextScale</maml:name>
+          <maml:description>
+            <maml:para>Scales tile text and its supporting layout. The canvas setting applies when omitted.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ThresholdDirection</maml:name>
           <maml:description>
             <maml:para>Above: higher values are worse. Below: lower values are worse.</maml:para>
@@ -22599,6 +22894,18 @@ New-BGInfo -Target File {&#xD;
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ValueFontSize</maml:name>
+          <maml:description>
+            <maml:para>Optional value font size in logical pixels.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+          <dev:type>
+            <maml:name>Double</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -22667,6 +22974,18 @@ New-BGInfo -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>DetailFontSize</maml:name>
+        <maml:description>
+          <maml:para>Optional detail font size in logical pixels.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Height</maml:name>
         <maml:description>
           <maml:para>Optional tile height in pixels. Zero uses the visual canvas default or template default.</maml:para>
@@ -22723,6 +23042,18 @@ New-BGInfo -Target File {&#xD;
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>LabelFontSize</maml:name>
+        <maml:description>
+          <maml:para>Optional label font size in logical pixels.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -22866,6 +23197,18 @@ New-BGInfo -Target File {&#xD;
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>TextScale</maml:name>
+        <maml:description>
+          <maml:para>Scales tile text and its supporting layout. The canvas setting applies when omitted.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ThresholdDirection</maml:name>
         <maml:description>
           <maml:para>Above: higher values are worse. Below: lower values are worse.</maml:para>
@@ -22889,6 +23232,18 @@ New-BGInfo -Target File {&#xD;
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ValueFontSize</maml:name>
+        <maml:description>
+          <maml:para>Optional value font size in logical pixels.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
+        <dev:type>
+          <maml:name>Double</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>

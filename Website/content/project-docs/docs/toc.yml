@@ -4,3 +4,21 @@
   href: install/
 - title: Overview
   href: overview/
+- title: Layouts and overlays
+  href: layouts-and-overlays/
+- title: Run in production
+  href: deployment/
+- title: Task Scheduler
+  href: task-scheduler/
+- title: Group Policy
+  href: group-policy/
+- title: Microsoft Intune
+  href: intune/
+- title: Configuration Manager
+  href: configuration-manager/
+- title: Remote Desktop
+  href: remote-desktop/
+- title: Security and operations
+  href: security/
+- title: Troubleshooting
+  href: troubleshooting/

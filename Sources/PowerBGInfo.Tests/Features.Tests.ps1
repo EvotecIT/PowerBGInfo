@@ -292,6 +292,47 @@ Describe 'Widget cmdlets' {
         $fromObjects.Items[0].Group | Should -Be 'g'
     }
 
+    It 'colors treemap items by -ColorProperty and its thresholds' {
+        $vms = @(
+            [pscustomobject] @{ Name = 'SQL'; MemoryGB = 128; Cpu = 71 }
+            [pscustomobject] @{ Name = 'WEB'; MemoryGB = 16; Cpu = 9 }
+        )
+        $treemap = $vms | New-BGInfoTreemap -ValueProperty MemoryGB `
+            -ColorProperty Cpu -WarningThreshold 60 -CriticalThreshold 85
+        $treemap.Items[0].Value | Should -Be 128
+        $treemap.Items[0].ColorValue | Should -Be 71
+        $treemap.Threshold.Warning | Should -Be 60
+        $treemap.HasColorValues | Should -BeTrue
+        # Thresholds alone compare the sizes.
+        $sized = New-BGInfoTreemap -Data @{ A = 3 } -WarningThreshold 2
+        $sized.Items[0].ColorValue | Should -Be 3
+        # A property that is not a number warns and keeps the default colors.
+        $plain = $vms | New-BGInfoTreemap -ValueProperty MemoryGB `
+            -ColorProperty Missing -WarningVariable warned -WarningAction SilentlyContinue
+        $plain.HasColorValues | Should -BeFalse
+        $warned | Should -Not -BeNullOrEmpty
+    }
+
+    It 'reads a timeline item color from piped objects' {
+        $typedColor = (New-BGInfoTheme Graphite -Mode Light).Accent
+        $timeline = New-BGInfoTimeline -Item @(
+            [pscustomobject] @{ Lane = 'A'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '#F59E0B' }
+            [pscustomobject] @{ Lane = 'B'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '' }
+            [pscustomobject] @{ Lane = 'C'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = '  ' }
+            [pscustomobject] @{ Lane = 'D'; Start = '2026-10-16'
+                End = '2026-10-17'; Color = $typedColor }
+        )
+        $timeline.Items[0].Color.ToHex() | Should -Be '#F59E0B'
+        $timeline.Items[1].Color | Should -BeNullOrEmpty
+        $timeline.Items[2].Color | Should -BeNullOrEmpty
+        $timeline.Items[3].Color | Should -Be $typedColor
+        { New-BGInfoTimeline -Item @{ Lane = 'Bad'; Start = '2026-10-16'; Color = 'not-a-color' } } |
+            Should -Throw '*Color*'
+    }
+
     It 'validates Mermaid source when the widget is created' {
         (New-BGInfoMermaid -Definition "flowchart LR`n  A --> B").Definition | Should -Match 'A --> B'
         $piped = 'flowchart LR', '  A --> B' | New-BGInfoMermaid
@@ -312,7 +353,8 @@ Describe 'Widget cmdlets' {
             New-BGInfoList -Region Left -Item 'one'
             New-BGInfoCalendarHeatmap -Region Bottom -Data @{ '2026-10-01' = 1; '2026-10-08' = 4 }
             New-BGInfoTimeline -Region Bottom -Item @{ Lane = 'L'; Start = '2026-10-16'; End = '2026-10-17' }
-            New-BGInfoTreemap -Region Center -Data @{ A = 1; B = 2 }
+            New-BGInfoTreemap -Region Center -Data @{ A = 1; B = 2 } `
+                -WarningThreshold 2
             New-BGInfoMermaid -Region Center -Definition "flowchart LR`n  A --> B"
             New-BGInfoQRCode -Region Left -Url 'https://help.contoso.com'
         }
@@ -334,6 +376,13 @@ Describe 'Widget cmdlets' {
     }
 }
 
+Describe 'Per-monitor example' {
+    It 'validates the requested output target before running' {
+        $example = Join-Path $PSScriptRoot '..\..\Examples\Run.BGInfo.PerMonitor.ps1'
+        { & $example -Target Invalid } | Should -Throw
+    }
+}
+
 Describe 'Data helpers' {
     It 'returns system facts as one plain object without throwing' {
         $facts = Get-BGInfoSystemInfo
@@ -342,6 +391,21 @@ Describe 'Data helpers' {
         $facts.DefenderStatus | Should -Not -BeNullOrEmpty
         $facts.BitLockerStatus | Should -Not -BeNullOrEmpty
         , $facts.Disks | Should -Not -BeNullOrEmpty
+    }
+
+    It 'reports the user of this session as LoggedOnUser' {
+        $session = (Get-Process -Id $PID).SessionId
+        if ($session -eq 0) {
+            Set-ItResult -Skipped -Because 'session 0 has no signed-in user to compare with'
+            return
+        }
+        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+        $entry = New-BGInfoValue -BuiltinValue LoggedOnUser
+        $entry.BuiltinValue | Should -Be 'LoggedOnUser'
+        $entry.Value | Should -BeNullOrEmpty
+        $provider = $entry.GetType().Assembly.GetType('PowerBGInfo.SystemInfoProvider')
+        $provider.GetMethod('GetValue').Invoke($null, @('LoggedOnUser')) |
+            Should -Be "$env:USERDOMAIN\$env:USERNAME"
     }
 
     It 'preserves the new dynamic built-in tokens without querying them during authoring' -ForEach @(
@@ -374,5 +438,88 @@ Describe 'Data helpers' {
         $watch = [System.Diagnostics.Stopwatch]::StartNew()
         Invoke-BGInfoDataSource -ScriptBlock { Start-Sleep -Seconds 30; 'late' } -TimeoutSeconds 1 -Default 'timeout' -WarningAction SilentlyContinue | Should -Be 'timeout'
         $watch.Elapsed.TotalSeconds | Should -BeLessThan 10
+    }
+}
+
+Describe 'Repeated runs' {
+    BeforeAll {
+        $folder = Join-Path ([System.IO.Path]::GetTempPath()) ('bginfo-repeat-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        $base = New-BGInfo -Target File -ConfigurationDirectory $folder -OutputFileName 'base.png' -BackgroundColor Navy {
+            New-BGInfoBackground -Width 320 -Height 180 -Color Navy
+        }
+        function Invoke-Render {
+            [CmdletBinding()]
+            param([string] $FilePath, [string] $OutputFileName)
+            New-BGInfo -Target File -FilePath $FilePath -ConfigurationDirectory $folder -OutputFileName $OutputFileName {
+                New-BGInfoValue -Name 'Host' -Value 'LAB-01' -Color White
+            }
+        }
+    }
+
+    AfterAll {
+        Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'draws on the original when -FilePath is the image the run overwrites' {
+        $first = Invoke-Render $base 'wallpaper.png'
+        $hash = (Get-FileHash -LiteralPath $first).Hash
+        $second = Invoke-Render $first 'wallpaper.png' -WarningVariable warnings
+        $second | Should -Be $first
+        (Get-FileHash -LiteralPath $second).Hash | Should -Be $hash
+        $warnings | Should -BeNullOrEmpty
+        Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
+    }
+
+    It 'keeps an explicit in-place image when its original record is missing' {
+        $first = Invoke-Render $base 'again.png'
+        Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
+        $second = Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue
+        $warnings | Should -BeNullOrEmpty
+        $record = Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Where-Object { $_.StartsWith('again.png|') }
+        $source = $record.Substring('again.png|'.Length)
+        $source | Should -Not -Be $second
+        Test-Path -LiteralPath $source | Should -BeTrue
+
+        $hash = (Get-FileHash -LiteralPath $second).Hash
+        $third = Invoke-Render $second 'again.png'
+        (Get-FileHash -LiteralPath $third).Hash | Should -Be $hash
+    }
+}
+
+Describe 'Get-BGInfoMonitor' {
+    It 'returns plain monitor objects with the index New-BGInfo -MonitorIndex takes' {
+        $monitors = @(Get-BGInfoMonitor)
+        foreach ($monitor in $monitors) {
+            $monitor.Index | Should -BeGreaterOrEqual 0
+            $monitor.Width | Should -BeGreaterThan 0
+            $monitor.Height | Should -BeGreaterThan 0
+            $monitor.PSObject.Properties.Name | Should -Contain 'DeviceName'
+            $monitor.PSObject.Properties.Name | Should -Contain 'Scale'
+        }
+        @($monitors | Where-Object Primary).Count | Should -BeLessOrEqual 1
+        @($monitors.Index | Sort-Object -Unique).Count | Should -Be $monitors.Count
+    }
+
+    It 'filters to the primary monitor' {
+        @(Get-BGInfoMonitor -Primary | Where-Object { -not $_.Primary }).Count | Should -Be 0
+    }
+
+    It 'works from a script in Constrained Language Mode, where DesktopManager types do not' {
+        $module = (Get-Command Get-BGInfoMonitor).Module.Path
+        $shell = (Get-Process -Id $PID).Path
+        $script = @"
+Import-Module -Name '$module'
+`$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+`$count = @(Get-BGInfoMonitor | ForEach-Object { `$_.Width }).Count
+try { [DesktopManager.Monitors]::new() | Out-Null; `$typed = 'allowed' } catch { `$typed = 'blocked' }
+"`$(`$ExecutionContext.SessionState.LanguageMode)|`$count|`$typed"
+"@
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+        $result = & $shell -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+        $parts = "$(@($result)[-1])".Trim().Split('|')
+        $parts[0] | Should -Be 'ConstrainedLanguage'
+        [int] $parts[1] | Should -Be @(Get-BGInfoMonitor).Count
+        $parts[2] | Should -Be 'blocked'
     }
 }

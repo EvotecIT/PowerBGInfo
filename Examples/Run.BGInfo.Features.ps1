@@ -7,8 +7,15 @@
 param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output\Features'),
     [int[][]] $Sizes = @(@(1920, 1080), @(2560, 1440)),
-    [string[]] $Themes = @('Light', 'Dark')
+    [string[]] $Themes = @('Light', 'Dark'),
+    [string] $SourceCommit = ''
 )
+
+if (-not $SourceCommit) {
+    $SourceCommit = (git -C $PSScriptRoot rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot read the feature source commit.' }
+}
+if ($SourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'SourceCommit must be the full Git commit SHA used to render the features.' }
 
 # Fixed formatting keeps the published renders identical on every machine.
 [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
@@ -66,6 +73,6 @@ foreach ($preset in 'Graphite', 'Midnight', 'Ember', 'Orchid', 'Corporate') {
     }
 }
 
-$manifest = [ordered] @{ generator = 'PowerBGInfo'; renders = @($renders) }
+$manifest = [ordered] @{ generator = 'PowerBGInfo'; sourceCommit = $SourceCommit; renders = @($renders) }
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $OutputDirectory 'manifest.json')
 Get-ChildItem -Path $OutputDirectory -Filter '*.png'

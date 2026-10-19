@@ -488,6 +488,7 @@ public class BgInfoConfigurationJsonTests
             CenterTileOffsetX = -18,
             CenterTileOffsetY = 16,
             TileTextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink,
+            TileTextScale = 1.35,
             FeatureOffsetX = 165,
             FeatureOffsetY = 120,
             TechBackdrop = false
@@ -506,6 +507,10 @@ public class BgInfoConfigurationJsonTests
             IconKind = BgInfoVisualCanvasTileIconKind.Computer,
             MiniChartKind = BgInfoVisualCanvasTileMiniChartKind.Area,
             TextFitPolicy = BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis,
+            TextScale = 1.5,
+            LabelFontSize = 17,
+            ValueFontSize = 26,
+            DetailFontSize = 14,
             MiniChartValues = new[] { 18d, 26d, 22d, 37d },
             MiniChartMaximum = 100
         });
@@ -564,6 +569,7 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(-18, loaded.CenterTileOffsetX);
         Assert.Equal(16, loaded.CenterTileOffsetY);
         Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.WrapThenShrink, loaded.TileTextFitPolicy);
+        Assert.Equal(1.35, loaded.TileTextScale);
         Assert.Equal(165, loaded.FeatureOffsetX);
         Assert.Equal(120, loaded.FeatureOffsetY);
         Assert.False(loaded.TechBackdrop);
@@ -582,12 +588,58 @@ public class BgInfoConfigurationJsonTests
         Assert.Equal(BgInfoVisualCanvasTileIconKind.Computer, tile.IconKind);
         Assert.Equal(BgInfoVisualCanvasTileMiniChartKind.Area, tile.MiniChartKind);
         Assert.Equal(BgInfoVisualCanvasTileTextFitPolicy.SingleLineEllipsis, tile.TextFitPolicy);
+        Assert.Equal(1.5, tile.TextScale);
+        Assert.Equal(17, tile.LabelFontSize);
+        Assert.Equal(26, tile.ValueFontSize);
+        Assert.Equal(14, tile.DetailFontSize);
         Assert.Equal(new[] { 18d, 26d, 22d, 37d }, tile.MiniChartValues);
         Assert.Equal(100, tile.MiniChartMaximum);
 
         var feature = Assert.Single(loaded.Features);
         Assert.Equal("PS", feature.Icon);
         Assert.Equal("LIGHTWEIGHT", feature.Label);
+    }
+
+    [Theory]
+    [InlineData("TileTextScale", 4.01)]
+    [InlineData("TextScale", 0.49)]
+    [InlineData("LabelFontSize", 0.99)]
+    [InlineData("ValueFontSize", 256.01)]
+    [InlineData("DetailFontSize", double.NaN)]
+    public void SaveRejectsInvalidVisualCanvasTileTypography(string property, double value) {
+        var configuration = new BgInfoConfiguration();
+        var visual = new BgInfoVisualCanvas();
+        var tile = new BgInfoVisualCanvasTile();
+        visual.Tiles.Add(tile);
+        configuration.VisualCanvases.Add(visual);
+        switch (property) {
+            case "TileTextScale":
+                visual.TileTextScale = value;
+                break;
+            case "TextScale":
+                tile.TextScale = value;
+                break;
+            case "LabelFontSize":
+                tile.LabelFontSize = value;
+                break;
+            case "ValueFontSize":
+                tile.ValueFontSize = value;
+                break;
+            case "DetailFontSize":
+                tile.DetailFontSize = value;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(property), property, null);
+        }
+
+        var path = Path.Combine(Path.GetTempPath(),
+            "bginfo-invalid-" + Guid.NewGuid().ToString("N") + ".json");
+        try {
+            Assert.Throws<InvalidDataException>(() => BgInfoConfigurationJson.Save(configuration, path));
+            Assert.False(File.Exists(path));
+        } finally {
+            if (File.Exists(path)) File.Delete(path);
+        }
     }
 
     [Fact]

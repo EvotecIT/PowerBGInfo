@@ -37,7 +37,12 @@ $surface = @{
     Theme   = $Theme
     Ink     = $look.Ink
     Muted   = $look.Muted
-    Status  = @{ Ok = $look.Ok; Warn = $look.Warning; Bad = $look.Critical; Info = $look.Info }
+    Status  = @{
+        Ok   = $look.Ok
+        Warn = $look.Warning
+        Bad  = $look.Critical
+        Info = $look.Info
+    }
     MarginX = $look.MarginX
     MarginY = $look.MarginY
 

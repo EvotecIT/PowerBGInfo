@@ -23,4 +23,4 @@ New-BGInfo {
 Invoke-BGInfo -Path $configPath
 ```
 
-Keep the JSON beside the deployment policy, test with file output first, and run the final user or system target from the appropriate security context.
+Keep the JSON beside the deployment policy, test with file output first, and run the final user or system target from the appropriate security context. [Run in production](/projects/powerbginfo/docs/deployment/) explains which account each target needs and links to scheduling guidance.
