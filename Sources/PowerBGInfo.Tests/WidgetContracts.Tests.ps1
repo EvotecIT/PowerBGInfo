@@ -11,6 +11,69 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 Describe 'Wallpaper widget data and theme contracts' {
+    It 'preserves interleaved panel emission order without mutating reusable definitions' {
+        $core = (New-BGInfoMetric -Label QUEUE -Value 42).GetType().Assembly
+        $loader = $core.GetType('PowerBGInfo.BgInfoConfigurationJson')
+        foreach ($case in @(
+            @{ Type='BgInfoMetricWidget'; Collection='Widgets' }, @{ Type='BgInfoChart'; Collection='Charts' },
+            @{ Type='BgInfoTopology'; Collection='Topologies' }, @{ Type='BgInfoVisualCanvas'; Collection='VisualCanvases' }
+        )) {
+            $a = [Activator]::CreateInstance($core.GetType("PowerBGInfo.$($case.Type)")); $a.RegionOrder = 17
+            $b = [Activator]::CreateInstance($core.GetType("PowerBGInfo.$($case.Type)")); $b.RegionOrder = 18
+            $path = Join-Path $TestDrive "$($case.Type)-order.json"
+            New-BGInfo -ExportOnly -JsonPath $path -ConfigurationDirectory $TestDrive { $a; $b; $a } | Out-Null
+            $config = $loader::Load($path)
+            (@($config.($case.Collection) | ForEach-Object { $_.RegionOrder }) -join ',') | Should -Be '0,1,2'
+            $a.RegionOrder | Should -Be 17
+            $b.RegionOrder | Should -Be 18
+        }
+        $a = New-BGInfoMetric -Label QUEUE -Value 42
+        $b = New-BGInfoVisualCanvas -NoHeroContent -NoTechBackdrop
+        $path = Join-Path $TestDrive 'mixed-order.json'
+        New-BGInfo -ExportOnly -JsonPath $path -ConfigurationDirectory $TestDrive { $a; $b; $a } | Out-Null
+        $mixed = $loader::Load($path)
+        ($mixed.Widgets.RegionOrder -join ',') | Should -Be '0,2'
+        $mixed.VisualCanvases[0].RegionOrder | Should -Be 1
+    }
+
+    It 'rejects nonfinite metric history before emitting a widget' {
+        foreach ($number in @([double]::NaN, [double]::PositiveInfinity, [double]::NegativeInfinity)) {
+            { New-BGInfoMetric -Label QUEUE -Value 42 -History 1,$number } | Should -Throw '*finite*'
+            { New-BGInfoMetric -Label QUEUE -Value 42 -History 1,2 -HistoryMaximum $number } | Should -Throw '*finite*'
+        }
+        $metric = New-BGInfoMetric -Label QUEUE -Value 42 -History 0,1.25,42 -HistoryMaximum 100
+        $metric.History[1] | Should -Be 1.25
+        $metric.HistoryMaximum | Should -Be 100
+        { New-BGInfoMetric -Label QUEUE -Value 42 -History 42 } | Should -Throw '*at least two*'
+        (New-BGInfoMetric -Label QUEUE -Value 42 -History 42 -HistoryKind Bars).History[0] | Should -Be 42
+    }
+
+    It 'round trips table and list configurations larger than the legacy serializer limit' {
+        $core = (New-BGInfoMetric -Label QUEUE -Value 42).GetType().Assembly
+        $serializer = $core.GetType('PowerBGInfo.BgInfoConfigurationJson')
+        foreach ($kind in @('Table', 'List')) {
+            $config = [Activator]::CreateInstance($core.GetType('PowerBGInfo.BgInfoConfiguration'))
+            $widget = [Activator]::CreateInstance($core.GetType("PowerBGInfo.BgInfo${kind}Widget"))
+            $text = 'x' * 2200
+            if ($kind -eq 'Table') { $widget.Columns.Add('Fact') }
+            for ($i = 0; $i -lt 1100; $i++) {
+                if ($kind -eq 'Table') { $widget.Rows.Add([string[]]@("$i$text")) }
+                else {
+                    $item = [Activator]::CreateInstance($core.GetType('PowerBGInfo.BgInfoListItem'))
+                    $item.Text = "$i$text"
+                    $widget.Items.Add($item)
+                }
+            }
+            $config.Widgets.Add($widget)
+            $path = Join-Path $TestDrive "$kind-large.json"
+            $serializer::Save($config, $path)
+            (Get-Item $path).Length | Should -BeGreaterThan 2097152
+            $loaded = $serializer::Load($path)
+            if ($kind -eq 'Table') { $loaded.Widgets[0].Rows[1099][0] | Should -Be "1099$text" }
+            else { $loaded.Widgets[0].Items[1099].Text | Should -Be "1099$text" }
+        }
+    }
+
     It 'cancels provider and capacity waits without releasing a running provider' {
         $release = [System.Threading.ManualResetEventSlim]::new($false)
         $started = [System.Threading.ManualResetEventSlim]::new($false)

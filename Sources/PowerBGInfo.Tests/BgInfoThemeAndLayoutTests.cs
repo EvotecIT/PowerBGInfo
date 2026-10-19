@@ -318,7 +318,7 @@ public class BgInfoThemeAndLayoutTests
         var config = new BgInfoConfiguration();
         config.Charts.Add(chart);
         config.Widgets.Add(metric);
-        var values = new Dictionary<BgInfoChart, IReadOnlyList<double>> { [chart] = System.Array.Empty<double>() };
+        var values = new IReadOnlyList<double>[] { System.Array.Empty<double>() };
 
         var placements = BgInfoGenerator.ResolveRegionPlacements(1280, 720, config, default, values);
 

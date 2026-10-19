@@ -98,6 +98,13 @@ public enum BgInfoVisualCanvasTileTextFitPolicy {
 
 /// <summary>Defines a reusable ChartForgeX visual canvas overlay.</summary>
 public sealed class BgInfoVisualCanvas {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoVisualCanvas WithRegionOrder(int order) {
+        var copy = (BgInfoVisualCanvas)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     private Color? _backgroundTop;
     private Color? _backgroundBottom;
     private Color? _accent;

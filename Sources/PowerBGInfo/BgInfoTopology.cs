@@ -7,6 +7,13 @@ namespace PowerBGInfo;
 
 /// <summary>Defines a topology diagram block rendered onto the BGInfo output.</summary>
 public sealed class BgInfoTopology {
+    /// <summary>Copies placement metadata for one emission while sharing the reusable content definition.</summary>
+    internal BgInfoTopology WithRegionOrder(int order) {
+        var copy = (BgInfoTopology)MemberwiseClone();
+        copy.RegionOrder = order;
+        return copy;
+    }
+
     /// <summary>Topology title.</summary>
     public string Title { get; set; } = string.Empty;
     /// <summary>Optional topology subtitle.</summary>

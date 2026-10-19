@@ -48,6 +48,21 @@ public sealed class BgInfoMetricWidget : BgInfoWidget {
     /// <summary>Optional history scale maximum.</summary>
     public double? HistoryMaximum { get; set; }
 
+    /// <inheritdoc />
+    public override void Validate() {
+        base.Validate();
+        if (History == null) throw new ArgumentNullException(nameof(History));
+        foreach (var value in History) {
+            if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(History), "Metric history must contain finite values.");
+        }
+        if (HistoryKind == BgInfoMetricHistoryKind.Sparkline && History.Count == 1) {
+            throw new ArgumentException("Metric sparkline history requires at least two values; use Bars for a single sample.", nameof(History));
+        }
+        if (HistoryMaximum.HasValue && (double.IsNaN(HistoryMaximum.Value) || double.IsInfinity(HistoryMaximum.Value))) {
+            throw new ArgumentOutOfRangeException(nameof(HistoryMaximum), "Metric history maximum must be finite.");
+        }
+    }
+
     /// <summary>The status after thresholds are applied.</summary>
     public BgInfoStatus ResolveStatus() {
         if (Threshold is { IsDefined: true } threshold && NumericValue.HasValue) return threshold.Evaluate(NumericValue.Value);

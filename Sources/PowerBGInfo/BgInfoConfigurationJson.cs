@@ -56,7 +56,7 @@ public static partial class BgInfoConfigurationJson {
 
     private static BgInfoConfigurationFile Deserialize(string json) {
 #if NET472
-        var serializer = new JavaScriptSerializer();
+        var serializer = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
         var model = serializer.Deserialize<BgInfoConfigurationFile>(json);
         return model ?? new BgInfoConfigurationFile();
 #else
@@ -67,7 +67,7 @@ public static partial class BgInfoConfigurationJson {
 
     private static string Serialize(BgInfoConfigurationFile model) {
 #if NET472
-        var serializer = new JavaScriptSerializer();
+        var serializer = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
         return serializer.Serialize(model);
 #else
         return JsonSerializer.Serialize(model, WriteContext.BgInfoConfigurationFile);

@@ -810,7 +810,7 @@ public partial class BgInfoGenerator
         }
     }
 
-    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, RegionPlacements placements, IReadOnlyDictionary<BgInfoChart, IReadOnlyList<double>> chartValues)
+    private static void RenderCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, RegionPlacements placements, IReadOnlyList<IReadOnlyList<double>> chartValues)
     {
         if (config.Charts.Count == 0)
         {
@@ -820,12 +820,12 @@ public partial class BgInfoGenerator
         for (int i = 0; i < config.Charts.Count; i++)
         {
             var chart = config.Charts[i];
-            if (!placements.TryGet(chart, out var slot))
+            if (!placements.TryGet(chart, out var slot, i))
             {
                 continue;
             }
 
-            var values = chartValues[chart];
+            var values = chartValues[i];
             if (values.Count == 0)
             {
                 continue;
@@ -849,7 +849,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            var values = chartValues[chart];
+            var values = chartValues[i];
             if (values.Count == 0)
             {
                 continue;
@@ -876,7 +876,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            if (placements.TryGet(topology, out var slot))
+            if (placements.TryGet(topology, out var slot, i))
             {
                 using var regionImage = BgInfoTopologyRenderer.Render(topology, config, (int)slot.Width, (int)slot.Height);
                 image.DrawImage(regionImage, slot.X, slot.Y);
@@ -904,7 +904,7 @@ public partial class BgInfoGenerator
         for (int i = 0; i < config.VisualCanvases.Count; i++)
         {
             var visual = config.VisualCanvases[i];
-            if (placements.TryGet(visual, out var slot))
+            if (placements.TryGet(visual, out var slot, i))
             {
                 using var regionImage = BgInfoVisualCanvasRenderer.RenderRegion(visual, (int)slot.Width, (int)slot.Height, image.Height);
                 image.DrawImage(regionImage, slot.X, slot.Y);
@@ -946,7 +946,7 @@ public partial class BgInfoGenerator
         }
     }
 
-    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, IReadOnlyDictionary<BgInfoChart, IReadOnlyList<double>> chartValues)
+    private static void RenderStackedCharts(BgInfoRasterImage image, BgInfoConfiguration config, ChartRect textBlock, IReadOnlyList<IReadOnlyList<double>> chartValues)
     {
         var area = ResolveChartStackArea(image, config, textBlock);
         if (area.Width <= 0 || area.Height <= 0)
@@ -969,7 +969,7 @@ public partial class BgInfoGenerator
                 continue;
             }
 
-            var values = chartValues[chart];
+            var values = chartValues[i];
             if (values.Count == 0)
             {
                 continue;
@@ -1162,13 +1162,13 @@ public partial class BgInfoGenerator
         return samples.Select(s => s.Value).ToList();
     }
 
-    private static Dictionary<BgInfoChart, IReadOnlyList<double>> ResolveAllChartValues(BgInfoConfiguration config, DateTimeOffset now)
+    private static IReadOnlyList<IReadOnlyList<double>> ResolveAllChartValues(BgInfoConfiguration config, DateTimeOffset now)
     {
-        var values = new Dictionary<BgInfoChart, IReadOnlyList<double>>();
+        var values = new IReadOnlyList<double>[config.Charts.Count];
         for (var i = 0; i < config.Charts.Count; i++)
         {
             var chart = config.Charts[i];
-            values[chart] = ResolveChartValues(config, chart, now, i);
+            values[i] = ResolveChartValues(config, chart, now, i);
         }
         return values;
     }
