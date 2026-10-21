@@ -48,7 +48,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
         # Description of the functionality provided by this module
         Description            = 'PowerBGInfo is a module that allows you to create background images with information about your environment.'
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags                   = @('windows', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
+        Tags                   = @('windows', 'macos', 'linux', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
         # A URL to the main website for this project.
         ProjectUri             = 'https://github.com/EvotecIT/PowerBGInfo'
         IconUri                = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
@@ -92,7 +92,7 @@ Build-Module -ModuleName 'PowerBGInfo' {
     # when creating PSD1 use special style without comments and with only required parameters
     New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'OnMergePSD1' -PSD1Style 'Minimal'
     # configuration for documentation, at the same time it enables documentation processing
-    New-ConfigurationDocumentation -Enable -PathReadme 'Docs\Readme.md' -Path 'Docs' -SyncExternalHelpToProjectRoot
+    New-ConfigurationDocumentation -Enable -PathReadme 'Docs/Readme.md' -Path 'Docs' -SyncExternalHelpToProjectRoot
 
     $newConfigurationBuildSplat = @{
         Enable                            = $true
@@ -102,9 +102,9 @@ Build-Module -ModuleName 'PowerBGInfo' {
         ResolveBinaryConflicts            = $true
         ResolveBinaryConflictsName        = 'PowerBGInfo.PowerShell'
         NETProjectName                    = 'PowerBGInfo.PowerShell'
-        NETProjectPath                    = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\Sources\PowerBGInfo.PowerShell\PowerBGInfo.PowerShell.csproj')).Path
+        NETProjectPath                    = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj')).Path
         NETConfiguration                  = 'Release'
-        NETFramework                      = 'net8.0-windows', 'net472'
+        NETFramework                      = 'net8.0', 'net472'
         NETHandleAssemblyWithSameName     = $true
         NETAssemblyLoadContext            = $true
         NETAssemblyTypeAcceleratorMode    = 'Enums'
@@ -136,8 +136,8 @@ Build-Module -ModuleName 'PowerBGInfo' {
 
     New-ConfigurationBuild @newConfigurationBuildSplat
 
-    New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot\..\Artefacts\Unpacked" -ModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -RequiredModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -AddRequiredModules
-    New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot\..\Artefacts\Packed" -ArtefactName '<ModuleName>.v<ModuleVersion>.zip'
+    New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot/../Artefacts/Unpacked" -ModulesPath "$PSScriptRoot/../Artefacts/Unpacked/Modules" -RequiredModulesPath "$PSScriptRoot/../Artefacts/Unpacked/Modules" -AddRequiredModules
+    New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot/../Artefacts/Packed" -ArtefactName '<ModuleName>.v<ModuleVersion>.zip'
 
     New-ConfigurationPublish -Type PowerShellGallery -FilePath $PowerShellGalleryApiKeyPath -Enabled:$false
     New-ConfigurationPublish -Type GitHub -FilePath $GitHubApiKeyPath -UserName 'EvotecIT' -RepositoryName 'PowerBGInfo' -Enabled:$false -GenerateReleaseNotes

@@ -405,13 +405,9 @@ internal static class BgInfoChartRenderer {
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 
     private static void DrawHeaderLayout(BgInfoRasterImage image, TextLayout layout, TextStyle style, double x, double y, double width, bool alignRight) {
-        // The shared layout already applied casing; applying ToggleCase twice would undo it.
         var resolvedStyle = style.Clone();
-        resolvedStyle.TextCase = TextCaseTransform.None;
-        foreach (var line in layout.Lines) {
-            image.AddText(alignRight ? x + Math.Max(0, width - line.Width) : x, y, line.Text, resolvedStyle);
-            y += layout.Metrics.LineHeight;
-        }
+        resolvedStyle.Alignment = alignRight ? TextAlignment.Right : TextAlignment.Left;
+        image.Composition.DrawTextLayout(x, y, width, layout, resolvedStyle);
     }
 
     private static TextStyle ResolveChartTitleStyle(BgInfoChart chart, BgInfoConfiguration config) => BgInfoRasterImage.CreateTextStyle(

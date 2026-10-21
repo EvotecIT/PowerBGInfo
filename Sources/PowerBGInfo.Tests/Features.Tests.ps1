@@ -1,6 +1,6 @@
 $discoveryConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $discoveryFallbackConfiguration = if ($discoveryConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
-$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0-windows' }
+$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0' }
 $modulePath = $Env:POWERBGINFO_TEST_MODULE
 if ([string]::IsNullOrWhiteSpace($modulePath)) {
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\$discoveryFramework\PowerBGInfo.PowerShell.dll"
@@ -386,7 +386,7 @@ Describe 'Per-monitor example' {
 Describe 'Data helpers' {
     It 'returns system facts as one plain object without throwing' {
         $facts = Get-BGInfoSystemInfo
-        $facts.ComputerName | Should -Be $env:COMPUTERNAME
+        $facts.ComputerName | Should -Be ([Environment]::MachineName)
         $facts.UptimeText | Should -Not -BeNullOrEmpty
         $facts.DefenderStatus | Should -Not -BeNullOrEmpty
         $facts.BitLockerStatus | Should -Not -BeNullOrEmpty
@@ -394,18 +394,25 @@ Describe 'Data helpers' {
     }
 
     It 'reports the user of this session as LoggedOnUser' {
+        $isWindowsHost = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
         $session = (Get-Process -Id $PID).SessionId
-        if ($session -eq 0) {
-            Set-ItResult -Skipped -Because 'session 0 has no signed-in user to compare with'
+        if ($isWindowsHost -and $session -eq 0) {
+            Set-ItResult -Skipped -Because 'Windows session 0 has no signed-in user to compare with'
             return
         }
-        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+        $expectedUser = if ($isWindowsHost) {
+            "$env:USERDOMAIN\$env:USERNAME"
+        } else {
+            $desktopSession = [DesktopManager.PortableDesktopService]::new().GetSession()
+            if ($desktopSession.HasGraphicalSession) { [Environment]::UserName } else { 'Unknown' }
+        }
+        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be $expectedUser
         $entry = New-BGInfoValue -BuiltinValue LoggedOnUser
         $entry.BuiltinValue | Should -Be 'LoggedOnUser'
         $entry.Value | Should -BeNullOrEmpty
         $provider = $entry.GetType().Assembly.GetType('PowerBGInfo.SystemInfoProvider')
         $provider.GetMethod('GetValue').Invoke($null, @('LoggedOnUser')) |
-            Should -Be "$env:USERDOMAIN\$env:USERNAME"
+            Should -Be $expectedUser
     }
 
     It 'preserves the new dynamic built-in tokens without querying them during authoring' -ForEach @(

@@ -186,3 +186,36 @@ jobs:
           $config.Output.Verbosity = 'Detailed'
           Invoke-Pester -Configuration $config
         timeout-minutes: 5
+
+      - name: Verify packaged Windows PowerShell 5.1 import, WMI and rendering
+        shell: powershell
+        run: |
+          $manifest = Get-ChildItem ./Artefacts/Unpacked/Modules/PowerBGInfo -Filter PowerBGInfo.psd1 -Recurse |
+              Select-Object -First 1
+          if ($null -eq $manifest) { throw 'Packaged module manifest was not produced.' }
+          Import-Module $manifest.FullName -Force -ErrorAction Stop
+          $facts = Get-BGInfoSystemInfo
+          if ([string]::IsNullOrWhiteSpace($facts.OSName) -or $facts.OSName -eq 'Unknown') {
+              throw 'Expected a WMI-backed Windows OS name in PowerShell 5.1.'
+          }
+          $output = Join-Path $env:RUNNER_TEMP 'PowerBGInfo-WinPS51'
+          $path = New-BGInfo -Target File -ConfigurationDirectory $output -OutputFileName 'windows51.png' {
+              New-BGInfoBackground -Width 640 -Height 360
+              New-BGInfoValue -Name Host -Value $facts.ComputerName
+              New-BGInfoValue -Name Windows -Value $facts.OSName
+          }
+          $image = [ChartForgeX.Raster.RasterImageDecoder]::Read($path)
+          if ($image.Width -ne 640 -or $image.Height -ne 360) { throw 'Unexpected Windows PowerShell image dimensions.' }
+        timeout-minutes: 5
+
+      - name: Verify packaged portable Core retains Windows WMI facts
+        shell: pwsh
+        run: |
+          $manifest = Get-ChildItem ./Artefacts/Unpacked/Modules/PowerBGInfo -Filter PowerBGInfo.psd1 -Recurse |
+              Select-Object -First 1
+          Import-Module $manifest.FullName -Force -ErrorAction Stop
+          $facts = Get-BGInfoSystemInfo
+          if ([string]::IsNullOrWhiteSpace($facts.OSName) -or $facts.OSName -eq 'Unknown') {
+              throw 'Expected Windows WMI facts from the portable Core payload.'
+          }
+        timeout-minutes: 5

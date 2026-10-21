@@ -5,7 +5,7 @@ using System.Management;
 
 namespace PowerBGInfo;
 
-public static partial class SystemInfoProvider {
+internal sealed partial class WindowsSystemInfoProvider {
     private static readonly SystemInfoQueryExecutor QueryExecutor = new();
 
     /// <summary>Bounds connection, enumeration and disposal without accumulating stalled WMI workers.</summary>

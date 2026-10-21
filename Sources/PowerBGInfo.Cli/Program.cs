@@ -5,6 +5,21 @@ namespace PowerBGInfo.Cli;
 
 internal static class Program {
     public static int Main(string[] args) {
+        if (args != null && args.Length == 1 && args[0].Equals("--doctor", StringComparison.OrdinalIgnoreCase)) {
+            try {
+                var capabilities = new DesktopManager.PortableDesktopService().GetCapabilities();
+                Console.WriteLine($"Desktop backend: {capabilities.BackendId}");
+                Console.WriteLine($"Available: {capabilities.IsAvailable}");
+                Console.WriteLine($"Wallpaper: {capabilities.CanSetWallpaper}");
+                Console.WriteLine($"Per-display images: {capabilities.SupportsPerDisplayWallpaper}");
+                Console.WriteLine($"Physical display dimensions: {capabilities.CanEnumerateDisplays}");
+                Console.WriteLine("File rendering: supported without a desktop session");
+                Console.WriteLine(capabilities.Message);
+                return 0;
+            } catch (Exception ex) {
+                return Fail(ex.Message);
+            }
+        }
         if (args != null && HasHelpFlag(args)) {
             PrintUsage();
             return 0;
@@ -28,6 +43,7 @@ internal static class Program {
             bool noApply = false;
             bool exportOnly = false;
             bool disableWallpaperSlideshow = false;
+            var scriptTimeout = TimeSpan.FromMinutes(2);
             string? scriptDirectory = null;
 
             for (int i = 0; i < args.Length; i++) {
@@ -72,6 +88,12 @@ internal static class Program {
                     case "--module":
                         modulePath = GetValue(args, ref i, "module");
                         break;
+                    case "--script-timeout":
+                        if (!int.TryParse(GetValue(args, ref i, "script-timeout"), out var seconds) || seconds <= 0 || seconds > 86400) {
+                            return Fail("Script timeout must be between 1 and 86400 seconds.");
+                        }
+                        scriptTimeout = TimeSpan.FromSeconds(seconds);
+                        break;
                     case "--no-apply":
                         noApply = true;
                         break;
@@ -93,7 +115,7 @@ internal static class Program {
 
             BgInfoConfiguration config;
             if (!string.IsNullOrWhiteSpace(scriptPath)) {
-                var loadResult = PowerShellConfigurationLoader.Load(scriptPath!, modulePath, powerShellPath);
+                var loadResult = PowerShellConfigurationLoader.Load(scriptPath!, modulePath, powerShellPath, scriptTimeout);
                 config = loadResult.Configuration;
                 scriptDirectory = loadResult.ScriptDirectory;
             } else {
@@ -140,7 +162,7 @@ internal static class Program {
                 ResolveScriptRelativePaths(config, scriptDirectory!);
             }
 
-            var outputPath = BgInfoRunner.Run(config);
+            var outputPath = BgInfoRunner.Run(config, message => Console.Error.WriteLine("Warning: " + message));
             Console.WriteLine(outputPath);
             return 0;
         } catch (Exception ex) {
@@ -179,6 +201,7 @@ internal static class Program {
         Console.WriteLine("Usage:");
         Console.WriteLine("  PowerBGInfo.Cli --config <file> [options]");
         Console.WriteLine("  PowerBGInfo.Cli --script <file> [options]");
+        Console.WriteLine("  PowerBGInfo.Cli --doctor");
         Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  -c, --config <file>       Path to JSON configuration file.");
@@ -191,6 +214,7 @@ internal static class Program {
         Console.WriteLine("      --export-only         Save JSON and skip rendering. Requires --export-json.");
         Console.WriteLine("      --pwsh <path>         Override the PowerShell executable used for --script.");
         Console.WriteLine("      --module <path>       Import the PowerBGInfo module before running --script.");
+        Console.WriteLine("      --script-timeout <s>  Script deadline in seconds (default 120).");
         Console.WriteLine("      --no-apply            Generate the image without applying wallpaper.");
         Console.WriteLine("      --disable-wallpaper-slideshow");
         Console.WriteLine("                            Generate one static wallpaper even if Windows slideshow is active.");

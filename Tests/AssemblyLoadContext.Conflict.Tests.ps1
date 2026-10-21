@@ -38,7 +38,7 @@ try {
     ForEach-Object {
         `$alc = `$_
         foreach (`$assembly in `$alc.Assemblies) {
-            if (`$assembly.GetName().Name -in @('PowerBGInfo.PowerShell', 'PowerBGInfo', 'DesktopManager', 'ImagePlayground.Gdi')) {
+            if (`$assembly.GetName().Name -in @('PowerBGInfo.PowerShell', 'PowerBGInfo', 'DesktopManager', 'ChartForgeX', 'ChartForgeX.Visuals')) {
                 [pscustomobject]@{
                     Assembly = `$assembly.GetName().Name
                     Version = `$assembly.GetName().Version.ToString()
@@ -75,7 +75,7 @@ try {
         $result = $json | ConvertFrom-Json
 
         $result.OutputExists | Should -BeTrue
-        $result.NewBGInfoAssembly | Should -BeLike '*\Artefacts\Unpacked\Modules\PowerBGInfo\Lib\Core\PowerBGInfo.PowerShell.dll'
+        $result.NewBGInfoAssembly | Should -Be ([IO.Path]::GetFullPath((Join-Path $packagedModule 'Lib/Core/PowerBGInfo.PowerShell.dll')))
         $result.NewBGInfoALC | Should -Be 'PowerBGInfo'
         $result.NewBGInfoALCIsDefault | Should -BeFalse
 
@@ -91,9 +91,16 @@ try {
         $desktopAssembly | Should -Not -BeNullOrEmpty
         $desktopAssembly.ALC | Should -Be 'PowerBGInfo'
         $desktopAssembly.IsDefault | Should -BeFalse
-        $desktopAssembly.Location | Should -BeLike '*\Artefacts\Unpacked\Modules\PowerBGInfo\Lib\Core\DesktopManager.dll'
+        $desktopAssembly.Location | Should -Be ([IO.Path]::GetFullPath((Join-Path $packagedModule 'Lib/Core/DesktopManager.dll')))
         $desktopAssembly.HasMonitorSnapshots | Should -BeTrue
         $desktopAssembly.HasSessionUser | Should -BeTrue
         $desktopAssembly.HasLogonResult | Should -BeTrue
+        foreach ($name in @('ChartForgeX', 'ChartForgeX.Visuals')) {
+            $renderingAssembly = $loadedAssemblies | Where-Object Assembly -eq $name | Select-Object -First 1
+            $renderingAssembly | Should -Not -BeNullOrEmpty
+            $renderingAssembly.ALC | Should -Be 'PowerBGInfo'
+            $renderingAssembly.IsDefault | Should -BeFalse
+            $renderingAssembly.Location | Should -Be ([IO.Path]::GetFullPath((Join-Path $packagedModule "Lib/Core/$name.dll")))
+        }
     }
 }

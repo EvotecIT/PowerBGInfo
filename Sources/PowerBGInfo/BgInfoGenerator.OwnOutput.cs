@@ -52,7 +52,7 @@ public partial class BgInfoGenerator
             return candidate;
         }
 
-        var isKnownOutputPath = knownOutputPaths?.Contains(TryGetFullPath(candidate!)) == true;
+        var isKnownOutputPath = knownOutputPaths?.Contains(NormalizePath(candidate!)) == true;
         if (!isPlannedOutput && !isKnownOutputPath && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
         {
             return candidate;
@@ -77,19 +77,12 @@ public partial class BgInfoGenerator
 
     private static bool IsSamePath(string path, string? other)
     {
-        return !string.IsNullOrWhiteSpace(other)
-            && string.Equals(TryGetFullPath(path), TryGetFullPath(other!), StringComparison.OrdinalIgnoreCase);
+        return !string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(other)
+            && BgInfoPaths.AreSame(path, other!);
     }
 
-    private static string TryGetFullPath(string path)
+    private static string NormalizePath(string path)
     {
-        try
-        {
-            return Path.GetFullPath(path);
-        }
-        catch
-        {
-            return path;
-        }
+        return Path.GetFullPath(path);
     }
 }

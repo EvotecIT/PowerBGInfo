@@ -25,14 +25,15 @@ internal static class BgInfoOutputRegistry {
     public static void Record(string outputPath, string? sourcePath) {
         string? temporaryPath = null;
         try {
-            var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            var fullPath = Path.GetFullPath(outputPath);
+            var directory = Path.GetDirectoryName(fullPath);
             if (string.IsNullOrWhiteSpace(directory)) return;
             var registryPath = Path.Combine(directory, FileName);
             using var updateLock = AcquireLock(registryPath, readOnly: false);
             var entries = Load(registryPath);
-            var key = Path.GetFileName(outputPath);
-            entries.RemoveAll(entry => string.Equals(entry.Key, key, StringComparison.OrdinalIgnoreCase));
-            var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath);
+            var key = Path.GetFileName(fullPath);
+            entries.RemoveAll(entry => BgInfoPaths.AreSame(Path.Combine(directory, entry.Key), fullPath));
+            var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath!);
             entries.Add(new KeyValuePair<string, string>(key, source));
             var lines = new List<string>(entries.Count + 1) { Header };
             lines.AddRange(entries.Select(entry => entry.Key + Separator + entry.Value));
@@ -69,12 +70,11 @@ internal static class BgInfoOutputRegistry {
             var fullPath = Path.GetFullPath(imagePath);
             var directory = Path.GetDirectoryName(fullPath);
             if (string.IsNullOrWhiteSpace(directory)) return false;
-            var key = Path.GetFileName(fullPath);
             var registryPath = Path.Combine(directory, FileName);
             // Legacy records have no lock. Reading them must not require write access to the image directory.
             using var readLock = File.Exists(registryPath + ".lock") ? AcquireLock(registryPath, readOnly: true) : null;
             foreach (var entry in Load(registryPath)) {
-                if (!string.Equals(entry.Key, key, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!BgInfoPaths.AreSame(Path.Combine(directory, entry.Key), fullPath)) continue;
                 sourcePath = string.IsNullOrWhiteSpace(entry.Value) ? null : entry.Value;
                 return true;
             }

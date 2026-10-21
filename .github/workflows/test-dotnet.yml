@@ -19,6 +19,47 @@ env:
   BUILD_CONFIGURATION: 'Release'
 
 jobs:
+  test-portable:
+    name: 'Portable (${{ matrix.os }})'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            9.0.x
+            8.0.x
+      - name: Test portable engine and real system facts
+        run: dotnet test Sources/PowerBGInfo.Tests/PowerBGInfo.Tests.csproj -c Release -f net8.0
+      - name: Build portable PowerShell entry point
+        run: dotnet build Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj -c Release -f net8.0
+      - name: Render through PowerShell and the CLI
+        shell: pwsh
+        run: |
+          Import-Module ./Sources/PowerBGInfo.PowerShell/bin/Release/net8.0/PowerBGInfo.PowerShell.dll -Force
+          $facts = Get-BGInfoSystemInfo
+          if ([string]::IsNullOrWhiteSpace($facts.ComputerName) -or $facts.Disks.Count -eq 0) {
+              throw 'Expected real portable system facts.'
+          }
+          Get-BGInfoCapability | Format-List
+          $output = Join-Path $PWD 'Artefacts/PortableSmoke'
+          $configuration = New-BGInfo -Target File -PassThru -ConfigurationDirectory $output -OutputFileName 'portable.png' {
+              New-BGInfoBackground -Width 640 -Height 360
+              New-BGInfoValue -Name Host -Value $facts.ComputerName
+              New-BGInfoValue -Name OS -Value $facts.OSName
+          }
+          $json = Join-Path $output 'portable.json'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          Export-BGInfoConfiguration -InputObject $configuration -Path $json -Force
+          & dotnet ./Sources/PowerBGInfo.Cli/bin/Release/net8.0/PowerBGInfo.Cli.dll --config $json --no-apply
+          if ($LASTEXITCODE -ne 0) { throw 'Portable CLI render failed.' }
+          $image = [ChartForgeX.Raster.RasterImageDecoder]::Read((Join-Path $output 'portable.png'))
+          if ($image.Width -ne 640 -or $image.Height -ne 360) { throw 'Unexpected image dimensions.' }
+
   test-windows:
     name: 'Windows'
     runs-on: windows-latest
@@ -106,7 +147,7 @@ jobs:
           }
 
       - name: Publish CLI NativeAOT smoke build
-        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0-windows --runtime win-x64 -p:PublishAot=true -o artifacts/cli-aot
+        run: dotnet publish Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --framework net8.0 --runtime win-x64 -p:PublishProfile=NativeAot -o artifacts/cli-aot
 
       - name: Run NativeAOT CLI with PowerShell-generated config
         shell: pwsh

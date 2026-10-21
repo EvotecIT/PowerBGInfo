@@ -4,6 +4,8 @@
   href: install/
 - title: Overview
   href: overview/
+- title: Cross-platform rendering
+  href: cross-platform/
 - title: Layouts and overlays
   href: layouts-and-overlays/
 - title: Run in production

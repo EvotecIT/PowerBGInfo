@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PowerBGInfo;
 
-public static partial class SystemInfoProvider
+internal sealed partial class WindowsSystemInfoProvider
 {
     // Keep native fallbacks in the shared fact provider so .NET, PowerShell and the CLI agree.
     // Module speed/part numbers still require WMI; a total is not presented as individual DIMMs.

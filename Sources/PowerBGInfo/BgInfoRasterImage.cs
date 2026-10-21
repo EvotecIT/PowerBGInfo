@@ -17,6 +17,15 @@ public sealed class BgInfoRasterImage : IDisposable {
     private ImageComposition _composition = ImageComposition.CreateTransparent(1, 1);
     private readonly Dictionary<string, TextMetrics> _textSizeCache = new(StringComparer.Ordinal);
 
+    /// <summary>Creates an image surface ready to load or create its content.</summary>
+    public BgInfoRasterImage() {
+    }
+
+    /// <summary>Wraps an already composed shared image without encoding or copying its pixels.</summary>
+    internal BgInfoRasterImage(ImageComposition composition) {
+        _composition = composition ?? throw new ArgumentNullException(nameof(composition));
+    }
+
     /// <summary>Gets the image width in pixels.</summary>
     public int Width => _composition.Width;
 

@@ -1153,6 +1153,12 @@ public static partial class BgInfoConfigurationJson {
         if (Path.IsPathRooted(safePath)) {
             return safePath;
         }
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) {
+            if ((safePath.Length > 1 && char.IsLetter(safePath[0]) && safePath[1] == ':') || safePath.StartsWith("\\", StringComparison.Ordinal)) {
+                throw new ArgumentException("A Windows-rooted path cannot be resolved on this platform. Use a relative configuration path or a local absolute path.", nameof(path));
+            }
+            safePath = safePath.Replace('\\', Path.DirectorySeparatorChar);
+        }
 
         if (string.IsNullOrWhiteSpace(baseDirectory)) {
             return safePath;
