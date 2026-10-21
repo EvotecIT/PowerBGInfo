@@ -32,21 +32,21 @@ the CLI remain thin entry points into the same engine.
 - [x] Run final DesktopManager regressions and all four library target builds.
 - [x] Run PowerBGInfo integrated validation, including packaged module isolation and single-file/NativeAOT file exports.
 - [x] Validate the KDE AOT correction and refresh the affected package/executable proof against the final shared candidate.
-- [x] Prepare the ChartForgeX and DesktopManager producer PRs.
+- [x] Merge the qualified ChartForgeX and DesktopManager producer PRs.
 - [x] Finish the qualified PowerBGInfo consumer in its dedicated worktree.
 - [ ] Pin released producer APIs and publish the PowerBGInfo consumer PR after those packages are available.
 
-## Deferred native qualification
+## Native qualification
 
-Windows/WSL/Linux execution and graphical desktop acceptance are reserved for a
-later validation pass. Automated CI remains useful evidence for the paths it
-actually executes.
+Windows/WSL/Linux execution and graphical desktop acceptance remain outstanding.
+Automated CI remains useful evidence for the paths it actually executes.
 
 - [ ] Verify the packaged Windows PowerShell 5.1 import, WMI facts, and rendering on Windows.
 - [ ] Qualify Windows desktop changes separately from NativeAOT file exports; legacy COM/history paths emit AOT warnings.
 - [ ] Run portable module/CLI file workflows and native facts on Linux/WSL.
 - [ ] Qualify GNOME and KDE application/readback on real graphical sessions; headless CI does not establish desktop acceptance.
-- [ ] Qualify macOS wallpaper application with complete restore evidence for the affected desktop state. Current macOS evidence covers discovery/readback.
+- [x] Qualify macOS Center, Fit, Fill and Stretch application with native readback and visual inspection on one display; verify five unsupported/invalid requests do not change it; apply a generated image through the packaged module.
+- [x] Restore and verify the original macOS aerial selection, all-Spaces setting, complete native URL/options and photo list. Aerial restoration requires Wallpaper settings beyond the static AppKit image operation.
 
 ## Delivery boundaries
 
