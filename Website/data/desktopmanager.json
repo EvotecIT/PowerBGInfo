@@ -1,0 +1,348 @@
+{
+  "note": "Copy and tables for /desktopmanager/. Facts verified against the DesktopManager repository (origin/v2-speedygonzales with PR #214): DesktopManager.psd1 (133 cmdlets), the v4.5.0 release (2026-10-16), Docs/*.md, Docs/DesktopManager.App.Design.md, Sources/DesktopManager.App and Docs/Portable.Desktop.md. The portable desktop API is merged but not released; keep it labelled Preview until a release ships it. The app has no installer release yet.",
+  "statusLabels": {
+    "shipped": "Shipped",
+    "preview": "In app build",
+    "partial": "Partial",
+    "no": "No",
+    "idea": "Planned",
+    "na": "Not yet"
+  },
+  "hero": {
+    "eyebrow": "DesktopManager 4.5.0 for Windows",
+    "title": "Control the Windows desktop",
+    "lede": "Arrange monitors, place windows, set wallpapers and switch audio, power, radios and devices. Use the tray app with hotkeys and rules, or automate the same things from PowerShell, C#, the command line or an AI agent.",
+    "install": "Install-Module DesktopManager",
+    "stats": [
+      { "label": "Cmdlets", "value": "133" },
+      { "label": "Release", "value": "4.5.0" },
+      { "label": "License", "value": "MIT" }
+    ],
+    "primary": { "label": "Install from PowerShell Gallery", "url": "https://www.powershellgallery.com/packages/DesktopManager" },
+    "secondary": { "label": "Source on GitHub", "url": "https://github.com/EvotecIT/DesktopManager" },
+    "art": {
+      "src": "/desktopmanager/app-design-monitors.jpg",
+      "width": 1400,
+      "height": 933,
+      "alt": "Design mockup of the planned DesktopManager Monitors page: four monitors arranged on a canvas, a list of layout rules and buttons that move the active window.",
+      "tag": "Planned app design",
+      "caption": "Design mockup of the Monitors page. Not a shipped screen."
+    }
+  },
+  "controls": {
+    "title": "What it controls",
+    "lede": "Each area below ships today in the PowerShell module and the .NET library. The names under each card are real cmdlets you can run.",
+    "areas": [
+      {
+        "title": "Monitors and layout",
+        "body": "List monitors, move them on the virtual desktop, change resolution and orientation, and set brightness. Save the whole setup as a workstation profile and restore it later.",
+        "cmdlets": ["Get-DesktopMonitor", "Set-DesktopPosition", "Set-DesktopResolution", "Set-DesktopBrightness", "Save-DesktopWorkstationProfile"]
+      },
+      {
+        "title": "Windows",
+        "body": "Find windows by title or process, then move, resize, snap, keep on top or fade them. Save a window layout and put every window back later.",
+        "cmdlets": ["Get-DesktopWindow", "Set-DesktopWindow", "Set-DesktopWindowSnap", "Set-DesktopWindowTransparency", "Restore-DesktopWindowLayout"]
+      },
+      {
+        "title": "UI automation",
+        "body": "Read the controls inside a window through Win32 or UI Automation, then click, type and check values directly. Wait for a window or control to appear instead of sleeping.",
+        "cmdlets": ["Get-DesktopWindowControl", "Invoke-DesktopControlClick", "Set-DesktopControlText", "Wait-DesktopWindowControl"]
+      },
+      {
+        "title": "Wallpaper and lock screen",
+        "body": "Set a different wallpaper on each monitor from a file, URL or stream. Run and step slideshows, keep a wallpaper history and set the lock screen image.",
+        "cmdlets": ["Set-DesktopWallpaper", "Start-DesktopSlideshow", "Step-DesktopSlideshow", "Set-LogonWallpaper", "Set-DesktopBackgroundColor"]
+      },
+      {
+        "title": "Taskbar and personalization",
+        "body": "Find each taskbar and the monitor it sits on, move or hide it and switch auto-hide. Save a personalization snapshot before you change a theme.",
+        "cmdlets": ["Get-DesktopTaskbar", "Set-TaskbarPosition", "Set-DesktopTaskbarAutoHide", "Save-DesktopPersonalization"]
+      },
+      {
+        "title": "Audio",
+        "body": "List playback and recording devices with volume, mute and default roles. Change the default device for each role and react when a device appears or changes.",
+        "cmdlets": ["Get-DesktopAudioEndpoint", "Set-DesktopAudioEndpoint", "Set-DefaultAudioDevice", "Register-DesktopAudioEvent"]
+      },
+      {
+        "title": "Power and session",
+        "body": "Read battery and session state, lock or sign out, sleep or hibernate, and keep the machine and display awake for a set time.",
+        "cmdlets": ["Get-DesktopPowerStatus", "Get-DesktopSession", "Lock-DesktopSession", "Start-DesktopKeepAwake", "Suspend-DesktopSystem"]
+      },
+      {
+        "title": "Wi-Fi and radios",
+        "body": "Turn Wi-Fi, Bluetooth and mobile broadband radios on or off through the supported Windows radio API. Connect a saved Wi-Fi profile without scanning or reading credentials.",
+        "cmdlets": ["Get-DesktopRadio", "Set-DesktopRadio", "Get-DesktopWifiProfile", "Connect-DesktopWifiProfile"],
+        "note": "Global airplane mode is experimental and needs -Experimental."
+      },
+      {
+        "title": "Devices and drivers",
+        "body": "List Plug and Play devices and the ones with problems. Enable, disable or restart a device, update its driver and manage Driver Store packages.",
+        "cmdlets": ["Get-DesktopDevice", "Disable-DesktopDevice", "Restart-DesktopDevice", "Update-DesktopDeviceDriver", "Add-DesktopDriverPackage"]
+      },
+      {
+        "title": "Virtual desktops",
+        "body": "Check which virtual desktop a window is on and move it to another desktop through the public Windows API.",
+        "cmdlets": ["Get-DesktopVirtualDesktop", "Move-DesktopWindowToVirtualDesktop"],
+        "note": "Listing, creating, renaming and switching desktops are not supported."
+      },
+      {
+        "title": "Screenshots and input",
+        "body": "Capture every monitor, one monitor, a region or a single window. Move and click the mouse, drag, scroll, press keys and read or set clipboard text.",
+        "cmdlets": ["Invoke-DesktopScreenshot", "Invoke-DesktopWindowScreenshot", "Invoke-DesktopMouseClick", "Invoke-DesktopKeyPress", "Set-DesktopClipboardText"]
+      },
+      {
+        "title": "Hotkeys and events",
+        "body": "Bind a global hotkey to a PowerShell script block. Run code when monitors, resolution, orientation, the session, audio devices or radios change.",
+        "cmdlets": ["Register-DesktopHotkey", "Register-DesktopMonitorEvent", "Register-DesktopSessionEvent", "Register-DesktopRadioEvent"]
+      }
+    ]
+  },
+  "ways": {
+    "title": "Four ways to use it",
+    "lede": "The app, the cmdlets, the CLI and the MCP server all sit on one C# library, so a window move or a wallpaper change behaves the same way wherever you start it.",
+    "app": {
+      "kicker": "The app",
+      "title": "Tray app with hotkeys and layout rules",
+      "status": "preview",
+      "statusLabel": "In development",
+      "body": "A Windows app for daily use at your own desk. It has no installer release yet; build it from the repository.",
+      "items": [
+        "Tray icon, start with Windows and start minimized to the tray",
+        "Global hotkeys that maximize or restore the active window, or move it to the left half, the right half or an exact rectangle on a chosen monitor",
+        "Layout rules that match windows by title and process name, applied on demand or when the app starts",
+        "HDR on or off for each monitor",
+        "A Desktop state tab for workstation profiles, audio, keep-awake, taskbar auto-hide, radios and virtual desktops"
+      ],
+      "image": {
+        "src": "/desktopmanager/app-design-tray.jpg",
+        "width": 620,
+        "height": 917,
+        "alt": "Design mockup of the planned DesktopManager tray flyout: a four-monitor map, buttons that move the active window, Apply Rules, Pause Hotkeys and recent activity.",
+        "tag": "Planned design",
+        "caption": "The tray flyout the app is heading towards. Not a shipped screen."
+      }
+    },
+    "surfaces": [
+      {
+        "id": "powershell",
+        "kicker": "PowerShell",
+        "title": "133 cmdlets for scripts and admin work",
+        "body": "Run them by hand, in scheduled tasks or in deployment scripts. Works in Windows PowerShell 5.1 and PowerShell 7.",
+        "install": "Install-Module DesktopManager",
+        "prompt": "PS>",
+        "lang": "powershell",
+        "langLabel": "PowerShell",
+        "code": "Get-DesktopMonitor -ConnectedOnly | Format-Table\nSet-DesktopWallpaper -Index 1 -WallpaperPath 'C:\\Wallpapers\\wide.jpg' -Position Fit\nSet-DesktopWindowSnap -Name '*Notepad*' -Position Left\n\nSave-DesktopWorkstationProfile -Name 'office'\nRestore-DesktopWorkstationProfile -Name 'office' -Confirm\n\nRegister-DesktopHotkey -Key F12 -Modifiers Control,Alt -Action { Lock-DesktopSession }"
+      },
+      {
+        "id": "dotnet",
+        "kicker": ".NET library",
+        "title": "The DesktopManager NuGet package",
+        "body": "Put the same engine inside your own app or service. Targets .NET Framework 4.7.2, .NET Standard 2.0, .NET 8 and .NET 10.",
+        "install": "dotnet add package DesktopManager",
+        "prompt": ">",
+        "lang": "csharp",
+        "langLabel": "C#",
+        "code": "using DesktopManager;\n\nvar monitors = new Monitors();\nforeach (MonitorSnapshot display in monitors.GetMonitorSnapshots()) {\n    Console.WriteLine($\"{display.DeviceName}: {display.Width} x {display.Height}\");\n}\n\nvar windows = new WindowManager();\nWindowInfo? editor = windows.GetWindows(processName: \"notepad\").FirstOrDefault();\nif (editor != null) {\n    windows.SnapWindow(editor, SnapPosition.Left);\n}"
+      },
+      {
+        "id": "agents",
+        "kicker": "CLI and MCP",
+        "title": "A command line, and an MCP server for AI agents",
+        "body": "<code>desktopmanager.exe</code> returns plain text or JSON. <code>desktopmanager mcp serve</code> gives an agent more than 100 tools over stdio. It starts read-only: changing windows, changing system settings and experimental features each need their own switch, and <code>--dry-run</code> previews a change without making it.",
+        "download": { "label": "Portable CLI and MCP bundle on GitHub Releases", "url": "https://github.com/EvotecIT/DesktopManager/releases" },
+        "lang": "shell",
+        "langLabel": "Shell",
+        "code": "desktopmanager monitor list --json\ndesktopmanager window snap --process notepad --position left\ndesktopmanager layout save coding\ndesktopmanager layout apply coding --validate\n\ndesktopmanager mcp serve\ndesktopmanager mcp serve --allow-mutations --allow-process notepad\ndesktopmanager mcp serve --dry-run",
+        "config": {
+          "lang": "json",
+          "langLabel": "JSON",
+          "file": "MCP client configuration",
+          "code": "{\n  \"mcpServers\": {\n    \"desktopmanager\": {\n      \"type\": \"stdio\",\n      \"command\": \"desktopmanager\",\n      \"args\": [\"mcp\", \"serve\"]\n    }\n  }\n}"
+        }
+      }
+    ]
+  },
+  "matrix": {
+    "title": "What's available",
+    "lede": "Engine means the library and cmdlets in release 4.5.0. App today means the current DesktopManager.App build from source. Next for the app is where the app is heading; nothing in that column ships yet.",
+    "columns": ["Engine", "App today", "Next for the app"],
+    "rows": [
+      {
+        "title": "Monitor layout and profiles",
+        "cells": [
+          { "status": "shipped", "note": "Position, resolution, orientation and workstation profiles" },
+          { "status": "partial", "note": "Workstation profiles and per-monitor HDR; no layout canvas yet" },
+          { "status": "idea", "note": "Drag-to-arrange monitor canvas" }
+        ]
+      },
+      {
+        "title": "Window hotkeys and snapping",
+        "cells": [
+          { "status": "shipped", "note": "Set-DesktopWindowSnap and Register-DesktopHotkey" },
+          { "status": "preview", "note": "Maximize, restore, halves and exact rectangles on a chosen monitor" },
+          { "status": "idea", "note": "Hotkey recorder and conflict warnings" }
+        ]
+      },
+      {
+        "title": "Window layout rules",
+        "cells": [
+          { "status": "partial", "note": "Match and place windows from a script; the rule engine lives in the app" },
+          { "status": "preview", "note": "Match by title and process; apply on demand or at app start" },
+          { "status": "idea", "note": "Rule priority, preview of matching windows and per-rule results" }
+        ]
+      },
+      {
+        "title": "Save and restore window layouts",
+        "cells": [
+          { "status": "shipped", "note": "Save-DesktopWindowLayout and the CLI layout commands" },
+          { "status": "na" },
+          { "status": "idea" }
+        ]
+      },
+      {
+        "title": "Wallpaper per monitor and slideshow",
+        "cells": [
+          { "status": "shipped", "note": "Per-monitor wallpaper, slideshows, history and lock screen" },
+          { "status": "partial", "note": "Saved and restored inside workstation profiles" },
+          { "status": "idea" }
+        ]
+      },
+      {
+        "title": "Event triggers",
+        "cells": [
+          { "status": "shipped", "note": "Monitor, resolution, orientation, session, audio and radio events" },
+          { "status": "na", "note": "Rules run on demand or at app start" },
+          { "status": "idea" }
+        ]
+      },
+      {
+        "title": "Brightness and dimming inactive monitors",
+        "cells": [
+          { "status": "partial", "note": "Brightness per monitor; no dimming" },
+          { "status": "partial", "note": "Brightness restored with workstation profiles where the monitor supports it" },
+          { "status": "idea" }
+        ]
+      },
+      {
+        "title": "Taskbar on every monitor",
+        "cells": [
+          { "status": "partial", "note": "Moves, hides and auto-hides the Windows taskbars" },
+          { "status": "partial", "note": "Taskbar auto-hide switch" },
+          { "status": "na", "label": "Not started" }
+        ]
+      },
+      {
+        "title": "Audio, power, keep-awake and radios",
+        "cells": [
+          { "status": "shipped" },
+          { "status": "preview", "note": "Desktop state tab" },
+          { "status": "dash" }
+        ]
+      },
+      {
+        "title": "Run PowerShell from a hotkey",
+        "cells": [
+          { "status": "shipped", "note": "Register-DesktopHotkey with a script block" },
+          { "status": "na" },
+          { "status": "idea" }
+        ]
+      },
+      {
+        "title": "AI agent control through MCP",
+        "cells": [
+          { "status": "shipped", "note": "desktopmanager mcp serve, CLI 0.2.1" },
+          { "status": "na", "label": "Not applicable", "note": "The MCP server runs from the CLI" },
+          { "status": "dash" }
+        ]
+      },
+      {
+        "title": "Phone control",
+        "cells": [
+          { "status": "na", "label": "Not started" },
+          { "status": "na" },
+          { "status": "na", "label": "Not started" }
+        ]
+      }
+    ],
+    "legend": [
+      { "status": "shipped", "text": "in release 4.5.0" },
+      { "status": "preview", "text": "in the app's source build" },
+      { "status": "partial", "text": "some of it works" },
+      { "status": "idea", "text": "on the app plan, not built" },
+      { "status": "na", "text": "not there today" }
+    ]
+  },
+  "portable": {
+    "title": "Displays and wallpaper on macOS and Linux",
+    "status": "preview",
+    "statusLabel": "Preview",
+    "lede": "<code>PortableDesktopService</code> in the .NET library finds displays, reads the user session and reads or applies a wallpaper on Windows, macOS, GNOME and KDE Plasma. It is merged into the source and not in a release yet. The app, the CLI and the cmdlets stay Windows only.",
+    "columns": ["Windows", "macOS", "GNOME", "KDE Plasma"],
+    "rows": [
+      {
+        "title": "Find displays",
+        "cells": [
+          { "status": "shipped", "label": "Yes", "note": "Physical pixels and DPI" },
+          { "status": "shipped", "label": "Yes", "note": "AppKit screens" },
+          { "status": "no", "label": "No", "note": "Pass the image size yourself" },
+          { "status": "no", "label": "No", "note": "Pass the image size yourself" }
+        ]
+      },
+      {
+        "title": "Read the wallpaper",
+        "cells": [
+          { "status": "shipped", "label": "Yes" },
+          { "status": "shipped", "label": "Yes", "note": "May report a HEIC file" },
+          { "status": "shipped", "label": "Yes", "note": "The active light or dark image" },
+          { "status": "partial", "label": "Partial", "note": "Image wallpapers only" }
+        ]
+      },
+      {
+        "title": "Apply a wallpaper",
+        "cells": [
+          { "status": "shipped", "label": "Yes", "note": "Center, Tile, Stretch, Fit, Fill, Span" },
+          { "status": "shipped", "label": "Yes", "note": "Center, Stretch, Fit, Fill" },
+          { "status": "shipped", "label": "Yes", "note": "GNOME's own modes" },
+          { "status": "shipped", "label": "Yes", "note": "Center, Tile, Stretch, Fit, Fill" }
+        ]
+      },
+      {
+        "title": "Different image per display",
+        "cells": [
+          { "status": "shipped", "label": "Yes" },
+          { "status": "shipped", "label": "Yes", "note": "Active Space on each screen" },
+          { "status": "no", "label": "No" },
+          { "status": "partial", "label": "Partial", "note": "By Plasma screen number" }
+        ]
+      },
+      {
+        "title": "Session details",
+        "cells": [
+          { "status": "shipped", "label": "Yes" },
+          { "status": "shipped", "label": "Yes", "note": "Console user only; SSH is rejected" },
+          { "status": "shipped", "label": "Yes", "note": "Needs the graphical session; SSH is rejected" },
+          { "status": "shipped", "label": "Yes", "note": "Needs the graphical session; SSH is rejected" }
+        ]
+      }
+    ],
+    "foot": "Lock screen, all-user settings and slideshows stay Windows only. Your application decides when to refresh the image.",
+    "code": "using DesktopManager;\n\nvar desktop = new PortableDesktopService();\nDesktopCapabilities capabilities = desktop.GetCapabilities();\nConsole.WriteLine($\"{capabilities.BackendId}: {capabilities.Message}\");\n\nforeach (DesktopDisplayInfo display in desktop.GetDisplays()) {\n    Console.WriteLine($\"{display.Id}: {display.Width} x {display.Height} pixels\");\n}\n\nDesktopOperationResult result = desktop.ApplyWallpaper(new DesktopWallpaperRequest {\n    FilePath = imagePath,\n    Position = DesktopWallpaperPosition.Fill\n});\nif (!result.Succeeded) {\n    Console.Error.WriteLine($\"{result.Status}: {result.Message}\");\n}"
+  },
+  "pbg": {
+    "kicker": "Works with PowerBGInfo",
+    "title": "The engine behind PowerBGInfo wallpapers",
+    "body": "PowerBGInfo draws the facts; DesktopManager puts them on screen. PowerBGInfo uses the DesktopManager package to apply its wallpapers to each monitor, to the lock screen and to every user profile.",
+    "link": { "label": "See PowerBGInfo", "url": "/" }
+  },
+  "start": {
+    "title": "Get started",
+    "lede": "Release 4.5.0 is the current version of the PowerShell module and the NuGet package.",
+    "links": [
+      { "title": "PowerShell Gallery", "detail": "Install-Module DesktopManager", "url": "https://www.powershellgallery.com/packages/DesktopManager" },
+      { "title": "NuGet", "detail": "dotnet add package DesktopManager", "url": "https://www.nuget.org/packages/DesktopManager" },
+      { "title": "GitHub", "detail": "Source, cmdlet docs and issues", "url": "https://github.com/EvotecIT/DesktopManager" },
+      { "title": "GitHub Releases", "detail": "Portable CLI and MCP bundle", "url": "https://github.com/EvotecIT/DesktopManager/releases" }
+    ]
+  }
+}
