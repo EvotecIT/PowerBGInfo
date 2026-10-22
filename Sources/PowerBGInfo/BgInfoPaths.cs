@@ -16,10 +16,13 @@ internal static class BgInfoPaths {
     /// authored spelling, so two new names on a case-sensitive volume are never collapsed.
     /// </summary>
     /// <remarks>
-    /// This resolves case aliases, not symbolic links or hard links. An unreadable existing component
+    /// This resolves case aliases and symbolic links. An unreadable existing component
     /// fails closed: guessing that two paths differ could permit overwriting the only original image.
     /// </remarks>
-    internal static string GetIdentity(string path) {
+    internal static string GetIdentity(string path) => GetIdentity(path, 0);
+
+    private static string GetIdentity(string path, int linkDepth) {
+        if (linkDepth > 64) throw new IOException($"The filesystem link chain for '{path}' is too deep to establish a safe image identity.");
         var fullPath = Path.GetFullPath(path);
         var root = Path.GetPathRoot(fullPath)!;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && root.Length >= 2 && root[1] == ':') {
@@ -37,6 +40,13 @@ internal static class BgInfoPaths {
                 return AppendRemaining(current, parts, index);
             } catch (Exception error) when (error is IOException or UnauthorizedAccessException) {
                 throw new IOException($"Could not establish the filesystem identity of '{candidate}'. No image should overwrite an uncertain base path.", error);
+            }
+
+            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0) {
+                // ResolveLinkTarget follows the leaf link chain, but its target can
+                // still contain symbolic-link parents (for example /tmp on macOS).
+                current = GetIdentity(ResolveLink(candidate), linkDepth + 1);
+                continue;
             }
 
             string? alias = null;
@@ -66,9 +76,46 @@ internal static class BgInfoPaths {
         var left = Path.GetFullPath(path);
         var right = Path.GetFullPath(other);
         if (string.Equals(left, right, StringComparison.Ordinal)) return true;
-        // Different names cannot be case aliases. Avoid filesystem work for every unrelated registry row.
-        if (!string.Equals(left, right, StringComparison.OrdinalIgnoreCase)) return false;
+        // Most registry rows have unrelated leaf names. Only a final symbolic link can
+        // alias another leaf; directory aliases still retain the same leaf spelling.
+        if (!string.Equals(Path.GetFileName(left), Path.GetFileName(right), StringComparison.OrdinalIgnoreCase)
+            && !IsLink(left) && !IsLink(right)) return false;
         return string.Equals(GetIdentity(left), GetIdentity(right), StringComparison.Ordinal);
+    }
+
+    private static bool IsLink(string path) {
+        try { return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0; }
+        catch (FileNotFoundException) { return false; }
+        catch (DirectoryNotFoundException) { return false; }
+    }
+
+    private static string ResolveLink(string path) {
+#if NET472
+        return WindowsPathIdentity.ResolveLink(path);
+#else
+        FileSystemInfo item = Directory.Exists(path) ? new DirectoryInfo(path) : new FileInfo(path);
+        return item.ResolveLinkTarget(returnFinalTarget: true)?.FullName
+            ?? throw new IOException($"Could not resolve the filesystem link '{path}'.");
+#endif
+    }
+
+    // Canonicalize links without enumerating directory contents for every hash operation.
+    private static string ResolveLinks(string path) {
+        var fullPath = Path.GetFullPath(path);
+        var root = Path.GetPathRoot(fullPath)!;
+        var current = root;
+        var parts = fullPath.Substring(root.Length).Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+        for (var index = 0; index < parts.Length; index++) {
+            var candidate = Path.Combine(current, parts[index]);
+            try {
+                current = (File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0 ? GetIdentity(ResolveLink(candidate)) : candidate;
+            } catch (FileNotFoundException) {
+                return AppendRemaining(current, parts, index);
+            } catch (DirectoryNotFoundException) {
+                return AppendRemaining(current, parts, index);
+            }
+        }
+        return current;
     }
 
     private static string AppendRemaining(string current, IReadOnlyList<string> parts, int index) {
@@ -82,6 +129,6 @@ internal static class BgInfoPaths {
 
         // Stable across creation: distinct case-sensitive names may share a bucket, while case
         // aliases must always share one even when a planned output did not exist when it was added.
-        public int GetHashCode(string path) => StringComparer.OrdinalIgnoreCase.GetHashCode(Path.GetFullPath(path));
+        public int GetHashCode(string path) => StringComparer.OrdinalIgnoreCase.GetHashCode(ResolveLinks(path));
     }
 }

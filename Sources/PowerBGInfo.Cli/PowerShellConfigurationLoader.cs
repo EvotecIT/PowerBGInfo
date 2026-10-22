@@ -66,8 +66,8 @@ internal static class PowerShellConfigurationLoader {
             try {
                 Execute(candidate, wrapperPath, scriptPath, outputPath, modulePath, timeout);
                 return;
-            } catch (Win32Exception ex) {
-                lastError = ex;
+            } catch (PowerShellHostStartException ex) {
+                lastError = ex.InnerException;
             } catch (InvalidOperationException) {
                 throw;
             }
@@ -99,42 +99,51 @@ internal static class PowerShellConfigurationLoader {
             }
         };
 
-        process.Start();
+        using var lifetime = new ConfigurationScriptLifetime(process.StartInfo);
         var elapsed = Stopwatch.StartNew();
-        var output = Task.Run(() => DrainOutput(process.StandardOutput));
-        var errors = Task.Run(() => DrainOutput(process.StandardError));
-        var completed = process.WaitForExit((int)Math.Ceiling(timeout.TotalMilliseconds));
-        var remaining = Math.Max(0, (int)Math.Ceiling((timeout - elapsed.Elapsed).TotalMilliseconds));
-        if (!completed || !Task.WaitAll(new Task[] { output, errors }, remaining)) {
-            try {
-                if (!process.HasExited) {
-#if NET472
-                    process.Kill();
-#else
-                    process.Kill(entireProcessTree: true);
-#endif
-                    process.WaitForExit(5000);
-                }
-            } finally {
-                process.StandardOutput.Dispose();
-                process.StandardError.Dispose();
-            }
-            throw new TimeoutException($"The PowerShell configuration script exceeded its {timeout.TotalSeconds:G} second deadline.");
+        try {
+            process.Start();
+        } catch (Win32Exception error) {
+            // Only host launch failure permits another candidate. A later native
+            // cleanup failure must never execute the author's script a second time.
+            throw new PowerShellHostStartException(error);
         }
-        var standardOutput = output.GetAwaiter().GetResult();
-        var standardError = errors.GetAwaiter().GetResult();
-
-        if (process.ExitCode != 0) {
-            var message = new StringBuilder();
-            message.AppendLine($"PowerShell script execution failed with exit code {process.ExitCode}.");
-
-            if (!string.IsNullOrWhiteSpace(standardError)) {
-                message.AppendLine(standardError.Trim());
-            } else if (!string.IsNullOrWhiteSpace(standardOutput)) {
-                message.AppendLine(standardOutput.Trim());
+        try {
+            lifetime.Attach(process);
+            var output = Task.Run(() => DrainOutput(process.StandardOutput));
+            var errors = Task.Run(() => DrainOutput(process.StandardError));
+            int exitCode;
+            try {
+                exitCode = lifetime.WaitForCompletion(elapsed, timeout);
+            } finally {
+                // Descendants may retain both pipes even after the script exits.
+                // End their owned scope before waiting for or disposing readers.
+                lifetime.Terminate();
             }
+            if (!process.WaitForExit(ConfigurationScriptLifetime.RemainingMilliseconds(elapsed, timeout)) ||
+                !Task.WaitAll(new Task[] { output, errors }, ConfigurationScriptLifetime.RemainingMilliseconds(elapsed, timeout))) {
+                throw ConfigurationScriptLifetime.Deadline(timeout);
+            }
+            var standardOutput = output.GetAwaiter().GetResult();
+            var standardError = errors.GetAwaiter().GetResult();
 
-            throw new InvalidOperationException(message.ToString().Trim());
+            if (exitCode != 0) {
+                var message = new StringBuilder();
+                message.AppendLine($"PowerShell script execution failed with exit code {exitCode}.");
+
+                if (!string.IsNullOrWhiteSpace(standardError)) {
+                    message.AppendLine(standardError.Trim());
+                } else if (!string.IsNullOrWhiteSpace(standardOutput)) {
+                    message.AppendLine(standardOutput.Trim());
+                }
+
+                throw new InvalidOperationException(message.ToString().Trim());
+            }
+        } finally {
+            lifetime.Terminate();
+            // Allow kernel termination to close inherited pipe handles before
+            // Process.Dispose closes the readers used by the drain tasks.
+            process.WaitForExit(5000);
         }
     }
 
@@ -223,6 +232,10 @@ internal static class PowerShellConfigurationLoader {
             ?? throw new InvalidOperationException("The configuration-script resource is missing.");
         using var reader = new StreamReader(resource);
         return reader.ReadToEnd();
+    }
+
+    private sealed class PowerShellHostStartException : Exception {
+        internal PowerShellHostStartException(Win32Exception error) : base(error.Message, error) { }
     }
 
     private static void TryDeleteFile(string path) {

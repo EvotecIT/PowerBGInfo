@@ -13,10 +13,10 @@ namespace PowerBGInfo;
 /// </summary>
 public partial class BgInfoGenerator
 {
-    private bool TryGenerateWallpaperSlideshow(BgInfoConfiguration config, out string outputPath)
+    private bool TryGenerateWallpaperSlideshow(BgInfoConfiguration config, Func<IReadOnlyList<BgInfoMonitor>?> getMonitors, bool applyCurrentWallpaper, out string outputPath)
     {
         outputPath = string.Empty;
-        if (!ShouldPreserveWallpaperSlideshow(config))
+        if (!applyCurrentWallpaper || !ShouldPreserveWallpaperSlideshow(config))
         {
             return false;
         }
@@ -60,7 +60,7 @@ public partial class BgInfoGenerator
         for (int i = 0; i < sourcePaths.Length; i++)
         {
             var itemConfig = CloneForSlideshowItem(config, sourcePaths[i], BuildSlideshowOutputPath(config, sourcePaths[i], i), slideshowCharts);
-            generatedPaths.Add(GenerateImage(itemConfig, _ => null, () => null, applyTargets: false));
+            generatedPaths.Add(GenerateImage(itemConfig, _ => null, getMonitors, applyTargets: false));
         }
 
         if (generatedPaths.Count == 0)
@@ -289,7 +289,7 @@ public partial class BgInfoGenerator
             SpaceY = source.SpaceY,
             WallpaperFit = source.WallpaperFit,
             TextPosition = source.TextPosition,
-            Target = BgInfoTarget.File,
+            Target = source.Target,
             ForceWallpaperRefresh = false,
             PreserveWallpaperSlideshow = false,
             ApplyToAllUsers = false,

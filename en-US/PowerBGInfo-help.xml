@@ -343,7 +343,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Override configuration output directory.</maml:para>
+            <maml:para>Override configuration output directory, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -379,7 +379,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Override output file name.</maml:para>
+            <maml:para>Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -391,7 +391,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>Path to the JSON configuration file.</maml:para>
+            <maml:para>Filesystem path to the JSON configuration file, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -424,7 +424,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Override configuration output directory.</maml:para>
+          <maml:para>Override configuration output directory, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -460,7 +460,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Override output file name.</maml:para>
+          <maml:para>Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -472,7 +472,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>Path to the JSON configuration file.</maml:para>
+          <maml:para>Filesystem path to the JSON configuration file, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -916,7 +916,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Output directory for generated BGInfo images.</maml:para>
+            <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -976,7 +976,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FilePath</maml:name>
           <maml:description>
-            <maml:para>Optional base wallpaper file path. When omitted, current wallpaper is used.</maml:para>
+            <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1060,7 +1060,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name for the generated image.</maml:para>
+            <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1697,7 +1697,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Output directory for generated BGInfo images.</maml:para>
+          <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1757,7 +1757,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FilePath</maml:name>
         <maml:description>
-          <maml:para>Optional base wallpaper file path. When omitted, current wallpaper is used.</maml:para>
+          <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1841,7 +1841,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name for the generated image.</maml:para>
+          <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -7534,7 +7534,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Output directory for generated BGInfo images.</maml:para>
+            <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -7594,7 +7594,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FilePath</maml:name>
           <maml:description>
-            <maml:para>Optional base wallpaper file path.</maml:para>
+            <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -7678,7 +7678,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name for the generated image.</maml:para>
+            <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -8323,7 +8323,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Output directory for generated BGInfo images.</maml:para>
+          <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -8383,7 +8383,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FilePath</maml:name>
         <maml:description>
-          <maml:para>Optional base wallpaper file path.</maml:para>
+          <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -8467,7 +8467,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name for the generated image.</maml:para>
+          <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>

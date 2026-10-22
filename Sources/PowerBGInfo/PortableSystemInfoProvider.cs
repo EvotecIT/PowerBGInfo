@@ -121,6 +121,8 @@ internal sealed class PortableSystemInfoProvider : IBgInfoSystemInfoProvider {
             foreach (var drive in DriveInfo.GetDrives()) {
                 try {
                     if (!drive.IsReady || drive.DriveType != DriveType.Fixed || drive.TotalSize <= 0) continue;
+                    // .NET classifies read-only Snap package images as Fixed too.
+                    if (string.Equals(drive.DriveFormat, "squashfs", StringComparison.OrdinalIgnoreCase)) continue;
                     var total = drive.TotalSize;
                     var free = drive.AvailableFreeSpace;
                     if (free < 0) continue;

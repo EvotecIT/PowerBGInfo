@@ -43,7 +43,7 @@ public partial class BgInfoGenerator
 
     private string GenerateCore(BgInfoConfiguration config)
     {
-        if (_wallpaperService is WallpaperService desktop) desktop.ValidateTarget(config);
+        var applyCurrentWallpaper = _wallpaperService is not WallpaperService desktop || desktop.ValidateTarget(config);
         Directory.CreateDirectory(config.ConfigurationDirectory);
 
         IReadOnlyList<BgInfoMonitor>? monitors = null;
@@ -67,16 +67,16 @@ public partial class BgInfoGenerator
             return monitors;
         }
 
-        if (TryGenerateWallpaperSlideshow(config, out var slideshowOutputPath))
+        if (TryGenerateWallpaperSlideshow(config, GetMonitors, applyCurrentWallpaper, out var slideshowOutputPath))
         {
             return slideshowOutputPath;
         }
 
         return GenerateImage(config, CurrentWallpaper ?? (index => config.Target == BgInfoTarget.File
-            ? null : WallpaperService.GetCurrentWallpaper(index)), GetMonitors, applyTargets: true);
+            ? null : WallpaperService.GetCurrentWallpaper(index)), GetMonitors, applyTargets: true, applyCurrentWallpaper);
     }
 
-    private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<IReadOnlyList<BgInfoMonitor>?> getMonitors, bool applyTargets)
+    private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<IReadOnlyList<BgInfoMonitor>?> getMonitors, bool applyTargets, bool applyCurrentWallpaper = true)
     {
         // Never draw on PowerBGInfo's own earlier output: that would stack the text on every run.
         var plannedOutputPath = string.IsNullOrWhiteSpace(config.OutputFileName) ? null : BuildOutputPath(config, null, false);
@@ -260,7 +260,8 @@ public partial class BgInfoGenerator
                 _wallpaperService.SetWallpaperForAllUsers(outputPath, config.WallpaperFit, config.IncludeDefaultUserProfile);
             }
 
-            ApplyWallpaper(config, outputPath);
+            if (applyCurrentWallpaper) ApplyWallpaper(config, outputPath);
+            else WriteWarning("All-user wallpaper profiles were updated. The current session has no available desktop and was not changed.");
         }
 
         if (applyTargets && config.Target.HasFlag(BgInfoTarget.LogonScreen))

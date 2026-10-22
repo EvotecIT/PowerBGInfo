@@ -268,7 +268,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationDirectory
-Output directory for generated BGInfo images.
+Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.
 
 ```yaml
 Type: String
@@ -348,7 +348,7 @@ Accept wildcard characters: False
 ```
 
 ### -FilePath
-Optional base wallpaper file path.
+Optional base wallpaper filesystem path, relative to the current PowerShell location.
 
 ```yaml
 Type: String
@@ -460,7 +460,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutputFileName
-Optional output file name for the generated image.
+Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
 
 ```yaml
 Type: String

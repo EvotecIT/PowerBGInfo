@@ -18,14 +18,14 @@ public class CmdletNewBGInfo : PSCmdlet {
     [Parameter(Mandatory = true, Position = 0)]
     public ScriptBlock BGInfoContent { get; set; } = null!;
 
-    /// <para>Optional base wallpaper file path. When omitted, current wallpaper is used.</para>
+    /// <para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</para>
     [Parameter]
     public string FilePath { get; set; } = string.Empty;
-    /// <para>Optional output file name for the generated image.</para>
+    /// <para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
     [Parameter]
     public string OutputFileName { get; set; } = string.Empty;
 
-    /// <para>Output directory for generated BGInfo images.</para>
+    /// <para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</para>
     [Parameter(Mandatory = true)]
     public string ConfigurationDirectory { get; set; } = string.Empty;
 
@@ -265,9 +265,9 @@ public class CmdletNewBGInfo : PSCmdlet {
 
         var config = new BgInfoConfiguration
         {
-            FilePath = FilePath,
-            OutputFileName = OutputFileName,
-            ConfigurationDirectory = ConfigurationDirectory,
+            FilePath = PowerShellFileSystemPath.Resolve(SessionState, FilePath, nameof(FilePath)),
+            OutputFileName = PowerShellFileSystemPath.ResolveOutputFileName(SessionState, OutputFileName),
+            ConfigurationDirectory = PowerShellFileSystemPath.Resolve(SessionState, ConfigurationDirectory, nameof(ConfigurationDirectory)),
             BackgroundColor = PowerShellColorConverter.ConvertOptional(BackgroundColor, nameof(BackgroundColor)),
             FontSize = FontSize,
             FontWeight = MyInvocation.BoundParameters.ContainsKey(nameof(FontWeight)) ? PowerShellTextStyleValidator.ValidateFontWeight(FontWeight, nameof(FontWeight)) : Bold.IsPresent ? 700 : 400,
@@ -392,7 +392,7 @@ public class CmdletNewBGInfo : PSCmdlet {
         }
 
         if (!string.IsNullOrWhiteSpace(JsonPath)) {
-            var fullJsonPath = SessionState.Path.GetUnresolvedProviderPathFromPSPath(JsonPath);
+            var fullJsonPath = PowerShellFileSystemPath.Resolve(SessionState, JsonPath, nameof(JsonPath));
             var directory = Path.GetDirectoryName(fullJsonPath);
             if (!string.IsNullOrWhiteSpace(directory)) {
                 Directory.CreateDirectory(directory);

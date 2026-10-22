@@ -9,15 +9,15 @@ namespace PowerBGInfo.PowerShell;
 [Cmdlet(VerbsCommon.New, "BGInfoConfiguration")]
 [OutputType(typeof(BgInfoConfiguration))]
 public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
-    /// <para>Optional base wallpaper file path.</para>
+    /// <para>Optional base wallpaper filesystem path, relative to the current PowerShell location.</para>
     [Parameter]
     public string FilePath { get; set; } = string.Empty;
 
-    /// <para>Optional output file name for the generated image.</para>
+    /// <para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
     [Parameter]
     public string OutputFileName { get; set; } = string.Empty;
 
-    /// <para>Output directory for generated BGInfo images.</para>
+    /// <para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</para>
     [Parameter]
     public string ConfigurationDirectory { get; set; } = string.Empty;
 
@@ -244,9 +244,9 @@ public sealed class CmdletNewBGInfoConfiguration : PSCmdlet {
     protected override void EndProcessing() {
         var config = new BgInfoConfiguration();
 
-        if (IsParameterBound(nameof(FilePath))) config.FilePath = FilePath;
-        if (IsParameterBound(nameof(OutputFileName))) config.OutputFileName = OutputFileName;
-        if (IsParameterBound(nameof(ConfigurationDirectory))) config.ConfigurationDirectory = ConfigurationDirectory;
+        if (IsParameterBound(nameof(FilePath))) config.FilePath = PowerShellFileSystemPath.Resolve(SessionState, FilePath, nameof(FilePath));
+        if (IsParameterBound(nameof(OutputFileName))) config.OutputFileName = PowerShellFileSystemPath.ResolveOutputFileName(SessionState, OutputFileName);
+        if (IsParameterBound(nameof(ConfigurationDirectory))) config.ConfigurationDirectory = PowerShellFileSystemPath.Resolve(SessionState, ConfigurationDirectory, nameof(ConfigurationDirectory));
         if (IsParameterBound(nameof(FontFamilyName))) config.FontFamilyName = FontFamilyName;
         if (IsParameterBound(nameof(Color))) config.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
         if (IsParameterBound(nameof(BackgroundColor))) config.BackgroundColor = PowerShellColorConverter.ConvertRequired(BackgroundColor, nameof(BackgroundColor));

@@ -179,7 +179,14 @@ internal static partial class BgInfoVariableResolver {
     internal static string? NormalizeVolumeIdentity(string? drive) {
         if (string.IsNullOrWhiteSpace(drive)) return null;
         if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) return NormalizeDriveLetter(drive);
-        var path = BgInfoPaths.GetIdentity(drive!.Trim());
+        var authoredPath = drive!.Trim();
+        string path;
+        try { path = BgInfoPaths.GetIdentity(authoredPath); }
+        catch (IOException) {
+            // Volume filtering is read-only; inaccessible directory listings must
+            // not abort a render. Image ownership keeps its separate fail-closed rule.
+            path = Path.GetFullPath(authoredPath);
+        }
         return path.Length > 1 ? path.TrimEnd(Path.DirectorySeparatorChar) : path;
     }
 

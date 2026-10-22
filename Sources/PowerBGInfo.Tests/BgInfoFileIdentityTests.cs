@@ -3,6 +3,75 @@ using ChartForgeX.Primitives;
 namespace PowerBGInfo.Tests;
 
 public sealed class BgInfoFileIdentityTests {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void SymbolicAliasesPreserveTheOriginalAcrossRenderingRuns(bool backgroundImage, bool linkedTargetParent) {
+        if (OperatingSystem.IsWindows()) return; // Windows junction acceptance is a native qualification lane.
+        using var folder = new FixtureFolder();
+        var images = Path.Combine(folder.Path, "images");
+        Directory.CreateDirectory(images);
+        var original = folder.CreateImage(Path.Combine("images", "photo.png"));
+        var pixels = Pixels(original);
+        var aliasDirectory = Path.Combine(folder.Path, "alias");
+        var target = images;
+        if (linkedTargetParent) {
+            var parentAlias = Path.Combine(folder.Path, "parent");
+            Directory.CreateSymbolicLink(parentAlias, folder.Path);
+            target = Path.Combine(parentAlias, "images");
+        }
+        Directory.CreateSymbolicLink(aliasDirectory, target);
+        var output = Path.Combine(aliasDirectory, "photo.png");
+        Assert.True(BgInfoPaths.AreSame(original, output));
+        Assert.Equal(BgInfoPaths.Comparer.GetHashCode(original), BgInfoPaths.Comparer.GetHashCode(output));
+
+        string Render() {
+            var config = new BgInfoConfiguration {
+                FilePath = backgroundImage ? string.Empty : original,
+                Background = backgroundImage ? new BgInfoBackground { Width = 320, Height = 180, ImagePath = original } : null,
+                ConfigurationDirectory = aliasDirectory, OutputFileName = "photo.png", Target = BgInfoTarget.File,
+                Color = ChartColors.White, FontSize = 18
+            };
+            config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Label, Name = "Safe original" });
+            return new BgInfoGenerator(new ImageService(), new FakeWallpaperService()).Generate(config);
+        }
+        var first = Render();
+        var rendered = Pixels(first);
+        var backup = Assert.Single(Directory.GetFiles(images, "*.PowerBGInfo-original-*.png"));
+        Assert.Equal(pixels, Pixels(backup));
+        Assert.Equal(rendered, Pixels(Render()));
+        Assert.True(BgInfoOutputRegistry.TryGetSource(first, out var source));
+        Assert.True(BgInfoPaths.AreSame(backup, source!));
+    }
+
+    [Fact]
+    public void ReplacingAHardLinkedOutputKeepsItsSourceImageUnchanged() {
+        if (OperatingSystem.IsWindows()) return;
+        using var folder = new FixtureFolder();
+        var original = folder.CreateImage("photo.png");
+        var pixels = Pixels(original);
+        var output = Path.Combine(folder.Path, "output.png");
+        Assert.Equal(0, CreateHardLink(original, output));
+        var config = new BgInfoConfiguration {
+            FilePath = original, ConfigurationDirectory = folder.Path, OutputFileName = "output.png",
+            Target = BgInfoTarget.File, Color = ChartColors.White, FontSize = 18
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Label, Name = "Independent output" });
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService());
+        var first = generator.Generate(config);
+        var rendered = Pixels(first);
+        Assert.Equal(pixels, Pixels(original));
+        Assert.NotEqual(pixels, rendered);
+        Assert.Equal(rendered, Pixels(generator.Generate(config)));
+        Assert.Equal(pixels, Pixels(original));
+        Assert.Empty(Directory.GetFiles(folder.Path, "*.tmp"));
+    }
+
+    [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]
+    private static extern int CreateHardLink(string existingPath, string newPath);
+
     [Fact]
     public void PlannedOutputSetRemainsValidWhenADifferentlyCasedFileIsCreated() {
         using var folder = new FixtureFolder();
@@ -110,6 +179,22 @@ public sealed class BgInfoFileIdentityTests {
         Assert.Equal(expectedSame, string.Equals(BgInfoVariableResolver.NormalizeVolumeIdentity(folder.Path),
             BgInfoVariableResolver.NormalizeVolumeIdentity(alias), StringComparison.Ordinal));
         Assert.False(BgInfoPaths.AreSame(Path.Combine(folder.Path, "not-created.png"), Path.Combine(folder.Path, "NOT-CREATED.png")));
+    }
+
+    [Fact]
+    public void ReadOnlyVolumeFilteringDoesNotRequireListingEveryParentDirectory() {
+        if (OperatingSystem.IsWindows()) return;
+        using var folder = new FixtureFolder();
+        var parent = Path.Combine(folder.Path, "searchable-only");
+        var child = Path.Combine(parent, "volume");
+        Directory.CreateDirectory(child);
+        var originalMode = File.GetUnixFileMode(parent);
+        try {
+            File.SetUnixFileMode(parent, UnixFileMode.UserExecute);
+            Assert.Equal(child, BgInfoVariableResolver.NormalizeVolumeIdentity(child));
+        } finally {
+            File.SetUnixFileMode(parent, originalMode);
+        }
     }
 
     [Fact]

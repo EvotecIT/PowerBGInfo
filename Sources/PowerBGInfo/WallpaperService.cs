@@ -61,20 +61,27 @@ public class WallpaperService : IWallpaperService
     }
     private readonly PortableDesktopService _desktop = new();
 
-    internal void ValidateTarget(BgInfoConfiguration config) {
+    internal bool ValidateTarget(BgInfoConfiguration config) {
+        if (config.Target == BgInfoTarget.File) return false;
+        var capabilities = _desktop.GetCapabilities();
+        return ValidateTarget(config, RuntimeInformation.IsOSPlatform(OSPlatform.Windows), capabilities.CanSetWallpaper, capabilities.Message);
+    }
+
+    /// <summary>Separates Windows profile policy from the current session's interactive desktop.</summary>
+    internal static bool ValidateTarget(BgInfoConfiguration config, bool isWindows, bool canSetWallpaper, string unavailableReason) {
         // File previews may retain inactive desktop options from a saved Windows
         // configuration, including when the CLI or Invoke-BGInfo uses NoApply.
-        if (config.Target == BgInfoTarget.File) return;
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+        if (config.Target == BgInfoTarget.File) return false;
+        if (!isWindows &&
             (config.Target.HasFlag(BgInfoTarget.LogonScreen) || config.ApplyToAllUsers)) {
             throw new PlatformNotSupportedException("Lock-screen and all-user wallpaper targets are supported only on Windows. Use Wallpaper for the current desktop or File for image generation.");
         }
         if (config.Target.HasFlag(BgInfoTarget.Wallpaper)) {
-            var capabilities = _desktop.GetCapabilities();
-            if (!capabilities.CanSetWallpaper) {
-                throw new PlatformNotSupportedException($"Desktop wallpaper is unavailable: {capabilities.Message} Use Target File to render without a desktop session.");
+            if (!canSetWallpaper && !(isWindows && config.ApplyToAllUsers)) {
+                throw new PlatformNotSupportedException($"Desktop wallpaper is unavailable: {unavailableReason} Use Target File to render without a desktop session.");
             }
         }
+        return config.Target.HasFlag(BgInfoTarget.Wallpaper) && canSetWallpaper;
     }
 
     internal static string? GetCurrentWallpaper(int monitorIndex) {

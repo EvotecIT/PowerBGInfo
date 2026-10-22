@@ -28,7 +28,7 @@ Invoke-BGInfo -Path 'C:\Path'
 ## PARAMETERS
 
 ### -ConfigurationDirectory
-Override configuration output directory.
+Override configuration output directory, relative to the current PowerShell location.
 
 ```yaml
 Type: String
@@ -76,7 +76,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutputFileName
-Override output file name.
+Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
 
 ```yaml
 Type: String
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-Path to the JSON configuration file.
+Filesystem path to the JSON configuration file, relative to the current PowerShell location.
 
 ```yaml
 Type: String
