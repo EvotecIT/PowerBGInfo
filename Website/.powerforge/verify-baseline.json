@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "generatedAtUtc": "2026-10-22T17:56:21.795312+00:00",
+  "warningCount": 1,
+  "warningKeys": [
+    "TOC for collection \u0027docs\u0027 is missing 12 page(s): /docs/configuration-manager/, /docs/deployment/, /docs/group-policy/, /docs/install/, /docs/intune/ ..."
+  ]
+}

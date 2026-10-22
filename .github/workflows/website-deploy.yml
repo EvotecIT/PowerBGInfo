@@ -1,0 +1,58 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  push:
+    branches: [v2-speedygonzales]
+    paths:
+      - "Website/**"
+      - ".github/workflows/website-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: powerbginfo-website-production
+  cancel-in-progress: false
+
+jobs:
+  website-deploy:
+    if: ${{ github.ref == 'refs/heads/v2-speedygonzales' }}
+    permissions:
+      actions: write
+      contents: read
+      deployments: read
+      packages: read
+      pages: write
+      id-token: write
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@7cbb9594e6590b41f0d20f528550848c519855e8
+    with:
+      website_root: Website
+      pipeline_config: Website/pipeline.json
+      powerforge_lock_path: Website/.powerforge/engine-lock.json
+      source_ref: ${{ github.sha }}
+      site_output_path: Website/_site
+      engine_mode: source
+      runner_labels_json: '["ubuntu-latest"]'
+      build_timeout_minutes: 60
+      report_artifact_name: powerbginfo-website-deploy-reports
+      deployment_target: github-pages
+
+  site-policy:
+    needs: website-deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Apply managed Cloudflare site policy
+        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@7cbb9594e6590b41f0d20f528550848c519855e8
+        with:
+          site-config: Website/site.json
+          checkout-caller: "false"
+          zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

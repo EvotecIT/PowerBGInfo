@@ -14,23 +14,25 @@
     before it (or its "base"), so the page can show only the lines that changed. The snippets under
     Website/powerbginfo/sources/ are parsed, not run, and copied into the data file.
 
-    -RepositoryPath and -Ref name the PowerBGInfo commit the module was built from. The script checks that the
+    RepositoryPath defaults to this repository. Ref names the PowerBGInfo commit to render.
+    Without ModulePath, the script exports that commit to an owned temporary source snapshot and builds there.
+    ModulePath can name a separate source snapshot; do not point it at the website working tree. The script checks that the
     module's PowerBGInfo.psd1, PowerBGInfo.psm1 and tracked Sources files match that commit, then builds the
     net8.0-windows development assembly before importing the module. This prevents a stale DLL in the scratch module
     from rendering steps while the data file claims a newer source commit. Each run uses the en-US culture and sets
     COMPUTERNAME to the sample name the steps use, so a render never carries the name of the machine that produced it.
 
     The script owns static/powerbginfo/build/ and stages new PNG and JSON output before promoting both together.
-    On failure it restores the previous output. It never changes the PowerBGInfo repository.
+    On failure it restores the previous website output. It never changes the source repository.
+    Rendering requires Windows and PowerShell 7.4 or later.
 
 .EXAMPLE
-    pwsh ./Website/build/Render-PowerBGInfoSteps.ps1 -ModulePath D:\Scratch\PowerBGInfo\PowerBGInfo.psd1 `
-        -RepositoryPath C:\Support\GitHub\PowerBGInfo -Ref cd0c215997fc4c9dcd170d6b49d79edd2d27b74e
+    pwsh ./Website/build/Render-PowerBGInfoSteps.ps1 -Ref v2.0.6
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)] [string] $ModulePath,
-    [Parameter(Mandatory)] [string] $RepositoryPath,
+    [string] $ModulePath,
+    [string] $RepositoryPath = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)),
     [Parameter(Mandatory)] [string] $Ref,
     # Optional ChartForgeX project used to rebuild PowerBGInfo against a local development source.
     [string] $ChartForgeXProjectPath,
@@ -48,8 +50,26 @@ $sampleComputerName = 'WS-FIN-0042'
 
 $commit = (git -C $RepositoryPath rev-parse --verify "$Ref^{commit}").Trim()
 if ($LASTEXITCODE -ne 0 -or -not $commit) { throw "Cannot resolve '$Ref' in $RepositoryPath." }
+$snapshotRoot = $null
+try {
+if ([string]::IsNullOrWhiteSpace($ModulePath)) {
+    $snapshotRoot = Join-Path ([System.IO.Path]::GetTempPath()) "PowerBGInfo-source-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $snapshotRoot | Out-Null
+    $archivePath = Join-Path $snapshotRoot 'source.tar'
+    git -C $RepositoryPath archive --format=tar "--output=$archivePath" $commit
+    if ($LASTEXITCODE -ne 0) { throw "Cannot export PowerBGInfo source at $commit." }
+    tar -xf $archivePath -C $snapshotRoot
+    if ($LASTEXITCODE -ne 0) { throw "Cannot extract PowerBGInfo source at $commit." }
+    Remove-Item -LiteralPath $archivePath
+    $ModulePath = Join-Path $snapshotRoot 'PowerBGInfo.psd1'
+}
 $ModulePath = (Resolve-Path -LiteralPath $ModulePath).Path
 $moduleRoot = Split-Path -Parent $ModulePath
+$sourceRepositoryRoot = (git -C $RepositoryPath rev-parse --show-toplevel).Trim()
+if ($LASTEXITCODE -ne 0) { throw "Cannot locate the PowerBGInfo repository root." }
+if ([System.IO.Path]::GetFullPath($moduleRoot).TrimEnd('\', '/') -eq [System.IO.Path]::GetFullPath($sourceRepositoryRoot).TrimEnd('\', '/')) {
+    throw 'ModulePath must be an isolated source snapshot. Omit it to export the recorded commit without building in the source repository.'
+}
 
 function Get-Text([string] $Text) { ($Text.Replace("`r", '').TrimStart([char] 0xFEFF)).TrimEnd() }
 
@@ -112,13 +132,14 @@ while ($directory) {
 if ($externalBuildInputs.Count) {
     throw "The build depends on inputs outside the recorded module snapshot: [$($externalBuildInputs -join ', ')]. Pass a repository-root snapshot that includes these inputs."
 }
+if (-not $IsWindows) { throw 'PowerBGInfo step rendering requires Windows; the committed renders are retained on other platforms.' }
 Write-Host "Building PowerBGInfo $($commit.Substring(0, 7)) for the step renders..." -ForegroundColor Cyan
 Push-Location $moduleRoot
 try {
     $buildArguments = @(
         'build', 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj',
         '--configuration', 'Debug', '--framework', 'net8.0-windows', '--no-incremental',
-        '--property:GeneratePackageOnBuild=false'
+        '--property:GeneratePackageOnBuild=false', '-nodeReuse:false', '--disable-build-servers'
     )
     if ($ChartForgeXProjectPath) { $buildArguments += "--property:ChartForgeXProjectPath=$ChartForgeXProjectPath" }
     dotnet @buildArguments
@@ -305,5 +326,11 @@ Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $(@($steps).Count) steps, $(
 } finally {
     if (-not $keepStaging -and (Test-Path -LiteralPath $stagingRoot -PathType Container)) {
         [System.IO.Directory]::Delete($stagingRoot, $true)
+    }
+}
+
+} finally {
+    if ($snapshotRoot -and (Test-Path -LiteralPath $snapshotRoot -PathType Container)) {
+        [System.IO.Directory]::Delete($snapshotRoot, $true)
     }
 }

@@ -2,7 +2,22 @@
   "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
   "cache": true,
   "cachePath": "./.powerforge/pipeline-cache.json",
+  "profile": true,
+  "profilePath": "./_reports/pipeline-profile.json",
   "steps": [
+    {
+      "task": "engine-lock",
+      "id": "engine-lock-ci",
+      "modes": [
+        "ci"
+      ],
+      "operation": "verify",
+      "path": "./.powerforge/engine-lock.json",
+      "failOnDrift": true,
+      "requireImmutableRef": true,
+      "reportPath": "./_reports/engine-lock.json",
+      "summaryPath": "./_reports/engine-lock.md"
+    },
     {
       "task": "build",
       "id": "build-site",
@@ -21,30 +36,202 @@
       "jsonOut": "./_site/sitemap/index.json"
     },
     {
+      "task": "seo-doctor",
+      "id": "seo-doctor-ci",
+      "dependsOn": "build-site",
+      "modes": [
+        "ci"
+      ],
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/seo-baseline.json",
+      "failOnNewIssues": true,
+      "checkContentLeaks": true,
+      "requireCanonical": true,
+      "requireHreflang": false,
+      "requireHreflangXDefault": false,
+      "reportPath": "./_reports/seo-doctor.json",
+      "summaryPath": "./_reports/seo-doctor.md"
+    },
+    {
       "task": "verify",
-      "id": "verify",
+      "id": "verify-dev",
       "dependsOn": "build-site",
       "config": "./site.json",
       "siteRoot": "./_site",
-      "warningPreviewCount": 20,
-      "errorPreviewCount": 20
+      "skipModes": [
+        "ci"
+      ],
+      "warningPreviewCount": 5,
+      "errorPreviewCount": 5
+    },
+    {
+      "task": "verify",
+      "id": "verify-ci",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "modes": [
+        "ci"
+      ],
+      "baseline": "./.powerforge/verify-baseline.json",
+      "failOnNewWarnings": true,
+      "failOnNavLint": true,
+      "failOnThemeContract": true,
+      "warningPreviewCount": 10,
+      "errorPreviewCount": 10
     },
     {
       "task": "audit",
-      "id": "audit",
+      "id": "audit-ci",
       "dependsOn": "build-site",
       "siteRoot": "./_site",
+      "modes": [
+        "ci"
+      ],
       "summary": true,
+      "sarif": true,
+      "baseline": "./.powerforge/audit-baseline.json",
+      "failOnNewIssues": true,
       "requiredRoutes": "/404.html,/,/gallery/,/build/,/platforms/,/desktopmanager/,/informationbox/,/docs/,/docs/install/,/docs/deployment/,/docs/task-scheduler/,/docs/group-policy/,/docs/intune/,/docs/configuration-manager/,/docs/remote-desktop/,/docs/security/,/docs/troubleshooting/",
       "requireExplicitChecks": true,
       "checkSeoMeta": false,
+      "checkNetworkHints": true,
+      "checkRenderBlockingResources": true,
       "checkHeadingOrder": true,
       "checkLinkPurposeConsistency": true,
       "checkMediaEmbeds": true,
+      "checkAgentContentSecurity": false,
       "rendered": false,
+      "renderedMaxPages": 2,
+      "renderedEnsureInstalled": true,
+      "renderedInclude": "index.html,404.html",
+      "maxHeadBlockingResources": 6
+    },
+    {
+      "task": "llms",
+      "id": "build-llms",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "contentKind": "Site",
+      "name": "PowerBGInfo desktop tools",
+      "description": "Documentation and examples for PowerBGInfo, DesktopManager and InformationBox.",
+      "discovery": "./config/llms-discovery.md"
+    },
+    {
+      "task": "agent-ready",
+      "id": "agent-ready-prepare",
+      "dependsOn": [
+        "sitemap",
+        "build-llms"
+      ],
+      "operation": "prepare",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "failOnFailures": true
+    },
+    {
+      "task": "optimize",
+      "id": "optimize-site",
+      "dependsOn": [
+        "agent-ready-prepare",
+        "seo-doctor-ci",
+        "verify-ci",
+        "audit-ci"
+      ],
+      "modes": [
+        "ci"
+      ],
+      "siteRoot": "./_site",
+      "config": "./site.json",
+      "criticalCss": "./themes/powerbginfo/critical.css",
+      "minifyHtml": true,
+      "minifyCss": true,
+      "minifyJs": true,
+      "optimizeImages": true,
+      "imageInclude": [
+        "powerbginfo/**"
+      ],
+      "imageGenerateWebp": true,
+      "imagePreferNextGen": true,
+      "imageWidths": [
+        480,
+        960,
+        1440
+      ],
+      "imageQuality": 86,
+      "imageFailOnFailures": true
+    },
+    {
+      "task": "seo-doctor",
+      "id": "seo-doctor-optimized-ci",
+      "dependsOn": "optimize-site",
+      "modes": [
+        "ci"
+      ],
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/seo-baseline.json",
+      "failOnNewIssues": true,
+      "checkContentLeaks": true,
+      "requireCanonical": true,
+      "requireHreflang": false,
+      "requireHreflangXDefault": false,
+      "reportPath": "./_reports/seo-doctor-optimized.json",
+      "summaryPath": "./_reports/seo-doctor-optimized.md"
+    },
+    {
+      "task": "verify",
+      "id": "verify-optimized-ci",
+      "dependsOn": "optimize-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "modes": [
+        "ci"
+      ],
+      "baseline": "./.powerforge/verify-baseline.json",
+      "failOnNewWarnings": true,
+      "failOnNavLint": true,
+      "failOnThemeContract": true,
+      "warningPreviewCount": 10,
+      "errorPreviewCount": 10
+    },
+    {
+      "task": "audit",
+      "id": "audit-optimized-ci",
+      "dependsOn": "optimize-site",
+      "siteRoot": "./_site",
+      "modes": [
+        "ci"
+      ],
+      "summary": true,
+      "sarif": true,
+      "baseline": "./.powerforge/audit-baseline.json",
+      "failOnNewIssues": true,
+      "requiredRoutes": "/404.html,/,/gallery/,/build/,/platforms/,/desktopmanager/,/informationbox/,/docs/,/docs/install/,/docs/deployment/,/docs/task-scheduler/,/docs/group-policy/,/docs/intune/,/docs/configuration-manager/,/docs/remote-desktop/,/docs/security/,/docs/troubleshooting/",
+      "requireExplicitChecks": true,
+      "checkSeoMeta": false,
       "checkNetworkHints": true,
       "checkRenderBlockingResources": true,
-      "checkAgentContentSecurity": false
+      "checkHeadingOrder": true,
+      "checkLinkPurposeConsistency": true,
+      "checkMediaEmbeds": true,
+      "checkAgentContentSecurity": false,
+      "rendered": false,
+      "renderedMaxPages": 2,
+      "renderedEnsureInstalled": true,
+      "renderedInclude": "index.html,404.html",
+      "maxHeadBlockingResources": 6
+    },
+    {
+      "task": "agent-ready",
+      "id": "agent-ready-verify",
+      "dependsOn": "optimize-site",
+      "modes": [
+        "ci"
+      ],
+      "operation": "verify",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "failOnFailures": true
     }
   ]
 }

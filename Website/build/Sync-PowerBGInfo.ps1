@@ -22,15 +22,16 @@
 
     The script owns the PNG files in static/powerbginfo/ and static/powerbginfo/features/ and the scripts in
     static/powerbginfo/scripts/. It stages the complete snapshot and promotes it after validation, restoring the
-    previous files on failure. It never changes the PowerBGInfo repository; it only reads files with git show.
+    previous files on failure. It only reads module sources with git show; it changes the website snapshot in this repository.
+    RepositoryPath defaults to this repository. Ref must match both render manifests exactly.
 
 .EXAMPLE
-    pwsh ./Website/build/Sync-PowerBGInfo.ps1 -RepositoryPath C:\Support\GitHub\PowerBGInfo `
-        -Ref cd0c215997fc4c9dcd170d6b49d79edd2d27b74e -RenderPath C:\Temp\Showcase -FeaturePath C:\Temp\Features
+    pwsh ./Website/build/Sync-PowerBGInfo.ps1 -Ref v2.0.6 `
+        -RenderPath ./artifacts/showcase -FeaturePath ./artifacts/features
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)] [string] $RepositoryPath,
+    [string] $RepositoryPath = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)),
     [Parameter(Mandatory)] [string] $Ref,
     [Parameter(Mandatory)] [string] $RenderPath,
     [Parameter(Mandatory)] [string] $FeaturePath,
@@ -252,7 +253,7 @@ $regionScript = 'Examples/Features/Feature.Regions.ps1'
 $themeScript = 'Examples/Features/Feature.Themes.ps1'
 
 # Import-PowerShellDataFile reads the manifest as data only; it needs a file, so stage the committed text in TEMP.
-$manifestCopy = Join-Path ([System.IO.Path]::GetTempPath()) "PowerBGInfo-$($commit.Substring(0, 7)).psd1"
+$manifestCopy = Join-Path ([System.IO.Path]::GetTempPath()) "PowerBGInfo-$([guid]::NewGuid().ToString('N')).psd1"
 Set-Content -LiteralPath $manifestCopy -Value (Get-SourceText 'PowerBGInfo.psd1') -Encoding utf8NoBOM
 try { $module = Import-PowerShellDataFile -LiteralPath $manifestCopy } finally { Remove-Item -LiteralPath $manifestCopy -Force }
 

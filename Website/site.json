@@ -126,13 +126,17 @@
     "Robots": true,
     "SecurityHeaders": {
       "Enabled": true,
-      "ContentSecurityPolicyValue": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+      "ContentSecurityPolicyValue": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'",
+      "Hsts": false
     },
     "ContentSignals": {
       "Enabled": true,
       "Search": true,
       "AiInput": true,
       "AiTrain": false
+    },
+    "ApiCatalog": {
+      "Enabled": false
     }
   },
   "EditLinks": {
