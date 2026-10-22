@@ -1,0 +1,9 @@
+<section class="pb-surfaces" aria-label="Ways to use ChartForgeX">
+  {{~ for s in data.home.surfaces2 ~}}
+  <a class="pb-surface pb-surface--{{ s.color }}" href="{{ s.url }}">
+    <strong>{{ s.name }}</strong>
+    <span>{{ if s.id == "powershell" && data.imageplayground }}ImagePlayground brings {{ data.imageplayground.module.chartForgeXCommandCount }} ChartForgeX commands to PowerShell 5.1 and 7.{{ else }}{{ s.description }}{{ end }}</span>
+    <em>{{ s.action }}</em>
+  </a>
+  {{~ end ~}}
+</section>

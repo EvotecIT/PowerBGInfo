@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="pb-body pb-body--home{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## Home: a monitor showing real PowerBGInfo renders, install steps per platform from data/platforms.json, the three
+     products from data/products.json, the scenario wall, then the getting-started steps (this page's Markdown) and
+     the production routes from the shared PowerBGInfo story partials. ## ~}}
+{{ include "pbg/setup" }}
+{{~ home = data.home; plat = data.platforms; fam = data.products
+    screens = []; for id in home.screens; for s in show.scenarios; if s.id == id; screens = screens | array.add s; end; end; end
+    first = screens[0] ~}}
+<main id="main" class="pb-main pb-home">
+  <header class="pb-stage pb-tone-dark pb-desk">
+    <div class="pb-stage__inner">
+      <div class="pb-stage__text">
+        <p class="pb-desk__eyebrow">Desktop and lock-screen wallpapers from PowerShell</p>
+        <h1>{{ home.headline }}</h1>
+        <p class="pb-stage__lede">{{ home.lede }}</p>
+        <div class="pb-desk__tabs" data-pb-tabs>
+          <div class="pb-seg pb-desk__seg" role="tablist" aria-label="Platform">
+            {{~ for p in plat.platforms ~}}
+            <button type="button" role="tab" id="pb-plat-{{ p.id }}-tab" aria-controls="pb-plat-{{ p.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}">{{ p.title }}</button>
+            {{~ end ~}}
+          </div>
+          {{~ for p in plat.platforms ~}}
+          <div class="pb-desk__panel" role="tabpanel" id="pb-plat-{{ p.id }}" aria-labelledby="pb-plat-{{ p.id }}-tab"{{ if !for.first }} hidden{{ end }}>
+            <pre class="pb-desk__term"><code>{{~ for line in p.install ~}}{{ if !(line | string.starts_with " ") && !(line | string.starts_with "}") }}<span class="pb-desk__prompt" aria-hidden="true">{{ p.prompt }} </span>{{ end }}{{ line | html.escape }}
+{{ end }}{{ if p.comment != "" }}<span class="pb-desk__comment"># {{ p.comment }}</span>{{ end }}</code></pre>
+            <p class="pb-desk__status"><span class="pb-status pb-status--{{ p.status }}">{{ plat.statusLabels[p.status] }}</span> {{ p.summary }}</p>
+          </div>
+          {{~ end ~}}
+        </div>
+        <div class="pb-stage__actions">
+          <a class="pb-btn pb-btn--glow" href="/docs/install/">Install PowerBGInfo</a>
+          <a class="pb-btn pb-btn--ghost" href="/gallery/">See all {{ show.scenarios.size }} wallpapers</a>
+        </div>
+      </div>
+      <div class="pb-stage__art">
+        <figure class="pb-monitor" data-pbg-monitor>
+          <div class="pb-monitor__screen">
+            <img data-pbg-screen src="{{ first.renders.dark.url }}" width="{{ first.renders.dark.width }}" height="{{ first.renders.dark.height }}" fetchpriority="high" decoding="async" alt="{{ pbg.alts[first.id] }}" />
+          </div>
+          <div class="pb-monitor__stand" aria-hidden="true"></div>
+          <figcaption class="pb-monitor__caption">
+            <span class="pb-monitor__file" data-pbg-screen-file>{{ first.renders.dark.file }}</span>
+            <span class="pb-monitor__scenes" aria-label="Show another wallpaper">
+              {{~ for s in screens ~}}
+              <a href="/gallery/#{{ s.id }}" data-pbg-scene aria-pressed="{{ if for.first }}true{{ else }}false{{ end }}" data-src="{{ s.renders.dark.url }}" data-file="{{ s.renders.dark.file }}" data-alt="{{ pbg.alts[s.id] | html.escape }}">{{ s.title }}</a>
+              {{~ end ~}}
+            </span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </header>
+
+  <section class="pb-section pb-tools" aria-labelledby="pb-tools-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-tools-title">{{ fam.family.title }}</h2>
+        <p class="pb-lede">{{ fam.family.body }}</p>
+      </div>
+      <ul class="pb-tools__list">
+        {{~ for p in fam.products ~}}
+        <li class="pb-prodcard pb-prodcard--{{ p.id }}">
+          <span class="pb-prodcard__verb">{{ p.verb }}</span>
+          <h3><a href="{{ p.url }}">{{ p.title }}</a></h3>
+          <p>{{ p.summary }}</p>
+          <dl class="pb-prodcard__facts">
+            <div><dt>For</dt><dd>{{ p.for }}</dd></div>
+            <div><dt>Ships as</dt><dd>{{ p.ships }}</dd></div>
+            <div><dt>Runs on</dt><dd>{{ p.runs }}</dd></div>
+          </dl>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pb-section pb-wall" aria-labelledby="pb-wall-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-wall-title">{{ home.wall.title }}</h2>
+        <p class="pb-lede">{{ home.wall.body }}</p>
+      </div>
+      <ul class="pb-wall__grid">
+        {{~ for id in home.wall.scenarios; for s in show.scenarios; if s.id == id ~}}
+        <li class="pb-wall__item">
+          <a href="/gallery/#{{ s.id }}">
+            <span class="pb-wall__shot">
+              <img class="pb-only-light" src="{{ s.renders.light.url }}" width="{{ s.renders.light.width }}" height="{{ s.renders.light.height }}" loading="lazy" decoding="async" alt="" />
+              <img class="pb-only-dark" src="{{ s.renders.dark.url }}" width="{{ s.renders.dark.width }}" height="{{ s.renders.dark.height }}" loading="lazy" decoding="async" alt="" />
+            </span>
+            <span class="pb-wall__title">{{ s.title }}</span>
+            <span class="pb-wall__purpose">{{ s.purpose }}</span>
+          </a>
+        </li>
+        {{~ end; end; end ~}}
+      </ul>
+      <p class="pb-section__more"><a class="pb-btn pb-btn--quiet" href="/gallery/">Open the gallery</a> <a class="pb-btn pb-btn--quiet" href="/build/">Build one step by step</a></p>
+    </div>
+  </section>
+
+  {{ include "pbg/start" }}
+  {{ include "pbg/production" }}
+
+  <section class="pb-section pb-platstrip" aria-labelledby="pb-platstrip-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-platstrip-title">{{ home.platforms.title }}</h2>
+        <p class="pb-lede">{{ home.platforms.body }}</p>
+      </div>
+      <ul class="pb-platstrip__list">
+        {{~ for p in plat.platforms ~}}
+        <li>
+          <span class="pb-platstrip__name">{{ p.title }}</span>
+          <span class="pb-status pb-status--{{ p.status }}">{{ plat.statusLabels[p.status] }}</span>
+          <span class="pb-platstrip__summary">{{ p.summary }}</span>
+        </li>
+        {{~ end ~}}
+      </ul>
+      <p class="pb-section__more"><a class="pb-link" href="/platforms/">What works on each platform</a></p>
+    </div>
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

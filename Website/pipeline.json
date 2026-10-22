@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
+  "cache": true,
+  "cachePath": "./.powerforge/pipeline-cache.json",
+  "steps": [
+    {
+      "task": "build",
+      "id": "build-site",
+      "config": "./site.json",
+      "out": "./_site",
+      "clean": true
+    },
+    {
+      "task": "sitemap",
+      "id": "sitemap",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "baseUrl": "https://powerbginfo.com",
+      "json": true,
+      "jsonOut": "./_site/sitemap/index.json"
+    },
+    {
+      "task": "verify",
+      "id": "verify",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "warningPreviewCount": 20,
+      "errorPreviewCount": 20
+    },
+    {
+      "task": "audit",
+      "id": "audit",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "summary": true,
+      "requiredRoutes": "/404.html,/,/gallery/,/build/,/platforms/,/desktopmanager/,/informationbox/,/docs/,/docs/install/,/docs/deployment/,/docs/task-scheduler/,/docs/group-policy/,/docs/intune/,/docs/configuration-manager/,/docs/remote-desktop/,/docs/security/,/docs/troubleshooting/",
+      "requireExplicitChecks": true,
+      "checkSeoMeta": false,
+      "checkHeadingOrder": true,
+      "checkLinkPurposeConsistency": true,
+      "checkMediaEmbeds": true,
+      "rendered": false,
+      "checkNetworkHints": true,
+      "checkRenderBlockingResources": true,
+      "checkAgentContentSecurity": false
+    }
+  ]
+}

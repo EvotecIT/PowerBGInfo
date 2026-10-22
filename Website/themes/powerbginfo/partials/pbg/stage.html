@@ -1,0 +1,24 @@
+  {{~ capture stage_side ~}}
+  <dl class="pb-stage__stats">
+    <div><dt>Scenarios</dt><dd>{{ show.scenarios.size }}</dd></div>
+    <div><dt>Theme presets</dt><dd>{{ show.themes.presets.size }}</dd></div>
+    <div><dt>Cmdlets</dt><dd>{{ show.module.cmdletCount }}</dd></div>
+  </dl>
+  <div class="pb-install pb-stage__install">
+    <code><span class="pb-install__prompt" aria-hidden="true">PS&gt;</span> {{ pbg.start.install }}</code>
+    <button type="button" class="pb-copy" data-pb-copy="{{ pbg.start.install }}">Copy</button>
+  </div>
+  <div class="pb-stage__actions">
+    <a class="pb-btn pb-btn--glow" href="#scenarios">See all {{ show.scenarios.size }} wallpapers</a>
+    <a class="pb-btn pb-btn--ghost" href="#build">Build one yourself</a>
+  </div>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  {{~ r = hero.renders.dark ~}}
+  <figure class="pb-output">
+    <figcaption><span class="pb-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+    <img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 900px) 100vw, 680px" fetchpriority="high" decoding="async" alt="{{ pbg.hero.alt }}" />
+  </figure>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = pbg.hero.lede ~}}
+  {{ include "stage" }}

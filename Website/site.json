@@ -1,0 +1,542 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.sitespec.schema.json",
+  "SchemaVersion": 1,
+  "Name": "PowerBGInfo",
+  "BaseUrl": "https://powerbginfo.com",
+  "DefaultTheme": "powerbginfo",
+  "ThemeEngine": "scriban",
+  "Features": [
+    "docs",
+    "notFound"
+  ],
+  "TrailingSlash": "always",
+  "ContentRoot": "content",
+  "ThemesRoot": "themes",
+  "DataRoot": "data",
+  "StaticAssets": [
+    {
+      "Source": "static"
+    }
+  ],
+  "Collections": [
+    {
+      "Name": "pages",
+      "Input": "content/pages",
+      "Output": "/",
+      "DefaultLayout": "page",
+      "UseToc": false,
+      "Include": [
+        "*.md",
+        "**/*.md"
+      ],
+      "Seo": {
+        "Templates": {
+          "Title": "{title} | {site}"
+        }
+      }
+    },
+    {
+      "Name": "docs",
+      "Input": "content/project-docs/docs",
+      "Output": "/docs",
+      "DefaultLayout": "docs",
+      "UseToc": true,
+      "Include": [
+        "*.md",
+        "**/*.md"
+      ],
+      "Seo": {
+        "Templates": {
+          "Title": "{title} | {site} documentation"
+        }
+      }
+    },
+    {
+      "Name": "examples",
+      "Input": "content/examples",
+      "Output": "/examples",
+      "DefaultLayout": "docs",
+      "UseToc": false,
+      "Include": [
+        "*.md",
+        "**/*.md"
+      ],
+      "Seo": {
+        "Templates": {
+          "Title": "{title} | {site}"
+        }
+      }
+    }
+  ],
+  "Head": {
+    "Links": [
+      {
+        "Rel": "icon",
+        "Href": "/favicon.svg",
+        "Type": "image/svg+xml"
+      },
+      {
+        "Rel": "apple-touch-icon",
+        "Href": "/apple-touch-icon.png"
+      },
+      {
+        "Rel": "preload",
+        "Href": "/fonts/archivo-latin.woff2",
+        "As": "font",
+        "Type": "font/woff2",
+        "Crossorigin": "anonymous"
+      }
+    ],
+    "Meta": [
+      {
+        "Name": "robots",
+        "Content": "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+      },
+      {
+        "Name": "theme-color",
+        "Content": "#070d18"
+      }
+    ]
+  },
+  "StructuredData": {
+    "Enabled": true,
+    "Website": true,
+    "Organization": true,
+    "WebPage": true,
+    "Breadcrumbs": true,
+    "SoftwareSourceCode": true,
+    "OrganizationName": "Evotec",
+    "OrganizationUrl": "https://evotec.xyz/",
+    "OrganizationLogo": "https://evotec.xyz/favicon.svg",
+    "OrganizationSameAs": [
+      "https://github.com/EvotecIT",
+      "https://evotec.xyz"
+    ]
+  },
+  "Social": {
+    "Enabled": true,
+    "SiteName": "PowerBGInfo",
+    "Image": "/powerbginfo/domain-controller-dark.png",
+    "TwitterCard": "summary_large_image"
+  },
+  "AgentReadiness": {
+    "Enabled": true,
+    "HeadersPath": "_headers",
+    "LinkHeaders": true,
+    "Robots": true,
+    "SecurityHeaders": {
+      "Enabled": true,
+      "ContentSecurityPolicyValue": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    },
+    "ContentSignals": {
+      "Enabled": true,
+      "Search": true,
+      "AiInput": true,
+      "AiTrain": false
+    }
+  },
+  "EditLinks": {
+    "Enabled": true,
+    "Template": "https://github.com/EvotecIT/PowerBGInfo/edit/v2-speedygonzales/Website/{path}"
+  },
+  "AssetRegistry": {
+    "CssStrategy": "blocking",
+    "Bundles": [
+      {
+        "Name": "global",
+        "Css": [
+          "/themes/powerbginfo/assets/tokens.css",
+          "/themes/powerbginfo/assets/base.css",
+          "/themes/powerbginfo/assets/nav.css"
+        ],
+        "Js": [
+          "/themes/powerbginfo/assets/site.js"
+        ]
+      },
+      {
+        "Name": "home",
+        "Css": [
+          "/themes/powerbginfo/assets/home.css"
+        ]
+      },
+      {
+        "Name": "gallery",
+        "Css": [
+          "/themes/powerbginfo/assets/gallery.css"
+        ]
+      },
+      {
+        "Name": "docs",
+        "Css": [
+          "/themes/powerbginfo/assets/docs.css"
+        ]
+      },
+      {
+        "Name": "pages",
+        "Css": [
+          "/themes/powerbginfo/assets/pages.css"
+        ]
+      },
+      {
+        "Name": "powerbginfo",
+        "Css": [
+          "/themes/powerbginfo/assets/powerbginfo.css"
+        ]
+      },
+      {
+        "Name": "desktopmanager",
+        "Css": [
+          "/themes/powerbginfo/assets/desktopmanager.css"
+        ]
+      },
+      {
+        "Name": "informationbox",
+        "Css": [
+          "/themes/powerbginfo/assets/informationbox.css"
+        ]
+      },
+      {
+        "Name": "platforms",
+        "Css": [
+          "/themes/powerbginfo/assets/platforms.css"
+        ]
+      }
+    ],
+    "RouteBundles": [
+      {
+        "Match": "/**",
+        "Bundles": [
+          "global"
+        ]
+      },
+      {
+        "Match": "/",
+        "Bundles": [
+          "home",
+          "pages",
+          "powerbginfo"
+        ]
+      },
+      {
+        "Match": "/gallery/**",
+        "Bundles": [
+          "pages",
+          "gallery",
+          "powerbginfo"
+        ]
+      },
+      {
+        "Match": "/build/**",
+        "Bundles": [
+          "pages",
+          "gallery",
+          "powerbginfo"
+        ]
+      },
+      {
+        "Match": "/platforms/**",
+        "Bundles": [
+          "pages",
+          "platforms"
+        ]
+      },
+      {
+        "Match": "/desktopmanager/**",
+        "Bundles": [
+          "pages",
+          "desktopmanager"
+        ]
+      },
+      {
+        "Match": "/informationbox/**",
+        "Bundles": [
+          "pages",
+          "informationbox"
+        ]
+      },
+      {
+        "Match": "/docs/**",
+        "Bundles": [
+          "docs",
+          "pages"
+        ]
+      },
+      {
+        "Match": "/examples/**",
+        "Bundles": [
+          "docs",
+          "pages"
+        ]
+      }
+    ],
+    "CriticalCss": [
+      {
+        "Name": "powerbginfo",
+        "Path": "themes/powerbginfo/critical.css"
+      }
+    ]
+  },
+  "Prism": {
+    "Mode": "auto",
+    "Source": "local",
+    "DefaultLanguage": "powershell",
+    "Local": {
+      "ThemeLight": "/assets/prism/prism-pb.css",
+      "ThemeDark": "/assets/prism/prism-pb.css"
+    }
+  },
+  "A11y": {
+    "SkipLinkLabel": "Skip to content",
+    "ExternalLinkLabel": "Opens in a new tab",
+    "NavToggleLabel": "Toggle navigation",
+    "SearchLabel": "Search"
+  },
+  "LinkRules": {
+    "ExternalRel": "noopener",
+    "ExternalTarget": "_blank",
+    "AddExternalIcon": false
+  },
+  "Navigation": {
+    "HomeLinkInBrand": true,
+    "Auto": [
+      {
+        "Collection": "docs",
+        "Menu": "docs",
+        "MaxDepth": 2,
+        "IncludeIndex": true,
+        "IncludeDrafts": false
+      },
+      {
+        "Collection": "examples",
+        "Menu": "examples",
+        "MaxDepth": 2,
+        "IncludeIndex": true,
+        "IncludeDrafts": false
+      }
+    ],
+    "Surfaces": [
+      {
+        "Name": "main",
+        "Path": "/",
+        "PrimaryMenu": "main"
+      },
+      {
+        "Name": "docs",
+        "Path": "/docs/",
+        "Collection": "docs",
+        "Layout": "docs",
+        "PrimaryMenu": "main"
+      },
+      {
+        "Name": "notFound",
+        "Path": "/404/",
+        "PrimaryMenu": "main"
+      }
+    ],
+    "Menus": [
+      {
+        "Name": "main",
+        "Items": [
+          {
+            "Id": "powerbginfo-menu",
+            "Title": "Wallpapers",
+            "Description": "Machine facts, health and charts on the wallpaper and lock screen, from PowerShell or JSON.",
+            "Items": [
+              {
+                "Id": "gallery",
+                "Title": "Gallery",
+                "Url": "/gallery/",
+                "Meta": {
+                  "key": 1,
+                  "thumb": "/nav/gallery"
+                },
+                "Description": "Twelve wallpapers with the scripts that drew them."
+              },
+              {
+                "Id": "build",
+                "Title": "Build one",
+                "Url": "/build/",
+                "Meta": {
+                  "key": 2,
+                  "thumb": "/nav/build"
+                },
+                "Description": "One wallpaper built step by step, then fed your own data."
+              },
+              {
+                "Id": "platforms",
+                "Title": "Platforms",
+                "Url": "/platforms/",
+                "Meta": {
+                  "key": 3,
+                  "thumb": "/nav/platforms"
+                },
+                "Description": "Windows, macOS, Linux, servers and CI: what works where."
+              },
+              {
+                "Id": "docs",
+                "Title": "Docs",
+                "Url": "/docs/",
+                "Meta": {
+                  "key": 6,
+                  "thumb": "/nav/docs"
+                },
+                "Description": "Install, layouts, data sources and troubleshooting."
+              },
+              {
+                "Id": "deploy",
+                "Title": "Deploy",
+                "Url": "/docs/deployment/",
+                "Meta": {
+                  "key": 4,
+                  "thumb": "/nav/deploy"
+                },
+                "Description": "Task Scheduler, Group Policy, Intune, ConfigMgr and RDS."
+              }
+            ]
+          },
+          {
+            "Id": "tools-menu",
+            "Title": "Desktop tools",
+            "Description": "Three products for the same desktop: show it, act on it, control it.",
+            "Items": [
+              {
+                "Id": "powerbginfo",
+                "Title": "PowerBGInfo",
+                "Url": "/",
+                "Meta": {
+                  "key": 1,
+                  "hollow": true,
+                  "thumb": "/nav/powerbginfo"
+                },
+                "Description": "Show: facts and health drawn on the wallpaper."
+              },
+              {
+                "Id": "desktopmanager",
+                "Title": "DesktopManager",
+                "Url": "/desktopmanager/",
+                "Meta": {
+                  "key": 3,
+                  "thumb": "/nav/desktopmanager"
+                },
+                "Description": "Control: monitors, windows, wallpaper, audio and devices."
+              },
+              {
+                "Id": "informationbox",
+                "Title": "InformationBox",
+                "Url": "/informationbox/",
+                "Meta": {
+                  "key": 2
+                },
+                "Description": "Ask and fix: a self-service window for the person at the desk."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Name": "footer-products",
+        "Items": [
+          {
+            "Title": "PowerBGInfo",
+            "Url": "/"
+          },
+          {
+            "Title": "Wallpaper gallery",
+            "Url": "/gallery/"
+          },
+          {
+            "Title": "Platforms",
+            "Url": "/platforms/"
+          },
+          {
+            "Title": "Documentation",
+            "Url": "/docs/"
+          },
+          {
+            "Title": "DesktopManager",
+            "Url": "/desktopmanager/"
+          },
+          {
+            "Title": "InformationBox",
+            "Url": "/informationbox/"
+          }
+        ]
+      },
+      {
+        "Name": "footer-resources",
+        "Items": [
+          {
+            "Title": "PowerShell Gallery",
+            "Url": "https://www.powershellgallery.com/packages/PowerBGInfo",
+            "External": true
+          },
+          {
+            "Title": "PowerBGInfo on GitHub",
+            "Url": "https://github.com/EvotecIT/PowerBGInfo",
+            "External": true
+          },
+          {
+            "Title": "DesktopManager on GitHub",
+            "Url": "https://github.com/EvotecIT/DesktopManager",
+            "External": true
+          },
+          {
+            "Title": "InformationBox on GitHub",
+            "Url": "https://github.com/EvotecIT/InformationBox",
+            "External": true
+          },
+          {
+            "Title": "Report an issue",
+            "Url": "https://github.com/EvotecIT/PowerBGInfo/issues",
+            "External": true
+          },
+          {
+            "Title": "Discord community",
+            "Url": "https://evo.yt/discord",
+            "External": true
+          }
+        ]
+      },
+      {
+        "Name": "footer-company",
+        "Items": [
+          {
+            "Title": "Evotec",
+            "Url": "https://evotec.xyz/",
+            "External": true
+          },
+          {
+            "Title": "PowerBGInfo articles",
+            "Url": "https://evotec.xyz/blog/powerbginfo-support-ready-windows-backgrounds/",
+            "External": true
+          },
+          {
+            "Title": "All products",
+            "Url": "https://evotec.xyz/products/",
+            "External": true
+          },
+          {
+            "Title": "Privacy notice",
+            "Url": "https://evotec.xyz/privacy-notice/",
+            "External": true
+          }
+        ]
+      }
+    ],
+    "Actions": [
+      {
+        "Title": "GitHub",
+        "Url": "https://github.com/EvotecIT/PowerBGInfo",
+        "External": true,
+        "CssClass": "pb-icon-link",
+        "AriaLabel": "PowerBGInfo on GitHub",
+        "IconHtml": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z\"/></svg>"
+      },
+      {
+        "Title": "Install",
+        "Url": "/docs/install/",
+        "CssClass": "pb-btn pb-btn--glow pb-nav__install"
+      }
+    ]
+  }
+}

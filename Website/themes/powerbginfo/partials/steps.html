@@ -1,0 +1,20 @@
+{{~ ## Annotated steps: splits rendered Markdown at each H2 so every step sets its prose beside its code. Text before the
+     first H2 becomes the introduction. Set steps_html before including it. Keep one code block per step. ## ~}}
+{{~ steps_parts = steps_html | string.split "<h2" ~}}
+<div class="pb-steps">
+  {{~ for part in steps_parts ~}}
+  {{~ if for.first ~}}
+  {{~ if (part | string.strip) != "" ~}}
+  <div class="pb-prose pb-steps__intro">
+{{ part }}
+  </div>
+  {{~ end ~}}
+  {{~ else ~}}
+  <section class="pb-step">
+    <div class="pb-prose pb-step__body">
+<h2{{ part }}
+    </div>
+  </section>
+  {{~ end ~}}
+  {{~ end ~}}
+</div>

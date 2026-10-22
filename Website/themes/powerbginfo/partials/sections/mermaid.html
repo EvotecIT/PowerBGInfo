@@ -1,0 +1,34 @@
+{{~ m = data.mermaid ~}}
+<section class="pb-section pb-mermaid{{ if mermaid_page }} pb-mermaid--page{{ end }}" aria-labelledby="pb-mermaid-title">
+  <div class="pb-mermaid__intro">
+    {{~ if mermaid_page ~}}
+    <h2 id="pb-mermaid-title">Mermaid source, ChartForgeX output</h2>
+    <p>Each sample pairs the Mermaid text with the SVG ChartForgeX rendered from it, in the page theme. Open one in the playground to edit the source and render it in your browser.</p>
+    {{~ else ~}}
+    <h2 id="pb-mermaid-title">Mermaid diagrams without a browser</h2>
+    <p>{{ m.summary }}</p>
+    <p class="pb-muted">{{ m.note }}</p>
+    <p><a class="pb-link" href="/mermaid/">See all supported Mermaid diagrams</a></p>
+    {{~ end ~}}
+  </div>
+  <div class="pb-mermaid__demo" data-pb-tabs>
+    <div class="pb-segment" role="tablist" aria-label="Mermaid sample">
+      {{~ for s in m.samples ~}}
+      <button type="button" role="tab" id="pb-mm-tab-{{ s.id }}" aria-controls="pb-mm-{{ s.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}" style="--key: var(--pb-s{{ for.index + 1 }})"><span class="pb-key" aria-hidden="true"></span>{{ s.label }}</button>
+      {{~ end ~}}
+    </div>
+    {{~ for s in m.samples ~}}
+    <div class="pb-mermaid__pair" role="tabpanel" id="pb-mm-{{ s.id }}" aria-labelledby="pb-mm-tab-{{ s.id }}"{{ if !for.first }} hidden{{ end }}>
+      <figure class="pb-codeblock" data-lang="mermaid">
+        <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">Mermaid</span><span class="pb-codeblock__file">{{ s.id }}.mmd</span><span class="pb-codeblock__actions"></span></figcaption>
+        <pre><code class="language-mermaid">{{ include ("generated/mermaid-" + s.id) }}</code></pre>
+      </figure>
+      <div class="pb-mermaid__render">
+        <img class="pb-only-light" src="/site/mermaid-{{ s.id }}-light.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source." />
+        <img class="pb-only-dark" src="/site/mermaid-{{ s.id }}-dark.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source, dark theme." />
+        <p class="pb-mermaid__edit"><a class="pb-link" href="/playground/?src=/site/mermaid-{{ s.id }}.mmd">Edit this diagram in the playground</a></p>
+      </div>
+    </div>
+    {{~ end ~}}
+  </div>
+</section>

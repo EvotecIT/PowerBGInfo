@@ -1,0 +1,112 @@
+{
+  "steps": [
+    {
+      "id": "01-canvas",
+      "step": 1,
+      "title": "Start with an empty canvas",
+      "body": "New-BGInfoBackground sets the size and paints one colour. Without it, PowerBGInfo draws on -FilePath or on the wallpaper that is already set, and never on its own earlier output."
+    },
+    {
+      "id": "02-gradient",
+      "step": 2,
+      "group": "backdrop",
+      "title": "Gradient",
+      "body": "Two colours blend across the canvas."
+    },
+    {
+      "id": "03-glows",
+      "step": 2,
+      "group": "backdrop",
+      "title": "Glows",
+      "body": "Soft radial light at relative positions, so it lands in the same place at every resolution."
+    },
+    {
+      "id": "04-pattern",
+      "step": 2,
+      "group": "backdrop",
+      "title": "Pattern",
+      "body": "A grid on top. Dots work the same way."
+    },
+    {
+      "id": "05-details",
+      "step": 3,
+      "title": "Name the machine",
+      "body": "Labels and name and value pairs form the text block in the top-left corner. -BuiltinValue HostName, OSName or IPv4Address read the machine the script runs on; this page uses fixed values so anyone can reproduce the render."
+    },
+    {
+      "id": "06-theme",
+      "step": 4,
+      "title": "Pick a theme preset",
+      "body": "-Theme Aurora gives the text, the panels and the backdrop one look, so the hand-picked colours and the background layers go. Parameters you set still win, and -ThemeMode Light gives the light pair."
+    },
+    {
+      "id": "07-chart",
+      "step": 5,
+      "title": "Add the first chart",
+      "body": "A chart panel placed by anchor and offsets, the way PowerBGInfo has always placed them. It picks up the theme's panel, type and series colour without a single colour parameter."
+    },
+    {
+      "id": "08-regions",
+      "step": 6,
+      "title": "Let regions do the layout",
+      "body": "-Region Right stacks panels in a column and -Region Bottom shares a band. Nobody computes widths, the taskbar stays clear, and the layout follows the screen size; the region renders further down show it at ultrawide and portrait sizes."
+    },
+    {
+      "id": "09-thresholds",
+      "step": 7,
+      "title": "Add thresholds",
+      "body": "Warning and critical thresholds turn the memory card amber and the D: bar red by themselves, using the theme's status colours."
+    },
+    {
+      "id": "10-data",
+      "step": 8,
+      "title": "Bring your own data",
+      "body": "The values move into one function, Invoke-BGInfoDataSource runs it with a time limit and a fallback, and the drawing code only reads $data. The wallpaper looks the same; now it is yours."
+    },
+    {
+      "id": "11-timeout",
+      "section": "logic",
+      "base": "10-data",
+      "title": "When the source does not answer",
+      "body": "The same script with a source that hangs. Invoke-BGInfoDataSource stops waiting after ten seconds, writes a warning and returns the fallback, and the wallpaper still renders."
+    }
+  ],
+  "sources": [
+    {
+      "id": "cim",
+      "label": "CIM and WMI",
+      "file": "cim.ps1",
+      "body": "Operating system, memory, uptime and fixed disks from Get-CimInstance. Read-only, and no module to install."
+    },
+    {
+      "id": "registry",
+      "label": "Registry",
+      "file": "registry.ps1",
+      "body": "The Windows release and build, and values your build or asset process wrote under its own key."
+    },
+    {
+      "id": "active-directory",
+      "label": "Active Directory",
+      "file": "active-directory.ps1",
+      "body": "The signed-in user's department and title, and the computer's description and owner, from the ActiveDirectory module."
+    },
+    {
+      "id": "rest-api",
+      "label": "REST API",
+      "file": "rest-api.ps1",
+      "body": "A CMDB or ticketing API through Invoke-RestMethod. The function runs in its own runspace, so it gets the computer name through -ArgumentList."
+    },
+    {
+      "id": "monitoring-export",
+      "label": "Monitoring export",
+      "file": "monitoring-export.ps1",
+      "body": "JSON and CSV files that a monitoring tool already exports, read with ConvertFrom-Json and Import-Csv."
+    },
+    {
+      "id": "system-info",
+      "label": "Swap a built-in helper",
+      "file": "system-info.ps1",
+      "body": "Get-BGInfoSystemInfo returns plain data. A function of your own that returns the same property names replaces it without touching the layout."
+    }
+  ]
+}

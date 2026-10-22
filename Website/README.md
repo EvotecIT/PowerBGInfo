@@ -1,19 +1,32 @@
-# PowerBGInfo Website Content
+# PowerBGInfo Website
 
-This folder contains curated source content that the Evotec website imports for the PowerBGInfo project page.
+This folder is the source of two things:
+
+- **powerbginfo.com**, a standalone PowerForge site for PowerBGInfo, DesktopManager and InformationBox (`site.json`, `pipeline.json`, `themes/powerbginfo/`, `content/pages/`, `data/`, `static/`).
+- **The PowerBGInfo docs that evotec.xyz imports** for /projects/powerbginfo/ (`content/project-docs/docs/` and `content/examples/`). powerbginfo.com publishes the same files under /docs/ and /examples/.
 
 ## Layout
 
-- `content/project-docs/docs/` contains the project documentation shown under /projects/powerbginfo/docs/, including the production deployment guides (`deployment.md`, `task-scheduler.md`, `group-policy.md`, `intune.md`, `configuration-manager.md`, `remote-desktop.md`, `security.md`, `troubleshooting.md`). These files are the only copy of that material; the repository README links to the published pages. Keep their file names stable: other sites link to them.
-- `content/examples/` contains curated website examples shown under /projects/powerbginfo/examples/.
-- API artifacts are not enabled from this folder yet. Add `WebsiteArtifacts/apidocs` and wire it in the website catalog only when external help/API metadata is generated and reviewed.
+- `content/project-docs/docs/` holds the documentation, including the production deployment guides (`deployment.md`, `task-scheduler.md`, `group-policy.md`, `intune.md`, `configuration-manager.md`, `remote-desktop.md`, `security.md`, `troubleshooting.md`). These files are the only copy of that material; the repository README links to the published pages. Keep their file names stable: other sites link to them. `toc.yml` orders the docs menu on both sites.
+- `content/examples/` holds curated website examples.
+- `content/pages/` holds the powerbginfo.com pages. Most are front matter only; their copy lives in `data/`.
+- `data/` holds page data: `home.json`, `products.json`, `platforms.json` (the one source of platform support, read by the home page and /platforms/), `desktopmanager.json`, `informationbox.json`, `platforms-page.json`, and the wallpaper story data `powerbginfo.json`, `powerbginfo-showcase.json` and `powerbginfo-build.json`.
+- `build/Sync-PowerBGInfo.ps1` snapshots the showcase and feature renders into `static/powerbginfo/` and writes `data/powerbginfo-showcase.json`. `build/Render-PowerBGInfoSteps.ps1` runs `powerbginfo/steps/*.ps1` and writes `static/powerbginfo/build/` and `data/powerbginfo-build.json`. Both read this repository at a recorded commit and never change it.
+- `themes/powerbginfo/` is forked from the ChartForgeX site theme. Classes use the `pb-` prefix (shared components) and `pbg-` (wallpaper story parts in `partials/pbg/`).
 
-## Editing Rules
+## Building
 
-- Keep this folder intentional and small.
-- Do not mirror raw `Examples/`, `Example/`, or generated output folders into the public website.
-- Add only examples that have a clear explanation, a small code sample, and a link back to the original source file.
-- Keep links rooted at /projects/powerbginfo/ so the same content works on localhost, evotec.xyz, and evotec.pl. Between docs pages use the relative form `../security/` or `../security/#anchor`; the hub's link check resolves those, while `security.md` links would break on the site.
+```powershell
+./build.ps1            # full pipeline: build, sitemap, verify, audit
+./build.ps1 -Serve     # build and serve locally
+```
 
-The website pipeline prefers this `Website/content/...` layout over legacy root-level content folders.
+`build.ps1` finds the PowerForge engine through `-PowerForgeRoot`, `$env:POWERFORGE_ROOT` or a sibling `PSPublishModule` checkout.
 
+## Editing rules
+
+- Keep this folder intentional and small. Do not mirror raw `Examples/` or generated output folders into it.
+- Add only examples that have a clear explanation, a small code sample and a link back to the original source file.
+- Docs links stay rooted at /projects/powerbginfo/ so the same files work on evotec.xyz and evotec.pl. powerbginfo.com rewrites them when it renders a docs page (`themes/powerbginfo/layouts/docs.html`). Between docs pages use the relative form `../security/` or `../security/#anchor`; `security.md` links break on both sites.
+- Platform support changes in `data/platforms.json` only. Use `preview` until the release that ships it is published.
+- Every wallpaper on the site is real PowerBGInfo output. Mockups and illustrations must say so in their caption.

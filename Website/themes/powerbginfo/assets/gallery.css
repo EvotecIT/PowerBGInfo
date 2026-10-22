@@ -1,0 +1,166 @@
+/* Gallery: the category legend, the example grid and the viewer dialog. The PowerBGInfo page uses the same cards and
+   viewer for its scenario wallpapers. */
+
+.pb-gallery-page {
+  width: min(100% - 2 * var(--pb-gutter), var(--pb-max));
+  margin-inline: auto;
+  padding-top: clamp(40px, 5vw, 64px);
+}
+
+/* Category filter: the shared legend tabs (base.css), wrapping above the grid. */
+.pb-filters { display: flex; margin-bottom: clamp(24px, 3vw, 36px); }
+
+/* Example grid */
+.pb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+  gap: 28px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pb-card[hidden] { display: none; }
+.pb-card__open {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pb-card__media {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--pb-line);
+  border-radius: var(--pb-r);
+  background: var(--pb-card);
+  aspect-ratio: var(--pb-card-ratio, 400 / 280);
+  transition: border-color .15s ease;
+}
+.pb-card__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pb-card__open:hover .pb-card__media,
+.pb-card__open:focus-visible .pb-card__media { border-color: var(--pb-ink-3); }
+.pb-card__open:focus-visible { outline: none; }
+.pb-card__open:focus-visible .pb-card__media { outline: 2px solid var(--pb-focus); outline-offset: 3px; }
+.pb-card__text { display: grid; gap: 3px; }
+.pb-card__title { color: var(--pb-ink); font-size: .9688rem; font-weight: 600; line-height: 1.35; }
+.pb-card__note { color: var(--pb-ink-2); font-size: .875rem; line-height: 1.45; }
+.pb-card__family {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--pb-ink-3);
+  font-size: .8125rem;
+  font-weight: 560;
+}
+.pb-card__family::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--key, var(--pb-accent)); }
+
+.pb-card--hollow .pb-card__family::before { background: transparent; box-shadow: inset 0 0 0 2px var(--key); }
+
+.pb-gallery-page__note { margin-top: clamp(40px, 5vw, 64px); padding-top: 20px; border-top: 1px solid var(--pb-line); font-size: .9375rem; }
+
+/* Viewer dialog */
+.pb-viewer {
+  width: min(1240px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--pb-line-strong);
+  border-radius: var(--pb-r-lg);
+  background: var(--pb-card);
+  color: var(--pb-ink);
+  box-shadow: var(--pb-shadow-float);
+}
+.pb-viewer[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.pb-viewer::backdrop { background: rgba(12, 13, 16, .62); backdrop-filter: blur(3px); }
+.pb-viewer__head {
+  display: flex;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 14px 14px 22px;
+  border-bottom: 1px solid var(--pb-line);
+}
+.pb-viewer__titles { flex: 1; min-width: 0; }
+.pb-viewer__head h2 { font-size: 1.25rem; font-weight: 740; font-stretch: 110%; letter-spacing: -.015em; }
+.pb-viewer__family { margin-top: 2px; color: var(--pb-ink-3); font-size: .875rem; }
+.pb-viewer__links { display: flex; flex-wrap: wrap; gap: 4px; }
+.pb-viewer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--pb-line);
+  border-radius: 8px;
+  color: var(--pb-ink);
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pb-viewer__link:hover { border-color: var(--pb-ink-3); }
+.pb-viewer__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pb-ink-2);
+  cursor: pointer;
+}
+.pb-viewer__close:hover { border-color: var(--pb-line); color: var(--pb-ink); }
+.pb-viewer__body {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
+  min-height: 0;
+  overflow: auto;
+}
+.pb-viewer__image {
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 2.4vw, 28px);
+  border-right: 1px solid var(--pb-line);
+  background:
+    repeating-linear-gradient(to right, var(--pb-grid) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--pb-grid) 0 1px, transparent 1px 32px),
+    var(--pb-page);
+}
+.pb-viewer__image img { display: block; width: 100%; max-height: calc(100vh - 160px); object-fit: contain; }
+/* The source fills the dialog height under its head (dialog 100vh - 32px, head about 72px, margins 32px) and scrolls
+   below its caption bar. */
+.pb-viewer__source { min-height: 0; max-height: calc(100vh - 136px); margin: 16px; }
+
+/* Source tabs, when a card has them: the shared segmented control above the code block it switches. */
+.pb-viewer__tabs { justify-self: start; max-width: calc(100% - 32px); margin: 16px 16px 0; flex-wrap: wrap; }
+.pb-viewer__tabs[hidden] { display: none; }
+.pb-viewer__tabs + .pb-viewer__source { margin-top: 10px; }
+
+/* Stacked: the output across the dialog with its source under it, for wide outputs such as wallpapers. The image
+   leaves room for the tabs to show below it; the body scrolls to the code. */
+.pb-viewer--stack .pb-viewer__body { grid-template-columns: minmax(0, 1fr); }
+.pb-viewer--stack .pb-viewer__image { border-right: 0; border-bottom: 1px solid var(--pb-line); }
+.pb-viewer--stack .pb-viewer__image img { width: auto; max-width: 100%; height: auto; max-height: calc(100vh - 260px); border-radius: 4px; }
+.pb-viewer--stack .pb-viewer__source { max-height: none; }
+.pb-viewer--stack .pb-viewer__source pre { max-height: 60vh; }
+
+@media (max-width: 900px) {
+  .pb-viewer__head { flex-wrap: wrap; }
+  .pb-viewer__titles { flex-basis: calc(100% - 56px); order: 1; }
+  .pb-viewer__close { order: 2; }
+  .pb-viewer__links { order: 3; }
+  .pb-viewer__body { grid-template-columns: minmax(0, 1fr); }
+  .pb-viewer__image { border-right: 0; border-bottom: 1px solid var(--pb-line); }
+  .pb-viewer__source { max-height: none; }
+  .pb-viewer__source pre { max-height: 60vh; }
+}
+
+@media (max-width: 560px) {
+  .pb-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 12px; }
+  .pb-viewer { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
+  .pb-viewer__source { margin: 10px; }
+}

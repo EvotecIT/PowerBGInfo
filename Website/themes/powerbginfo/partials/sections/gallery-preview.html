@@ -1,0 +1,19 @@
+<section class="pb-section pb-gallery-preview" aria-labelledby="pb-gallery-title">
+  <div class="pb-section__head">
+    <h2 id="pb-gallery-title">{{ data.gallery.items.size }} chart examples, one API</h2>
+    <p>Every thumbnail below is ChartForgeX output with matching light and dark themes. Open one to see it full size with the C# that drew it.</p>
+  </div>
+  <ul class="pb-grid" data-pb-gallery>
+    {{~ for cat in data.gallery.categories ~}}
+    {{~ picked = 0 ~}}
+    {{~ for item in data.gallery.items ~}}
+    {{~ if item.category == cat.id && picked < 2 ~}}
+    {{ include "gallery-card" }}
+    {{~ picked = picked + 1 ~}}
+    {{~ end ~}}
+    {{~ end ~}}
+    {{~ end ~}}
+  </ul>
+  <p class="pb-section__more"><a class="pb-btn pb-btn--quiet" href="/gallery/">See all {{ data.gallery.items.size }} examples</a></p>
+  {{ include "gallery-dialog" }}
+</section>

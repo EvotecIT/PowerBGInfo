@@ -1,0 +1,56 @@
+{{~ ## Grouped navigation from the "main" menu in site.json. Each group opens a panel of destinations with a description
+     and a thumbnail from the item's meta.thumb (a rendered wallpaper or screenshot, without extension; -light and -dark
+     variants). Without JavaScript the panels open on focus and hover and every destination stays a plain link. ## ~}}
+{{~ navmenu = pf.menu "main"; here_item = null
+    for g in navmenu.items; for it in g.items; if it.is_active || it.is_ancestor; here_item = it; end; end; end ~}}
+<a class="pb-skip" href="#main">Skip to content</a>
+<header class="pb-header" data-pb-header>
+  <div class="pb-header__inner">
+    <a class="pb-brand" href="/" aria-label="PowerBGInfo home">{{ include "logo" }}<span>PowerBGInfo</span></a>
+    <input type="checkbox" id="pb-nav-toggle" class="pb-nav-toggle" aria-label="Show navigation" />
+    <label for="pb-nav-toggle" class="pb-nav-toggle__label" aria-hidden="true"><span></span><span></span></label>
+    <nav class="pb-nav" aria-label="Main">
+      <ul class="pb-nav__groups">
+        {{~ for g in navmenu.items ~}}
+        {{~ current = null; for it in g.items; if it.is_active || it.is_ancestor; current = it; end; end ~}}
+        <li class="pb-navgroup{{ if current }} is-current{{ end }}" data-pb-navgroup>
+          <button type="button" class="pb-navgroup__trigger" id="pb-nav-{{ g.id }}-trigger" aria-expanded="false" aria-controls="pb-nav-{{ g.id }}">
+            <span class="pb-navgroup__mark"{{ if current }} style="--key: var(--pb-s{{ current.meta.key }})"{{ end }} aria-hidden="true"></span>
+            <span class="pb-navgroup__label">{{ g.title }}</span>{{ if current }}<span class="pb-visually-hidden">, holds the current page</span>{{ end }}
+            <svg class="pb-navgroup__chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="pb-navpanel" id="pb-nav-{{ g.id }}" data-count="{{ g.items.size }}">
+            <p class="pb-navpanel__lede">{{ g.description }}</p>
+            <ul class="pb-navpanel__items">
+              {{~ for item in g.items ~}}
+              {{~ t = item.meta.thumb; here = item.is_active || item.is_ancestor ~}}
+              <li class="pb-navitem{{ if item.meta.hollow }} pb-navitem--hollow{{ end }}{{ if here }} is-current{{ end }}" style="--key: var(--pb-s{{ item.meta.key }})">
+                <span class="pb-navitem__thumb" aria-hidden="true">
+                  {{~ if t ~}}
+                  <img class="pb-only-light" src="{{ t }}-light.png" width="160" height="90" loading="lazy" decoding="async" alt="" />
+                  <img class="pb-only-dark" src="{{ t }}-dark.png" width="160" height="90" loading="lazy" decoding="async" alt="" />
+                  {{~ end ~}}
+                </span>
+                <a class="pb-navitem__link" href="{{ item.url }}" aria-describedby="pb-nav-{{ item.id }}-desc"{{ if here }} aria-current="{{ if item.is_active }}page{{ else }}true{{ end }}"{{ end }}><span class="pb-key{{ if item.meta.hollow }} pb-key--hollow{{ end }}" aria-hidden="true"></span>{{ item.title }}</a>
+                <span class="pb-navitem__desc" id="pb-nav-{{ item.id }}-desc">{{ item.description }}</span>
+              </li>
+              {{~ end ~}}
+            </ul>
+          </div>
+        </li>
+        {{~ end ~}}
+        {{~ ## The current page sits after both groups, so marking it never moves another header element. ## ~}}
+        {{~ if here_item ~}}
+        <li class="pb-nav__here" style="--key: var(--pb-s{{ here_item.meta.key }})"><span class="pb-key{{ if here_item.meta.hollow }} pb-key--hollow{{ end }}" aria-hidden="true"></span><span class="pb-visually-hidden">Current section: </span>{{ here_item.title }}</li>
+        {{~ end ~}}
+      </ul>
+      <div class="pb-nav__actions">
+        <button type="button" class="pb-theme-toggle" data-pb-theme-toggle aria-label="Switch between light and dark theme">
+          <svg class="pb-theme-toggle__sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg class="pb-theme-toggle__moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.6A8 8 0 0 1 9.4 4a8 8 0 1 0 10.6 10.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </button>
+        {{ pf.nav_actions }}
+      </div>
+    </nav>
+  </div>
+</header>

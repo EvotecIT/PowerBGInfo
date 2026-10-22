@@ -1,0 +1,6 @@
+{{~ ## One PowerBGInfo render in the page theme: the light and the dark file, each linking to its full-size PNG. Only the
+     current theme's image is shown, and lazy loading keeps the hidden one from downloading. Set img_renders (an
+     object with light and dark renders from the data files), img_alt and img_sizes before including it. ## ~}}
+{{~ for mode in ["light", "dark"] ~}}{{~ r = img_renders[mode] ~}}
+<a class="pb-figure__open pb-only-{{ mode }}" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="{{ img_sizes }}" loading="lazy" decoding="async" alt="{{ img_alt }}{{ if mode == "dark" }} Dark theme.{{ end }}" /></a>
+{{~ end ~}}

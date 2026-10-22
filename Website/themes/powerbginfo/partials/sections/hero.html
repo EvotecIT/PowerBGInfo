@@ -1,0 +1,48 @@
+{{~ hero = data.home.hero ~}}
+<section class="pb-hero pb-tone-dark" aria-labelledby="pb-intro-title">
+  <div class="pb-hero__inner">
+    <h1 id="pb-intro-title" class="pb-hero__title"><span>{{ hero.title_line_1 }}</span> <span class="pb-hero__accent">{{ hero.title_line_2 }}</span></h1>
+    <div class="pb-hero__side">
+      <p class="pb-hero__lede">{{ hero.lede }}</p>
+      <div class="pb-hero__actions">
+        <a class="pb-btn pb-btn--glow" href="{{ hero.primary.url }}">{{ hero.primary.label }}</a>
+        <a class="pb-btn pb-btn--ghost" href="{{ hero.secondary.url }}">{{ hero.secondary.label }}</a>
+      </div>
+      <ul class="pb-hero__badges" aria-label="Highlights">
+        {{~ for b in hero.badges ~}}<li>{{ b }}</li>{{~ end ~}}
+      </ul>
+    </div>
+  </div>
+
+  <div class="pb-hero__art">
+    <figure class="pb-window">
+      <div class="pb-window__bar">
+        <span class="pb-window__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="pb-window__name">identity-overview.png</span>
+        <span class="pb-window__chips" aria-hidden="true"><b>PNG</b><b>SVG</b><b>HTML</b></span>
+      </div>
+      <img src="/site/dashboard-dark.png" width="3280" height="1408" fetchpriority="high" decoding="async"
+        alt="A dark dashboard rendered by ChartForgeX: sign-ins by method as a stacked area, this week's share as a donut, a security posture radar, sign-ins by hour as a heatmap and an MFA coverage gauge at 87." />
+    </figure>
+
+    <figure class="pb-codeblock pb-hero__code" data-lang="csharp">
+      <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">C#</span><span class="pb-codeblock__file">Report.cs</span><span class="pb-codeblock__actions"></span></figcaption>
+<pre><code class="language-csharp">var report = ChartGrid.Create()
+    .WithThemeMode(VisualThemeMode.Dark)
+    .WithColumns(3)
+    .Add(signIns, columnSpan: 2)
+    .Add(methods).Add(posture)
+    .Add(byHour).Add(coverage);
+
+report.SavePng("identity-overview.png");</code></pre>
+    </figure>
+
+    <figure class="pb-codeblock pb-hero__code" data-lang="powershell">
+      <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">Usage.ps1, ImagePlayground</span><span class="pb-codeblock__actions"></span></figcaption>
+<pre><code class="language-powershell">New-ImageChart {
+    New-ImageChartDonut -Name 'Used' -Value 72
+    New-ImageChartDonut -Name 'Free' -Value 28
+} -Theme Dark -FilePath usage.png</code></pre>
+    </figure>
+  </div>
+</section>

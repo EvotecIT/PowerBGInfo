@@ -1,0 +1,73 @@
+<section class="pb-section pb-surfaces-demo" aria-labelledby="pb-surfaces-demo-title">
+  <div class="pb-section__head">
+    <h2 id="pb-surfaces-demo-title">One definition, every surface</h2>
+    <p>The same chart object writes vector SVG, native PNG, a script-free HTML page or an interactive one, an email-ready image and a Markdown fence. Switch the tabs; every file below was written by ChartForgeX.</p>
+  </div>
+  <figure class="pb-demo" data-pb-stage>
+    <div class="pb-demo__tabs" role="tablist" aria-label="Output surface">
+      {{~ for s in data.home.surfaces ~}}
+      <button type="button" role="tab" id="pb-tab-{{ s.id }}" aria-controls="pb-panel-{{ s.id }}" aria-selected="{{ if s.id == "svg" }}true{{ else }}false{{ end }}" tabindex="{{ if s.id == "svg" }}0{{ else }}-1{{ end }}" data-pb-surface="{{ s.id }}">{{ s.label }}</button>
+      {{~ end ~}}
+    </div>
+
+    <div class="pb-demo__screen">
+      <div class="pb-panel pb-panel--code" role="tabpanel" id="pb-panel-csharp" aria-labelledby="pb-tab-csharp" hidden>
+        <figure class="pb-codeblock" data-lang="csharp">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">C#</span><span class="pb-codeblock__actions"><a class="pb-codeblock__btn" href="{{ data.hero.source }}" download="sign-ins.cs" aria-label="Download the complete C# program">Download</a></span></figcaption>
+<pre class="pb-code"><code class="language-csharp">{{ data.hero.code | html.escape }}</code></pre>
+        </figure>
+      </div>
+
+      <div class="pb-panel pb-panel--svg" role="tabpanel" id="pb-panel-svg" aria-labelledby="pb-tab-svg">
+        {{ include "generated/hero-svg" }}
+      </div>
+
+      <div class="pb-panel pb-panel--png" role="tabpanel" id="pb-panel-png" aria-labelledby="pb-tab-png" hidden>
+        <img class="pb-only-light" src="/site/hero-light.png" width="960" height="540" loading="lazy" decoding="async" alt="Sign-ins by method, rendered as PNG: passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline." />
+        <img class="pb-only-dark" src="/site/hero-dark.png" width="960" height="540" loading="lazy" decoding="async" alt="Sign-ins by method, rendered as PNG in the dark theme." />
+      </div>
+
+      <div class="pb-panel pb-panel--html" role="tabpanel" id="pb-panel-html" aria-labelledby="pb-tab-html" hidden>
+        <div class="pb-browser">
+          <div class="pb-browser__bar">
+            <span class="pb-browser__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="pb-browser__url" data-pb-html-url>sign-ins.html</span>
+            <span class="pb-segment" role="group" aria-label="HTML variant">
+              <button type="button" aria-pressed="true" data-pb-html-mode="static">Static</button>
+              <button type="button" aria-pressed="false" data-pb-html-mode="interactive">Interactive</button>
+            </span>
+          </div>
+          <iframe title="Sign-ins by method as an HTML page" data-pb-html-frame loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <div class="pb-panel pb-panel--email" role="tabpanel" id="pb-panel-email" aria-labelledby="pb-tab-email" hidden>
+        <div class="pb-mail">
+          <dl class="pb-mail__head">
+            <div><dt>From</dt><dd>Identity reports</dd></div>
+            <div><dt>Subject</dt><dd>Sign-ins this week: passkeys passed 8,900</dd></div>
+          </dl>
+          <div class="pb-mail__body">
+            <p>Good morning. Passkey sign-ins grew again this week, and password-only sign-ins fell to 1,500.</p>
+            <img class="pb-only-light" src="/site/hero-light.png" width="960" height="540" loading="lazy" decoding="async" alt="Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline." />
+            <img class="pb-only-dark" src="/site/hero-dark.png" width="960" height="540" loading="lazy" decoding="async" alt="Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline." />
+          </div>
+        </div>
+      </div>
+
+      <div class="pb-panel pb-panel--markdown" role="tabpanel" id="pb-panel-markdown" aria-labelledby="pb-tab-markdown" hidden>
+        <pre class="pb-code pb-code--fence"><code>{{ include "generated/hero-fence" }}</code></pre>
+        <div class="pb-panel__render">
+          <img class="pb-only-light" src="/site/hero-markdown-light.svg" width="960" height="540" loading="lazy" decoding="async" alt="The sign-ins chart rendered from the Markdown fence." />
+          <img class="pb-only-dark" src="/site/hero-markdown-dark.svg" width="960" height="540" loading="lazy" decoding="async" alt="The sign-ins chart rendered from the Markdown fence, dark theme." />
+        </div>
+      </div>
+    </div>
+
+    <figcaption class="pb-demo__caption">
+      {{~ for s in data.home.surfaces ~}}
+      <p data-pb-caption="{{ s.id }}"{{ if s.id != "svg" }} hidden{{ end }}>{{ s.caption }}{{ if s.size }} <span class="pb-demo__size">{{ data.hero.sizes[s.size] }}</span>{{ end }}</p>
+      {{~ end ~}}
+    </figcaption>
+  </figure>
+</section>
