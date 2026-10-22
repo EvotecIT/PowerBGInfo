@@ -1,0 +1,234 @@
+﻿<#
+    File server capacity. The question for the administrator on this
+    server: which shares are filling up? The headline names the share
+    closest to its quota; the treemap shows every share by size and
+    colors it by quota use; the bottom band shows recent quota alerts and
+    whether DFS Replication keeps up with the partners.
+
+    The data block returns plain values; the presentation block only reads
+    them. Comments name the command or source that supplies each value.
+#>
+param(
+    [ValidateSet('Light', 'Dark')]
+    [string] $Theme = 'Dark',
+    [int] $Width = 1920,
+    [int] $Height = 1080,
+    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
+)
+
+Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+
+#region Data: your logic goes here
+function Get-FileServerCapacity {
+    [pscustomobject] @{
+        Available = $true
+        # $env:COMPUTERNAME, (Get-CimInstance Win32_ComputerSystem).Domain and
+        # (Get-CimInstance Win32_OperatingSystem).Caption
+        Name      = 'FS01'
+        Domain    = 'corp.contoso.com'
+        Os        = 'Windows Server 2025 Standard'
+        # Get-DfsnRoot or Get-DfsnFolderTarget -TargetPath \\FS01\*
+        Namespace = '\\corp.contoso.com\files'
+        # vssadmin list shadows /for=D:, or
+        # Get-CimInstance Win32_ShadowCopy | Sort-Object InstallDate
+        Shadow    = 'D: today 12:00, 21 kept'
+        # Get-SmbShare -Special $false for the shares, joined to
+        # Get-FsrmQuota (Path, Size, Usage) for size and quota per share
+        Shares    = @(
+            [pscustomobject] @{ Name = 'Projects'; Group = 'Teams'
+                UsedGB = 1864; QuotaGB = 2048 }
+            [pscustomobject] @{ Name = 'Engineering'; Group = 'Teams'
+                UsedGB = 1126; QuotaGB = 2048 }
+            [pscustomobject] @{ Name = 'Finance'; Group = 'Teams'
+                UsedGB = 638; QuotaGB = 750 }
+            [pscustomobject] @{ Name = 'Marketing'; Group = 'Teams'
+                UsedGB = 412; QuotaGB = 500 }
+            [pscustomobject] @{ Name = 'HR'; Group = 'Teams'
+                UsedGB = 118; QuotaGB = 200 }
+            [pscustomobject] @{ Name = 'Home'; Group = 'Users'
+                UsedGB = 2410; QuotaGB = 4096 }
+            [pscustomobject] @{ Name = 'Redirected'; Group = 'Users'
+                UsedGB = 760; QuotaGB = 1536 }
+            [pscustomobject] @{ Name = 'Archive'; Group = 'Shared'
+                UsedGB = 905; QuotaGB = 2048 }
+            [pscustomobject] @{ Name = 'Software'; Group = 'Shared'
+                UsedGB = 310; QuotaGB = 400 }
+            [pscustomobject] @{ Name = 'Scans'; Group = 'Shared'
+                UsedGB = 224; QuotaGB = 1024 }
+            [pscustomobject] @{ Name = 'Public'; Group = 'Shared'
+                UsedGB = 81; QuotaGB = 200 }
+        )
+        # Weekly usage of the fullest share, in GB: (Get-FsrmQuota -Path
+        # D:\Shares\Projects).Usage logged by a weekly task, or the FSRM
+        # quota usage storage report
+        Growth    = @(1696, 1712, 1735, 1751, 1779, 1801, 1822, 1843, 1864)
+        # Get-Volume | Where-Object DriveLetter (Size, SizeRemaining)
+        Volumes   = [ordered] @{
+            'C:  system'  = 46
+            'D:  shares'  = 78
+            'E:  users'   = 64
+            'F:  archive' = 41
+        }
+        # Get-SmbOpenFile and Get-SmbSession, counted every 15 minutes
+        # by a scheduled task or your monitoring system
+        OpenFiles = @(410, 620, 980, 1210, 1340, 1290, 1180, 1250, 1320, 1284)
+        Sessions  = 312
+        # FSRM quota threshold events in the last 7 days:
+        #   Get-WinEvent -FilterHashtable @{
+        #       LogName = 'Application'; ProviderName = 'SRMSVC'
+        #       Id = 12325; StartTime = (Get-Date).AddDays(-7) }
+        Alerts    = @(
+            @{ Text = 'Projects passed 90 %'; Value = 'today 08:41'
+                Status = 'Critical' }
+            @{ Text = 'Finance passed 85 %'; Value = 'Wed 16:12'
+                Status = 'Warning' }
+            @{ Text = 'Marketing passed 80 %'; Value = 'Tue 10:05'
+                Status = 'Warning' }
+            @{ Text = 'Software passed 75 %'; Value = 'Mon 09:30'
+                Status = 'Info' }
+        )
+        # Get-DfsReplicatedFolder, then per partner:
+        #   (Get-DfsrBacklog -GroupName $group -FolderName $folder
+        #       -SourceComputerName FS01 -DestinationComputerName $partner
+        #       -Verbose 4>&1) gives the backlog count in its verbose message;
+        # dfsrdiag backlog /rgname:... /rfname:... /smem:FS01 /rmem:...
+        # also works.
+        Backlog   = @(
+            [pscustomobject] @{ Folder = 'Projects'; Partner = 'FS02 (WAW)'
+                Files = 1240; Last = '47 min ago'; State = 'Warning' }
+            [pscustomobject] @{ Folder = 'Finance'; Partner = 'FS03 (DR)'
+                Files = 12; Last = '2 min ago'; State = 'OK' }
+            [pscustomobject] @{ Folder = 'Home'; Partner = 'FS02 (WAW)'
+                Files = 0; Last = '1 min ago'; State = 'OK' }
+            [pscustomobject] @{ Folder = 'Software'; Partner = 'FS04 (NYC)'
+                Files = 0; Last = '6 min ago'; State = 'OK' }
+        )
+    }
+}
+
+$fallback = [pscustomobject] @{
+    Available = $false; Name = $env:COMPUTERNAME; Domain = 'unknown'
+    Os = 'unknown'; Namespace = 'unknown'; Shadow = 'unknown'; Shares = @()
+    Volumes = [ordered] @{}
+    OpenFiles = @(); Growth = @(); Sessions = 0; Alerts = @(); Backlog = @()
+}
+$source = @{
+    Name           = 'File server capacity'
+    TimeoutSeconds = 30
+    ScriptBlock    = ${function:Get-FileServerCapacity}
+    Default        = $fallback
+}
+$fs = Invoke-BGInfoDataSource @source
+#endregion
+
+#region Presentation: reads only $fs
+$scale = [Math]::Round($Height / 1080, 2)
+$look = New-BGInfoTheme Aurora -Mode $Theme -Scale $scale
+# Quota use per share drives the headline and the treemap colors: amber
+# from 80 %, red from 90 %.
+$shares = foreach ($share in $fs.Shares) {
+    $share | Select-Object *, @{
+        Name = 'Percent'
+        Expression = { [Math]::Round(100 * $share.UsedGB / $share.QuotaGB) }
+    }
+}
+$shares = @($shares | Sort-Object Percent -Descending)
+$fullest = $shares | Select-Object -First 1
+$filling = @($shares | Where-Object Percent -GE 80)
+
+New-BGInfo -Theme $look -Target File {
+    New-BGInfoBackground -Width $Width -Height $Height -GradientAngle 160
+    New-BGInfoLayout -ColumnWidth ([int](500 * $scale))
+
+    New-BGInfoLabel -Name "FILE SERVER  ·  $($fs.Domain.ToUpper())" -Accent `
+        -FontSize ([int](15 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name $fs.Name -FontSize ([int](72 * $scale)) `
+        -FontWeight 600
+    if ($fullest) {
+        $status = if ($fullest.Percent -ge 90) { 'Critical' }
+        elseif ($fullest.Percent -ge 80) { 'Warning' } else { 'Ok' }
+        $headline = "$($fullest.Name) is $($fullest.Percent) % of its quota"
+        New-BGInfoLabel -Name $headline `
+            -Status $status -FontSize ([int](34 * $scale)) -FontWeight 700
+        $others = @($filling | Select-Object -Skip 1)
+        if ($others.Count -gt 0) {
+            $names = if ($others.Count -eq 1) { $others[0].Name } else {
+                $first = @($others[0..($others.Count - 2)].Name)
+                ($first -join ', ') + " and $($others[-1].Name)"
+            }
+            $verb = if ($others.Count -eq 1) { 'is' } else { 'are' }
+            New-BGInfoLabel -Name "●  $names $verb above 80 % too" `
+                -Status Warning -FontWeight 600
+        } else {
+            New-BGInfoLabel -Name '●  Every other share is below 80 %' `
+                -Status Ok -FontWeight 600
+        }
+    } else {
+        New-BGInfoLabel -Name '●  Share data unavailable' -Status Info `
+            -FontWeight 600
+    }
+    New-BGInfoValue -Name 'Namespace' -Value $fs.Namespace
+    New-BGInfoValue -Name 'Shadow copies' -Value $fs.Shadow
+    New-BGInfoValue -Name 'System' -Value $fs.Os
+
+    # Center: every share by size, grouped by purpose, colored by quota use.
+    if ($shares.Count -gt 0) {
+        $shares | New-BGInfoTreemap -Region Center -Title 'Shares by size' `
+            -Note 'color: quota used' -ValueProperty UsedGB `
+            -GroupProperty Group -ValueSuffix ' GB' -ColorProperty Percent `
+            -WarningThreshold 80 -CriticalThreshold 90
+    }
+
+    # Right column: the volumes under the shares, then who is connected.
+    if ($fs.Volumes.Count -gt 0) {
+        New-BGInfoChart -Region Right -Id 'volumes' -Title 'Volumes used' `
+            -Kind ProgressBar -Values @($fs.Volumes.Values) `
+            -Labels @($fs.Volumes.Keys) -Maximum 100 -ValueSuffix ' %' `
+            -NoHistory -NoProgressHandles -ShowLatestValue:$false `
+            -ShowDataLabels -WarningThreshold 80 -CriticalThreshold 90 `
+            -Height ([int](260 * $scale))
+    }
+    if (@($fs.OpenFiles).Count -gt 0) {
+        New-BGInfoMetric -Region Right -Label 'Open files' `
+            -Value $fs.OpenFiles[-1] `
+            -Format 'N0' -Caption "$($fs.Sessions) SMB sessions" `
+            -History $fs.OpenFiles -Height ([int](150 * $scale))
+    }
+    # How fast the fullest share grows, and when its quota runs out.
+    if ($fullest -and @($fs.Growth).Count -gt 1) {
+        $growth = $fs.Growth[-1] - $fs.Growth[0]
+        $weekly = [Math]::Round($growth / ($fs.Growth.Count - 1))
+        $weeks = if ($weekly -gt 0) {
+            [Math]::Floor(($fullest.QuotaGB - $fullest.UsedGB) / $weekly)
+        }
+        $caption = if ($null -ne $weeks) {
+            "quota full in about $weeks weeks"
+        } else { 'not growing' }
+        $runway = if ($null -eq $weeks -or $weeks -ge 12) { 'Ok' }
+        elseif ($weeks -ge 4) { 'Warning' } else { 'Critical' }
+        $deltas = for ($i = 1; $i -lt $fs.Growth.Count; $i++) {
+            $fs.Growth[$i] - $fs.Growth[$i - 1]
+        }
+        New-BGInfoMetric -Region Right -Label "$($fullest.Name) grows" `
+            -Value $weekly -Unit 'GB / week' -Caption $caption -Status $runway `
+            -History $deltas -HistoryKind Bars -Height ([int](150 * $scale))
+    }
+
+    # Bottom band: quota alerts this week and the DFS Replication backlog.
+    $band = @{ Region = 'Bottom'; Height = [int](280 * $scale) }
+    if (@($fs.Alerts).Count -gt 0) {
+        New-BGInfoList @band -Title 'Quota alerts' -Note 'FSRM, last 7 days' `
+            -Item $fs.Alerts -Width ([int](620 * $scale))
+    }
+    if (@($fs.Backlog).Count -gt 0) {
+        $fs.Backlog | Sort-Object { $_.State -eq 'OK' }, Folder |
+            Select-Object Folder, Partner,
+                @{ Name = 'Backlog'
+                    Expression = { '{0:N0} files' -f $_.Files } },
+                @{ Name = 'Last sync'; Expression = { $_.Last } }, State |
+            New-BGInfoTable @band -Title 'DFS Replication' `
+                -Note 'outbound backlog' -StatusColumn State
+    }
+} -ConfigurationDirectory $OutputDirectory `
+    -OutputFileName "file-server-$($Theme.ToLower()).png"
+#endregion
