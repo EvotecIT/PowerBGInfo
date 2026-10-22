@@ -209,6 +209,187 @@ $scenarios = @(
             'List rendered at a larger density'
         )
     }
+    [ordered]@{
+        id         = 'environment-marker'
+        title      = 'Production or test'
+        purpose    = 'Which environment this is, and what you may change on it.'
+        script     = 'Examples/Run.BGInfo.EnvironmentMarker.ps1'
+        preset     = 'Midnight'
+        features   = @(
+            'New-BGInfoTheme -Accent', 'New-BGInfoQRCode', 'New-BGInfoList'
+            'New-BGInfoTimeline', 'New-BGInfoLayout'
+        )
+        chartForgeX = @(
+            'The environment colour drives the accent, glows and headline'
+            'Colour-coded list of the same service in every environment'
+            'Change-window timeline with approval states'
+            'QR code to the change policy'
+        )
+    }
+    [ordered]@{
+        id         = 'rds-session-host'
+        title      = 'RDS session host'
+        purpose    = 'Whether the broker still sends users here, who is on ' +
+            'the host and how long logons take.'
+        script     = 'Examples/Run.BGInfo.RdsSessionHost.ps1'
+        preset     = 'Graphite'
+        features   = @(
+            'New-BGInfoLayout -ColumnWidth', 'New-BGInfoTable'
+            'New-BGInfoChart -Kind Bar, ProgressBar', 'New-BGInfoMetric'
+            'thresholds'
+        )
+        chartForgeX = @(
+            'Session table in a wide right column'
+            'Logon-time bars with the spike in amber'
+            'FSLogix container bars against the cap'
+            'Four metric cards with sparklines'
+        )
+    }
+    [ordered]@{
+        id         = 'sql-server'
+        title      = 'SQL Server'
+        purpose    = 'Whether every database has recent backups and a ' +
+            'current replica.'
+        script     = 'Examples/Run.BGInfo.SqlServer.ps1'
+        preset     = 'Corporate'
+        features   = @(
+            'New-BGInfoTreemap -ColorProperty', 'New-BGInfoTable -StatusColumn'
+            'New-BGInfoList', 'New-BGInfoChart -Kind Area, ProgressBar'
+        )
+        chartForgeX = @(
+            'Treemap of database size coloured by backup age'
+            'Status table of databases, problems first'
+            'Workload area chart'
+            'Space bars for data, logs and backups'
+        )
+    }
+    [ordered]@{
+        id         = 'file-server'
+        title      = 'File server'
+        purpose    = 'Which shares are close to their quota and when the ' +
+            'fullest one runs out.'
+        script     = 'Examples/Run.BGInfo.FileServer.ps1'
+        preset     = 'Aurora'
+        features   = @(
+            'New-BGInfoTreemap -GroupProperty -ColorProperty'
+            'New-BGInfoMetric -HistoryKind Bars', 'New-BGInfoList'
+            'New-BGInfoTable -StatusColumn', 'New-BGInfoChart -Kind ProgressBar'
+        )
+        chartForgeX = @(
+            'Grouped treemap of shares coloured by quota use'
+            'Volume progress bars'
+            'Weekly growth bars with a forecast'
+            'DFS-R backlog status table'
+        )
+    }
+    [ordered]@{
+        id         = 'decommission-notice'
+        title      = 'Server being retired'
+        purpose    = 'How long this server has left, and where to work instead.'
+        script     = 'Examples/Run.BGInfo.DecommissionNotice.ps1'
+        preset     = 'Ember'
+        features   = @(
+            'New-BGInfoTable -StatusColumn', 'New-BGInfoQRCode'
+            'New-BGInfoList', 'New-BGInfoChart -Kind Bar, Area', 'Center region'
+        )
+        chartForgeX = @(
+            'Display-size countdown headline'
+            'Bars of data left to move, night by night'
+            'Area chart of SMB sessions still connected'
+            'Table showing where each share moved'
+        )
+    }
+    [ordered]@{
+        id         = 'change-freeze'
+        title      = 'Change freeze'
+        purpose    = 'Whether changes are allowed now, until when, and who ' +
+            'approves an exception.'
+        script     = 'Examples/Run.BGInfo.ChangeFreeze.ps1'
+        preset     = 'Orchid'
+        features   = @(
+            'New-BGInfoTimeline', 'New-BGInfoList -Marker Check'
+            'New-BGInfoQRCode', 'New-BGInfoTable', 'dot pattern and glows'
+        )
+        chartForgeX = @(
+            'Change-calendar timeline lanes with a now marker'
+            'Allowed and not allowed checklist'
+            'QR code for the exception process'
+        )
+    }
+    [ordered]@{
+        id         = 'certificate-authority'
+        title      = 'Certificate authority'
+        purpose    = 'What expires soon on this CA, and whether CRLs and ' +
+            'AIA/CDP paths are healthy.'
+        script     = 'Examples/Run.BGInfo.CertificateAuthority.ps1'
+        preset     = 'Midnight'
+        features   = @(
+            'New-BGInfoCalendarHeatmap'
+            'New-BGInfoChart -Kind HorizontalBar, Bar'
+            'New-BGInfoMetric -ThresholdDirection Below'
+            'New-BGInfoTable -StatusColumn'
+        )
+        chartForgeX = @(
+            'Calendar of expiry dates over the next 90 days'
+            '30, 60 and 90-day expiry bars'
+            'Failed requests per day, coloured by threshold'
+            'Template table with renewal state'
+        )
+    }
+    [ordered]@{
+        id         = 'backup-server'
+        title      = 'Backup server'
+        purpose    = 'Whether last night''s backups worked, and which jobs ' +
+            'need a retry before tonight.'
+        script     = 'Examples/Run.BGInfo.BackupServer.ps1'
+        preset     = 'Graphite'
+        features   = @(
+            'New-BGInfoTable -StatusColumn', 'New-BGInfoCalendarHeatmap'
+            'New-BGInfoMetric', 'thresholds', 'background glow'
+        )
+        chartForgeX = @(
+            'A year of nights as a calendar heatmap'
+            'Success-rate bars coloured by threshold'
+            'Repository progress bars at 80 and 90 %'
+            'Status list for the copies'
+        )
+    }
+    [ordered]@{
+        id         = 'jump-host'
+        title      = 'Jump host'
+        purpose    = 'The rules of a privileged access host: who is ' +
+            'elevated, what is recorded and what is never allowed.'
+        script     = 'Examples/Run.BGInfo.JumpHost.ps1'
+        preset     = 'Midnight'
+        features   = @(
+            'status labels', 'New-BGInfoQRCode', 'New-BGInfoList'
+            'New-BGInfoTable -StatusColumn'
+        )
+        chartForgeX = @(
+            'Large rule labels as a poster'
+            'QR code to the access policy'
+            'Allowed tools and baseline status lists'
+            'Admin sessions table'
+        )
+    }
+    [ordered]@{
+        id         = 'linux-server'
+        title      = 'Linux server'
+        purpose    = 'What this Linux box is, rendered headless under ' +
+            'PowerShell 7.'
+        script     = 'Examples/Run.BGInfo.LinuxServer.ps1'
+        preset     = 'Aurora'
+        features   = @(
+            '-FontFamilyName (monospace)', 'New-BGInfoTable', 'New-BGInfoList'
+            'New-BGInfoChart -Kind Area, ProgressBar', 'dots pattern'
+        )
+        chartForgeX = @(
+            'Area chart of load over 6 hours'
+            'Mount progress bars at 80 and 90 %'
+            'systemd unit and package status lists'
+            'Listening ports table'
+        )
+    }
 )
 
 if ($Scenario.Count -gt 0) {
