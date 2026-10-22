@@ -18,7 +18,7 @@ internal static class PowerShellFileSystemPath {
         return resolved;
     }
 
-    /// <summary>Preserves relative output names beneath the configuration directory and resolves qualified paths.</summary>
+    /// <summary>Preserves output paths relative to the configuration directory and resolves qualified paths.</summary>
     internal static string ResolveOutputFileName(SessionState sessionState, string path) {
         if (string.IsNullOrWhiteSpace(path)) return path;
         if (Path.IsPathRooted(path) || sessionState.Path.IsPSAbsolute(path, out _)

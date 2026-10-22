@@ -76,7 +76,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutputFileName
-Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
+Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
 
 ```yaml
 Type: String

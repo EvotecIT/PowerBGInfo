@@ -19,9 +19,9 @@ internal static class BgInfoPaths {
     /// This resolves case aliases and symbolic links. An unreadable existing component
     /// fails closed: guessing that two paths differ could permit overwriting the only original image.
     /// </remarks>
-    internal static string GetIdentity(string path) => GetIdentity(path, 0);
+    internal static string GetIdentity(string path) => NormalizeIdentity(ResolveIdentity(path, 0));
 
-    private static string GetIdentity(string path, int linkDepth) {
+    private static string ResolveIdentity(string path, int linkDepth) {
         if (linkDepth > 64) throw new IOException($"The filesystem link chain for '{path}' is too deep to establish a safe image identity.");
         var fullPath = Path.GetFullPath(path);
         var root = Path.GetPathRoot(fullPath)!;
@@ -42,10 +42,10 @@ internal static class BgInfoPaths {
                 throw new IOException($"Could not establish the filesystem identity of '{candidate}'. No image should overwrite an uncertain base path.", error);
             }
 
-            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0) {
+            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0 && ResolveLink(candidate) is { } linkTarget) {
                 // ResolveLinkTarget follows the leaf link chain, but its target can
                 // still contain symbolic-link parents (for example /tmp on macOS).
-                current = GetIdentity(ResolveLink(candidate), linkDepth + 1);
+                current = ResolveIdentity(linkTarget, linkDepth + 1);
                 continue;
             }
 
@@ -84,18 +84,19 @@ internal static class BgInfoPaths {
     }
 
     private static bool IsLink(string path) {
-        try { return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0; }
+        try { return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0 && ResolveLink(path) != null; }
         catch (FileNotFoundException) { return false; }
         catch (DirectoryNotFoundException) { return false; }
     }
 
-    private static string ResolveLink(string path) {
+    private static string? ResolveLink(string path) {
 #if NET472
         return WindowsPathIdentity.ResolveLink(path);
 #else
         FileSystemInfo item = Directory.Exists(path) ? new DirectoryInfo(path) : new FileInfo(path);
-        return item.ResolveLinkTarget(returnFinalTarget: true)?.FullName
-            ?? throw new IOException($"Could not resolve the filesystem link '{path}'.");
+        // Reparse points also represent ordinary files such as cloud placeholders.
+        // The platform API returns null for those rather than a link target.
+        return item.ResolveLinkTarget(returnFinalTarget: true)?.FullName;
 #endif
     }
 
@@ -108,7 +109,8 @@ internal static class BgInfoPaths {
         for (var index = 0; index < parts.Length; index++) {
             var candidate = Path.Combine(current, parts[index]);
             try {
-                current = (File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0 ? GetIdentity(ResolveLink(candidate)) : candidate;
+                current = (File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0 && ResolveLink(candidate) is { } target
+                    ? ResolveIdentity(target, 0) : candidate;
             } catch (FileNotFoundException) {
                 return AppendRemaining(current, parts, index);
             } catch (DirectoryNotFoundException) {
@@ -123,12 +125,39 @@ internal static class BgInfoPaths {
         return current;
     }
 
+    private static string NormalizeIdentity(string path) => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? NormalizeWindowsIdentity(path) : path;
+
+    /// <summary>Normalizes Windows comparison roots without changing physical lookup paths or suffix case.</summary>
+    internal static string NormalizeWindowsIdentity(string path) {
+        var identity = path;
+        var devicePrefix = identity.StartsWith(@"\\?\", StringComparison.Ordinal) || identity.StartsWith(@"\\.\", StringComparison.Ordinal);
+        if (devicePrefix && identity.Substring(4).StartsWith("UNC\\", StringComparison.OrdinalIgnoreCase)) {
+            identity = @"\\" + identity.Substring(8);
+        } else if (devicePrefix && identity.Length >= 7 && char.IsLetter(identity[4]) && identity[5] == ':' && identity[6] == '\\') {
+            identity = identity.Substring(4);
+        }
+        if (identity.Length >= 3 && char.IsLetter(identity[0]) && identity[1] == ':' && identity[2] == '\\') {
+            return char.ToUpperInvariant(identity[0]) + identity.Substring(1);
+        }
+        if (identity.StartsWith(@"\\", StringComparison.Ordinal) && !identity.StartsWith(@"\\?\", StringComparison.Ordinal)
+            && !identity.StartsWith(@"\\.\", StringComparison.Ordinal)) {
+            var serverEnd = identity.IndexOf('\\', 2);
+            if (serverEnd >= 0) {
+                var shareEnd = identity.IndexOf('\\', serverEnd + 1);
+                var rootEnd = shareEnd < 0 ? identity.Length : shareEnd;
+                return identity.Substring(0, rootEnd).ToUpperInvariant() + identity.Substring(rootEnd);
+            }
+        }
+        return identity;
+    }
+
     private sealed class FileSystemPathComparer : IEqualityComparer<string> {
         public bool Equals(string? left, string? right) => left == null || right == null
             ? left == right : AreSame(left, right);
 
         // Stable across creation: distinct case-sensitive names may share a bucket, while case
         // aliases must always share one even when a planned output did not exist when it was added.
-        public int GetHashCode(string path) => StringComparer.OrdinalIgnoreCase.GetHashCode(ResolveLinks(path));
+        public int GetHashCode(string path) => StringComparer.OrdinalIgnoreCase.GetHashCode(NormalizeIdentity(ResolveLinks(path)));
     }
 }

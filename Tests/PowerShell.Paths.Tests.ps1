@@ -48,10 +48,14 @@ Describe 'PowerShell filesystem locations' {
         [Environment]::CurrentDirectory = $originalProcessDirectory
     }
 
-    It 'renders an inline image using the PowerShell base image and output directory' {
-        $result = New-BGInfo -FilePath './base.png' -ConfigurationDirectory './inline' -OutputFileName 'nested/direct.png' -Target File { }
+    It 'renders an inline image with output path <OutputName> relative to the configuration directory' -TestCases @(
+        @{ OutputName = 'nested/direct.png'; ExpectedOutput = 'inline/nested/direct.png' }
+        @{ OutputName = '../sibling/direct.png'; ExpectedOutput = 'sibling/direct.png' }
+    ) {
+        param($OutputName, $ExpectedOutput)
+        $result = New-BGInfo -FilePath './base.png' -ConfigurationDirectory './inline' -OutputFileName $OutputName -Target File { }
 
-        $result | Should -Be (Join-Path $powerShellDirectory 'inline/nested/direct.png')
+        [IO.Path]::GetFullPath($result) | Should -Be (Join-Path $powerShellDirectory $ExpectedOutput)
         $image = Get-TestPngSize $result
         $image.Width | Should -Be 64
         $image.Height | Should -Be 40

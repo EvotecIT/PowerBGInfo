@@ -379,7 +379,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+            <maml:para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -460,7 +460,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+          <maml:para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1060,7 +1060,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+            <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1841,7 +1841,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+          <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -7678,7 +7678,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+            <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -8467,7 +8467,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
+          <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>

@@ -460,7 +460,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutputFileName
-Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
+Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
 
 ```yaml
 Type: String

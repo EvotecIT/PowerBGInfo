@@ -68,7 +68,11 @@ public partial class BgInfoGenerator
         var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
         var name = Path.GetFileNameWithoutExtension(outputPath);
         var extension = Path.GetExtension(outputPath);
-        var backupPath = Path.Combine(directory, $"{name}.PowerBGInfo-original-{Guid.NewGuid():N}{extension}");
+        var suffix = $".PowerBGInfo-original-{Guid.NewGuid():N}{extension}";
+        // Image extensions and this suffix are ASCII. Omit an oversized source stem
+        // instead of exceeding either UTF-16 or UTF-8 filename-component limits.
+        if (name.Length + suffix.Length > 255 || System.Text.Encoding.UTF8.GetByteCount(name + suffix) > 255) name = string.Empty;
+        var backupPath = Path.Combine(directory, name + suffix);
         File.Copy(sourcePath, backupPath);
         return backupPath;
     }

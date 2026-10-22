@@ -10,7 +10,7 @@ public sealed class CmdletInvokeBGInfo : PSCmdlet {
     [Parameter(Mandatory = true, Position = 0)]
     public string Path { get; set; } = string.Empty;
 
-    /// <para>Override output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
+    /// <para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
     [Parameter]
     public string OutputFileName { get; set; } = string.Empty;
 

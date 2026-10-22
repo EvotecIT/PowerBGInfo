@@ -4,6 +4,55 @@ namespace PowerBGInfo.Tests;
 
 public sealed class BgInfoFileIdentityTests {
     [Theory]
+    [InlineData(@"c:\Images\photo.png", @"C:\Images\photo.png")]
+    [InlineData(@"\\?\c:\Images\photo.png", @"C:\Images\photo.png")]
+    [InlineData(@"\\.\c:\Images\photo.png", @"C:\Images\photo.png")]
+    [InlineData(@"\\host\Share\Images\photo.png", @"\\HOST\SHARE\Images\photo.png")]
+    [InlineData(@"\\?\UNC\Host\share\Images\photo.png", @"\\HOST\SHARE\Images\photo.png")]
+    [InlineData(@"\\.\UNC\Host\share\Images\photo.png", @"\\HOST\SHARE\Images\photo.png")]
+    public void WindowsRootAliasesHaveOneComparisonIdentity(string path, string expected) {
+        Assert.Equal(expected, BgInfoPaths.NormalizeWindowsIdentity(path));
+    }
+
+    [Fact]
+    public void WindowsRootNormalizationRetainsCaseSensitiveDirectoryAndFileNames() {
+        Assert.NotEqual(BgInfoPaths.NormalizeWindowsIdentity(@"\\host\share\Images\photo.png"),
+            BgInfoPaths.NormalizeWindowsIdentity(@"\\HOST\SHARE\images\photo.png"));
+        Assert.NotEqual(BgInfoPaths.NormalizeWindowsIdentity(@"\\?\c:\Images\Photo.png"),
+            BgInfoPaths.NormalizeWindowsIdentity(@"C:\Images\photo.png"));
+    }
+
+    [Theory]
+    [InlineData("x", 220)]
+    [InlineData("é", 120)]
+    public void LongValidNamesRenderAndPreserveTheirOriginal(string letter, int count) {
+        using var folder = new FixtureFolder();
+        var source = folder.CreateImage("base.png");
+        var name = string.Concat(Enumerable.Repeat(letter, count)) + ".png";
+        var output = Path.Combine(folder.Path, name);
+        var originalPixels = Pixels(source);
+        using (var image = BgInfoRasterImage.Load(source)) image.Save(output);
+        Assert.Equal(originalPixels, Pixels(output));
+
+        var config = new BgInfoConfiguration {
+            FilePath = output, ConfigurationDirectory = folder.Path, OutputFileName = name,
+            Target = BgInfoTarget.File, Color = ChartColors.White, FontSize = 18
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Label, Name = "Preserve the original" });
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService());
+        var rendered = Pixels(generator.Generate(config));
+        Assert.NotEqual(originalPixels, rendered);
+        Assert.True(BgInfoOutputRegistry.TryGetSource(output, out var backup));
+        Assert.NotNull(backup);
+        Assert.Equal(originalPixels, Pixels(backup!));
+        Assert.Equal(rendered, Pixels(generator.Generate(config)));
+        Assert.Empty(Directory.GetFiles(folder.Path).Except(new[] {
+            source, output, backup!, Path.Combine(folder.Path, BgInfoOutputRegistry.FileName),
+            Path.Combine(folder.Path, BgInfoOutputRegistry.FileName + ".lock")
+        }));
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -66,7 +115,10 @@ public sealed class BgInfoFileIdentityTests {
         Assert.NotEqual(pixels, rendered);
         Assert.Equal(rendered, Pixels(generator.Generate(config)));
         Assert.Equal(pixels, Pixels(original));
-        Assert.Empty(Directory.GetFiles(folder.Path, "*.tmp"));
+        Assert.Empty(Directory.GetFiles(folder.Path).Except(new[] {
+            original, output, Path.Combine(folder.Path, BgInfoOutputRegistry.FileName),
+            Path.Combine(folder.Path, BgInfoOutputRegistry.FileName + ".lock")
+        }));
     }
 
     [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]

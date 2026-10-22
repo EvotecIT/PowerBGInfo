@@ -21,7 +21,7 @@ public class CmdletNewBGInfo : PSCmdlet {
     /// <para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</para>
     [Parameter]
     public string FilePath { get; set; } = string.Empty;
-    /// <para>Optional output file name. Relative names remain beneath ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
+    /// <para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
     [Parameter]
     public string OutputFileName { get; set; } = string.Empty;
 
