@@ -121,14 +121,25 @@
       if (prism.plugins && prism.plugins.autoloader) prism.plugins.autoloader.languages_path = PRISM_ROOT + 'components/';
       return prism;
     };
-    if (window.Prism && window.Prism.highlightElement) return Promise.resolve(configure());
-    if (!prismReady) {
-      window.Prism = window.Prism || {};
-      window.Prism.manual = true;
-      prismReady = loadScript(PRISM_ROOT + 'prism-core.js')
-        .then(function () { return loadScript(PRISM_ROOT + 'prism-autoloader.js'); })
-        .then(configure);
+    // Share an in-flight load even when core has finished but the autoloader has not.
+    if (prismReady) return prismReady;
+    var prism = window.Prism;
+    if (prism && prism.highlightElement && prism.plugins && prism.plugins.autoloader) {
+      return Promise.resolve(configure());
     }
+    window.Prism = window.Prism || {};
+    window.Prism.manual = true;
+    var coreReady = prism && prism.highlightElement
+      ? Promise.resolve() : loadScript(PRISM_ROOT + 'prism-core.js');
+    prismReady = coreReady.then(function () {
+      var loaded = window.Prism;
+      if (!loaded || !loaded.util || !loaded.highlightElement) throw new Error('Prism core did not initialize.');
+      if (!loaded.plugins || !loaded.plugins.autoloader) return loadScript(PRISM_ROOT + 'prism-autoloader.js');
+    }).then(configure).catch(function (error) {
+      // A later source-tab interaction can retry a failed component without reloading healthy core.
+      prismReady = null;
+      throw error;
+    });
     return prismReady;
   }
 
@@ -273,7 +284,10 @@
       tab.setAttribute('aria-selected', selected ? 'true' : 'false');
       tab.tabIndex = selected ? 0 : -1;
       var panel = document.getElementById(tab.getAttribute('aria-controls'));
-      if (panel) panel.hidden = !selected;
+      if (panel) {
+        panel.hidden = !selected;
+        if (selected) panel.querySelectorAll('code').forEach(highlight);
+      }
     });
   }
 
