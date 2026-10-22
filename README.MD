@@ -330,8 +330,8 @@ process's signed-in session; in session 0 it uses the active console user.
 
 ## Showcase
 
-Twelve wallpapers, each built for one job and one question from the person
-at that screen. They share the theme presets and start with a data block:
+Twenty-two wallpapers, each built for one job and one question from the
+person at that screen. They share the theme presets and start with a data block:
 replace the sample function with your own source and the layout keeps
 working. Every scenario renders in light and dark at any resolution and
 writes a file without touching the desktop.
@@ -350,6 +350,16 @@ writes a file without touching the desktop.
 | Build agent | Is this agent busy or broken, and is there disk left? | `Examples/Run.BGInfo.BuildAgent.ps1` |
 | Patch day | When does this PC restart, and is the rollout on track? | `Examples/Run.BGInfo.PatchDay.ps1` |
 | Kiosk or signage | One message from across the room, and a code for the details. | `Examples/Run.BGInfo.Signage.ps1` |
+| Production or test | Which environment is this, and what may I change here? | `Examples/Run.BGInfo.EnvironmentMarker.ps1` |
+| RDS session host | Is the broker still sending users here, and who is on it? | `Examples/Run.BGInfo.RdsSessionHost.ps1` |
+| SQL Server | Does every database have a recent backup and a current replica? | `Examples/Run.BGInfo.SqlServer.ps1` |
+| File server | Which shares are close to their quota, and when does the fullest run out? | `Examples/Run.BGInfo.FileServer.ps1` |
+| Server being retired | How long has this server got, and where do I work instead? | `Examples/Run.BGInfo.DecommissionNotice.ps1` |
+| Change freeze | May I change this now, until when, and who approves an exception? | `Examples/Run.BGInfo.ChangeFreeze.ps1` |
+| Certificate authority | What expires soon, and are the CRL and AIA/CDP paths healthy? | `Examples/Run.BGInfo.CertificateAuthority.ps1` |
+| Backup server | Did last night's backups work, and what needs a retry before tonight? | `Examples/Run.BGInfo.BackupServer.ps1` |
+| Jump host | Who is elevated, what is recorded, and what is never allowed here? | `Examples/Run.BGInfo.JumpHost.ps1` |
+| Linux server | What is this Linux box, rendered headless under PowerShell 7? | `Examples/Run.BGInfo.LinuxServer.ps1` |
 
 | | |
 | --- | --- |
