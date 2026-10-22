@@ -124,20 +124,95 @@ public sealed class BgInfoFileIdentityTests {
     [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]
     private static extern int CreateHardLink(string existingPath, string newPath);
 
-    [Fact]
-    public void PlannedOutputSetRemainsValidWhenADifferentlyCasedFileIsCreated() {
+    [Theory]
+    [InlineData("photo.png", "Photo.png")]
+    [InlineData("caf\u00e9.png", "cafe\u0301.png")]
+    public void PlannedOutputSetRemainsValidWhenAFileAliasIsCreated(string plannedName, string actualName) {
         using var folder = new FixtureFolder();
-        var planned = Path.Combine(folder.Path, "photo.png");
-        var actual = Path.Combine(folder.Path, "Photo.png");
+        var planned = Path.Combine(folder.Path, plannedName);
+        var actual = Path.Combine(folder.Path, actualName);
         var hash = BgInfoPaths.Comparer.GetHashCode(planned);
         var outputs = new HashSet<string>(BgInfoPaths.Comparer) { planned };
-        folder.CreateImage("Photo.png");
+        folder.CreateImage(actualName);
 
         var aliases = File.Exists(planned);
         Assert.Equal(hash, BgInfoPaths.Comparer.GetHashCode(planned));
         Assert.Equal(aliases, outputs.Contains(actual));
         Assert.Equal(!aliases, outputs.Add(actual));
         Assert.Equal(aliases ? 1 : 2, outputs.Count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnicodeAliasesFollowTheFilesystemAndPreserveTheOriginal(bool backgroundImage) {
+        using var folder = new FixtureFolder();
+        var images = Path.Combine(folder.Path, "caf\u00e9");
+        var aliasDirectory = Path.Combine(folder.Path, "cafe\u0301");
+        Directory.CreateDirectory(images);
+        var original = folder.CreateImage(Path.Combine("caf\u00e9", "photo-\u00e9.png"));
+        var output = Path.Combine(aliasDirectory, "photo-e\u0301.png");
+        var aliases = File.Exists(output);
+        if (!Directory.Exists(aliasDirectory)) Directory.CreateDirectory(aliasDirectory);
+        Assert.Equal(aliases, BgInfoPaths.AreSame(original, output));
+        if (aliases) {
+            Assert.Equal(BgInfoPaths.GetIdentity(original), BgInfoPaths.GetIdentity(output));
+            Assert.Equal(BgInfoPaths.Comparer.GetHashCode(original), BgInfoPaths.Comparer.GetHashCode(output));
+        }
+        var originalPixels = Pixels(original);
+        var config = new BgInfoConfiguration {
+            FilePath = backgroundImage ? string.Empty : original,
+            Background = backgroundImage ? new BgInfoBackground { Width = 320, Height = 180, ImagePath = original } : null,
+            ConfigurationDirectory = aliasDirectory, OutputFileName = Path.GetFileName(output), Target = BgInfoTarget.File,
+            Color = ChartColors.White, FontSize = 18
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Label, Name = "Unicode original" });
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService());
+        var rendered = Pixels(generator.Generate(config));
+        Assert.NotEqual(originalPixels, rendered);
+        Assert.True(BgInfoOutputRegistry.TryGetSource(output, out var source));
+        Assert.NotNull(source);
+        Assert.Equal(originalPixels, Pixels(source!));
+        Assert.Equal(rendered, Pixels(generator.Generate(config)));
+        Assert.Equal(aliases ? 1 : 0, Directory.GetFiles(images, "*.PowerBGInfo-original-*.png").Length);
+        if (!aliases) Assert.Equal(originalPixels, Pixels(original));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MacFirmlinkViewsPreserveTheOriginalAndSharePlannedOutputKeys(bool backgroundImage) {
+        if (!OperatingSystem.IsMacOS()) return;
+        using var folder = new FixtureFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Caches"));
+        var original = folder.CreateImage("photo.png");
+        var aliasDirectory = "/System/Volumes/Data" + folder.Path;
+        var output = Path.Combine(aliasDirectory, "photo.png");
+        Assert.True(File.Exists(output));
+        Assert.True(BgInfoPaths.AreSame(original, output));
+        Assert.Equal(BgInfoPaths.Comparer.GetHashCode(original), BgInfoPaths.Comparer.GetHashCode(output));
+        var planned = Path.Combine(folder.Path, "planned.png");
+        var aliasPlanned = Path.Combine(aliasDirectory, "planned.png");
+        var outputs = new HashSet<string>(BgInfoPaths.Comparer) { planned };
+        Assert.Contains(aliasPlanned, outputs);
+        folder.CreateImage("planned.png");
+        Assert.Contains(aliasPlanned, outputs);
+
+        var originalPixels = Pixels(original);
+        var config = new BgInfoConfiguration {
+            FilePath = backgroundImage ? string.Empty : original,
+            Background = backgroundImage ? new BgInfoBackground { Width = 320, Height = 180, ImagePath = original } : null,
+            ConfigurationDirectory = aliasDirectory, OutputFileName = "photo.png", Target = BgInfoTarget.File,
+            Color = ChartColors.White, FontSize = 18
+        };
+        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Label, Name = "Firmlink original" });
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService());
+        var rendered = Pixels(generator.Generate(config));
+        Assert.True(BgInfoOutputRegistry.TryGetSource(original, out var source));
+        Assert.NotNull(source);
+        Assert.Equal(originalPixels, Pixels(source!));
+        Assert.NotEqual(originalPixels, rendered);
+        Assert.Equal(rendered, Pixels(generator.Generate(config)));
+        Assert.Single(Directory.GetFiles(folder.Path, "*.PowerBGInfo-original-*.png"));
     }
 
     [Fact]
@@ -269,8 +344,8 @@ public sealed class BgInfoFileIdentityTests {
     }
 
     private sealed class FixtureFolder : IDisposable {
-        internal FixtureFolder() {
-            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "bginfo-identity-" + Guid.NewGuid().ToString("N"));
+        internal FixtureFolder(string? root = null) {
+            Path = System.IO.Path.Combine(root ?? System.IO.Path.GetTempPath(), "bginfo-identity-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(Path);
         }
 
