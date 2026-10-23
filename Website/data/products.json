@@ -1,0 +1,44 @@
+{
+  "family": {
+    "title": "Three tools for the same desktop",
+    "body": "PowerBGInfo shows what a machine is and how it is doing. InformationBox lets the person at the desk act on it. DesktopManager controls the desktop itself. Use one, or let them work together."
+  },
+  "products": [
+    {
+      "id": "powerbginfo",
+      "title": "PowerBGInfo",
+      "verb": "Show",
+      "url": "/",
+      "summary": "Facts and health drawn onto the wallpaper and lock screen. Everyone at the machine sees them without clicking anything, and you deploy it to whole fleets.",
+      "for": "Admins, helpdesks, labs, servers, signage",
+      "ships": "PowerShell module, CLI, JSON layouts",
+      "runs": "Windows; macOS and Linux in preview",
+      "license": "MIT",
+      "source": "https://github.com/EvotecIT/PowerBGInfo"
+    },
+    {
+      "id": "informationbox",
+      "title": "InformationBox",
+      "verb": "Ask and fix",
+      "url": "/informationbox/",
+      "summary": "A self-service window for the person at the desk. Check status, copy an IP address, open a ticket or run an approved fix without calling the helpdesk.",
+      "for": "End users and the helpdesk behind them",
+      "ships": "Portable Windows app, white-label",
+      "runs": "Windows",
+      "license": "AGPL-3.0",
+      "source": "https://github.com/EvotecIT/InformationBox"
+    },
+    {
+      "id": "desktopmanager",
+      "title": "DesktopManager",
+      "verb": "Control",
+      "url": "/desktopmanager/",
+      "summary": "Monitors, windows, wallpaper, audio, power, devices and input. Use the app with hotkeys and rules, or automate it from PowerShell, C#, a CLI or an AI agent.",
+      "for": "Power users, admins, automation, AI agents",
+      "ships": "App, 133 cmdlets, NuGet package, CLI, MCP server",
+      "runs": "Windows; display and wallpaper API on macOS and Linux",
+      "license": "MIT",
+      "source": "https://github.com/EvotecIT/DesktopManager"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "headline": "Every machine, labelled on its own desktop.",
+  "lede": "PowerBGInfo draws a machine's facts, health and charts onto its wallpaper and lock screen. You describe the layout in PowerShell or JSON, and it renders the same way on every machine you deploy it to.",
+  "screens": ["domain-controller", "helpdesk", "on-call", "build-agent", "classroom", "meeting-room"],
+  "wall": {
+    "title": "Twelve wallpapers, each with one job",
+    "body": "Each one answers a question for the person in front of the screen, in light and dark, at any resolution. Every script starts with fixed sample data, so you can reproduce the render before you connect your own sources.",
+    "scenarios": ["server-status", "helpdesk", "hyperv-host", "patch-day", "branch-office", "signage"]
+  },
+  "platforms": {
+    "title": "Where it runs",
+    "body": "Windows is supported today. macOS, Linux and headless rendering are in preview and ship with the next release. Each platform states what it can and cannot do, so a render never pretends a desktop accepted it."
+  }
+}

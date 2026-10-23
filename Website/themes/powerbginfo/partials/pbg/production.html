@@ -1,0 +1,37 @@
+  <section class="pb-atlas pbg-prod" id="production" aria-labelledby="pbg-prod-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-prod-title">{{ prod.title }}</h2>
+      <p>{{ prod.body }}</p>
+    </div>
+    <div class="pbg-routes">
+      <table>
+        <thead><tr><th scope="col">Route</th><th scope="col">When to use it</th><th scope="col">Guide</th></tr></thead>
+        <tbody>
+          {{~ for r in prod.routes ~}}
+          <tr style="--key: var(--pb-s{{ for.index + 1 }})">
+            <th scope="row"><span class="pb-key" aria-hidden="true"></span>{{ r.route }}</th>
+            <td>{{ r.when }}</td>
+            <td><a class="pb-link" href="{{ prod.guideBase }}{{ r.guide }}">{{ r.route }} guide</a></td>
+          </tr>
+          {{~ end ~}}
+        </tbody>
+      </table>
+    </div>
+    <ul class="pbg-notes">
+      {{~ for n in prod.notes ~}}
+      <li class="pbg-part">
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.body }}</p>
+        <p class="pbg-part__links"><a class="pb-link" href="{{ prod.guideBase }}{{ n.guide }}">{{ n.guideTitle }}</a></p>
+      </li>
+      {{~ end ~}}
+    </ul>
+    <nav class="pbg-guides" aria-labelledby="pbg-guides-title">
+      <h3 id="pbg-guides-title">Every guide</h3>
+      <ul>
+        {{~ for g in prod.guides ~}}
+        <li><a href="{{ prod.guideBase }}{{ g.slug }}"><strong>{{ g.title }}</strong><span>{{ g.body }}</span></a></li>
+        {{~ end ~}}
+      </ul>
+    </nav>
+  </section>

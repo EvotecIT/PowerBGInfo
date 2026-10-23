@@ -1,0 +1,117 @@
+  <section class="pb-atlas" id="scenarios" aria-labelledby="pbg-scenarios-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-scenarios-title">{{ sc.title }}</h2>
+      <p>{{ sc.body }}</p>
+    </div>
+
+    {{~ for id in sc.featured; s = scen[id]; light = s.renders.light; dark = s.renders.dark ~}}
+    <section class="pb-atlas__group pbg-scene" id="{{ s.id }}" aria-labelledby="pbg-{{ s.id }}" style="--key: {{ use_key[use_of[s.id]] }}">
+      <h3 class="pb-atlas__group-title" id="pbg-{{ s.id }}"><span class="pb-key" aria-hidden="true"></span>{{ s.title }}</h3>
+      <div class="pbg-scene__head">
+        <p class="pbg-scene__purpose">{{ s.purpose }}</p>
+        <ul class="pb-tags" aria-label="ChartForgeX in this wallpaper">
+          {{~ if s.theme ~}}<li class="pb-tag"><span class="pb-key pb-key--hollow" aria-hidden="true"></span>{{ s.theme }} theme preset</li>{{~ end ~}}
+          {{~ for f in s.features ~}}<li class="pb-tag"><span class="pb-key" aria-hidden="true"></span>{{ f }}</li>{{~ end ~}}
+        </ul>
+      </div>
+      <figure class="pb-showcase__frame">
+        <div class="pb-showcase__bar">
+          <span class="pb-showcase__name"><span class="pb-only-light">{{ light.file }}</span><span class="pb-only-dark">{{ dark.file }}</span></span>
+          <span class="pb-showcase__links">
+            <a class="pb-only-light" aria-label="{{ s.title }}, light theme, full size PNG" href="{{ light.url }}">PNG <span class="pb-count">{{ light.width }} x {{ light.height }}, {{ light.kb }} KB</span></a>
+            <a class="pb-only-dark" aria-label="{{ s.title }}, dark theme, full size PNG" href="{{ dark.url }}">PNG <span class="pb-count">{{ dark.width }} x {{ dark.height }}, {{ dark.kb }} KB</span></a>
+            <a href="{{ s.url }}" aria-label="{{ s.file }} on GitHub">Script on GitHub</a>
+          </span>
+        </div>
+        <div class="pb-showcase__plate">
+          {{~ img_renders = s.renders; img_alt = pbg.alts[s.id]; img_sizes = "(max-width: 1280px) 100vw, 1180px" ~}}
+          {{ include "powerbginfo/image" }}
+        </div>
+      </figure>
+      {{~ if s.data ~}}
+      <div class="pbg-tabs" data-pb-tabs>
+        <div class="pb-seg" role="tablist" aria-label="{{ s.title }} source">
+          <button type="button" role="tab" id="pbg-{{ s.id }}-tab-draw" aria-controls="pbg-{{ s.id }}-draw" aria-selected="true" tabindex="0"><span class="pb-key" aria-hidden="true"></span>Presentation</button>
+          <button type="button" role="tab" id="pbg-{{ s.id }}-tab-data" aria-controls="pbg-{{ s.id }}-data" aria-selected="false" tabindex="-1"><span class="pb-key pb-key--hollow" aria-hidden="true"></span>Data</button>
+        </div>
+        <figure class="pb-codeblock pbg-scene__code" data-lang="powershell" role="tabpanel" id="pbg-{{ s.id }}-draw" aria-labelledby="pbg-{{ s.id }}-tab-draw">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ s.excerpt | html.escape }}</code></pre>
+        </figure>
+        <figure class="pb-codeblock pbg-scene__code" data-lang="powershell" role="tabpanel" id="pbg-{{ s.id }}-data" aria-labelledby="pbg-{{ s.id }}-tab-data" hidden>
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ s.data | html.escape }}</code></pre>
+        </figure>
+      </div>
+      {{~ else ~}}
+      <figure class="pb-codeblock pbg-scene__code" data-lang="powershell">
+        <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ s.excerpt | html.escape }}</code></pre>
+      </figure>
+      {{~ end ~}}
+      <div class="pbg-scene__more">
+        <details class="pbg-source">
+          <summary>Full script <span class="pb-count">{{ s.lines }} lines</span></summary>
+          <figure class="pb-codeblock" data-lang="powershell">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.script }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ s.source | html.escape }}</code></pre>
+          </figure>
+        </details>
+        <p><a class="pb-link" href="{{ s.url }}#L{{ s.excerptFrom }}-L{{ s.lines }}">Lines {{ s.excerptFrom }} to {{ s.lines }} on GitHub</a></p>
+      </div>
+    </section>
+    {{~ end ~}}
+
+    <div class="pbg-block pbg-more" id="more-wallpapers">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ sc.more.title }}</h3>
+          <p>{{ sc.more.body }}</p>
+        </div>
+      </div>
+      <div class="pb-filters pb-seg pb-seg--legend" role="group" aria-label="Filter wallpapers by use" data-pb-filters>
+        <button type="button" aria-pressed="true" data-filter="all" style="--key: var(--pb-ink)"><span class="pb-key" aria-hidden="true"></span>All <span class="pb-count">{{ more_count }}</span></button>
+        {{~ for u in sc.uses; if more[u.id] > 0 ~}}
+        <button type="button" aria-pressed="false" data-filter="{{ u.id }}" style="{{ keys[u.id] }}"><span class="pb-key" aria-hidden="true"></span>{{ u.label }} <span class="pb-count">{{ more[u.id] }}</span></button>
+        {{~ end; end ~}}
+      </div>
+      <ul class="pb-grid" data-pb-gallery>
+        {{~ for s in show.scenarios; if !featured[s.id]
+            tabs = '[{"label":"Presentation","from":' + s.excerptFrom + ',"to":' + s.lines + '}'
+            if s.dataFrom; tabs = tabs + ',{"label":"Data","from":' + s.dataFrom + ',"to":' + s.dataTo + '}'; end
+            item = {}; item.id = s.id; item.category = use_of[s.id]; item.title = s.title; item.note = s.purpose
+            item.familyLabel = s.theme + " preset"; item.alt = pbg.alts[s.id]; item.tabs = tabs + "]"
+            item.thumbnail = s.renders.light.url; item.darkThumbnail = s.renders.dark.url
+            item.thumbWidth = s.renders.light.width; item.thumbHeight = s.renders.light.height
+            item.thumbSizes = "(max-width: 560px) 50vw, (max-width: 1180px) 33vw, 390px"
+            item.full = s.renders.light.url; item.darkFull = s.renders.dark.url; item.source = s.text; item.html = s.url ~}}
+        {{ include "gallery-card" }}
+        {{~ end; end ~}}
+      </ul>
+    </div>
+
+    {{~ scr = sc.screens ~}}
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ scr.title }}</h3>
+          <p>{{ scr.body }}</p>
+        </div>
+      </div>
+      <div class="pbg-screens">
+        {{~ for it in scr.items; s = scen[it.scenario]; z = s.screens[it.size]
+            shape = "landscape"; img_sizes = "(max-width: 900px) 100vw, 940px"
+            if z.height > z.width; shape = "portrait"; img_sizes = "(max-width: 900px) 240px, 230px"; end ~}}
+        <figure class="pb-output pbg-screens__{{ shape }}" style="--key: {{ use_key[use_of[s.id]] }}">
+          <figcaption><span class="pb-output__file">{{ it.label }}</span><span>{{ z.width }} x {{ z.height }}</span></figcaption>
+          {{~ img_renders = z.renders; img_alt = it.alt ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+        {{~ end ~}}
+      </div>
+    </div>
+    <p class="pb-atlas__reference">Rendered by <code>{{ src.runner }}</code> from <a href="{{ src.url }}/tree/{{ src.commit }}/Examples">PowerBGInfo {{ src.short }}</a>, every scenario at 1920 x 1080 and these two also at their own screen sizes. Every wallpaper on this page is a script's output, unedited.</p>
+    {{~ viewer_lang = "powershell"; viewer_label = "PowerShell"; viewer_open = "Full-size PNG"; viewer_page = "Script on GitHub"
+        viewer_sizes = "(max-width: 560px) calc(100vw - 50px), (max-width: 1272px) calc(100vw - 90px), 1180px"; viewer_stack = true ~}}
+    {{ include "gallery-dialog" }}
+  </section>

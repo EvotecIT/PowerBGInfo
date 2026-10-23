@@ -1,0 +1,242 @@
+/* Header navigation: two groups (Product, Developers), each a disclosure button that opens a panel of destinations.
+   A destination shows a thumbnail of a rendered wallpaper or screen and carries a series key, like a legend entry. The group
+   holding the current page shows that page as a keyed chip, so the active route reads as a selected legend entry.
+   Without JavaScript (no .pb-js on <html>) panels open on hover and focus; on phones every group is listed open. */
+
+.pb-nav {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.pb-nav__groups { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.pb-navgroup { position: relative; }
+
+.pb-navgroup__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pb-ink-2);
+  font: inherit;
+  font-size: .9375rem;
+  font-weight: 620;
+  font-stretch: 104%;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pb-navgroup__trigger:hover,
+.pb-navgroup__trigger[aria-expanded="true"] { border-color: var(--pb-line); background: var(--pb-card); color: var(--pb-ink); }
+.pb-navgroup.is-current > .pb-navgroup__trigger { color: var(--pb-ink); }
+.pb-navgroup__chevron { flex: none; color: var(--pb-ink-3); transition: transform .18s ease; }
+.pb-navgroup__trigger[aria-expanded="true"] .pb-navgroup__chevron { transform: rotate(180deg); }
+
+/* The current page: its group's button carries a key in the page's series colour, and the page itself is set as a
+   selected legend entry after the groups. Every slot keeps its size on every page, so nothing in the header moves. */
+.pb-navgroup__mark { flex: none; width: 8px; height: 8px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--pb-line-strong); }
+.pb-navgroup.is-current .pb-navgroup__mark { background: var(--key); box-shadow: none; }
+.pb-nav__here {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 7px;
+  min-height: 28px;
+  margin-left: 6px;
+  padding: 0 10px 0 9px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--key) 15%, var(--pb-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--key) 55%, transparent);
+  color: var(--pb-ink);
+  font-size: .8125rem;
+  font-weight: 680;
+  white-space: nowrap;
+}
+.pb-nav__here .pb-key { width: 8px; height: 8px; }
+/* Panel */
+.pb-navpanel {
+  position: absolute;
+  top: calc(100% + 13px);
+  left: -6px;
+  z-index: 30;
+  display: none;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--pb-gutter));
+  padding: 16px 16px 14px;
+  border: 1px solid var(--pb-line-strong);
+  border-radius: var(--pb-r-lg);
+  background: var(--pb-card);
+  box-shadow: var(--pb-shadow-float);
+}
+.pb-navpanel::before {
+  /* An axis tick under the open button, and a bridge so pointer travel from button to panel keeps it open. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 14px;
+}
+.pb-navpanel::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: -1px;
+  width: 2px;
+  height: 9px;
+  background: var(--pb-accent);
+}
+.pb-navgroup__trigger[aria-expanded="true"] + .pb-navpanel { display: block; }
+:root:not(.pb-js) .pb-navgroup:is(:hover, :focus-within) > .pb-navpanel { display: block; }
+
+.pb-navpanel__lede {
+  margin: 0 4px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--pb-line);
+  color: var(--pb-ink-3);
+  font-size: .8125rem;
+}
+.pb-navpanel__items {
+  display: grid;
+  grid-template-columns: repeat(4, 184px);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pb-navpanel[data-count="5"] .pb-navpanel__items { grid-template-columns: repeat(5, 184px); }
+.pb-navpanel[data-count="3"] .pb-navpanel__items { grid-template-columns: repeat(3, 184px); }
+/* Five destinations need about 980px; where that would run past the viewport, they wrap to three columns. */
+@media (max-width: 1279px) { .pb-navpanel[data-count="5"] .pb-navpanel__items { grid-template-columns: repeat(3, 184px); } }
+.pb-navpanel[data-count="2"] .pb-navpanel__items { grid-template-columns: repeat(2, 184px); }
+
+.pb-navitem {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 4px;
+  height: 100%;
+  padding: 8px 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+.pb-navitem:hover { border-color: var(--pb-line); background: var(--pb-card-alt); }
+.pb-navitem:hover .pb-navitem__thumb { border-color: var(--pb-ink-3); }
+.pb-navitem__thumb {
+  display: block;
+  margin-bottom: 6px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--pb-line);
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(to right, var(--pb-grid) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(to bottom, var(--pb-grid) 0 1px, transparent 1px 16px),
+    var(--pb-page);
+}
+.pb-navitem__thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.pb-navitem__link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--pb-ink);
+  font-size: .9375rem;
+  font-weight: 680;
+  font-stretch: 104%;
+  text-decoration: none;
+}
+.pb-navitem__link::after {
+  /* The whole entry is the link's hit area; the link text stays just the destination's name. */
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+}
+.pb-navitem__link:focus-visible { outline: none; }
+.pb-navitem__link:focus-visible::after { outline: 2px solid var(--pb-focus); outline-offset: 2px; }
+.pb-navitem__link .pb-key { width: 9px; height: 9px; }
+.pb-navitem__desc { color: var(--pb-ink-2); font-size: .8125rem; line-height: 1.4; }
+.pb-navitem.is-current {
+  border-color: color-mix(in srgb, var(--key) 50%, transparent);
+  background: color-mix(in srgb, var(--key) 8%, var(--pb-card));
+}
+.pb-navitem.is-current .pb-navitem__thumb { border-color: var(--key); box-shadow: inset 0 -3px 0 var(--key); }
+.pb-nav__actions { display: flex; align-items: center; gap: 8px; }
+.pb-nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
+.pb-nav-toggle__label { display: none; }
+
+/* Phones and small tablets: the toggle opens a sheet that lists every destination with its thumbnail. */
+@media (max-width: 960px) {
+  .pb-nav-toggle__label {
+    display: grid;
+    gap: 5px;
+    margin-left: auto;
+    padding: 12px 10px;
+    cursor: pointer;
+  }
+  .pb-nav-toggle__label span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--pb-ink); transition: transform .18s ease; }
+  .pb-nav-toggle:checked + .pb-nav-toggle__label span:first-child { transform: translateY(3.5px) rotate(45deg); }
+  .pb-nav-toggle:checked + .pb-nav-toggle__label span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+  .pb-nav-toggle:focus-visible + .pb-nav-toggle__label { outline: 2px solid var(--pb-focus); border-radius: 8px; }
+  .pb-nav {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    padding: 12px var(--pb-gutter) 20px;
+    border-bottom: 1px solid var(--pb-line);
+    background: var(--pb-page);
+  }
+  .pb-nav-toggle:checked ~ .pb-nav { display: flex; }
+  .pb-nav__groups { flex-direction: column; gap: 12px; }
+  .pb-navgroup__trigger {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    border-bottom: 1px solid var(--pb-line);
+    border-radius: 0;
+    font-size: 1rem;
+  }
+  .pb-navgroup__trigger:hover,
+  .pb-navgroup__trigger[aria-expanded="true"] { background: transparent; }
+  .pb-navgroup__chevron { margin-left: auto; }
+  .pb-nav__here { display: none; }
+  .pb-navpanel,
+  :root:not(.pb-js) .pb-navgroup .pb-navpanel {
+    position: static;
+    display: block;
+    width: auto;
+    max-width: none;
+    padding: 8px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .pb-js .pb-navgroup__trigger[aria-expanded="false"] + .pb-navpanel { display: none; }
+  .pb-navpanel::before, .pb-navpanel::after, .pb-navpanel__lede { display: none; }
+  .pb-navpanel__items,
+  .pb-navpanel[data-count] .pb-navpanel__items { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .pb-navitem {
+    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 8px;
+  }
+  .pb-navitem__thumb { grid-row: 1 / span 2; margin: 0; }
+  .pb-navitem__link { align-self: end; }
+  .pb-nav__actions { padding-top: 12px; border-top: 1px solid var(--pb-line); }
+}

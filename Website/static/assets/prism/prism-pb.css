@@ -1,0 +1,3 @@
+/* Prism on chartforgex.com. Token colours and the code block surface live in the theme (base.css), so code
+   highlighted by PowerForge, the gallery viewer and the playground shares one palette that follows the page theme. */
+code[class*="language-"] { background: none; text-shadow: none; font-family: var(--pb-mono); }

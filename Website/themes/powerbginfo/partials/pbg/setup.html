@@ -1,0 +1,23 @@
+{{~ ## PowerBGInfo story data, bound once per page. The scenario and feature renders come from
+     data/powerbginfo-showcase.json (build/Sync-PowerBGInfo.ps1), the build steps, their changed lines and the source
+     snippets from data/powerbginfo-build.json (build/Render-PowerBGInfoSteps.ps1), and the copy, widget crops and
+     production routes from data/powerbginfo.json. Nothing on the page is a mock-up. ## ~}}
+{{~ pbg = data.powerbginfo; show = data["powerbginfo-showcase"]; src = show.source; built = data["powerbginfo-build"]
+    hero = null; for s in show.scenarios; if s.id == pbg.hero.show; hero = s; end; end
+    steps = []; for s in built.steps; if s.section == "build"; steps = steps | array.add s; end; end
+    timeout = null; for s in built.steps; if s.id == "11-timeout"; timeout = s; end; end
+    final = steps | array.last
+    swap = null; for s in built.sources; if s.id == "system-info"; swap = s; end; end
+    prod = pbg.production ~}}
+  {{~ ## Scenarios: a few in full with their code, the rest as gallery cards that open the shared viewer, filtered by
+       use, and the scenarios rendered at screen sizes other than 1920 x 1080. The featured list, the uses and the
+       screens come from data/powerbginfo.json; each use takes the next series key. ## ~}}
+  {{~ sc = pbg.scenarios; scen = {}; for s in show.scenarios; scen[s.id] = s; end
+      featured = {}; for id in sc.featured; featured[id] = true; end
+      use_of = {}; use_key = {}; keys = {}; hollow = null; more = {}
+      for u in sc.uses
+        use_key[u.id] = "var(--pb-s" + (for.index + 1) + ")"; keys[u.id] = "--key: " + use_key[u.id]; more[u.id] = 0
+        for id in u.scenarios; use_of[id] = u.id; end
+      end
+      more_count = 0
+      for s in show.scenarios; if !featured[s.id]; more_count = more_count + 1; more[use_of[s.id]] = more[use_of[s.id]] + 1; end; end ~}}

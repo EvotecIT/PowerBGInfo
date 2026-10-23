@@ -1,0 +1,29 @@
+{{~ ## One card that opens the viewer dialog (gallery-dialog.html): the gallery, the home preview and the PowerBGInfo
+     scenarios. Set item (and optionally keys and hollow, by category) before including it. Optional item fields: id,
+     note (a line under the title, also shown in the viewer), thumbWidth, thumbHeight and thumbSizes (default a
+     400 x 280 thumbnail), full and darkFull (the full-size file the viewer links), alt (the viewer's alt text) and
+     tabs (JSON line ranges of the source, [{"label", "from", "to"}]). Without item.image the viewer shows the card's
+     own image for the theme. ## ~}}
+{{~ card_w = 400; card_h = 280; if item.thumbWidth; card_w = item.thumbWidth; card_h = item.thumbHeight; end ~}}
+<li class="pb-card{{ if hollow && hollow[item.category] }} pb-card--hollow{{ end }}" data-category="{{ item.category }}"{{ if item.id }} id="{{ item.id }}"{{ end }}{{ if keys && keys[item.category] }} style="{{ keys[item.category] }}"{{ end }}>
+  <button type="button" class="pb-card__open" data-pb-gallery-open
+    data-title="{{ item.title | html.escape }}" data-family="{{ item.familyLabel | html.escape }}"{{ if item.note }} data-note="{{ item.note | html.escape }}"{{ end }}
+    data-image="{{ item.image }}" data-dark-image="{{ item.darkImage }}"
+    data-full="{{ item.full }}" data-dark-full="{{ item.darkFull }}"
+    data-source="{{ item.source }}" data-dark-source="{{ item.darkSource }}"
+    data-page="{{ item.html }}" data-dark-page="{{ item.darkHtml }}"{{ if item.tabs }}
+    data-tabs="{{ item.tabs | html.escape }}"{{ end }}{{ if item.alt }}
+    data-alt="{{ item.alt | html.escape }}"{{ end }}>
+    <span class="pb-card__media">
+      <img class="pb-only-light" src="{{ item.thumbnail }}" width="{{ card_w }}" height="{{ card_h }}"{{ if item.thumbSizes }} sizes="{{ item.thumbSizes }}"{{ end }} loading="lazy" decoding="async" alt="" />
+      <img class="pb-only-dark" src="{{ item.darkThumbnail }}" width="{{ card_w }}" height="{{ card_h }}"{{ if item.thumbSizes }} sizes="{{ item.thumbSizes }}"{{ end }} loading="lazy" decoding="async" alt="" />
+    </span>
+    <span class="pb-card__text">
+      <span class="pb-card__title">{{ item.title }}</span>
+      {{~ if item.note ~}}
+      <span class="pb-card__note">{{ item.note }}</span>
+      {{~ end ~}}
+      <span class="pb-card__family">{{ item.familyLabel }}</span>
+    </span>
+  </button>
+</li>

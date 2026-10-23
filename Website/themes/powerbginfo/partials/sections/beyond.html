@@ -1,0 +1,17 @@
+<section class="pb-section pb-beyond" aria-labelledby="pb-beyond-title">
+  <div class="pb-section__head">
+    <h2 id="pb-beyond-title">More than single charts</h2>
+    <p>The same renderer lays out dashboards, network topology, maps and hierarchies, so a report keeps one look from the first chart to the last diagram.</p>
+  </div>
+  <div class="pb-beyond__grid">
+    {{~ for tile in data.home.beyond ~}}
+    <a class="pb-tile{{ if tile.size == "wide" }} pb-tile--wide{{ end }}" href="{{ tile.url }}">
+      <span class="pb-tile__media"><img src="{{ tile.image }}" width="{{ tile.width }}" height="{{ tile.height }}" loading="lazy" decoding="async" alt="{{ tile.alt }}" /></span>
+      <span class="pb-tile__text">
+        <strong>{{ tile.title }}</strong>
+        <span>{{ tile.body }}</span>
+      </span>
+    </a>
+    {{~ end ~}}
+  </div>
+</section>

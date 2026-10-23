@@ -1,0 +1,23 @@
+<section class="pb-section pb-showcase" aria-labelledby="pb-showcase-title">
+  <div class="pb-section__head">
+    <h2 id="pb-showcase-title">See it in action</h2>
+    <p>Report-ready dashboards, maps, matrices and flows from the examples project. Download the output or read the code that made it.</p>
+  </div>
+  <div class="pb-showcase__grid">
+    {{~ for c in data.home.showcases ~}}
+    <article class="pb-case{{ if for.first }} pb-case--feature{{ end }}">
+      <a class="pb-case__media" href="{{ c.html }}"><img src="{{ c.png }}" width="{{ c.width }}" height="{{ c.height }}" loading="lazy" decoding="async" alt="{{ c.alt }}" /></a>
+      <div class="pb-case__text">
+        <h3>{{ c.title }}</h3>
+        <p>{{ c.summary }}</p>
+        <p class="pb-case__links">
+          <a href="{{ c.svg }}" aria-label="{{ c.title }} as SVG">SVG</a>
+          <a href="{{ c.png }}" aria-label="{{ c.title }} as PNG">PNG</a>
+          <a href="{{ c.html }}" aria-label="{{ c.title }} as HTML">HTML</a>
+          <a href="{{ c.source }}" aria-label="C# source for {{ c.title }}">Source</a>
+        </p>
+      </div>
+    </article>
+    {{~ end ~}}
+  </div>
+</section>

@@ -1,0 +1,30 @@
+name: Website CI
+
+on:
+  pull_request:
+    branches: [v2-speedygonzales]
+    paths:
+      - "Website/**"
+      - ".github/workflows/website-*.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+concurrency:
+  group: powerbginfo-website-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-site:
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-ci.yml@7cbb9594e6590b41f0d20f528550848c519855e8
+    with:
+      website_root: Website
+      pipeline_config: Website/pipeline.json
+      powerforge_lock_path: Website/.powerforge/engine-lock.json
+      engine_mode: source
+      validate_pages_artifact: true
+      pages_artifact_path: Website/_site
+      report_artifact_name: powerbginfo-website-reports

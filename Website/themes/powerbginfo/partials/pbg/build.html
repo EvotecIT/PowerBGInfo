@@ -1,0 +1,51 @@
+  <section class="pb-atlas pbg-build" id="build" aria-labelledby="pbg-build-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-build-title">{{ pbg.build.title }}</h2>
+      <p>{{ pbg.build.body }}</p>
+    </div>
+    <ol class="pbg-steps">
+      {{~ for s in steps ~}}
+      {{~ opens = true; closes = true
+          if s.group
+            if !for.first && steps[for.index - 1].group == s.group; opens = false; end
+            if !for.last && steps[for.index + 1].group == s.group; closes = false; end
+          end ~}}
+      {{~ if opens ~}}
+      {{~ head = s; if s.group; head = pbg.build.groups[s.group]; end ~}}
+      <li class="pbg-step" id="build-{{ s.step }}">
+        <div class="pbg-step__head">
+          <span class="pbg-step__n" aria-hidden="true">{{ s.step }}</span>
+          <h3>{{ head.title }}</h3>
+          <p>{{ head.body }}</p>
+        </div>
+      {{~ end ~}}
+        <div class="pbg-step__body">
+          {{~ if s.group ~}}<p class="pbg-step__layer"><span class="pb-key" aria-hidden="true"></span><strong>{{ s.title }}.</strong> {{ s.body }}</p>{{~ end ~}}
+          <div class="pb-pair pbg-pair">
+            <figure class="pb-codeblock pb-pair__source" data-lang="powershell">
+              <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.file }}</span><span class="pb-count" title="Lines added and removed">{{ if for.first }}{{ s.lines }} lines{{ else }}+{{ s.added }} &minus;{{ s.removed }}{{ end }}</span><span class="pb-codeblock__actions"></span></figcaption>
+              <pre><code class="language-powershell">{{ s.changed | html.escape }}</code></pre>
+            </figure>
+            {{~ r = s.render ~}}
+            <figure class="pb-output pb-pair__output">
+              <figcaption><span class="pb-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+              <a class="pb-figure__open" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="{{ pbg.build.alt }}: {{ s.title | string.downcase }}." /></a>
+            </figure>
+          </div>
+          {{~ if !for.first ~}}
+          <details class="pbg-source">
+            <summary>Whole script after this step <span class="pb-count">{{ s.lines }} lines</span></summary>
+            <figure class="pb-codeblock" data-lang="powershell">
+              <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ s.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+              <pre><code class="language-powershell">{{ s.script | html.escape }}</code></pre>
+            </figure>
+          </details>
+          {{~ end ~}}
+        </div>
+      {{~ if closes ~}}
+      </li>
+      {{~ end ~}}
+      {{~ end ~}}
+    </ol>
+    <p class="pb-atlas__reference">{{ pbg.build.reference }} <a href="{{ built.source.url }}/tree/{{ built.source.commit }}">source commit {{ built.source.short }}</a>.</p>
+  </section>

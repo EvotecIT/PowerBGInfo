@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--desktopmanager{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## DesktopManager product page. All copy and tables come from data/desktopmanager.json: the hero, the areas it
+     controls, the four ways to use it, the availability matrix, the portable desktop preview and the links to start.
+     Mockups are always shown with a visible "planned design" label. ## ~}}
+{{~ dm = data.desktopmanager; hero = dm.hero; labels = dm.statusLabels ~}}
+{{~ func dm_chip(cell)
+      if cell.status == "dash"
+        ret '<span class="pb-dm-dash" aria-label="Nothing planned">—</span>'
+      end
+      label = cell.label
+      if !label || label == ""; label = labels[cell.status]; end
+      ret '<span class="pb-status pb-status--' + cell.status + '">' + (label | html.escape) + '</span>'
+    end ~}}
+<main id="main" class="pb-main pb-dm">
+  <header class="pb-stage pb-tone-dark pb-dm-hero">
+    <div class="pb-stage__inner">
+      <div class="pb-stage__text">
+        <p class="pb-dm-eyebrow">{{ hero.eyebrow }}</p>
+        <h1>{{ hero.title }}</h1>
+        <p class="pb-stage__lede">{{ hero.lede }}</p>
+        <div class="pb-install pb-stage__install">
+          <code><span class="pb-install__prompt">PS&gt;</span> {{ hero.install | html.escape }}</code>
+          <button type="button" class="pb-copy" data-pb-copy="{{ hero.install | html.escape }}">Copy</button>
+        </div>
+        <div class="pb-stage__actions">
+          <a class="pb-btn pb-btn--glow" href="{{ hero.primary.url }}">{{ hero.primary.label }}</a>
+          <a class="pb-btn pb-btn--ghost" href="{{ hero.secondary.url }}">{{ hero.secondary.label }}</a>
+        </div>
+        <dl class="pb-stage__stats">
+          {{~ for s in hero.stats ~}}
+          <div><dt>{{ s.label }}</dt><dd>{{ s.value }}</dd></div>
+          {{~ end ~}}
+        </dl>
+      </div>
+      <div class="pb-stage__art">
+        <figure class="pb-dm-shot">
+          <div class="pb-dm-shot__bar">
+            <span class="pb-dm-shot__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="pb-dm-tag">{{ hero.art.tag }}</span>
+          </div>
+          <img src="{{ hero.art.src }}" width="{{ hero.art.width }}" height="{{ hero.art.height }}" fetchpriority="high" decoding="async" alt="{{ hero.art.alt | html.escape }}" />
+          <figcaption class="pb-dm-shot__caption">{{ hero.art.caption }}</figcaption>
+        </figure>
+      </div>
+    </div>
+  </header>
+
+  <section class="pb-section pb-dm-areas" aria-labelledby="pb-dm-areas-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-dm-areas-title">{{ dm.controls.title }}</h2>
+        <p class="pb-lede">{{ dm.controls.lede }}</p>
+      </div>
+      <ul class="pb-dm-areas__grid">
+        {{~ for a in dm.controls.areas ~}}
+        <li class="pb-dm-area" style="--key: var(--pb-s{{ (for.index % 6) + 1 }})">
+          <span class="pb-dm-area__num">{{ if for.index < 9 }}0{{ end }}{{ for.index + 1 }}</span>
+          <h3>{{ a.title }}</h3>
+          <p>{{ a.body }}</p>
+          <ul class="pb-dm-area__cmds" aria-label="Cmdlets">
+            {{~ for c in a.cmdlets ~}}
+            <li><code>{{ c }}</code></li>
+            {{~ end ~}}
+          </ul>
+          {{~ if a.note && a.note != "" ~}}
+          <p class="pb-dm-area__note">{{ a.note }}</p>
+          {{~ end ~}}
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pb-section pb-dm-ways" aria-labelledby="pb-dm-ways-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-dm-ways-title">{{ dm.ways.title }}</h2>
+        <p class="pb-lede">{{ dm.ways.lede }}</p>
+      </div>
+      {{~ app = dm.ways.app ~}}
+      <article class="pb-dm-way pb-dm-way--app" aria-labelledby="pb-dm-way-app">
+        <div class="pb-dm-way__text">
+          <p class="pb-dm-way__kicker">{{ app.kicker }} <span class="pb-status pb-status--{{ app.status }}">{{ app.statusLabel }}</span></p>
+          <h3 id="pb-dm-way-app">{{ app.title }}</h3>
+          <p>{{ app.body }}</p>
+          <ul class="pb-dm-way__list">
+            {{~ for i in app.items ~}}
+            <li>{{ i }}</li>
+            {{~ end ~}}
+          </ul>
+        </div>
+        <figure class="pb-dm-way__art pb-dm-shot pb-dm-shot--tall">
+          <div class="pb-dm-shot__bar">
+            <span class="pb-dm-shot__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="pb-dm-tag">{{ app.image.tag }}</span>
+          </div>
+          <img src="{{ app.image.src }}" width="{{ app.image.width }}" height="{{ app.image.height }}" loading="lazy" decoding="async" alt="{{ app.image.alt | html.escape }}" />
+          <figcaption class="pb-dm-shot__caption">{{ app.image.caption }}</figcaption>
+        </figure>
+      </article>
+      {{~ for w in dm.ways.surfaces ~}}
+      <article class="pb-dm-way pb-dm-way--{{ w.id }}" aria-labelledby="pb-dm-way-{{ w.id }}">
+        <div class="pb-dm-way__text">
+          <p class="pb-dm-way__kicker">{{ w.kicker }}</p>
+          <h3 id="pb-dm-way-{{ w.id }}">{{ w.title }}</h3>
+          <p>{{ w.body }}</p>
+          {{~ if w.install && w.install != "" ~}}
+          <div class="pb-install pb-dm-way__install">
+            <code><span class="pb-install__prompt">{{ w.prompt | html.escape }}</span> {{ w.install | html.escape }}</code>
+            <button type="button" class="pb-copy" data-pb-copy="{{ w.install | html.escape }}">Copy</button>
+          </div>
+          {{~ end ~}}
+          {{~ if w.download ~}}
+          <p class="pb-dm-way__more"><a class="pb-btn pb-btn--quiet pb-btn--small" href="{{ w.download.url }}">{{ w.download.label }}</a></p>
+          {{~ end ~}}
+        </div>
+        <div class="pb-dm-way__code">
+          <figure class="pb-codeblock" data-lang="{{ w.lang }}">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">{{ w.langLabel }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-{{ w.lang }}">{{ w.code | html.escape }}</code></pre>
+          </figure>
+          {{~ if w.config ~}}
+          <figure class="pb-codeblock" data-lang="{{ w.config.lang }}">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">{{ w.config.langLabel }}</span><span class="pb-codeblock__file">{{ w.config.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-{{ w.config.lang }}">{{ w.config.code | html.escape }}</code></pre>
+          </figure>
+          {{~ end ~}}
+        </div>
+      </article>
+      {{~ end ~}}
+    </div>
+  </section>
+
+  <section class="pb-section pb-dm-avail" aria-labelledby="pb-dm-avail-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-dm-avail-title">{{ dm.matrix.title }}</h2>
+        <p class="pb-lede">{{ dm.matrix.lede }}</p>
+      </div>
+      <ul class="pb-legend">
+        {{~ for l in dm.matrix.legend ~}}
+        <li><span class="pb-status pb-status--{{ l.status }}">{{ labels[l.status] }}</span> {{ l.text }}</li>
+        {{~ end ~}}
+      </ul>
+      <div class="pb-matrix-wrap">
+        <table class="pb-matrix pb-dm-matrix">
+          <thead>
+            <tr><th scope="col">Capability</th>{{ for c in dm.matrix.columns }}<th scope="col">{{ c }}</th>{{ end }}</tr>
+          </thead>
+          <tbody>
+            {{~ for r in dm.matrix.rows ~}}
+            <tr>
+              <th scope="row">{{ r.title }}</th>
+              {{~ for cell in r.cells ~}}
+              <td>{{ dm_chip cell }}{{ if cell.note && cell.note != "" }}<small>{{ cell.note }}</small>{{ end }}</td>
+              {{~ end ~}}
+            </tr>
+            {{~ end ~}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {{~ pt = dm.portable ~}}
+  <section class="pb-section pb-dm-portable" aria-labelledby="pb-dm-portable-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <p class="pb-dm-way__kicker">Cross-platform <span class="pb-status pb-status--{{ pt.status }}">{{ pt.statusLabel }}</span></p>
+        <h2 id="pb-dm-portable-title">{{ pt.title }}</h2>
+        <p class="pb-lede">{{ pt.lede }}</p>
+      </div>
+      <div class="pb-dm-portable__body">
+        <div class="pb-dm-portable__table">
+          <div class="pb-matrix-wrap">
+            <table class="pb-matrix pb-dm-matrix pb-dm-matrix--platforms">
+              <thead>
+                <tr><th scope="col"><span class="pb-visually-hidden">Capability</span></th>{{ for c in pt.columns }}<th scope="col">{{ c }}</th>{{ end }}</tr>
+              </thead>
+              <tbody>
+                {{~ for r in pt.rows ~}}
+                <tr>
+                  <th scope="row">{{ r.title }}</th>
+                  {{~ for cell in r.cells ~}}
+                  <td>{{ dm_chip cell }}{{ if cell.note && cell.note != "" }}<small>{{ cell.note }}</small>{{ end }}</td>
+                  {{~ end ~}}
+                </tr>
+                {{~ end ~}}
+              </tbody>
+            </table>
+          </div>
+          <p class="pb-dm-portable__foot">{{ pt.foot }}</p>
+        </div>
+        <figure class="pb-codeblock pb-dm-portable__code" data-lang="csharp">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">C#</span><span class="pb-codeblock__file">PortableDesktopService</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-csharp">{{ pt.code | html.escape }}</code></pre>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-section pb-dm-start" aria-labelledby="pb-dm-start-title">
+    <div class="pb-section__inner pb-dm-start__inner">
+      <aside class="pb-dm-pbg pb-tone-dark" aria-labelledby="pb-dm-pbg-title">
+        <p class="pb-dm-eyebrow">{{ dm.pbg.kicker }}</p>
+        <h2 id="pb-dm-pbg-title">{{ dm.pbg.title }}</h2>
+        <p>{{ dm.pbg.body }}</p>
+        <a class="pb-btn pb-btn--ghost" href="{{ dm.pbg.link.url }}">{{ dm.pbg.link.label }}</a>
+      </aside>
+      <div class="pb-dm-start__links">
+        <h2 id="pb-dm-start-title">{{ dm.start.title }}</h2>
+        <p class="pb-lede">{{ dm.start.lede }}</p>
+        <ul>
+          {{~ for l in dm.start.links ~}}
+          <li><a href="{{ l.url }}"><strong>{{ l.title }}</strong><span>{{ l.detail }}</span></a></li>
+          {{~ end ~}}
+        </ul>
+      </div>
+    </div>
+  </section>
+  {{~ if content != "" ~}}
+  <section class="pb-guide" aria-label="Notes">
+    <div class="pb-prose">
+{{ content }}
+    </div>
+  </section>
+  {{~ end ~}}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

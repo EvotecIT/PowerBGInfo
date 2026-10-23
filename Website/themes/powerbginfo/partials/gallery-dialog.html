@@ -1,0 +1,35 @@
+{{~ ## The viewer dialog for gallery cards (gallery-card.html). The defaults suit the C# gallery; a page can set
+     viewer_lang and viewer_label (the source language and its label), viewer_open and viewer_page (the two link
+     labels), viewer_sizes (the image sizes when the viewer shows a card's own responsive image) and viewer_stack (the
+     output above its source, for wide outputs) before including it. ## ~}}
+{{~ v_lang = "csharp"; v_label = "C#"; v_open = "Open SVG"; v_page = "Open HTML page"
+    if viewer_lang; v_lang = viewer_lang; v_label = viewer_label; end
+    if viewer_open; v_open = viewer_open; end
+    if viewer_page; v_page = viewer_page; end ~}}
+<dialog class="pb-viewer{{ if viewer_stack }} pb-viewer--stack{{ end }}" data-pb-viewer aria-labelledby="pb-viewer-title"{{ if viewer_sizes }} data-sizes="{{ viewer_sizes }}"{{ end }}>
+  <div class="pb-viewer__head">
+    <div class="pb-viewer__titles">
+      <h2 id="pb-viewer-title" data-pb-viewer-title></h2>
+      <p class="pb-viewer__family" data-pb-viewer-family></p>
+    </div>
+    <div class="pb-viewer__links">
+      <a class="pb-viewer__link" data-pb-viewer-open href="#">{{ v_open }}</a>
+      <a class="pb-viewer__link" data-pb-viewer-page href="#">{{ v_page }}</a>
+    </div>
+    <button type="button" class="pb-viewer__close" data-pb-viewer-close aria-label="Close">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="pb-viewer__body">
+    <div class="pb-viewer__image"><img data-pb-viewer-image alt="" /></div>
+    <div class="pb-seg pb-viewer__tabs" role="tablist" aria-label="Source" data-pb-viewer-tabs hidden></div>
+    <figure class="pb-codeblock pb-viewer__source" id="pb-viewer-source" data-lang="{{ v_lang }}">
+      <figcaption class="pb-codeblock__bar">
+        <span class="pb-codeblock__lang">{{ v_label }}</span>
+        <span class="pb-codeblock__file" data-pb-viewer-file></span>
+        <span class="pb-codeblock__actions"><a class="pb-codeblock__btn" data-pb-viewer-download href="#" download>Download</a></span>
+      </figcaption>
+      <pre><code class="language-{{ v_lang }}" data-pb-viewer-code>Loading source…</code></pre>
+    </figure>
+  </div>
+</dialog>

@@ -1,0 +1,266 @@
+/* PowerBGInfo page: the featured scenarios as atlas groups, the other scenarios as gallery cards, the build steps as
+   source and output pairs, the data sources, the theme, region and widget renders, and the production routes.
+   Shared stage, pair, code block, figure, tab, card and viewer components live in base.css, pages.css and
+   gallery.css; this file only arranges them. */
+
+/* Scenarios: each wallpaper fills the showcase frame, its source sits under it, and the full script opens below the
+   excerpt instead of over the render. */
+.pbg-scene { scroll-margin-top: 72px; }
+.pbg-scene__head {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: 12px clamp(24px, 4vw, 56px);
+  align-items: start;
+  margin-bottom: 18px;
+}
+.pbg-scene__purpose { color: var(--pb-ink); font-size: var(--pb-t-lede); line-height: 1.45; }
+.pb-pbg .pb-tags { padding: 0; list-style: none; }
+.pbg-scene .pb-showcase__plate { padding: clamp(8px, 1.6vw, 20px); }
+.pbg-scene .pb-showcase__plate > a { display: block; }
+.pbg-scene .pb-showcase__plate img { max-width: none; border-radius: 4px; box-shadow: 0 18px 40px -28px rgba(12, 13, 16, .6); }
+.pbg-scene .pb-showcase__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The file name follows the page theme; keep both spans inline so the key stays beside it. */
+.pbg-scene .pb-showcase__name .pb-only-light,
+:root[data-theme="dark"] .pbg-scene .pb-showcase__name .pb-only-dark { display: inline !important; }
+:root[data-theme="dark"] .pbg-scene .pb-showcase__name .pb-only-light { display: none !important; }
+.pbg-scene__code { --pb-code-max: 30rem; }
+.pbg-scene > .pbg-scene__code { margin-top: 16px; }
+.pbg-scene__more { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 20px; margin-top: 10px; }
+.pbg-scene__more > p { flex: 1 1 32ch; padding-top: 8px; color: var(--pb-ink-3); font-size: .875rem; }
+
+/* The other scenarios: the shared gallery cards (gallery.css) at the wallpaper's 16:9, three to a row, each opening
+   the shared viewer with the wallpaper above its script. */
+.pbg-more { --pb-card-ratio: 16 / 9; }
+.pbg-more .pb-filters { margin-bottom: 20px; }
+.pbg-more .pb-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.pbg-more .pb-card { scroll-margin-top: 72px; }
+
+/* Screens other than 1920 x 1080: the ultrawide beside the portrait render, both at the same height. */
+.pbg-screens { display: grid; grid-template-columns: minmax(0, 2.389fr) minmax(0, .5625fr); gap: 16px; align-items: start; }
+.pbg-screens .pb-output > figcaption::before { background: var(--key, var(--pb-glow)); }
+.pbg-screens .pb-output > a { display: block; }
+
+/* Tabs above a code block: the shared segmented control, then the selected panel. */
+.pbg-tabs { display: grid; gap: 10px; min-width: 0; }
+.pbg-scene > .pbg-tabs { margin-top: 16px; }
+.pbg-tabs > .pb-seg { justify-self: start; max-width: 100%; flex-wrap: wrap; }
+.pbg-tabs__panel { display: grid; gap: 10px; min-width: 0; }
+.pbg-tabs__panel > p { color: var(--pb-ink-2); font-size: .9375rem; }
+
+/* Disclosure for a full script, opened below its excerpt. */
+.pbg-source { --key: var(--pb-accent); flex: 1 1 100%; order: 2; min-width: 0; max-width: 100%; }
+.pbg-source:not([open]) { flex: none; order: 0; }
+.pbg-source > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--pb-line);
+  border-radius: 8px;
+  background: var(--pb-card);
+  color: var(--pb-ink);
+  font-size: .875rem;
+  font-weight: 620;
+  list-style: none;
+  cursor: pointer;
+}
+.pbg-scene .pbg-source { --key: inherit; }
+.pbg-source > summary::-webkit-details-marker { display: none; }
+.pbg-source > summary::before { content: ""; width: 0; height: 0; border-block: 4px solid transparent; border-left: 6px solid var(--key); transition: transform .15s ease; }
+.pbg-source[open] > summary { border-color: var(--key); }
+.pbg-source[open] > summary::before { transform: rotate(90deg); }
+.pbg-source .pb-codeblock { --pb-code-max: 40rem; margin-top: 10px; }
+
+/* Pairs on this page: one source width for every step, wide enough for the 79-character lines the step renderer allows,
+   so the renders line up from step to step. */
+.pbg-pair { grid-template-columns: minmax(0, 610px) minmax(0, 1fr); align-items: start; }
+.pbg-pair .pb-pair__source { --pb-code-max: 34rem; min-width: 0; }
+.pbg-pair .pb-pair__source :is(pre, code) { font-size: .75rem; }
+.pbg-pair .pb-pair__output { align-self: start; }
+.pbg-pair .pb-pair__output > a { display: block; }
+.pbg-stack { display: grid; gap: 12px; align-content: start; }
+.pbg-console :is(pre, code) { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pbg-console code { color: var(--pb-signal); }
+
+/* Build steps: a numbered rail, each step's prose above its pair. */
+.pbg-steps { display: grid; gap: clamp(36px, 4vw, 52px); margin: clamp(32px, 4vw, 48px) 0 0; padding: 0; list-style: none; counter-reset: none; }
+.pbg-step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px 20px; scroll-margin-top: 72px; }
+.pbg-step__head { display: contents; }
+.pbg-step__n {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--pb-line);
+  border-top: 3px solid var(--pb-accent);
+  border-radius: 10px;
+  background: var(--pb-card);
+  color: var(--pb-ink);
+  font-family: var(--pb-mono);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.pbg-step__head h3 { grid-column: 2; font-size: 1.25rem; font-weight: 740; }
+.pbg-step__head p { grid-column: 2; max-width: 72ch; margin-top: -8px; color: var(--pb-ink-2); }
+.pbg-step__body { grid-column: 2; display: grid; gap: 10px; min-width: 0; }
+.pbg-step__body + .pbg-step__body { margin-top: 18px; }
+.pbg-step__layer { max-width: 80ch; color: var(--pb-ink-2); }
+.pbg-step__layer .pb-key { display: inline-block; width: 8px; height: 8px; margin-right: 8px; vertical-align: .08em; }
+.pbg-step__layer strong { color: var(--pb-ink); font-weight: 680; }
+.pbg-step .pbg-source { justify-self: start; }
+
+/* Prose beside its code, as in the atlas head. */
+.pbg-split {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: 16px clamp(24px, 4vw, 56px);
+  align-items: start;
+  margin-top: clamp(36px, 4vw, 52px);
+}
+.pbg-split--head { margin-top: 0; margin-bottom: 18px; align-items: end; }
+.pbg-split__text { display: grid; gap: 10px; }
+.pbg-split__text h3,
+.pbg-guides h3 { font-size: 1.25rem; font-weight: 740; }
+.pbg-split__text p { color: var(--pb-ink-2); }
+.pbg-split__code { min-width: 0; }
+.pbg-split__code.pb-codeblock { --pb-code-max: 34rem; }
+.pbg-block { margin-top: clamp(48px, 5vw, 72px); padding-top: 20px; border-top: 1px solid var(--pb-line); }
+.pbg-block > .pbg-step__layer { margin-bottom: 12px; }
+.pbg-points { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pbg-points li { position: relative; padding-left: 18px; color: var(--pb-ink-2); font-size: .9375rem; }
+.pbg-points li::before { content: ""; position: absolute; top: .6em; left: 0; width: 8px; height: 2px; background: var(--pb-accent); }
+.pbg-tokens__label { margin-bottom: 8px; color: var(--pb-ink-2); font-size: .9375rem; }
+.pbg-tokens code { font-size: .8125rem; }
+.pbg-oneliner { min-width: 0; }
+.pbg-oneliner :is(pre, code) { font-size: .75rem; }
+/* Widget one-liners are kept under about 52 characters so they fit a third of the content width. */
+.pbg-widget .pbg-oneliner :is(pre, code) { font-size: .6875rem; }
+.pbg-widget .pbg-oneliner pre { padding-inline: 12px; }
+
+/* Theme presets: the same wallpaper in each preset, in the page theme. */
+.pbg-themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.pbg-thumb { display: grid; gap: 8px; margin: 0; }
+.pbg-thumb img { display: block; width: 100%; height: auto; border: 1px solid var(--pb-line); border-radius: 8px; }
+.pbg-thumb figcaption { display: flex; align-items: center; gap: 8px; color: var(--pb-ink); font-size: .9375rem; font-weight: 640; }
+
+/* Regions: 1920 x 1080 and 3440 x 1440 stacked beside the portrait render, at their true proportions. */
+.pbg-regions { display: grid; grid-template-columns: minmax(0, 1.81fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.pbg-regions__portrait { grid-column: 2; grid-row: 1 / span 2; }
+.pbg-regions .pb-output > a { display: block; }
+
+/* Widgets: each card crops its feature render to the widget. --x, --y, --w and --h are the crop in render pixels of
+   the 1920 x 1080 file; the image is scaled and moved so that rectangle fills the card. */
+.pbg-widgets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.pbg-widget {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--pb-line);
+  border-top: 3px solid var(--key);
+  border-radius: var(--pb-r-lg);
+  background: var(--pb-card);
+}
+.pbg-widget--wide { grid-column: 1 / -1; }
+.pbg-widget__head h4 { display: flex; align-items: center; gap: 8px; font-size: 1.0625rem; font-weight: 700; }
+.pbg-widget__head p { margin-top: 4px; color: var(--pb-ink-2); font-size: .9063rem; line-height: 1.45; }
+.pbg-crop { position: relative; overflow: hidden; aspect-ratio: var(--w) / var(--h); border-radius: 8px; background: #0c0f13; }
+.pbg-crop img {
+  position: absolute;
+  top: calc(var(--y) / var(--h) * -100%);
+  left: calc(var(--x) / var(--w) * -100%);
+  width: calc(1920 / var(--w) * 100%);
+  max-width: none;
+  height: auto;
+}
+.pbg-crop .pb-figure__open { position: static; }
+
+/* What ChartForgeX draws, and the production notes: the same card. */
+.pbg-parts__grid,
+.pbg-notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 28px 0 0; padding: 0; list-style: none; }
+.pbg-part { display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; padding: 18px 18px 16px; border: 1px solid var(--pb-line); border-top: 3px solid var(--key, var(--pb-ink-3)); border-radius: var(--pb-r-lg); background: var(--pb-card); }
+.pbg-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pbg-notes .pbg-part { grid-template-rows: auto 1fr auto; }
+.pbg-part h3 { display: flex; align-items: center; gap: 8px; font-size: 1.125rem; }
+.pbg-part code { justify-self: start; color: var(--pb-ink-2); font-size: .75rem; }
+.pbg-part p { color: var(--pb-ink-2); font-size: .9375rem; line-height: 1.5; }
+.pbg-part__links { display: flex; flex-wrap: wrap; gap: 4px 14px; padding-top: 6px; }
+.pbg-part__links .pb-link { font-size: .875rem; }
+.pbg-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* Production routes: a decision table that turns into one card per route on narrow screens. */
+.pbg-routes { margin-top: 28px; overflow: hidden; border: 1px solid var(--pb-line); border-radius: var(--pb-r-lg); background: var(--pb-card); }
+.pbg-routes table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.pbg-routes th,
+.pbg-routes td { padding: 14px 18px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
+.pbg-routes tbody tr:last-child > * { border-bottom: 0; }
+.pbg-routes thead th { color: var(--pb-ink-3); font-size: .8125rem; font-weight: 640; background: var(--pb-card-alt); }
+.pbg-routes tbody th { width: 24%; color: var(--pb-ink); font-weight: 680; }
+.pbg-routes tbody th .pb-key { display: inline-block; margin-right: 8px; vertical-align: .05em; }
+.pbg-routes td { color: var(--pb-ink-2); line-height: 1.5; }
+.pbg-routes td:last-child { width: 15%; }
+.pbg-guides { margin-top: clamp(36px, 4vw, 52px); }
+.pbg-guides ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+.pbg-guides a { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--pb-line); border-radius: 10px; background: var(--pb-card); color: var(--pb-ink); text-decoration: none; }
+.pbg-guides a:hover { border-color: var(--pb-accent); }
+.pbg-guides strong { font-size: .9375rem; font-weight: 680; }
+.pbg-guides span { color: var(--pb-ink-3); font-size: .8125rem; line-height: 1.4; }
+
+@media (max-width: 1180px) {
+  .pbg-pair { grid-template-columns: minmax(0, 1fr); }
+  .pbg-guides ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+  .pbg-parts__grid,
+  .pbg-notes,
+  .pbg-widgets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .pbg-scene__head,
+  .pbg-split { grid-template-columns: minmax(0, 1fr); }
+  .pbg-split--head { align-items: start; }
+  .pbg-regions { grid-template-columns: minmax(0, 1fr); }
+  .pbg-regions__portrait { grid-column: auto; grid-row: auto; justify-self: center; width: min(100%, 360px); }
+  .pbg-screens { grid-template-columns: minmax(0, 1fr); }
+  .pbg-screens__portrait { justify-self: center; width: min(100%, 240px); }
+}
+@media (max-width: 700px) {
+  .pbg-routes { border: 0; background: none; }
+  .pbg-routes thead { display: none; }
+  .pbg-routes table,
+  .pbg-routes tbody,
+  .pbg-routes tr,
+  .pbg-routes th,
+  .pbg-routes td { display: block; width: auto; }
+  .pbg-routes tbody { display: grid; gap: 10px; }
+  .pbg-routes tr { border: 1px solid var(--pb-line); border-top: 3px solid var(--key); border-radius: var(--pb-r-lg); background: var(--pb-card); }
+  .pbg-routes th,
+  .pbg-routes td,
+  .pbg-routes tbody tr:last-child > * { padding: 4px 14px; border: 0; }
+  .pbg-routes tbody th { padding-top: 12px; width: auto; }
+  .pbg-routes td:last-child { padding-bottom: 12px; width: auto; }
+}
+@media (max-width: 620px) {
+  .pbg-parts__grid,
+  .pbg-notes,
+  .pbg-widgets,
+  .pbg-guides ul { grid-template-columns: minmax(0, 1fr); }
+  .pbg-themes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pbg-scene .pb-showcase__links .pb-count { display: none; }
+  /* Two cards to a row, as in the gallery, so nine wallpapers stay a short scroll on a phone. */
+  .pbg-more .pb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+  .pbg-more .pb-card__note { font-size: .8125rem; line-height: 1.4; }
+  .pbg-step { grid-template-columns: minmax(0, 1fr); }
+  .pbg-step__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .pbg-step__n { width: 36px; height: 36px; }
+  .pbg-step__head p { flex-basis: 100%; margin-top: 0; }
+  .pbg-step__body { grid-column: 1; }
+}
+@media (max-width: 420px) {
+  .pb-pbg .pb-install code { font-size: .875rem; }
+}

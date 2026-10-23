@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--notfound{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="pb-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="pb-page pb-empty">
+    <figure class="pb-empty__chart">
+      <svg viewBox="0 0 320 200" width="320" height="200" role="img" aria-label="A monitor with no signal">
+        <rect x="20" y="14" width="280" height="150" rx="10" fill="var(--pb-stage-bg)" stroke="var(--pb-line-strong)" stroke-width="2"/>
+        <rect x="186" y="34" width="92" height="8" rx="4" fill="var(--pb-crit)"/>
+        <rect x="186" y="52" width="64" height="8" rx="4" fill="var(--pb-stage-ink-2)" opacity=".5"/>
+        <rect x="186" y="70" width="76" height="8" rx="4" fill="var(--pb-stage-ink-2)" opacity=".5"/>
+        <text x="44" y="118" fill="var(--pb-stage-ink)" font-family="var(--pb-mono)" font-size="15">404 · no signal</text>
+        <rect x="140" y="164" width="40" height="14" fill="var(--pb-line-strong)"/>
+        <rect x="112" y="178" width="96" height="8" rx="4" fill="var(--pb-line-strong)"/>
+      </svg>
+      <figcaption class="pb-empty__note">Nothing is drawn at this address</figcaption>
+    </figure>
+    <div class="pb-prose">
+{{ content }}
+    </div>
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

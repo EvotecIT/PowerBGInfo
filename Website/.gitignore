@@ -1,0 +1,5 @@
+_site/
+_reports/
+_temp/
+.powerforge/pipeline-cache.json
+.powerforge/pipeline-profile.json

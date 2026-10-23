@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--docs{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## Docs come from content/project-docs/docs, the same files evotec.xyz imports. Links written for the hub are
+     rewritten here: PowerBGInfo routes to this site, ChartForgeX to chartforgex.com and other projects to evotec.xyz. ## ~}}
+{{~ article = content | string.replace 'href="/projects/powerbginfo/docs/' 'href="/docs/'
+    article = article | string.replace 'href="/projects/powerbginfo/examples/' 'href="/examples/'
+    article = article | string.replace 'href="/projects/powerbginfo/api/' 'href="https://evotec.xyz/projects/powerbginfo/api/'
+    article = article | string.replace 'href="/projects/powerbginfo/' 'href="/'
+    article = article | string.replace 'href="/projects/chartforgex/' 'href="https://chartforgex.com/'
+    article = article | string.replace 'href="/projects/desktopmanager/' 'href="/desktopmanager/'
+    article = article | string.replace 'href="/projects/' 'href="https://evotec.xyz/projects/' ~}}
+<main id="main" class="pb-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="pb-docs">
+    {{ include "docs-sidebar" }}
+    <article class="pb-docs__article">
+      <div class="pb-prose">
+{{ article }}
+      </div>
+      
+    </article>
+    {{ if toc != "" }}<aside class="pb-docs__toc" aria-label="On this page" data-pb-outline>{{ toc }}</aside>{{ end }}
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

@@ -1,0 +1,19 @@
+<nav class="pb-docs__nav" aria-label="Documentation">
+  <details class="pb-docs__menu" open>
+    <summary>Contents</summary>
+    <h2>PowerBGInfo</h2>
+    {{~ ## The docs menu follows content/project-docs/docs/toc.yml, whose links are relative to the docs root (the
+         evotec.xyz hub reads the same file), so they are made absolute here. ## ~}}
+    {{ pf.menu_tree "docs" 2 | string.replace 'href="./"' 'href="/docs/"' | regex.replace 'href="(?!/|https?:|#|mailto:)([^"]*)"' 'href="/docs/$1"' }}
+    <h2>Examples</h2>
+    {{ pf.menu_tree "examples" 2 }}
+    <h2>More</h2>
+    <ul>
+      <li><a href="/gallery/">Wallpaper gallery</a></li>
+      <li><a href="/build/">Build one step by step</a></li>
+      <li><a href="/platforms/">Platforms</a></li>
+      <li><a href="/desktopmanager/">DesktopManager</a></li>
+      <li><a href="/informationbox/">InformationBox</a></li>
+    </ul>
+  </details>
+</nav>
