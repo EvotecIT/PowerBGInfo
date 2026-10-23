@@ -24,6 +24,7 @@
 - The website wallpaper selector changes the displayed responsive image, the gallery viewer keeps scrolling inside the dialog, and documentation tables keep long identifiers readable. The Desktop tools menu includes the InformationBox preview.
 - Deployment examples define their helpers before execution and handle transcript setup and cleanup failures. The fill-in template accepts its documented `-Target` parameter and defaults to rendering a file.
 - The Mermaid feature example gives its diagram panel more of the canvas instead of leaving a large empty middle band.
+- The feature render runner rejects invalid sizes and stops on rendering errors instead of writing an incomplete manifest.
 
 - Timeline axes read `Wed 14` or `14:00` instead of ISO dates such as `2026-10-14`.
 - Info items in lists, tables and metric cards use the info color instead of the accent, so an Info row under a red or orange accent no longer looks like an alert. List numbers, checks and bullets use one color instead of cycling through the palette.
