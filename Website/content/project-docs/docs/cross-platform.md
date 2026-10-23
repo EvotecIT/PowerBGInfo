@@ -1,9 +1,7 @@
 ---
-title: Cross-platform rendering and desktops
+title: Cross-platform rendering
 description: Generate wallpapers on Windows, macOS and Linux, and inspect supported desktop operations.
 ---
-
-# Cross-platform rendering and desktops
 
 PowerBGInfo separates collecting facts, rendering an image, and applying it to
 a desktop. `-Target File` generates an image without reading or changing the
