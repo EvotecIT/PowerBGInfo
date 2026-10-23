@@ -1,7 +1,7 @@
 ---
 Module Name: PowerBGInfo
 Module Guid: 91b9c52d-6a39-4a65-a276-409b9390ee04
-Download Help Link: https://github.com/EvotecIT/PowerBGInfo
+Download Help Link: https://powerbginfo.com
 Help Version: 2.0.7
 Locale: en-US
 ---

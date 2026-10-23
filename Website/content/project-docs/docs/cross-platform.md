@@ -50,9 +50,18 @@ Managed-device policies can still deny an otherwise supported operation.
 Display indices describe the current topology. They can change after docking
 or reconnecting a screen. The monitor output also carries the backend display
 identity. GNOME's ordinary background setting does not select individual
-screens; use its desktop target at monitor index zero. KDE also requires index
-zero when its display identities cannot be enumerated; explicit unsupported
-indices are rejected rather than broadened to every screen.
+screens; use its desktop target at monitor index zero. KDE uses the addressable
+wallpaper targets reported by DesktopManager, even when physical geometry is
+unavailable. A changed activity, target identity or known geometry rejects
+application of an image generated for the earlier target.
+
+When neither `-FilePath` nor `New-BGInfoBackground` selects a base, PowerBGInfo
+uses the effective desktop image and preserves its native fit. An explicitly
+bound `-WallpaperFit` takes precedence. Unknown fit or opacity, unreadable
+native state and missing geometry required by screen-coordinate layout stop
+the run before application. Known disabled-image colors and gradients can be
+reproduced when their color syntax and physical target dimensions are available.
+Supply an explicit background and dimensions when those metadata are unavailable.
 
 ## Facts and history
 
@@ -75,10 +84,14 @@ while keeping the generated image path on standard output.
 ## Images, fonts, and portable configuration
 
 CFX supplies dependency-free raster rendering and supported PNG, JPEG, GIF,
-BMP, PPM, and TIFF input. Some TIFF variants remain unsupported. An automatic
-desktop background in another format, such as a macOS HEIC image, produces a
-warning and a plain backdrop. An explicitly chosen unsupported image remains an
-error. Choose a supported image or a generated background for portable layouts.
+BMP, PPM, and TIFF input. Some TIFF variants remain unsupported. An unsupported
+desktop background, including HEIC, reports an error; it is never silently
+replaced by a plain backdrop. Choose a supported image or a generated background
+for portable layouts. A rendered still image does not preserve aerial animation,
+dynamic wallpaper schedules or all-Spaces assignments.
+
+With screen-coordinate layout, `Fill` preserves the source aspect ratio and crops
+its edges to cover the display; `Stretch` scales the two axes independently.
 
 Fonts are resolved on the rendering host. Install the same licensed font assets
 where matching typography is required. Scaling a design does not automatically
@@ -88,7 +101,12 @@ panel sizes for those layouts.
 Relative paths in JSON accept slash or backslash separators. A Windows-rooted
 path cannot be used as a local path on macOS/Linux. Use relative paths or
 platform-local absolute paths instead. Output ownership on Unix preserves
-case-sensitive file identities.
+case-sensitive file identities. Output paths use the same host-aware rules as
+input paths, including explicit parent-relative paths.
+
+The output provenance file uses versioned escaped fields so native `#`, pipe and
+newline filenames round-trip. Unambiguous older records are migrated on the
+next write; malformed or ambiguous records cannot establish an original image.
 
 ## Execution and ownership
 

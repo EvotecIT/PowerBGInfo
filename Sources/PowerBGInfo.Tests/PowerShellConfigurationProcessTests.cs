@@ -5,6 +5,64 @@ using PowerBGInfo.Cli;
 namespace PowerBGInfo.Tests;
 
 public sealed class PowerShellConfigurationProcessTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConfigurationHandoffUsesAPrivateInvocationDirectoryAndRemovesItsOwnedFiles(bool fails) {
+        using var fixture = new ScriptFixture();
+        var receipt = Path.Combine(fixture.Directory, "temporary-paths.txt");
+        File.WriteAllText(fixture.Script,
+            "[System.IO.File]::WriteAllLines(" + Literal(receipt) + ", [string[]] @(" +
+            "[System.IO.Path]::GetDirectoryName($MyInvocation.ScriptName), $env:POWERBGINFO_CONFIGURATION_LIFETIME))\n" +
+            "if ([System.IO.Path]::DirectorySeparatorChar -ne '\\') {\n" +
+            "  $mode = [System.IO.File]::GetUnixFileMode([System.IO.Path]::GetDirectoryName($MyInvocation.ScriptName))\n" +
+            "  if (($mode -band 63) -ne 0) { throw 'Configuration handoff is accessible to another user.' }\n" +
+            "} else {\n" +
+            "  $acl = Get-Acl -LiteralPath ([System.IO.Path]::GetDirectoryName($MyInvocation.ScriptName))\n" +
+            "  if (-not $acl.AreAccessRulesProtected) { throw 'Configuration handoff inherits shared access.' }\n" +
+            "}\n" + (fails ? "throw 'intentional fixture failure'\n" : Literal(fixture.Json) + "\n"));
+
+        if (fails) {
+            var error = Assert.Throws<InvalidOperationException>(() => PowerShellConfigurationLoader.Load(fixture.Script, null, null, TimeSpan.FromSeconds(30)));
+            Assert.Contains("intentional fixture failure", error.Message);
+        } else {
+            Assert.NotNull(PowerShellConfigurationLoader.Load(fixture.Script, null, null, TimeSpan.FromSeconds(30)).Configuration);
+        }
+
+        var paths = File.ReadAllLines(receipt);
+        Assert.Equal(2, paths.Length);
+        Assert.False(Directory.Exists(paths[0]), "The invocation left its wrapper/output directory behind.");
+        Assert.False(Directory.Exists(paths[1]), "The invocation left its lifetime-marker directory behind.");
+    }
+
+    [Fact]
+    public void ConfigurationCleanupPreservesFilesCreatedByTheAuthorScript() {
+        using var fixture = new ScriptFixture();
+        var receipt = Path.Combine(fixture.Directory, "temporary-path.txt");
+        File.WriteAllText(fixture.Script,
+            "[System.IO.File]::WriteAllText(" + Literal(receipt) + ", $env:POWERBGINFO_CONFIGURATION_LIFETIME)\n" +
+            "[System.IO.File]::WriteAllText([System.IO.Path]::Combine($env:POWERBGINFO_CONFIGURATION_LIFETIME, 'author-data.txt'), 'keep')\n" +
+            Literal(fixture.Json) + "\n");
+
+        string? lifetimeDirectory = null;
+        try {
+            Assert.NotNull(PowerShellConfigurationLoader.Load(fixture.Script, null, null, TimeSpan.FromSeconds(30)).Configuration);
+            lifetimeDirectory = File.ReadAllText(receipt);
+            Assert.Equal("keep", File.ReadAllText(Path.Combine(lifetimeDirectory, "author-data.txt")));
+            Assert.Equal(new[] { "author-data.txt" }, Directory.GetFiles(lifetimeDirectory).Select(Path.GetFileName));
+            Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName(lifetimeDirectory)!, "wrapper.ps1")));
+            Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName(lifetimeDirectory)!, "configuration.json")));
+        } finally {
+            if (lifetimeDirectory == null && File.Exists(receipt)) lifetimeDirectory = File.ReadAllText(receipt);
+            if (lifetimeDirectory != null && Directory.Exists(lifetimeDirectory)) {
+                File.Delete(Path.Combine(lifetimeDirectory, "author-data.txt"));
+                Directory.Delete(lifetimeDirectory);
+                var invocationDirectory = Path.GetDirectoryName(lifetimeDirectory)!;
+                if (Path.GetFileName(invocationDirectory).StartsWith("PowerBGInfo-", StringComparison.Ordinal)) Directory.Delete(invocationDirectory);
+            }
+        }
+    }
+
     [Fact]
     public void NoisyStandardErrorDoesNotBlockConfigurationLoading() {
         using var fixture = new ScriptFixture();
@@ -45,11 +103,13 @@ public sealed class PowerShellConfigurationProcessTests {
         using var fixture = new ScriptFixture();
         fixture.WriteNativeChildScript(outcome);
         var elapsed = Stopwatch.StartNew();
-        var invocation = Task.Run(() => PowerShellConfigurationLoader.Load(fixture.Script, null, host, TimeSpan.FromSeconds(5)));
+        // Includes two cold PowerShell hosts and runtime compilation of the
+        // process-group supervisor. This is a lifetime contract, not a startup benchmark.
+        var invocation = Task.Run(() => PowerShellConfigurationLoader.Load(fixture.Script, null, host, TimeSpan.FromSeconds(20)));
         try {
             // Keep a regression from hanging the test host on StreamReader.Dispose.
             // Cleanup below uses only the recorded native child's PID and start time.
-            Assert.Same(invocation, await Task.WhenAny(invocation, Task.Delay(TimeSpan.FromSeconds(15))));
+            Assert.Same(invocation, await Task.WhenAny(invocation, Task.Delay(TimeSpan.FromSeconds(30))));
             if (outcome == "timeout") {
                 var failure = await Assert.ThrowsAsync<TimeoutException>(async () => await invocation);
                 Assert.Contains("deadline", failure.Message);
@@ -66,7 +126,7 @@ public sealed class PowerShellConfigurationProcessTests {
             Assert.True(File.Exists(fixture.ChildIdentity), "The real configuration script did not start its native child.");
             Assert.True(SpinWait.SpinUntil(fixture.ChildHasExited, TimeSpan.FromSeconds(5)),
                 "The configuration invocation left its owned native child running.");
-            Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(15), "Native child cleanup exceeded the bounded invocation deadline.");
+            Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(30), "Native child cleanup exceeded the bounded invocation deadline.");
         } finally {
             fixture.StopChild();
             try { await invocation.WaitAsync(TimeSpan.FromSeconds(5)); } catch (Exception) { }
@@ -145,4 +205,6 @@ public sealed class PowerShellConfigurationProcessTests {
             System.IO.Directory.Delete(Directory, recursive: true);
         }
     }
+
+    private static string Literal(string value) => "'" + value.Replace("'", "''") + "'";
 }

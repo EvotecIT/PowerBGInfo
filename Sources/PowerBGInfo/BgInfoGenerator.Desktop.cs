@@ -13,20 +13,6 @@ namespace PowerBGInfo;
 /// </summary>
 public partial class BgInfoGenerator
 {
-    private BgInfoRasterImage LoadBaseImage(string imagePath, bool chosenByUser, BgInfoConfiguration config,
-        Func<IReadOnlyList<BgInfoMonitor>?> getMonitors, string outputPath, out bool loaded)
-    {
-        try {
-            var image = _imageService.Load(imagePath);
-            loaded = true;
-            return image;
-        } catch (NotSupportedException) when (!chosenByUser) {
-            loaded = false;
-            WriteWarning($"The current wallpaper '{imagePath}' uses an unsupported raster format. A plain background is used; choose a PNG, JPEG, GIF, BMP, PPM, or supported TIFF image to preserve a photo background.");
-            return CreateBaseImage(config, getMonitors(), outputPath);
-        }
-    }
-
     private static BgInfoRasterImage CreateBaseImage(BgInfoConfiguration config, IReadOnlyList<BgInfoMonitor>? monitors, string outputPath)
     {
         var (width, height) = GetMonitorSize(monitors, config.MonitorIndex);
@@ -57,14 +43,7 @@ public partial class BgInfoGenerator
             return config.FilePath;
         }
 
-        try
-        {
-            return getWallpaper(config.MonitorIndex);
-        }
-        catch
-        {
-            return null;
-        }
+        return getWallpaper(config.MonitorIndex);
     }
 
     private static (int Width, int Height) GetMonitorSize(IReadOnlyList<BgInfoMonitor>? monitors, int monitorIndex)

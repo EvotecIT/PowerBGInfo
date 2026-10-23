@@ -33,28 +33,20 @@ internal static class PowerShellConfigurationLoader {
             }
         }
 
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "PowerBGInfo");
-        Directory.CreateDirectory(tempDirectory);
+        using var temporary = PowerShellConfigurationTemporaryDirectory.Create();
+        var tempJsonPath = temporary.OutputPath;
+        var wrapperPath = temporary.WrapperPath;
+        temporary.WriteWrapper(BuildWrapperScript());
+        RunPowerShell(wrapperPath, fullScriptPath, tempJsonPath, fullModulePath, powerShellPath, timeout ?? TimeSpan.FromMinutes(2));
 
-        var tempJsonPath = Path.Combine(tempDirectory, $"{Path.GetFileNameWithoutExtension(fullScriptPath)}.{Guid.NewGuid():N}.json");
-        var wrapperPath = Path.Combine(tempDirectory, $"powerbginfo-script-wrapper.{Guid.NewGuid():N}.ps1");
-
-        try {
-            File.WriteAllText(wrapperPath, BuildWrapperScript(), Encoding.UTF8);
-            RunPowerShell(wrapperPath, fullScriptPath, tempJsonPath, fullModulePath, powerShellPath, timeout ?? TimeSpan.FromMinutes(2));
-
-            if (!File.Exists(tempJsonPath)) {
-                throw new InvalidOperationException($"The PowerShell script did not produce a BGInfo configuration at '{tempJsonPath}'.");
-            }
-
-            return new LoadResult {
-                Configuration = BgInfoConfigurationJson.Load(tempJsonPath, Path.GetDirectoryName(fullScriptPath)),
-                ScriptDirectory = Path.GetDirectoryName(fullScriptPath) ?? Environment.CurrentDirectory
-            };
-        } finally {
-            TryDeleteFile(wrapperPath);
-            TryDeleteFile(tempJsonPath);
+        if (!File.Exists(tempJsonPath)) {
+            throw new InvalidOperationException($"The PowerShell script did not produce a BGInfo configuration at '{tempJsonPath}'.");
         }
+
+        return new LoadResult {
+            Configuration = BgInfoConfigurationJson.Load(tempJsonPath, Path.GetDirectoryName(fullScriptPath)),
+            ScriptDirectory = Path.GetDirectoryName(fullScriptPath) ?? Environment.CurrentDirectory
+        };
     }
 
     private static void RunPowerShell(string wrapperPath, string scriptPath, string outputPath, string? modulePath, string? powerShellPath, TimeSpan timeout) {
@@ -99,7 +91,7 @@ internal static class PowerShellConfigurationLoader {
             }
         };
 
-        using var lifetime = new ConfigurationScriptLifetime(process.StartInfo);
+        using var lifetime = new ConfigurationScriptLifetime(process.StartInfo, Path.GetDirectoryName(wrapperPath)!);
         var elapsed = Stopwatch.StartNew();
         try {
             process.Start();
@@ -238,12 +230,4 @@ internal static class PowerShellConfigurationLoader {
         internal PowerShellHostStartException(Win32Exception error) : base(error.Message, error) { }
     }
 
-    private static void TryDeleteFile(string path) {
-        try {
-            if (File.Exists(path)) {
-                File.Delete(path);
-            }
-        } catch {
-        }
-    }
 }

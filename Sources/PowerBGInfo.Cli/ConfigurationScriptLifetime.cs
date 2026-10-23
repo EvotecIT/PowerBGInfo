@@ -15,7 +15,7 @@ namespace PowerBGInfo.Cli;
 /// script worker exits, so cleanup never signals an identity that could be reused.
 /// </summary>
 internal sealed class ConfigurationScriptLifetime : IDisposable {
-    private readonly string _directory = Path.Combine(Path.GetTempPath(), "PowerBGInfo", "lifetime-" + Guid.NewGuid().ToString("N"));
+    private readonly string _directory;
     private readonly bool _windows = Path.DirectorySeparatorChar == '\\';
     private SafeFileHandle? _job;
     private Process? _process;
@@ -23,7 +23,8 @@ internal sealed class ConfigurationScriptLifetime : IDisposable {
     private bool _jobAssigned;
     private bool _terminated;
 
-    internal ConfigurationScriptLifetime(ProcessStartInfo startInfo) {
+    internal ConfigurationScriptLifetime(ProcessStartInfo startInfo, string temporaryDirectory) {
+        _directory = Path.Combine(temporaryDirectory, "lifetime");
         Directory.CreateDirectory(_directory);
         startInfo.RedirectStandardInput = true;
         startInfo.EnvironmentVariables["POWERBGINFO_CONFIGURATION_LIFETIME"] = _directory;
@@ -119,7 +120,10 @@ internal sealed class ConfigurationScriptLifetime : IDisposable {
             Terminate();
         } finally {
             _job?.Dispose();
-            try { Directory.Delete(_directory, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            foreach (var name in new[] { "ready", "ready.tmp", "exit", "exit.tmp" }) {
+                try { File.Delete(Path.Combine(_directory, name)); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            }
+            try { Directory.Delete(_directory); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
     }
 

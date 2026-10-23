@@ -142,17 +142,30 @@ internal sealed class PortableSystemInfoProvider : IBgInfoSystemInfoProvider {
         total = free = 0;
         try {
             var root = Path.GetPathRoot(Environment.CurrentDirectory) ?? "/";
-            var path = string.IsNullOrWhiteSpace(argument) ? root : Path.GetFullPath(argument!);
-            var drive = DriveInfo.GetDrives()
-                .Where(candidate => ContainsPath(candidate.Name, path))
-                .OrderByDescending(candidate => candidate.Name.Length).FirstOrDefault();
-            if (drive == null || !drive.IsReady) return false;
+            var requestedPath = string.IsNullOrWhiteSpace(argument) ? root : Path.GetFullPath(argument!);
             // A misspelled/nonexistent requested mount must not silently report another filesystem's free space.
-            if (!string.IsNullOrWhiteSpace(argument) && !Directory.Exists(path) && !File.Exists(path)) return false;
+            if (!string.IsNullOrWhiteSpace(argument) && !Directory.Exists(requestedPath) && !File.Exists(requestedPath)) return false;
+            var path = ResolveMountIdentity(requestedPath);
+            var drive = DriveInfo.GetDrives()
+                .Select(candidate => new { Drive = candidate, Root = ResolveMountIdentity(candidate.Name) })
+                .Where(candidate => ContainsPath(candidate.Root, path))
+                .OrderByDescending(candidate => candidate.Root.Length)
+                .Select(candidate => candidate.Drive).FirstOrDefault();
+            if (drive == null || !drive.IsReady) return false;
             total = drive.TotalSize;
             free = drive.AvailableFreeSpace;
             return total > 0 && free >= 0;
         } catch { return false; }
+    }
+
+    /// <summary>Follows existing filesystem aliases before selecting the containing mount.</summary>
+    private static string ResolveMountIdentity(string path) {
+        try { return BgInfoPaths.GetIdentity(path); }
+        catch (IOException) {
+            // These facts are read-only. Unavailable identity metadata may retain lexical
+            // mount selection; output ownership keeps its independent fail-closed contract.
+            return Path.GetFullPath(path);
+        }
     }
 
     private static bool ContainsPath(string root, string path) {

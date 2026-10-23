@@ -6,13 +6,13 @@
         <VersionPrefix>2.0.1</VersionPrefix>
         <AssemblyName>PowerBGInfo</AssemblyName>
         <Copyright>(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.</Copyright>
-        <TargetFrameworks>net472;net8.0;net8.0-windows;net9.0-windows</TargetFrameworks>
+        <TargetFrameworks>net472;net8.0;net8.0-windows;net9.0-windows;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DesktopManagerVersion>4.5.0</DesktopManagerVersion>
-        <ChartForgeXVersion>3.0.0</ChartForgeXVersion>
+        <DesktopManagerVersion>4.6.0</DesktopManagerVersion>
+        <ChartForgeXVersion>3.0.1</ChartForgeXVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CodeGlyphX" Version="3.0.0" />

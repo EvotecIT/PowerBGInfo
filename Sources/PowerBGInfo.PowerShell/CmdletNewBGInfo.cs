@@ -291,7 +291,6 @@ public class CmdletNewBGInfo : PSCmdlet {
             MonitorIndex = MonitorIndex,
             SpaceX = SpaceX,
             SpaceY = SpaceY,
-            WallpaperFit = WallpaperFit,
             TextPosition = TextPosition,
             Target = Target,
             ChartLayout = ChartLayout,
@@ -311,6 +310,7 @@ public class CmdletNewBGInfo : PSCmdlet {
 
         if (MyInvocation.BoundParameters.ContainsKey(nameof(Color))) config.Color = PowerShellColorConverter.ConvertRequired(Color, nameof(Color));
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueColor))) config.ValueColor = PowerShellColorConverter.ConvertRequired(ValueColor, nameof(ValueColor));
+        if (MyInvocation.BoundParameters.ContainsKey(nameof(WallpaperFit))) config.WallpaperFit = WallpaperFit;
         if (MyInvocation.BoundParameters.ContainsKey(nameof(FontFamilyName))) config.FontFamilyName = FontFamilyName;
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ValueFontFamilyName))) config.ValueFontFamilyName = ValueFontFamilyName;
         if (theme != null) ApplyTheme(config, theme);

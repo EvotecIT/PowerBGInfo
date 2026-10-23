@@ -10,6 +10,25 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 }
 Import-Module -Name $modulePath -Force
 
+BeforeAll {
+    . (Join-Path $PSScriptRoot 'Get-TestModuleAssembly.ps1')
+}
+
+Describe 'Wallpaper fit intent in portable configuration' {
+    It 'preserves omitted fit and an explicit Center through exported JSON' {
+        $implicit = New-BGInfo -PassThru -Target File -ConfigurationDirectory $TestDrive {}
+        $explicit = New-BGInfo -PassThru -Target File -WallpaperFit Center -ConfigurationDirectory $TestDrive {}
+        $implicitPath = Join-Path $TestDrive 'implicit-fit.json'
+        $explicitPath = Join-Path $TestDrive 'explicit-fit.json'
+
+        Export-BGInfoConfiguration -InputObject $implicit -Path $implicitPath -Force
+        Export-BGInfoConfiguration -InputObject $explicit -Path $explicitPath -Force
+
+        (Get-Content -LiteralPath $implicitPath -Raw | ConvertFrom-Json).WallpaperFit | Should -BeNullOrEmpty
+        (Get-Content -LiteralPath $explicitPath -Raw | ConvertFrom-Json).WallpaperFit | Should -Be 'Center'
+    }
+}
+
 Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
     It 'creates a theme from a preset, mode, accent and scale' {
         $theme = New-BGInfoTheme -Preset Ember -Mode Light -Accent '#FF0000' -Scale 2
@@ -403,7 +422,8 @@ Describe 'Data helpers' {
         $expectedUser = if ($isWindowsHost) {
             "$env:USERDOMAIN\$env:USERNAME"
         } else {
-            $desktopSession = [DesktopManager.PortableDesktopService]::new().GetSession()
+            $desktopType = (Get-TestModuleAssembly -Name 'DesktopManager').GetType('DesktopManager.PortableDesktopService', $true)
+            $desktopSession = [Activator]::CreateInstance($desktopType).GetSession()
             if ($desktopSession.HasGraphicalSession) { [Environment]::UserName } else { 'Unknown' }
         }
         (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be $expectedUser
@@ -475,7 +495,7 @@ Describe 'Repeated runs' {
         $second | Should -Be $first
         (Get-FileHash -LiteralPath $second).Hash | Should -Be $hash
         $warnings | Should -BeNullOrEmpty
-        Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
+        Test-Path -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -BeTrue
     }
 
     It 'keeps an explicit in-place image when its original record is missing' {
@@ -483,8 +503,9 @@ Describe 'Repeated runs' {
         Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
         $second = Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue
         $warnings | Should -BeNullOrEmpty
-        $record = Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Where-Object { $_.StartsWith('again.png|') }
-        $source = $record.Substring('again.png|'.Length)
+        $backups = @(Get-ChildItem -LiteralPath $folder -File -Filter 'again.PowerBGInfo-original-*.png')
+        $backups | Should -HaveCount 1
+        $source = $backups[0].FullName
         $source | Should -Not -Be $second
         Test-Path -LiteralPath $source | Should -BeTrue
 

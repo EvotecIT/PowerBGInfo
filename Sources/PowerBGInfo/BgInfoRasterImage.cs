@@ -64,12 +64,15 @@ public sealed class BgInfoRasterImage : IDisposable {
     }
 
     /// <summary>Resizes the image in place.</summary>
-    public void Resize(int width, int height) {
+    public void Resize(int width, int height) => Resize(width, height, VisualCanvasImageFit.Stretch);
+
+    /// <summary>Resizes the image through the shared composition fit policy, including centered aspect-preserving cropping.</summary>
+    internal void Resize(int width, int height, VisualCanvasImageFit fit) {
         if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Image width must be positive.");
         if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Image height must be positive.");
         var source = _composition.ToImage();
         _composition = ImageComposition.CreateTransparent(width, height)
-            .DrawImage(source, 0, 0, width, height);
+            .DrawImage(source, 0, 0, width, height, fit);
     }
 
     /// <summary>Draws another image at its native size.</summary>
@@ -141,7 +144,8 @@ public sealed class BgInfoRasterImage : IDisposable {
     public void Dispose() {
     }
 
-    private static BgInfoRasterImage FromRgbaImage(RgbaImage image) => new() {
+    /// <summary>Wraps decoded RGBA pixels in a render surface without an intermediate image encoding.</summary>
+    internal static BgInfoRasterImage FromRgbaImage(RgbaImage image) => new() {
         _composition = ImageComposition.FromImage(image)
     };
 

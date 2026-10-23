@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
 using DesktopManager;
@@ -67,13 +68,22 @@ public partial class BgInfoGenerator
             return monitors;
         }
 
+        Func<int, string?> readWallpaper = CurrentWallpaper ?? (index => config.Target == BgInfoTarget.File ||
+            (!applyCurrentWallpaper && config.BackgroundColor.HasValue)
+            ? null : WallpaperService.GetCurrentWallpaper(index));
+        if (_wallpaperService is WallpaperService && CurrentWallpaper == null && applyCurrentWallpaper &&
+            config.Target.HasFlag(BgInfoTarget.Wallpaper) && config.Background == null && string.IsNullOrWhiteSpace(config.FilePath)) {
+            var state = ((WallpaperService)_wallpaperService).ReadCurrentWallpaperState(config.MonitorIndex);
+            config = ResolveDesktopDefaults(config, state, GetMonitors());
+            readWallpaper = _ => state.FilePath;
+        }
+        // Effective native state must win over retained legacy slideshow assignments.
+        // This also supplies the native fit before slideshow item configurations are cloned.
         if (TryGenerateWallpaperSlideshow(config, GetMonitors, applyCurrentWallpaper, out var slideshowOutputPath))
         {
             return slideshowOutputPath;
         }
-
-        return GenerateImage(config, CurrentWallpaper ?? (index => config.Target == BgInfoTarget.File
-            ? null : WallpaperService.GetCurrentWallpaper(index)), GetMonitors, applyTargets: true, applyCurrentWallpaper);
+        return GenerateImage(config, readWallpaper, GetMonitors, applyTargets: true, applyCurrentWallpaper);
     }
 
     private string GenerateImage(BgInfoConfiguration config, Func<int, string?> getWallpaperPath, Func<IReadOnlyList<BgInfoMonitor>?> getMonitors, bool applyTargets, bool applyCurrentWallpaper = true)
@@ -81,15 +91,20 @@ public partial class BgInfoGenerator
         // Never draw on PowerBGInfo's own earlier output: that would stack the text on every run.
         var plannedOutputPath = string.IsNullOrWhiteSpace(config.OutputFileName) ? null : BuildOutputPath(config, null, false);
         var chosenBase = !string.IsNullOrWhiteSpace(config.FilePath);
+        var baseImagePath = config.Background == null ? ResolveBaseImagePath(config, getWallpaperPath) : null;
         var imagePath = config.Background == null
-            ? ResolveOriginalImage(ResolveBaseImagePath(config, getWallpaperPath), plannedOutputPath,
+            ? ResolveOriginalImage(baseImagePath, plannedOutputPath,
                 chosenBase ? "-FilePath" : "The current wallpaper", chosenByUser: chosenBase)
             : null;
+        if (!chosenBase && config.Target.HasFlag(BgInfoTarget.Wallpaper) && !string.IsNullOrWhiteSpace(baseImagePath) && imagePath == null) {
+            throw new BgInfoWallpaperReadException(DesktopOperationStatus.Unsupported,
+                "The current PowerBGInfo output has no recoverable original background. Choose FilePath or an explicit Background before applying another overlay.");
+        }
         var backgroundImagePath = config.Background == null
             ? null
             : ResolveOriginalImage(config.Background.ImagePath, plannedOutputPath, "The New-BGInfoBackground image", chosenByUser: true);
 
-        bool hasBaseImage = !string.IsNullOrEmpty(imagePath) && File.Exists(imagePath);
+        bool hasBaseImage = !string.IsNullOrEmpty(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
         if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath!, outputPath)) {
             backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath!, outputPath);
@@ -105,7 +120,7 @@ public partial class BgInfoGenerator
         using var image = config.Background != null
             ? CreateBackgroundImage(config.Background, backgroundImagePath, config, getMonitors)
             : hasBaseImage
-                ? LoadBaseImage(imagePath!, chosenBase, config, getMonitors, outputPath, out hasBaseImage)
+                ? _imageService.Load(imagePath!)
                 : CreateBaseImage(config, getMonitors(), outputPath);
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
@@ -130,7 +145,8 @@ public partial class BgInfoGenerator
 
             if (config.WallpaperFit is DesktopWallpaperPosition.Fill or DesktopWallpaperPosition.Stretch)
             {
-                image.Resize(screenWidth, screenHeight);
+                image.Resize(screenWidth, screenHeight, config.WallpaperFit == DesktopWallpaperPosition.Fill
+                    ? VisualCanvasImageFit.Cover : VisualCanvasImageFit.Stretch);
                 scaleX = 1;
                 scaleY = 1;
             }

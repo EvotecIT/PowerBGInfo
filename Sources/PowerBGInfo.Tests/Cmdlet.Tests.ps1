@@ -11,6 +11,7 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 BeforeAll {
+. (Join-Path $PSScriptRoot 'Get-TestModuleAssembly.ps1')
 $testConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $fallbackConfiguration = if ($testConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
 
@@ -54,13 +55,20 @@ function Get-BGInfoTestPowerShellPath {
     return Join-Path -Path $PSHOME -ChildPath $executable
 }
 
+function Read-TestRasterImage {
+    param([string] $Path)
+
+    $decoder = (Get-TestModuleAssembly -Name 'ChartForgeX').GetType('ChartForgeX.Raster.RasterImageDecoder', $true)
+    return $decoder.GetMethod('Read', [type[]] @([string])).Invoke($null, [object[]] @($Path))
+}
+
 function Get-ImagePixelHash {
     param(
         [string] $Path
     )
 
     # Decode the image before hashing so encoder metadata cannot affect pixel equality.
-    $image = [ChartForgeX.Raster.RasterImageDecoder]::Read($Path)
+    $image = Read-TestRasterImage -Path $Path
     $sha256 = [System.Security.Cryptography.SHA256]::Create()
     try {
         return ([System.BitConverter]::ToString($sha256.ComputeHash($image.Pixels))).Replace('-', '')
@@ -727,7 +735,7 @@ Describe 'Generated backgrounds and shared panels' {
         } -ConfigurationDirectory $TestDrive -OutputFileName 'generated.png' -Target File
 
         Test-Path -LiteralPath $path | Should -BeTrue
-        $image = [ChartForgeX.Raster.RasterImageDecoder]::Read($path)
+        $image = Read-TestRasterImage -Path $path
         $image.Width | Should -Be 320
         $image.Height | Should -Be 200
     }

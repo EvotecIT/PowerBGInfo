@@ -52,6 +52,7 @@ public interface IWallpaperService
 public class WallpaperService : IWallpaperService
 {
     private Monitors? _monitors;
+    private DesktopWallpaperTarget? _selectedWallpaperTarget;
 
     private Monitors Monitors {
         get {
@@ -62,9 +63,12 @@ public class WallpaperService : IWallpaperService
     private readonly PortableDesktopService _desktop = new();
 
     internal bool ValidateTarget(BgInfoConfiguration config) {
+        _selectedWallpaperTarget = null;
         if (config.Target == BgInfoTarget.File) return false;
         var capabilities = _desktop.GetCapabilities();
-        return ValidateTarget(config, RuntimeInformation.IsOSPlatform(OSPlatform.Windows), capabilities.CanSetWallpaper, capabilities.Message);
+        var applyCurrentDesktop = ValidateTarget(config, RuntimeInformation.IsOSPlatform(OSPlatform.Windows), capabilities.CanSetWallpaper, capabilities.Message);
+        if (applyCurrentDesktop) _selectedWallpaperTarget = ResolveWallpaperTarget(config.MonitorIndex, _desktop.GetWallpaperTargets());
+        return applyCurrentDesktop;
     }
 
     /// <summary>Separates Windows profile policy from the current session's interactive desktop.</summary>
@@ -84,21 +88,61 @@ public class WallpaperService : IWallpaperService
         return config.Target.HasFlag(BgInfoTarget.Wallpaper) && canSetWallpaper;
     }
 
-    internal static string? GetCurrentWallpaper(int monitorIndex) {
-        var desktop = new PortableDesktopService();
-        var capabilities = desktop.GetCapabilities();
-        if (!capabilities.CanReadWallpaper) return null;
-        var id = ResolveDisplayId(monitorIndex, capabilities.SupportsPerDisplayWallpaper,
-            ReadDisplayIds(desktop, capabilities.SupportsPerDisplayWallpaper));
-        var state = desktop.GetWallpaper(id);
-        return state.Succeeded ? state.FilePath : null;
+    internal static string? GetCurrentWallpaper(int monitorIndex) => GetCurrentWallpaperState(monitorIndex).FilePath;
+
+    /// <summary>Reads the canonical wallpaper target and preserves native failure status before image generation.</summary>
+    internal static DesktopWallpaperState GetCurrentWallpaperState(int monitorIndex) => new WallpaperService().ReadCurrentWallpaperState(monitorIndex);
+
+    /// <summary>Reads the selected per-run target so its source and later application retain the same native scope.</summary>
+    internal DesktopWallpaperState ReadCurrentWallpaperState(int monitorIndex) {
+        var capabilities = _desktop.GetCapabilities();
+        if (!capabilities.CanReadWallpaper) return RequireSuccessfulRead(_desktop.GetWallpaper());
+        var target = RecheckWallpaperTarget(monitorIndex);
+        _selectedWallpaperTarget = target;
+        return RequireSuccessfulRead(_desktop.GetWallpaper(target.DisplayId));
+    }
+
+    /// <summary>Accepts successful solid or image states and surfaces every unsuccessful native read unchanged.</summary>
+    internal static DesktopWallpaperState RequireSuccessfulRead(DesktopWallpaperState state) {
+        if (state == null) throw new ArgumentNullException(nameof(state));
+        if (!state.Succeeded) throw new BgInfoWallpaperReadException(state.Status, state.Message);
+        return state;
+    }
+
+    /// <summary>Resolves a backend wallpaper index independently of physical display geometry.</summary>
+    internal static DesktopWallpaperTarget ResolveWallpaperTarget(int monitorIndex, IReadOnlyList<DesktopWallpaperTarget> targets) {
+        var target = targets.FirstOrDefault(candidate => candidate.Index == monitorIndex);
+        if (target == null) throw new ArgumentOutOfRangeException(nameof(monitorIndex), "The requested wallpaper target is not available in the current desktop session.");
+        return target;
+    }
+
+    private DesktopWallpaperTarget RecheckWallpaperTarget(int monitorIndex) {
+        var current = ResolveWallpaperTarget(monitorIndex, _desktop.GetWallpaperTargets());
+        if (_selectedWallpaperTarget == null) return current;
+        RequireUnchangedWallpaperTarget(_selectedWallpaperTarget, current);
+        return _selectedWallpaperTarget;
+    }
+
+    /// <summary>Rejects a changed activity, display identity or qualified geometry before applying an image generated for the earlier target.</summary>
+    internal static void RequireUnchangedWallpaperTarget(DesktopWallpaperTarget expected, DesktopWallpaperTarget current) {
+        var before = expected.Display;
+        var after = current.Display;
+        var sameGeometry = before == null && after == null || before != null && after != null
+            && string.Equals(before.Id, after.Id, StringComparison.Ordinal)
+            && before.Index == after.Index && before.IsPrimary == after.IsPrimary
+            && before.Left == after.Left && before.Top == after.Top
+            && before.Width == after.Width && before.Height == after.Height && before.Scale == after.Scale;
+        if (expected.Index != current.Index || !string.Equals(expected.DisplayId, current.DisplayId, StringComparison.Ordinal)
+            || !string.Equals(expected.ScopeId, current.ScopeId, StringComparison.Ordinal) || !sameGeometry) {
+            throw new InvalidOperationException("The wallpaper target, desktop activity or display geometry changed after selection. Generate the wallpaper again for the current target before applying it.");
+        }
     }
 
     internal static uint GetCurrentBackgroundColor() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
         ? new Monitors().GetBackgroundColor() : 0;
 
-    // Readback and application use the same mapping: a missing explicit monitor
-    // must never become a request for the backend's default or entire desktop.
+    // Retains the physical-display mapping contract. Native wallpaper operations
+    // use ResolveWallpaperTarget, including targets with no physical geometry.
     internal static string? ResolveDisplayId(int monitorIndex, bool supportsPerDisplay,
         IReadOnlyDictionary<int, string> displayIds) {
         if (supportsPerDisplay) {
@@ -111,10 +155,6 @@ public class WallpaperService : IWallpaperService
         return null;
     }
 
-    private static IReadOnlyDictionary<int, string> ReadDisplayIds(PortableDesktopService desktop, bool supportsPerDisplay) =>
-        supportsPerDisplay ? desktop.GetDisplays().ToDictionary(display => display.Index, display => display.Id)
-            : new Dictionary<int, string>();
-
     /// <summary>Receives warnings, for example when the lock screen fallback is used on an edition that ignores it.</summary>
     public Action<string>? Warning { get; set; }
 
@@ -126,10 +166,13 @@ public class WallpaperService : IWallpaperService
     /// <param name="position">Wallpaper fit mode.</param>
     public void SetWallpaper(int monitorIndex, string filePath, DesktopWallpaperPosition position)
     {
-        var capabilities = _desktop.GetCapabilities();
-        var id = ResolveDisplayId(monitorIndex, capabilities.SupportsPerDisplayWallpaper,
-            ReadDisplayIds(_desktop, capabilities.SupportsPerDisplayWallpaper));
-        var result = _desktop.ApplyWallpaper(new DesktopWallpaperRequest { FilePath = filePath, DisplayId = id, Position = position });
+        var target = RecheckWallpaperTarget(monitorIndex);
+        var result = _desktop.ApplyWallpaper(new DesktopWallpaperRequest {
+            FilePath = filePath,
+            DisplayId = target.DisplayId,
+            ExpectedScopeId = target.ScopeId,
+            Position = position
+        });
         if (!result.Succeeded) throw new InvalidOperationException($"The wallpaper could not be set ({result.Status}): {result.Message}");
     }
 

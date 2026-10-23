@@ -17,9 +17,7 @@ public partial class BgInfoGenerator
     {
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
-            var configuredPath = Path.IsPathRooted(config.OutputFileName)
-                ? config.OutputFileName
-                : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            var configuredPath = BgInfoConfigurationJson.ResolvePath(config.OutputFileName, config.ConfigurationDirectory);
             return NormalizeOutputPathExtension(configuredPath, config.Target);
         }
 
@@ -38,9 +36,7 @@ public partial class BgInfoGenerator
 
         if (!string.IsNullOrWhiteSpace(config.OutputFileName))
         {
-            var configuredPath = Path.IsPathRooted(config.OutputFileName)
-                ? config.OutputFileName
-                : Path.Combine(config.ConfigurationDirectory, config.OutputFileName);
+            var configuredPath = BgInfoConfigurationJson.ResolvePath(config.OutputFileName, config.ConfigurationDirectory);
             var directory = Path.GetDirectoryName(configuredPath) ?? config.ConfigurationDirectory;
             var name = Path.GetFileNameWithoutExtension(configuredPath);
             if (string.IsNullOrWhiteSpace(name))

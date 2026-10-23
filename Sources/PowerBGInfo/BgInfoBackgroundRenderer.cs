@@ -24,7 +24,8 @@ internal static class BgInfoBackgroundRenderer {
                 throw new FileNotFoundException("BGInfo background image file was not found.", imagePath);
             }
 
-            composition.DrawImageFile(imagePath!, 0, 0, width, height,
+            using var backgroundImage = BgInfoRasterImage.Load(imagePath!);
+            composition.DrawImage(backgroundImage.ToRgbaImage(), 0, 0, width, height,
                 BgInfoImageFitMapper.ToVisualCanvasFit(background.ImageFit), Clamp01(background.ImageOpacity));
         }
 

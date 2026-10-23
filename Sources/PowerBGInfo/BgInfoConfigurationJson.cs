@@ -108,7 +108,7 @@ public static partial class BgInfoConfigurationJson {
             configuration.FilePath = ResolvePath(model.FilePath, baseDirectory);
         }
         if (!string.IsNullOrWhiteSpace(model.OutputFileName)) {
-            configuration.OutputFileName = model.OutputFileName!;
+            configuration.OutputFileName = ResolvePath(model.OutputFileName, configurationDirectory);
         }
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) {
             configuration.FontFamilyName = model.FontFamilyName!;
@@ -260,7 +260,7 @@ public static partial class BgInfoConfigurationJson {
             MonitorIndex = configuration.MonitorIndex,
             SpaceX = configuration.SpaceX,
             SpaceY = configuration.SpaceY,
-            WallpaperFit = configuration.WallpaperFit.ToString(),
+            WallpaperFit = configuration.HasExplicitWallpaperFit ? configuration.WallpaperFit.ToString() : null,
             TextPosition = configuration.TextPosition.ToString(),
             Target = configuration.Target.ToString(),
             ForceWallpaperRefresh = configuration.ForceWallpaperRefresh,
@@ -1144,7 +1144,11 @@ public static partial class BgInfoConfigurationJson {
         setter(parsed);
     }
 
-    private static string ResolvePath(string? path, string baseDirectory) {
+    /// <summary>
+    /// Resolves authored configuration paths using the host's filesystem syntax. Relative Windows
+    /// separators are portable; foreign Windows roots are rejected on Unix rather than renamed.
+    /// </summary>
+    internal static string ResolvePath(string? path, string baseDirectory) {
         if (string.IsNullOrWhiteSpace(path)) {
             return string.Empty;
         }

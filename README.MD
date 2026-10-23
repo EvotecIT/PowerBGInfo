@@ -66,6 +66,10 @@ Use `Get-BGInfoCapability` to inspect the desktop backend before applying a
 wallpaper; per-display images and automatic sizing depend on that backend.
 See the [cross-platform guide](Website/content/project-docs/docs/cross-platform.md)
 for the support boundaries and portable example.
+When using the current wallpaper as the base, PowerBGInfo preserves its reported
+fit unless you supply `-WallpaperFit`. Unreadable or unsupported source images
+stop the run before desktop application. Choose `-FilePath` or an explicit
+`New-BGInfoBackground` to select another base.
 The rendering and desktop libraries ship inside the module, so nothing
 else needs installing. Releases are Authenticode-signed by Evotec. Run
 `Update-Module -Name PowerBGInfo` to update an existing installation.

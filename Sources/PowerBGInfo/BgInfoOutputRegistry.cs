@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Text;
 
 namespace PowerBGInfo;
 
@@ -7,14 +8,17 @@ namespace PowerBGInfo;
 /// Remembers which images PowerBGInfo wrote and which image each one was drawn on. A later run uses that
 /// record to go back to the original instead of drawing on its own output, which would stack the text.
 /// </summary>
-/// <remarks>The record is a small text file next to the images: one line per image, <c>file name|original path</c>.
+/// <remarks>The versioned record stores one image per line, with UTF-8 Base64 fields so all native filenames round-trip.
 /// A companion lock file serializes writers across processes; readers see an atomic snapshot.</remarks>
 internal static class BgInfoOutputRegistry {
     /// <summary>File name of the record, written next to the generated images.</summary>
     public const string FileName = "PowerBgInfo.outputs.txt";
 
     private const char Separator = '|';
-    private const string Header = "# Images written by PowerBGInfo and the image each was drawn on (empty: a generated or plain background).";
+    private const string LegacyHeader = "# Images written by PowerBGInfo and the image each was drawn on (empty: a generated or plain background).";
+    private const string VersionPrefix = "# PowerBGInfo output registry ";
+    private const string Header = VersionPrefix + "v2 (UTF-8 Base64 fields).";
+    private static readonly Encoding FieldEncoding = new UTF8Encoding(false, true);
 
     // Default output names: <name>_PowerBgInfo.<ext>, slideshow copies <name>_PowerBgInfo_001.<ext>,
     // and the temporary refresh copy <name>_refresh_<guid>.<ext>.
@@ -24,6 +28,7 @@ internal static class BgInfoOutputRegistry {
     /// <summary>Records that <paramref name="outputPath"/> was drawn on <paramref name="sourcePath"/>. Never throws.</summary>
     public static void Record(string outputPath, string? sourcePath) {
         string? temporaryPath = null;
+        var temporaryOwned = false;
         try {
             var fullPath = Path.GetFullPath(outputPath);
             var directory = Path.GetDirectoryName(fullPath);
@@ -36,15 +41,20 @@ internal static class BgInfoOutputRegistry {
             var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath!);
             entries.Add(new KeyValuePair<string, string>(key, source));
             var lines = new List<string>(entries.Count + 1) { Header };
-            lines.AddRange(entries.Select(entry => entry.Key + Separator + entry.Value));
+            lines.AddRange(entries.Select(entry => Encode(entry.Key) + Separator + Encode(entry.Value)));
             temporaryPath = registryPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            File.WriteAllLines(temporaryPath, lines);
+            using (var snapshot = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
+                temporaryOwned = true;
+                using var writer = new StreamWriter(snapshot, FieldEncoding);
+                foreach (var line in lines) writer.WriteLine(line);
+            }
             if (File.Exists(registryPath)) File.Replace(temporaryPath, registryPath, null);
             else File.Move(temporaryPath, registryPath);
+            temporaryOwned = false;
         } catch {
             // The record only prevents stacked text on later runs; it must never fail a render.
         } finally {
-            if (temporaryPath != null) {
+            if (temporaryPath != null && temporaryOwned) {
                 try { File.Delete(temporaryPath); } catch { /* Best-effort removal after a failed update. */ }
             }
         }
@@ -95,13 +105,46 @@ internal static class BgInfoOutputRegistry {
         if (!File.Exists(registryPath)) return entries;
         using var stream = new FileStream(registryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         using var reader = new StreamReader(stream);
+        var firstLine = reader.ReadLine();
+        var encoded = firstLine == Header;
+        if (firstLine != null && firstLine.StartsWith(VersionPrefix, StringComparison.Ordinal) && !encoded) return entries;
         string? line;
-        while ((line = reader.ReadLine()) != null) {
-            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#", StringComparison.Ordinal)) continue;
+        // A well-formed old snapshot can be migrated on the next write. Because
+        // legacy delimiters were not escaped, a malformed row makes the whole
+        // snapshot suspect: keeping partial rows could trust a truncated source.
+        line = encoded ? reader.ReadLine() : firstLine;
+        while (line != null) {
+            if (string.IsNullOrWhiteSpace(line) || (!encoded && line == LegacyHeader)) {
+                line = reader.ReadLine();
+                continue;
+            }
             var separator = line.IndexOf(Separator);
-            if (separator <= 0) continue;
-            entries.Add(new KeyValuePair<string, string>(line.Substring(0, separator), line.Substring(separator + 1)));
+            if (separator <= 0 || separator != line.LastIndexOf(Separator)) return new List<KeyValuePair<string, string>>();
+            var key = line.Substring(0, separator);
+            var source = line.Substring(separator + 1);
+            if (encoded) {
+                try {
+                    key = Decode(key);
+                    source = Decode(source);
+                } catch (FormatException) {
+                    return new List<KeyValuePair<string, string>>();
+                } catch (DecoderFallbackException) {
+                    return new List<KeyValuePair<string, string>>();
+                }
+            }
+            if (!IsLeafName(key) || (!encoded && key.StartsWith("#", StringComparison.Ordinal)) ||
+                source.IndexOf('\0') >= 0 || (source.Length != 0 && !Path.IsPathRooted(source))) {
+                return new List<KeyValuePair<string, string>>();
+            }
+            entries.Add(new KeyValuePair<string, string>(key, source));
+            line = reader.ReadLine();
         }
         return entries;
     }
+
+    private static bool IsLeafName(string value) => value.Length != 0 && value != "." && value != ".." &&
+        !Path.IsPathRooted(value) && Path.GetFileName(value) == value && value.IndexOf('\0') < 0;
+
+    private static string Encode(string value) => Convert.ToBase64String(FieldEncoding.GetBytes(value));
+    private static string Decode(string value) => FieldEncoding.GetString(Convert.FromBase64String(value));
 }
