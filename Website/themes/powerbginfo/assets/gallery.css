@@ -68,8 +68,10 @@
   width: min(1240px, calc(100vw - 32px));
   max-width: none;
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   padding: 0;
   overflow: hidden;
+  overscroll-behavior: contain;
   border: 1px solid var(--pb-line-strong);
   border-radius: var(--pb-r-lg);
   background: var(--pb-card);
@@ -119,7 +121,11 @@
   grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
 }
+.pb-viewer__source pre { overscroll-behavior: contain; }
+/* Without script the dialog cannot open, so this only backs up the scroll lock in site.js. */
+html:has(.pb-viewer[open]) { overflow: hidden; }
 .pb-viewer__image {
   display: grid;
   place-items: center;
@@ -161,6 +167,6 @@
 
 @media (max-width: 560px) {
   .pb-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 12px; }
-  .pb-viewer { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
+  .pb-viewer { width: calc(100vw - 16px); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
   .pb-viewer__source { margin: 10px; }
 }

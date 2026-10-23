@@ -483,32 +483,69 @@
         if (key) viewer.style.setProperty('--key', key); else viewer.style.removeProperty('--key');
         buildTabs();
         render();
+        lockPage();
         viewer.showModal();
       });
     });
 
-    viewer.querySelector('[data-pb-viewer-close]').addEventListener('click', function () { viewer.close(); });
-    viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
-    // Escape and the close button both end here: focus goes back to the card that opened the viewer.
-    viewer.addEventListener('close', function () { if (opener && opener.isConnected) opener.focus(); });
+    // While the viewer is open the page behind it must not scroll: the wheel or a touch drag that reaches the end of
+    // the dialog's own scrolling would otherwise move the page. Lock the root, keep the scrollbar's space so nothing
+    // shifts, and put everything back on close (Escape, the close button and a backdrop click all end in "close").
+    var lockedScroll = null;
+    function lockPage() {
+      if (lockedScroll) { return; }
+      var root = document.documentElement;
+      lockedScroll = { x: window.scrollX, y: window.scrollY, overflow: root.style.overflow, gutter: root.style.scrollbarGutter };
+      root.style.scrollbarGutter = 'stable';
+      root.style.overflow = 'hidden';
+      root.classList.add('pb-viewer-open');
+    }
+    function unlockPage() {
+      if (!lockedScroll) { return; }
+      var root = document.documentElement;
+      root.style.overflow = lockedScroll.overflow;
+      root.style.scrollbarGutter = lockedScroll.gutter;
+      root.classList.remove('pb-viewer-open');
+      window.scrollTo(lockedScroll.x, lockedScroll.y);
+      lockedScroll = null;
+    }
+    // Every close path unlocks the page at once. The "close" event can arrive late, even after the viewer has been
+    // opened again, so it only backs up the direct paths and ignores itself while the viewer is open.
+    function finishClose() {
+      unlockPage();
+      if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+    }
+    function closeViewer() {
+      if (viewer.open) viewer.close();
+      finishClose();
+    }
+    viewer.querySelector('[data-pb-viewer-close]').addEventListener('click', closeViewer);
+    viewer.addEventListener('click', function (event) { if (event.target === viewer) closeViewer(); });
+    // Escape: "cancel" fires before the dialog closes itself.
+    viewer.addEventListener('cancel', function () { unlockPage(); });
+    viewer.addEventListener('close', function () { if (!viewer.open) finishClose(); });
     themeListeners.push(function () { if (viewer.open) render(); });
   }
 })();
 
-// Home monitor: the scenario chips under the monitor swap the wallpaper it shows. Each chip is a link to that
-// scenario in the gallery, so without JavaScript it still goes somewhere useful.
+// Home monitor: the scenario chips under the monitor switch which wallpaper it shows. Each scenario is its own image
+// with its own responsive sources, so the browser picks the right file for the new one; the chips only change which
+// image is visible. Each chip is a link to that scenario in the gallery, so without JavaScript it still goes somewhere.
 (function () {
   document.querySelectorAll('[data-pbg-monitor]').forEach(function (monitor) {
-    var image = monitor.querySelector('[data-pbg-screen]');
+    var images = Array.prototype.slice.call(monitor.querySelectorAll('[data-pbg-screen]'));
     var file = monitor.querySelector('[data-pbg-screen-file]');
     var chips = Array.prototype.slice.call(monitor.querySelectorAll('[data-pbg-scene]'));
-    if (!image || !chips.length) { return; }
+    if (!images.length || !chips.length) { return; }
     chips.forEach(function (chip) {
       chip.addEventListener('click', function (event) {
+        var scene = chip.getAttribute('data-pbg-scene');
+        var target = null;
+        images.forEach(function (image) { if (image.getAttribute('data-pbg-screen') === scene) { target = image; } });
+        if (!target) { return; }
         event.preventDefault();
+        images.forEach(function (image) { image.hidden = image !== target; });
         chips.forEach(function (other) { other.setAttribute('aria-pressed', other === chip ? 'true' : 'false'); });
-        image.src = chip.getAttribute('data-src');
-        image.alt = chip.getAttribute('data-alt');
         if (file) { file.textContent = chip.getAttribute('data-file'); }
       });
     });

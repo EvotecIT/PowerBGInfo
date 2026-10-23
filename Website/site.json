@@ -429,7 +429,8 @@
                 "Title": "InformationBox",
                 "Url": "/informationbox/",
                 "Meta": {
-                  "key": 2
+                  "key": 2,
+                  "thumb": "/nav/informationbox"
                 },
                 "Description": "Ask and fix: a self-service window for the person at the desk."
               }
