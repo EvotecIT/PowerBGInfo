@@ -37,7 +37,7 @@ public partial class BgInfoGenerator
 
         // The record holds the base the output was drawn on, already resolved when it was written,
         // so one step back is the original. Null means a plain or generated background.
-        if (BgInfoOutputRegistry.TryGetSource(candidate!, out var source))
+        if (BgInfoOutputRegistry.TryGetSource(candidate!, out var source, out var untrustedSnapshot))
         {
             if (source != null && !File.Exists(source))
             {
@@ -45,6 +45,12 @@ public partial class BgInfoGenerator
                 return null;
             }
             return IsSamePath(source ?? string.Empty, candidate) ? null : source;
+        }
+
+        if (untrustedSnapshot)
+        {
+            throw new InvalidDataException("The earlier output provenance cannot establish an original image. "
+                + "Choose an explicit original FilePath or Background and a different output path before rendering again.");
         }
 
         if (chosenByUser && isPlannedOutput && File.Exists(candidate))

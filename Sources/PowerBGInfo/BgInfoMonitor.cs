@@ -26,21 +26,26 @@ public sealed class BgInfoMonitor {
 
 /// <summary>Reads the displays that PowerBGInfo renders for.</summary>
 public static class BgInfoMonitorProvider {
-    /// <summary>Returns the current desktop displays with physical dimensions, ordered by index. Empty when none can be read, for example without a desktop.</summary>
+    /// <summary>Returns current wallpaper targets with qualified physical dimensions, ordered by the index accepted by MonitorIndex. Empty when none can be read.</summary>
     public static BgInfoMonitor[] GetMonitors() {
         try {
-            return new PortableDesktopService().GetDisplays()
-                .Where(monitor => monitor.Width > 0 && monitor.Height > 0)
-                .Select(monitor => new BgInfoMonitor {
-                    Index = monitor.Index, Id = monitor.Id, DeviceName = monitor.DeviceName,
-                    Primary = monitor.IsPrimary, Left = monitor.Left, Top = monitor.Top,
-                    Width = monitor.Width, Height = monitor.Height, Scale = monitor.Scale
-                })
-                .OrderBy(monitor => monitor.Index).ToArray();
+            return FromWallpaperTargets(new PortableDesktopService().GetWallpaperTargets());
         } catch {
             return Array.Empty<BgInfoMonitor>();
         }
     }
+
+    /// <summary>Maps canonical wallpaper indices to their own qualified geometry without joining or renumbering physical display indices.</summary>
+    internal static BgInfoMonitor[] FromWallpaperTargets(IEnumerable<DesktopWallpaperTarget> targets) => targets
+        .Where(target => target.Display != null && target.Display.Width > 0 && target.Display.Height > 0)
+        .Select(target => {
+            var display = target.Display!;
+            return new BgInfoMonitor {
+                Index = target.Index, Id = display.Id, DeviceName = display.DeviceName, Primary = display.IsPrimary,
+                Left = display.Left, Top = display.Top, Width = display.Width, Height = display.Height, Scale = display.Scale
+            };
+        })
+        .OrderBy(monitor => monitor.Index).ToArray();
 
     internal static BgInfoMonitor Create(int index, string? deviceName, bool primary, int left, int top, int right, int bottom, double? scale) {
         return new BgInfoMonitor {

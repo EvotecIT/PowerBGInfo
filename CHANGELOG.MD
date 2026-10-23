@@ -21,7 +21,7 @@
 
 ### Fixed
 
-- Output provenance round-trips native filenames containing `#`, pipes and newlines, with conservative migration of older records.
+- Output provenance round-trips native filenames containing `#`, pipes and newlines. Validated older Windows records migrate; ambiguous legacy or damaged records stop automatic and in-place reuse until an explicit original and different output are selected.
 - Screen-coordinate `Fill` crops while preserving aspect ratio; `Stretch` retains independent axis scaling. JSON output paths share the portable input-path rules, and disk metrics resolve symlinks before selecting a mount.
 - PowerShell configuration handoffs use a private invocation directory and clean up only owned files. Desktop read failures retain their typed status and diagnostic; unsupported current images no longer become a plain background. Ambient source defaults preserve known native fit and reject incomplete metadata, while desktop application rechecks target identity, activity and known geometry.
 - The website wallpaper selector changes the displayed responsive image, the gallery viewer keeps scrolling inside the dialog, and documentation tables keep long identifiers readable. The Desktop tools menu includes the InformationBox preview.

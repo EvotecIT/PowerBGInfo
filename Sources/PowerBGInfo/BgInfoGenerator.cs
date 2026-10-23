@@ -44,7 +44,9 @@ public partial class BgInfoGenerator
 
     private string GenerateCore(BgInfoConfiguration config)
     {
-        var applyCurrentWallpaper = _wallpaperService is not WallpaperService desktop || desktop.ValidateTarget(config);
+        var desktop = _wallpaperService as WallpaperService;
+        var applyCurrentWallpaper = desktop?.ValidateTarget(config) ?? true;
+        var targetGuard = _wallpaperService as IWallpaperTargetGuard;
         Directory.CreateDirectory(config.ConfigurationDirectory);
 
         IReadOnlyList<BgInfoMonitor>? monitors = null;
@@ -55,10 +57,19 @@ public partial class BgInfoGenerator
                 return monitors;
             }
 
+            if (targetGuard?.SelectedWallpaperTarget is { } selectedTarget) {
+                monitors = BgInfoMonitorProvider.FromWallpaperTargets(new[] { selectedTarget });
+                if (monitors.Count == 0) {
+                    throw UnsupportedDesktopDefault(config.UseScreenCoordinates
+                        ? "Screen-coordinate layout requires qualified physical target dimensions. Disable screen-coordinate layout or use Target File."
+                        : "The selected wallpaper target has no qualified physical dimensions. Provide an explicit image or a Background with Width and Height.");
+                }
+                return monitors;
+            }
+
             try
             {
-                monitors = config.Target == BgInfoTarget.File
-                    ? Array.Empty<BgInfoMonitor>() : BgInfoMonitorProvider.GetMonitors();
+                monitors = config.Target == BgInfoTarget.File ? Array.Empty<BgInfoMonitor>() : BgInfoMonitorProvider.GetMonitors();
             }
             catch
             {
@@ -71,10 +82,10 @@ public partial class BgInfoGenerator
         Func<int, string?> readWallpaper = CurrentWallpaper ?? (index => config.Target == BgInfoTarget.File ||
             (!applyCurrentWallpaper && config.BackgroundColor.HasValue)
             ? null : WallpaperService.GetCurrentWallpaper(index));
-        if (_wallpaperService is WallpaperService && CurrentWallpaper == null && applyCurrentWallpaper &&
+        if (desktop != null && CurrentWallpaper == null && applyCurrentWallpaper &&
             config.Target.HasFlag(BgInfoTarget.Wallpaper) && config.Background == null && string.IsNullOrWhiteSpace(config.FilePath)) {
-            var state = ((WallpaperService)_wallpaperService).ReadCurrentWallpaperState(config.MonitorIndex);
-            config = ResolveDesktopDefaults(config, state, GetMonitors());
+            var state = desktop.ReadCurrentWallpaperState(config.MonitorIndex);
+            config = ResolveDesktopDefaults(config, state, desktop.SelectedWallpaperTarget);
             readWallpaper = _ => state.FilePath;
         }
         // Effective native state must win over retained legacy slideshow assignments.
@@ -273,6 +284,7 @@ public partial class BgInfoGenerator
         {
             if (config.ApplyToAllUsers)
             {
+                RecheckSelectedNativeTarget();
                 _wallpaperService.SetWallpaperForAllUsers(outputPath, config.WallpaperFit, config.IncludeDefaultUserProfile);
             }
 
@@ -282,6 +294,7 @@ public partial class BgInfoGenerator
 
         if (applyTargets && config.Target.HasFlag(BgInfoTarget.LogonScreen))
         {
+            RecheckSelectedNativeTarget();
             _wallpaperService.SetLogonWallpaper(outputPath);
         }
 

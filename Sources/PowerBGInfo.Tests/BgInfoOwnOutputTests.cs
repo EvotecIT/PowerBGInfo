@@ -5,6 +5,53 @@ namespace PowerBGInfo.Tests;
 
 public class BgInfoOwnOutputTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AmbiguousLegacyProvenanceStopsAutomaticOrInPlaceRendering(bool explicitInPlace, bool recordFreshOutput)
+    {
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) return;
+        using var folder = new TempFolder();
+        var candidate = folder.CreateImage("wallpaper.png", ChartColors.Navy);
+        var original = folder.CreateImage("original.png", ChartColors.DarkGreen);
+        var other = folder.CreateImage("other.png", ChartColors.DarkRed);
+        File.WriteAllText(Path.Combine(folder.Path, BgInfoOutputRegistry.FileName),
+            $"wallpaper.png|{original}\nforged.png|{other}\n");
+        if (recordFreshOutput)
+        {
+            BgInfoOutputRegistry.Record(Path.Combine(folder.Path, "fresh-output.png"), original);
+        }
+        var before = File.ReadAllBytes(candidate);
+        var config = Configuration(folder, explicitInPlace ? candidate : null,
+            explicitInPlace ? "wallpaper.png" : "next.png");
+        var generator = new BgInfoGenerator(new ImageService(), new FakeWallpaperService()) {
+            CurrentWallpaper = _ => candidate
+        };
+
+        var error = Assert.Throws<InvalidDataException>(() => generator.Generate(config));
+
+        Assert.Contains("provenance", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(before, File.ReadAllBytes(candidate));
+        Assert.False(File.Exists(Path.Combine(folder.Path, "next.png")));
+        Assert.Empty(Directory.GetFiles(folder.Path, "*PowerBGInfo-original*"));
+    }
+
+    [Fact]
+    public void ExplicitSourceWithDifferentOutputDoesNotTrustLegacyProvenance()
+    {
+        using var folder = new TempFolder();
+        var source = folder.CreateImage("source.png", ChartColors.Navy);
+        File.WriteAllText(Path.Combine(folder.Path, BgInfoOutputRegistry.FileName), "# PowerBGInfo output registry v999\n");
+        var before = File.ReadAllBytes(source);
+
+        var output = Render(folder, null, "new-output.png", out _, filePath: source);
+
+        Assert.Equal(before, File.ReadAllBytes(source));
+        Assert.Equal(source, ReadRecordedSource(output));
+    }
+
     [Fact]
     public void MissingRecordedOriginalWarnsAndUsesPlainBackground()
     {

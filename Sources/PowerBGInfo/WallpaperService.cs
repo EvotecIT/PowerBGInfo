@@ -46,10 +46,18 @@ public interface IWallpaperService
     void StartWallpaperSlideshow(IEnumerable<string> filePaths, DesktopWallpaperPosition position, DesktopSlideshowOptions options, uint slideshowTick);
 }
 
+/// <summary>Guards dependent native writes against changes to a previously selected current-desktop target.</summary>
+internal interface IWallpaperTargetGuard {
+    /// <summary>Gets the retained canonical target, or null when a write has no current-desktop dependency.</summary>
+    DesktopWallpaperTarget? SelectedWallpaperTarget { get; }
+    /// <summary>Rejects changes before a dependent native write; no retained selection requires no desktop discovery.</summary>
+    void RecheckSelectedTarget();
+}
+
 /// <summary>
 /// Applies wallpaper through DesktopManager and preserves its Windows-only policy operations.
 /// </summary>
-public class WallpaperService : IWallpaperService
+public class WallpaperService : IWallpaperService, IWallpaperTargetGuard
 {
     private Monitors? _monitors;
     private DesktopWallpaperTarget? _selectedWallpaperTarget;
@@ -61,6 +69,11 @@ public class WallpaperService : IWallpaperService
         }
     }
     private readonly PortableDesktopService _desktop = new();
+
+    /// <summary>Gets the canonical target retained for this run, including its optional qualified physical geometry.</summary>
+    internal DesktopWallpaperTarget? SelectedWallpaperTarget => _selectedWallpaperTarget;
+
+    DesktopWallpaperTarget? IWallpaperTargetGuard.SelectedWallpaperTarget => SelectedWallpaperTarget;
 
     internal bool ValidateTarget(BgInfoConfiguration config) {
         _selectedWallpaperTarget = null;
@@ -121,6 +134,12 @@ public class WallpaperService : IWallpaperService
         if (_selectedWallpaperTarget == null) return current;
         RequireUnchangedWallpaperTarget(_selectedWallpaperTarget, current);
         return _selectedWallpaperTarget;
+    }
+
+    void IWallpaperTargetGuard.RecheckSelectedTarget() => RecheckSelectedTarget();
+
+    private void RecheckSelectedTarget() {
+        if (_selectedWallpaperTarget != null) RecheckWallpaperTarget(_selectedWallpaperTarget.Index);
     }
 
     /// <summary>Rejects a changed activity, display identity or qualified geometry before applying an image generated for the earlier target.</summary>
@@ -186,6 +205,7 @@ public class WallpaperService : IWallpaperService
 #if NET5_0_OR_GREATER
         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240)) throw new PlatformNotSupportedException("Lock-screen wallpaper requires Windows 10 or later.");
 #endif
+        RecheckSelectedTarget();
         var result = Monitors.SetLogonWallpaperWithResult(filePath, allowPolicyFallback: true);
         if (!result.Succeeded) {
             throw new InvalidOperationException($"The lock screen image could not be set: {result.ErrorMessage}");
@@ -203,6 +223,7 @@ public class WallpaperService : IWallpaperService
     public void SetWallpaperForAllUsers(string filePath, DesktopWallpaperPosition position, bool includeDefaultUserProfile)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) throw new PlatformNotSupportedException("All-user wallpaper is supported only on Windows.");
+        RecheckSelectedTarget();
         Monitors.SetWallpaperForAllUsers(filePath, position, includeDefaultUserProfile);
     }
 
@@ -226,7 +247,9 @@ public class WallpaperService : IWallpaperService
     public void StartWallpaperSlideshow(IEnumerable<string> filePaths, DesktopWallpaperPosition position, DesktopSlideshowOptions options, uint slideshowTick)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) throw new PlatformNotSupportedException("Wallpaper slideshows are supported only on Windows.");
+        RecheckSelectedTarget();
         Monitors.SetWallpaperPosition(position);
+        RecheckSelectedTarget();
         Monitors.StartWallpaperSlideshow(filePaths, options, slideshowTick);
     }
 

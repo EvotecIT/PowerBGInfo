@@ -108,7 +108,8 @@ public static partial class BgInfoConfigurationJson {
             configuration.FilePath = ResolvePath(model.FilePath, baseDirectory);
         }
         if (!string.IsNullOrWhiteSpace(model.OutputFileName)) {
-            configuration.OutputFileName = ResolvePath(model.OutputFileName, configurationDirectory);
+            // Keep relative output portable until command overrides select the final directory.
+            configuration.OutputFileName = ResolvePath(model.OutputFileName, string.Empty);
         }
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) {
             configuration.FontFamilyName = model.FontFamilyName!;

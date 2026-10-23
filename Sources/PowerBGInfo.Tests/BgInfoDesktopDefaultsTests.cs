@@ -57,7 +57,7 @@ public sealed class BgInfoDesktopDefaultsTests {
         var configuration = new BgInfoConfiguration { MonitorIndex = 2 };
         var state = WallpaperState(background: Background("#12243c", shading, "#c48e20"), imageOpacity: 0);
 
-        var effective = BgInfoGenerator.ResolveDesktopDefaults(configuration, state, QualifiedMonitors());
+        var effective = BgInfoGenerator.ResolveDesktopDefaults(configuration, state, QualifiedTarget());
 
         var background = Assert.IsType<BgInfoBackground>(effective.Background);
         Assert.Equal(160, background.Width);
@@ -84,7 +84,7 @@ public sealed class BgInfoDesktopDefaultsTests {
         var configuration = new BgInfoConfiguration { MonitorIndex = 2, BackgroundColor = ChartColors.DarkRed };
         var state = WallpaperState(background: Background("#12243c"), imageOpacity: 0);
 
-        var effective = BgInfoGenerator.ResolveDesktopDefaults(configuration, state, QualifiedMonitors());
+        var effective = BgInfoGenerator.ResolveDesktopDefaults(configuration, state, QualifiedTarget());
 
         var background = Assert.IsType<BgInfoBackground>(effective.Background);
         using var rendered = BgInfoBackgroundRenderer.Render(background, background.Width, background.Height);
@@ -106,10 +106,10 @@ public sealed class BgInfoDesktopDefaultsTests {
         var state = missingFact == "image-opacity"
             ? WallpaperState(folder.CreateImage(), DesktopWallpaperPosition.Fit)
             : WallpaperState(background: missingFact == "background-color" ? null : Background("#12243c"), imageOpacity: 0);
-        var monitors = missingFact == "physical-geometry" ? null : QualifiedMonitors();
+        var target = missingFact == "physical-geometry" ? null : QualifiedTarget();
 
         var error = Assert.Throws<BgInfoWallpaperReadException>(() =>
-            BgInfoGenerator.ResolveDesktopDefaults(configuration, state, monitors));
+            BgInfoGenerator.ResolveDesktopDefaults(configuration, state, target));
 
         Assert.Equal(DesktopOperationStatus.Unsupported, error.Status);
         Assert.False(string.IsNullOrWhiteSpace(error.Diagnostic));
@@ -132,9 +132,35 @@ public sealed class BgInfoDesktopDefaultsTests {
         Assert.Same(configuration, effective);
     }
 
-    private static BgInfoMonitor[] QualifiedMonitors() => new[] {
-        new BgInfoMonitor { Index = 2, Id = "qualified-display", Width = 160, Height = 120, Scale = 1 }
-    };
+    [Fact]
+    public void DesktopDefaultsUseTheSelectedPhysicalDisplayWhenWallpaperIndicesAreCompacted() {
+        var configuration = new BgInfoConfiguration { MonitorIndex = 0 };
+        var state = WallpaperState(background: Background("#12243c"), imageOpacity: 0);
+
+        // Windows wallpaper targets compact their indices after unaddressable displays are
+        // filtered. The selected target is index zero, but its physical display remains index two.
+        var effective = BgInfoGenerator.ResolveDesktopDefaults(configuration, state, QualifiedTarget(targetIndex: 0, physicalIndex: 2));
+
+        var background = Assert.IsType<BgInfoBackground>(effective.Background);
+        Assert.Equal(160, background.Width);
+        Assert.Equal(120, background.Height);
+    }
+
+    internal static DesktopWallpaperTarget QualifiedTarget(int targetIndex = 2, int physicalIndex = 2, bool hasGeometry = true) {
+        var target = new DesktopWallpaperTarget();
+        typeof(DesktopWallpaperTarget).GetProperty(nameof(DesktopWallpaperTarget.Index))!.SetValue(target, targetIndex);
+        typeof(DesktopWallpaperTarget).GetProperty(nameof(DesktopWallpaperTarget.DisplayId))!.SetValue(target, "qualified-display");
+        if (hasGeometry) {
+            var display = new DesktopDisplayInfo();
+            typeof(DesktopDisplayInfo).GetProperty(nameof(DesktopDisplayInfo.Index))!.SetValue(display, physicalIndex);
+            typeof(DesktopDisplayInfo).GetProperty(nameof(DesktopDisplayInfo.Id))!.SetValue(display, "qualified-display");
+            typeof(DesktopDisplayInfo).GetProperty(nameof(DesktopDisplayInfo.Width))!.SetValue(display, 160);
+            typeof(DesktopDisplayInfo).GetProperty(nameof(DesktopDisplayInfo.Height))!.SetValue(display, 120);
+            typeof(DesktopDisplayInfo).GetProperty(nameof(DesktopDisplayInfo.Scale))!.SetValue(display, 1d);
+            typeof(DesktopWallpaperTarget).GetProperty(nameof(DesktopWallpaperTarget.Display))!.SetValue(target, display);
+        }
+        return target;
+    }
 
     // Native discovery is outside this consumer policy test. DesktopManager intentionally
     // exposes read-only DTOs, so construct the external boundary state without adding hooks.

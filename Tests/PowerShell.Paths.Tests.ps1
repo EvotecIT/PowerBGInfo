@@ -96,6 +96,26 @@ Describe 'PowerShell filesystem locations' {
         }
     }
 
+    It 'rebases a relative JSON output when only ConfigurationDirectory is overridden' {
+        $jsonDirectory = Join-Path $powerShellDirectory 'json'
+        $null = [IO.Directory]::CreateDirectory($jsonDirectory)
+        @{
+            FilePath = '../base.png'
+            ConfigurationDirectory = 'original-output'
+            OutputFileName = 'nested/inherited.png'
+            Target = 'File'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $jsonDirectory 'config.json') -Encoding UTF8
+
+        $result = Invoke-BGInfo -Path './json/config.json' -ConfigurationDirectory './directory-only' -NoApply
+
+        $result | Should -Be (Join-Path $powerShellDirectory 'directory-only/nested/inherited.png')
+        $image = Get-TestPngSize $result
+        $image.Width | Should -Be 64
+        $image.Height | Should -Be 40
+        Test-Path -LiteralPath (Join-Path $jsonDirectory 'original-output') | Should -BeFalse
+        [Environment]::CurrentDirectory | Should -Be $processDirectory
+    }
+
     It 'resolves filesystem drive paths for base images, output directories and explicit output paths' {
         $driveName = 'BGInfo' + [Guid]::NewGuid().ToString('N')
         $null = New-PSDrive -Name $driveName -PSProvider FileSystem -Root $powerShellDirectory

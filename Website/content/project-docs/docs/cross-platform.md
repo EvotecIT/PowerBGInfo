@@ -105,8 +105,12 @@ case-sensitive file identities. Output paths use the same host-aware rules as
 input paths, including explicit parent-relative paths.
 
 The output provenance file uses versioned escaped fields so native `#`, pipe and
-newline filenames round-trip. Unambiguous older records are migrated on the
-next write; malformed or ambiguous records cannot establish an original image.
+newline filenames round-trip. Validated older Windows records are migrated on
+the next write. Unescaped older records on macOS/Linux cannot establish an
+original image because native filenames can contain their row delimiters.
+Malformed or ambiguous records stop automatic and in-place reuse, including
+after a later run records a new image. Choose an explicit original `FilePath` or
+`Background` with a different output path to render safely.
 
 ## Execution and ownership
 

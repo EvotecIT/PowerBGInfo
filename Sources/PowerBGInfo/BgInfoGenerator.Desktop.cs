@@ -100,25 +100,49 @@ public partial class BgInfoGenerator
     {
         if (!config.ForceWallpaperRefresh)
         {
-            _wallpaperService.SetWallpaper(config.MonitorIndex, outputPath, config.WallpaperFit);
+            SetCurrentWallpaper(config, outputPath);
             return;
         }
 
         var refreshPath = BuildRefreshPath(outputPath);
+        var ownsRefresh = false;
         try
         {
-            File.Copy(outputPath, refreshPath, true);
-            _wallpaperService.SetWallpaper(config.MonitorIndex, refreshPath, config.WallpaperFit);
+            File.Copy(outputPath, refreshPath, overwrite: false);
+            ownsRefresh = true;
         }
         catch
         {
-            _wallpaperService.SetWallpaper(config.MonitorIndex, outputPath, config.WallpaperFit);
-            TryDelete(refreshPath);
+            SetCurrentWallpaper(config, outputPath);
             return;
         }
 
+        var nativeAssignmentAttempted = false;
+        var originalPathAssigned = false;
+        try {
+            // Native and target-guard failures must propagate rather than being
+            // retried as copy failures against a potentially changed target.
+            RecheckSelectedNativeTarget();
+            nativeAssignmentAttempted = true;
+            _wallpaperService.SetWallpaper(config.MonitorIndex, refreshPath, config.WallpaperFit);
+            SetCurrentWallpaper(config, outputPath);
+            originalPathAssigned = true;
+        } finally {
+            if (ownsRefresh && (!nativeAssignmentAttempted || originalPathAssigned)) {
+                TryDelete(refreshPath);
+            } else if (ownsRefresh) {
+                WriteWarning($"The temporary wallpaper image was retained at '{refreshPath}' because native state may still reference it. Restore the intended wallpaper before removing this file.");
+            }
+        }
+    }
+
+    private void SetCurrentWallpaper(BgInfoConfiguration config, string outputPath) {
+        RecheckSelectedNativeTarget();
         _wallpaperService.SetWallpaper(config.MonitorIndex, outputPath, config.WallpaperFit);
-        TryDelete(refreshPath);
+    }
+
+    private void RecheckSelectedNativeTarget() {
+        if (_wallpaperService is IWallpaperTargetGuard guard) guard.RecheckSelectedTarget();
     }
 
     private static string BuildRefreshPath(string outputPath)

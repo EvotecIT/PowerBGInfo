@@ -73,6 +73,31 @@ public sealed class PortableOutputAndMountTests {
     }
 
     [Fact]
+    public void CliDirectoryOverrideRebasesTheRelativeJsonOutputBeforeRendering() {
+        using var folder = new FixtureFolder();
+        var originalDirectory = Path.Combine(folder.Path, "original-output");
+        var overriddenDirectory = Path.Combine(folder.Path, "overridden-output");
+        var configurationPath = Path.Combine(folder.Path, "configuration.json");
+        BgInfoConfigurationJson.Save(new BgInfoConfiguration {
+            ConfigurationDirectory = originalDirectory,
+            OutputFileName = "nested\\render.png",
+            Target = BgInfoTarget.File,
+            Background = new BgInfoBackground { Width = 16, Height = 12, Color = ChartColors.DarkBlue }
+        }, configurationPath);
+
+        var exitCode = PowerBGInfo.Cli.Program.Main(new[] {
+            "--config", configurationPath, "--directory", overriddenDirectory, "--no-apply"
+        });
+
+        Assert.Equal(0, exitCode);
+        var expected = Path.Combine(overriddenDirectory, "nested", "render.png");
+        using var image = BgInfoRasterImage.Load(expected);
+        Assert.Equal(16, image.Width);
+        Assert.Equal(12, image.Height);
+        Assert.False(Directory.Exists(originalDirectory));
+    }
+
+    [Fact]
     public void SlideshowOutputUsesPortableSeparatorsBeforeAddingItsSequenceNumber() {
         using var folder = new FixtureFolder();
         var source = Path.Combine(folder.Path, "source.png");

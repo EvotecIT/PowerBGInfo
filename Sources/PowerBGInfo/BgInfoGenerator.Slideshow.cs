@@ -73,14 +73,17 @@ public partial class BgInfoGenerator
         {
             if (config.ApplyToAllUsers)
             {
+                RecheckSelectedNativeTarget();
                 _wallpaperService.SetWallpaperForAllUsers(outputPath, config.WallpaperFit, config.IncludeDefaultUserProfile);
             }
 
+            RecheckSelectedNativeTarget();
             _wallpaperService.StartWallpaperSlideshow(generatedPaths, config.WallpaperFit, slideshow.Options, slideshow.SlideshowTick);
         }
 
         if (config.Target.HasFlag(BgInfoTarget.LogonScreen))
         {
+            RecheckSelectedNativeTarget();
             _wallpaperService.SetLogonWallpaper(outputPath);
         }
 
