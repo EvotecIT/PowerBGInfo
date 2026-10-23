@@ -61,7 +61,7 @@ function Get-MeetingRoomData {
 
 $fallback = [pscustomobject] @{
     Available = $false
-    Room = $env:COMPUTERNAME; Where = 'MEETING ROOM'; Seats = ''
+    Room = $env:COMPUTERNAME; Where = 'MEETING ROOM'; Seats = 'unavailable'
     Book = 'Outlook or Teams'; Now = Get-Date; Bookings = @()
     Wifi = @{ Ssid = 'CONTOSO-GUEST'; Text = 'WIFI:T:nopass;S:CONTOSO-GUEST;;' }
     Steps = @('Call the service desk on ext. 4357')
@@ -130,9 +130,11 @@ New-BGInfo -Theme $look -Target File {
         -Item $room.Steps
 
     # Bottom band: today in this room and the two next to it.
-    New-BGInfoTimeline -Region Bottom -Title 'Today' -NoLegend `
+    if (@($day).Count -gt 0) {
+        New-BGInfoTimeline -Region Bottom -Title 'Today' -NoLegend `
         -Note 'Bergen and Tromsø are next door' `
-        -Item $day -Now $room.Now -Height ([int](280 * $scale))
+            -Item $day -Now $room.Now -Height ([int](280 * $scale))
+    }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "meeting-room-$($Theme.ToLower()).png"
 #endregion

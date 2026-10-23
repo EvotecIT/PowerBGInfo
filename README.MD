@@ -7,7 +7,7 @@
   <a href="https://github.com/EvotecIT/PowerBGInfo"><img src="https://img.shields.io/github/license/EvotecIT/PowerBGInfo.svg?style=flat-square"></a>
 </p>
 
-Website: [powerbginfo.com](https://powerbginfo.com/) (launch pending; use the documentation links below until the site is live).
+Website: [powerbginfo.com](https://powerbginfo.com/).
 
 <p align="center">
   <a href="https://www.powershellgallery.com/packages/PowerBGInfo"><img src="https://img.shields.io/powershellgallery/p/PowerBGInfo.svg?style=flat-square"></a>

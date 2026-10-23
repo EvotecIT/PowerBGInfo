@@ -521,8 +521,8 @@
     }
     viewer.querySelector('[data-pb-viewer-close]').addEventListener('click', closeViewer);
     viewer.addEventListener('click', function (event) { if (event.target === viewer) closeViewer(); });
-    // Escape: "cancel" fires before the dialog closes itself.
-    viewer.addEventListener('cancel', function () { unlockPage(); });
+    // Use the same synchronous close path for Escape: unlocking before the native close can scroll the background.
+    viewer.addEventListener('cancel', function (event) { event.preventDefault(); closeViewer(); });
     viewer.addEventListener('close', function () { if (!viewer.open) finishClose(); });
     themeListeners.push(function () { if (viewer.open) render(); });
   }
