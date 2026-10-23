@@ -464,74 +464,6 @@ internal sealed partial class WindowsSystemInfoProvider : IBgInfoSystemInfoProvi
         return false;
     }
 
-    private static bool TryGetDiskFreePercent(string? argument, out double value) {
-        value = 0;
-        if (!TryGetDiskSpace(argument, out var size, out var free)) {
-            return false;
-        }
-        if (size <= 0) {
-            return false;
-        }
-        value = ClampPercent((double)free / size * 100d);
-        return true;
-    }
-
-    private static bool TryGetDiskFreeGb(string? argument, out double value) {
-        value = 0;
-        if (!TryGetDiskSpace(argument, out var size, out var free)) {
-            return false;
-        }
-        if (size <= 0) {
-            return false;
-        }
-        value = free / (1024d * 1024d * 1024d);
-        return true;
-    }
-
-    private static bool TryGetDiskSpace(string? argument, out ulong size, out ulong free) {
-        size = 0;
-        free = 0;
-        if (!IsWindows()) {
-            return false;
-        }
-
-        var targetDrive = NormalizeDrive(argument);
-        ulong? fallbackSize = null;
-        ulong? fallbackFree = null;
-
-        try {
-            foreach (var obj in Query(@"root\cimv2", "SELECT DeviceID, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3")) {
-                var device = obj["DeviceID"]?.ToString();
-                var sizeValue = GetUInt64(obj["Size"]);
-                var freeValue = GetUInt64(obj["FreeSpace"]);
-                if (!sizeValue.HasValue || !freeValue.HasValue) {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(targetDrive) || string.Equals(device, targetDrive, StringComparison.OrdinalIgnoreCase)) {
-                    size = sizeValue.Value;
-                    free = freeValue.Value;
-                    return true;
-                }
-
-                if (!fallbackSize.HasValue) {
-                    fallbackSize = sizeValue;
-                    fallbackFree = freeValue;
-                }
-            }
-        } catch {
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(targetDrive) && fallbackSize.HasValue && fallbackFree.HasValue) {
-            size = fallbackSize.Value;
-            free = fallbackFree.Value;
-            return true;
-        }
-
-        return false;
-    }
-
     private static bool TryGetUptimeHours(out double value) {
         value = 0;
         var uptime = GetUptime();
@@ -590,31 +522,6 @@ internal sealed partial class WindowsSystemInfoProvider : IBgInfoSystemInfoProvi
         if (value < 0) return 0;
         if (value > 100) return 100;
         return value;
-    }
-
-    private static string? NormalizeDrive(string? argument) {
-        var drive = string.IsNullOrWhiteSpace(argument)
-            ? Environment.GetEnvironmentVariable("SystemDrive")
-            : argument;
-        if (string.IsNullOrWhiteSpace(drive)) {
-            return null;
-        }
-
-        if (drive == null) {
-            return null;
-        }
-
-        drive = drive.Trim();
-        if (drive.Length == 0) {
-            return null;
-        }
-        if (drive.Length >= 2) {
-            drive = drive.Substring(0, 2);
-        } else if (drive.Length == 1) {
-            drive = drive + ":";
-        }
-
-        return drive.ToUpperInvariant();
     }
 
     private sealed class CpuInfo

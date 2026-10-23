@@ -117,6 +117,12 @@ public partial class BgInfoGenerator
 
         bool hasBaseImage = !string.IsNullOrEmpty(imagePath);
         var outputPath = BuildOutputPath(config, imagePath, hasBaseImage);
+        if (!chosenBase && config.Background == null && string.IsNullOrWhiteSpace(config.OutputFileName) &&
+            IsPreservedDesktopBackgroundSource(imagePath) && !IsSamePath(imagePath!, baseImagePath)) {
+            // The generated native backdrop has no user-authored source name.
+            // Keep the trusted current output name instead of deriving one from its GUID base.
+            outputPath = NormalizeOutputPathExtension(Path.Combine(config.ConfigurationDirectory, Path.GetFileName(baseImagePath!)), config.Target);
+        }
         if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath!, outputPath)) {
             backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath!, outputPath);
         } else if (chosenBase && hasBaseImage && IsSamePath(imagePath!, outputPath)) {
@@ -133,6 +139,7 @@ public partial class BgInfoGenerator
             : hasBaseImage
                 ? _imageService.Load(imagePath!)
                 : CreateBaseImage(config, getMonitors(), outputPath);
+        var pristineDesktopBackground = config.HasSynthesizedDesktopBackground ? image.Composition.ToPng() : null;
 
         var expandedEntries = BgInfoVariableResolver.ExpandEntries(config);
         var entryLayouts = BuildEntryLayouts(image, config, expandedEntries);
@@ -278,7 +285,13 @@ public partial class BgInfoGenerator
         RenderImages(image, config);
 
         _imageService.Save(image, outputPath);
-        BgInfoOutputRegistry.Record(outputPath, config.Background != null ? backgroundImagePath : hasBaseImage ? imagePath : null);
+        var preservedDesktopBackground = pristineDesktopBackground == null ? null : PreserveDesktopBackground(pristineDesktopBackground, outputPath);
+        BgInfoOutputRegistry.Record(outputPath, preservedDesktopBackground ?? (config.Background != null ? backgroundImagePath : hasBaseImage ? imagePath : null));
+        if (preservedDesktopBackground != null &&
+            (!BgInfoOutputRegistry.TryGetSource(outputPath, out var recordedBackground) || !IsSamePath(preservedDesktopBackground, recordedBackground))) {
+            TryDelete(preservedDesktopBackground);
+            throw new IOException("The pristine desktop background could not be recorded for repeat rendering. The native desktop was not changed.");
+        }
 
         if (applyTargets && config.Target.HasFlag(BgInfoTarget.Wallpaper))
         {

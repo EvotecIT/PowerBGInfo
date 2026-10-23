@@ -2,6 +2,8 @@ namespace PowerBGInfo;
 
 public partial class BgInfoGenerator
 {
+    private const string DesktopBackgroundBasePrefix = ".PowerBGInfo-original-desktop-";
+
     /// <summary>Receives warnings from a run, for example when a base image is PowerBGInfo's own earlier output.</summary>
     public Action<string>? Warning { get; set; }
 
@@ -81,6 +83,32 @@ public partial class BgInfoGenerator
         var backupPath = Path.Combine(directory, name + suffix);
         File.Copy(sourcePath, backupPath);
         return backupPath;
+    }
+
+    /// <summary>Publishes pristine synthesized backdrop pixels once; failed creation removes only the file this call reserved.</summary>
+    private static string PreserveDesktopBackground(byte[] png, string outputPath) {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
+        var path = Path.Combine(directory, DesktopBackgroundBasePrefix + Guid.NewGuid().ToString("N") + ".png");
+        var ownsFile = false;
+        try {
+            using (var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
+                ownsFile = true;
+                stream.Write(png, 0, png.Length);
+            }
+            return path;
+        } catch {
+            if (ownsFile) TryDelete(path);
+            throw;
+        }
+    }
+
+    /// <summary>Recognizes our bounded native-backdrop base name after its trusted provenance mapping has resolved.</summary>
+    private static bool IsPreservedDesktopBackgroundSource(string? path) {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var name = Path.GetFileName(path);
+        return name.StartsWith(DesktopBackgroundBasePrefix, StringComparison.OrdinalIgnoreCase)
+            && name.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            && Guid.TryParseExact(name.Substring(DesktopBackgroundBasePrefix.Length, name.Length - DesktopBackgroundBasePrefix.Length - 4), "N", out _);
     }
 
     private void WriteWarning(string message) => Warning?.Invoke(message);
