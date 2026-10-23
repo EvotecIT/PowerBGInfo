@@ -1,0 +1,448 @@
+{
+  "hero": {
+    "lede": "PowerBGInfo puts machine details, charts, tables and diagrams on desktop and lock-screen wallpapers. You describe the layout in PowerShell or JSON and bring the data; ChartForgeX draws the whole image, from the generated backdrop to the last chart label.",
+    "show": "server-status",
+    "alt": "Server status wallpaper rendered by PowerBGInfo: the host name SQL-PROD-01 with its role and owner, four tiles for uptime, CPU, memory and network, and panels for volumes, network throughput and critical services."
+  },
+  "scenarios": {
+    "title": "Twelve wallpapers, each with one job",
+    "body": "Each script answers one question for the person in front of the screen, and each renders in light and dark at any resolution. A theme preset gives each its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Three are shown in full here, with the New-BGInfo call that draws each one and the data block it reads.",
+    "featured": [
+      "hyperv-host",
+      "helpdesk",
+      "meeting-room"
+    ],
+    "uses": [
+      {
+        "id": "servers",
+        "label": "Servers and infrastructure",
+        "scenarios": [
+          "hyperv-host",
+          "server-status",
+          "domain-controller",
+          "build-agent"
+        ]
+      },
+      {
+        "id": "people",
+        "label": "End users and help desk",
+        "scenarios": [
+          "helpdesk",
+          "branch-office",
+          "patch-day"
+        ]
+      },
+      {
+        "id": "rooms",
+        "label": "Rooms and signage",
+        "scenarios": [
+          "meeting-room",
+          "classroom",
+          "signage"
+        ]
+      },
+      {
+        "id": "operations",
+        "label": "Operations",
+        "scenarios": [
+          "on-call",
+          "admin-workstation"
+        ]
+      }
+    ],
+    "more": {
+      "title": "More wallpapers",
+      "body": "Filter by who the screen is for. Each card opens the wallpaper in the page theme with the same Presentation and Data tabs, and links to the full-size PNG and the script on GitHub."
+    },
+    "screens": {
+      "title": "Any screen",
+      "body": "A script lays out for the screen it renders on. The on-call board spreads across a 3440 x 1440 ultrawide in the operations room, and the signage script turns a 1080 x 1920 portrait panel into a poster. Each file is drawn at its size, not scaled from 1920 x 1080.",
+      "items": [
+        {
+          "scenario": "on-call",
+          "size": "3440x1440",
+          "label": "Ultrawide",
+          "alt": "The NOC and on-call wallpaper at 3440 x 1440: the on-call engineer and contacts, a runbook QR code and open incidents across the top, and the escalation path and the week's rota spread across the ultrawide."
+        },
+        {
+          "scenario": "signage",
+          "size": "1080x1920",
+          "label": "Portrait",
+          "alt": "The signage wallpaper at 1080 x 1920: Open day in large type with its date, and the QR code and the highlights in two cards at the foot of the portrait screen."
+        }
+      ]
+    }
+  },
+  "alts": {
+    "server-status": "Server status wallpaper for SQL-PROD-01: role, owner, maintenance window and on-call address, tiles for uptime, CPU, memory and network, and panels for volume usage, network throughput and running services.",
+    "helpdesk": "Help desk wallpaper: how to reach the service desk, its portal, hours and current service status, with tiles for asset tag, computer name, IP address, signed-in user and Windows version.",
+    "classroom": "Lab wallpaper for seat LAB-B-14: a large seat name, the nightly reset time, the instructor and Wi-Fi details, and panels for session time left, completed exercises and class progress.",
+    "admin-workstation": "Privileged access workstation wallpaper for PAW-T0-03: seven health tiles, a privileged sign-in chart, a topology of the allowed path from the workstation through a jump host to tier 0, a tier 0 change trend and open security alerts.",
+    "domain-controller": "Domain controller wallpaper for DC01: a replication warning, the FSMO roles it holds, a time offset card, an inbound replication table, site links, dcdiag results and a heatmap of failed sign-ins.",
+    "hyperv-host": "Hyper-V host wallpaper for HV-AMS-07: room for 16 GB of VMs before the failover reserve, tiles for CPU, memory, CSV space and running VMs, a treemap of VMs sized by memory and coloured by CPU, cluster memory bars, live migrations and old checkpoints.",
+    "on-call": "NOC wallpaper naming J. Smith as on call with the number to ring, the secondary, commander and bridge, a runbook QR code, open incidents, the escalation path as a flow and this week's rota as lanes.",
+    "branch-office": "Branch office wallpaper for Warsaw Mokotów: this PC, the printer and Wi-Fi, a QR code for IT help, opening hours, and the connection to head office as a topology of the SD-WAN link, the LTE standby, the switch, the printer and this PC.",
+    "meeting-room": "Meeting room wallpaper for Oslo: free until 13:00, the next booking, a guest Wi-Fi QR code, numbered steps to share a screen and today's bookings beside the neighbouring rooms.",
+    "build-agent": "Build agent wallpaper for BLD-WIN-04: the running pipeline, agent and toolchain details, jobs waiting, free space on D: and C:, a table of the last builds and the pipeline stages as a flow.",
+    "patch-day": "Patch day wallpaper: restart in 2 h 15 min with a countdown gauge, what is installing, a checklist for before you go, maintenance windows per ring and bars of installs per ring.",
+    "signage": "Signage wallpaper for an open day at the Contoso innovation hub: the date and time in large type, a QR code for the day and a list of highlights with their times."
+  },
+  "build": {
+    "title": "Build one yourself",
+    "body": "One wallpaper in eight steps. Each step shows only the lines it changes, next to the wallpaper the whole script renders at that point. Every background is generated: there is no stock image underneath, only a gradient, glows and a pattern that ChartForgeX paints at the screen's size.",
+    "alt": "Wallpaper for WS-FIN-0042 after the step",
+    "groups": {
+      "backdrop": {
+        "title": "Generate the background in layers",
+        "body": "Three keys on the same hashtable add one layer each. The backdrop is painted at the size you ask for, so it is never a stretched photo."
+      }
+    },
+    "reference": "The steps are scripts in this site's repository, rendered with -Target File by PowerBGInfo built from"
+  },
+  "logic": {
+    "title": "Your logic, your data",
+    "body": "Collecting the values is the part only you can write, so PowerBGInfo keeps it apart from the drawing. Every example has the same two regions: a data block that returns plain values, and a presentation block that only reads them.",
+    "data": {
+      "title": "The data block",
+      "body": "One function returns one object. This is where your sources go: replace the sample values, keep the property names, and the layout keeps working. A comment beside each value names a live source for it.",
+      "template": "Copy the template"
+    },
+    "sources": {
+      "title": "Typical sources",
+      "body": "Each snippet is a body for that function. Combine them as you need; the wallpaper only sees the object they return."
+    },
+    "safety": {
+      "title": "A slow source never blocks logon",
+      "body": "Invoke-BGInfoDataSource runs your function in its own runspace with a time limit. When the function throws, returns nothing or runs out of time, it writes a warning and returns the fallback you gave it, so the wallpaper always renders and sign-in never waits on a broken CMDB.",
+      "points": [
+        "Keep -TimeoutSeconds small, 5 to 15 seconds. A timed-out runspace is stopped in the background and the call returns at the limit.",
+        "The function cannot see your script's variables. Pass what it needs with -ArgumentList and read it with param().",
+        "Give each slow source its own call, so one failure only replaces its own values."
+      ]
+    },
+    "swap": {
+      "title": "Swap a built-in helper",
+      "body": "Get-BGInfoSystemInfo returns uptime, OS and build, IPv4, fixed disks, the last update, Defender and BitLocker state and the console user as one plain object, and every probe in it is read-only. A function of your own that returns the same property names replaces it; the system facts example does exactly that with sample values.",
+      "tokens": "The same facts are built-in tokens for New-BGInfoValue -BuiltinValue:",
+      "tokenList": [
+        "Uptime",
+        "LastPatch",
+        "DefenderStatus",
+        "BitLockerStatus",
+        "LoggedOnUser",
+        "Domain",
+        "DiskSummary"
+      ],
+      "alt": "System facts wallpaper for WS-ANALYST-11 rendered from sample values with the same property names as Get-BGInfoSystemInfo: signed-in user, Windows build, uptime, IP address and last update, a protection list and a disks table."
+    }
+  },
+  "capabilities": {
+    "title": "Themes, regions and widgets",
+    "body": "Six theme presets give a wallpaper one look in one parameter, five regions lay it out on any screen, and eight widget cmdlets draw what charts alone cannot.",
+    "themes": {
+      "title": "Six theme presets",
+      "body": "Each preset has a light and a dark pair; the page theme picks which one you see. New-BGInfoTheme adjusts a preset's accent, scale or font, and parameters you set always win.",
+      "snippet": "New-BGInfo -Theme Midnight -ThemeMode Light { ... }"
+    },
+    "regions": {
+      "title": "Regions on every screen",
+      "body": "One script rendered at three sizes. Left and Right are columns, Top and Bottom are bands and Center sits between them; a panel without a size shares what is left. New-BGInfoLayout keeps the taskbar and the desktop icons clear.",
+      "snippet": "New-BGInfoLayout -IconAreaWidth 96 -Gap 24"
+    },
+    "widgets": {
+      "title": "Widgets",
+      "body": "Each widget is one cmdlet that takes plain values, hashtables or the pipeline, and flows into a region like any chart. The crops come from the feature examples; open one for the whole wallpaper.",
+      "items": [
+        {
+          "id": "metrics",
+          "title": "Metric cards",
+          "snippet": "New-BGInfoMetric -Region Right -Label CPU -Value 38",
+          "body": "One value with its trend, a short history and a status from thresholds.",
+          "crop": {
+            "x": 1120,
+            "y": 40,
+            "w": 800,
+            "h": 960
+          }
+        },
+        {
+          "id": "tables",
+          "title": "Tables",
+          "snippet": "$procs | New-BGInfoTable -Region Right",
+          "body": "Objects in, rows out, with calculated properties and a status column.",
+          "crop": {
+            "x": 1320,
+            "y": 30,
+            "w": 600,
+            "h": 720
+          }
+        },
+        {
+          "id": "lists",
+          "title": "Lists",
+          "snippet": "New-BGInfoList -Region Right -Item $checks",
+          "body": "Numbered steps, checklists and status lists.",
+          "crop": {
+            "x": 1320,
+            "y": 40,
+            "w": 600,
+            "h": 720
+          }
+        },
+        {
+          "id": "calendar-heatmap",
+          "title": "Calendar heatmap",
+          "snippet": "$signIns | New-BGInfoCalendarHeatmap -Region Right",
+          "body": "Days coloured by value: sign-ins, patches, backups or incidents.",
+          "crop": {
+            "x": 1320,
+            "y": 30,
+            "w": 600,
+            "h": 720
+          }
+        },
+        {
+          "id": "treemap",
+          "title": "Treemap",
+          "snippet": "$usage | New-BGInfoTreemap -Region Right",
+          "body": "Where the space went, by folder, share or virtual machine.",
+          "crop": {
+            "x": 1320,
+            "y": 30,
+            "w": 600,
+            "h": 720
+          }
+        },
+        {
+          "id": "qrcode",
+          "title": "QR code",
+          "snippet": "New-BGInfoQRCode -Region Right -Url $link",
+          "body": "A link a phone can open, encoded by CodeGlyphX and drawn by ChartForgeX.",
+          "crop": {
+            "x": 1320,
+            "y": 30,
+            "w": 600,
+            "h": 720
+          }
+        },
+        {
+          "id": "timeline",
+          "title": "Timeline",
+          "snippet": "New-BGInfoTimeline -Region Bottom -Title 'On call' -Item $schedule",
+          "body": "Maintenance windows, change freezes and the on-call rota in lanes, with a marker for now.",
+          "wide": true,
+          "crop": {
+            "x": 40,
+            "y": 664,
+            "w": 1840,
+            "h": 380
+          }
+        },
+        {
+          "id": "mermaid",
+          "title": "Mermaid",
+          "snippet": "New-BGInfoMermaid -Region Bottom -Title 'Escalation path' -Definition $diagram",
+          "body": "An escalation path or a network flow from a few lines of Mermaid text.",
+          "wide": true,
+          "crop": {
+            "x": 40,
+            "y": 288,
+            "w": 1840,
+            "h": 736
+          }
+        }
+      ]
+    }
+  },
+  "parts": {
+    "title": "What ChartForgeX draws",
+    "body": "PowerBGInfo collects the values, lays out the wallpaper and applies it through Windows. Every pixel of the image comes from ChartForgeX; there is no System.Drawing or browser underneath. A theme preset resolves into the same ChartForgeX light or dark mode for every part, so a wallpaper reads as one design instead of a stack of overlays.",
+    "items": [
+      {
+        "title": "Charts",
+        "command": "New-BGInfoChart",
+        "body": "Thirteen chart kinds, from sparklines and gauges to progress bars and pictorial rows. Thresholds colour each bar, row or gauge by its value.",
+        "links": [
+          {
+            "title": "ChartForgeX: chart gallery",
+            "url": "https://chartforgex.com/gallery/"
+          }
+        ]
+      },
+      {
+        "title": "Visual blocks",
+        "command": "New-BGInfoMetric",
+        "body": "Metric cards, tables and lists from ChartForgeX visual blocks, for exact facts that do not belong in a chart.",
+        "links": [
+          {
+            "title": "ChartForgeX: choose a rendering surface",
+            "url": "https://chartforgex.com/docs/choosing-a-surface/"
+          }
+        ]
+      },
+      {
+        "title": "Calendar, timeline, treemap",
+        "command": "New-BGInfoTimeline",
+        "body": "The calendar heatmap, Gantt lane and treemap chart families, sized to the panel they sit on.",
+        "links": [
+          {
+            "title": "ChartForgeX: chart gallery",
+            "url": "https://chartforgex.com/gallery/"
+          }
+        ]
+      },
+      {
+        "title": "Mermaid",
+        "command": "New-BGInfoMermaid",
+        "body": "Mermaid text rendered by ChartForgeX.Mermaid and re-themed for its panel.",
+        "links": [
+          {
+            "title": "ChartForgeX: Mermaid support",
+            "url": "https://chartforgex.com/mermaid/"
+          }
+        ]
+      },
+      {
+        "title": "Topology",
+        "command": "New-BGInfoTopology",
+        "body": "Groups, nodes and links with status and replication lag, drawn by the same TopologyChart that renders service maps in .NET.",
+        "links": [
+          {
+            "title": "ChartForgeX: topology and hierarchy",
+            "url": "https://chartforgex.com/docs/topology-and-hierarchy/"
+          }
+        ]
+      },
+      {
+        "title": "Canvas, backdrop and QR",
+        "command": "New-BGInfoBackground",
+        "body": "Info tiles from VisualCanvas, and gradients, glows, patterns and QR modules painted with ImageComposition.",
+        "links": [
+          {
+            "title": "ChartForgeX overview",
+            "url": "https://chartforgex.com/docs/overview/"
+          }
+        ]
+      }
+    ]
+  },
+  "start": {
+    "title": "Get started",
+    "body": "Install the module from the PowerShell Gallery and render to a file first, so you can check the layout before anything changes on a desktop.",
+    "install": "Install-Module PowerBGInfo",
+    "links": [
+      {
+        "title": "PowerShell Gallery",
+        "url": "https://www.powershellgallery.com/packages/PowerBGInfo"
+      },
+      {
+        "title": "Source and README",
+        "url": "https://github.com/EvotecIT/PowerBGInfo"
+      },
+      {
+        "title": "Platforms",
+        "url": "/platforms/"
+      }
+    ]
+  },
+  "production": {
+    "title": "Run it in production",
+    "body": "PowerBGInfo has no refresh schedule of its own: each run renders the image, applies it once and exits. To keep the values current, run it again at sign-in, at unlock or on a timer, from the tool that already manages the machines.",
+    "guideBase": "/docs/",
+    "routes": [
+      {
+        "route": "Task Scheduler",
+        "when": "Standalone machines and labs, or any fleet where another tool runs the registration script once. The most direct way to refresh at sign-in, at unlock and on a timer, in the user's own session.",
+        "guide": "task-scheduler/"
+      },
+      {
+        "route": "Group Policy",
+        "when": "Active Directory domain-joined PCs and session hosts. A Group Policy Preferences task runs it for each user, and the same GPO can carry the execution policy and, on Enterprise and Education, the lock screen policy.",
+        "guide": "group-policy/"
+      },
+      {
+        "route": "Intune",
+        "when": "Microsoft Entra joined or hybrid joined devices. A Win32 app installs the module and the script and registers the per-user task; platform scripts, Remediations and the Personalization CSP cover the cases around it.",
+        "guide": "intune/"
+      },
+      {
+        "route": "Configuration Manager",
+        "when": "Devices managed by Configuration Manager, including co-managed devices where the apps workload stays with it. An application installs the module and registers the same task.",
+        "guide": "configuration-manager/"
+      },
+      {
+        "route": "Remote Desktop, AVD, Windows 365",
+        "when": "Session hosts and AVD multi-session run the task in every session, with a per-user output folder and a fresh render on reconnect; LoggedOnUser names the user of the session being rendered. AVD personal desktops and Cloud PCs work like a physical PC.",
+        "guide": "remote-desktop/"
+      }
+    ],
+    "notes": [
+      {
+        "title": "What needs admin",
+        "body": "Setting your own wallpaper and -Target File need no elevation. -AllUsers, -Target LogonScreen and -Target Both do, and so do installing the module for all users and registering a task for every user or for SYSTEM, once per machine. Run the wallpaper task itself as a limited user.",
+        "guide": "security/",
+        "guideTitle": "Security guide"
+      },
+      {
+        "title": "Signing",
+        "body": "Evotec signs its module releases with Authenticode. Under the AllSigned execution policy, add the publisher's certificate to Trusted Publishers so an unattended task never stops at a prompt, and sign your own wallpaper script with your code-signing certificate.",
+        "guide": "security/",
+        "guideTitle": "Security guide"
+      },
+      {
+        "title": "Every monitor",
+        "body": "Get-BGInfoMonitor returns each monitor's index, device name, primary flag, bounds and scale (-Primary returns only the main one), needs no elevation and works under Constrained Language Mode. Loop over it, pass -MonitorIndex and give each monitor its own -OutputFileName, as Examples/Run.BGInfo.PerMonitor.ps1 does. PowerBGInfo never draws on its own earlier output, so repeated runs do not stack the text.",
+        "guide": "deployment/",
+        "guideTitle": "Monitors and files in the production guide"
+      },
+      {
+        "title": "Keeping logon fast",
+        "body": "Prefer a scheduled task to a synchronous logon script, so the desktop never waits. Time-box each data source at 5 to 15 seconds; Get-BGInfoSystemInfo already limits each of its queries to five. Give the task an execution time limit so a stuck run cannot pile up.",
+        "guide": "deployment/",
+        "guideTitle": "Run in production guide"
+      }
+    ],
+    "guides": [
+      {
+        "title": "Run in production",
+        "slug": "deployment/",
+        "body": "What one run does, choosing a route, the reference script"
+      },
+      {
+        "title": "Task Scheduler",
+        "slug": "task-scheduler/",
+        "body": "Logon, unlock and timed refresh"
+      },
+      {
+        "title": "Group Policy",
+        "slug": "group-policy/",
+        "body": "Preferences tasks, logon scripts, wallpaper and lock screen policies"
+      },
+      {
+        "title": "Intune",
+        "slug": "intune/",
+        "body": "Win32 app, platform scripts, Remediations, Personalization CSP"
+      },
+      {
+        "title": "Configuration Manager",
+        "slug": "configuration-manager/",
+        "body": "Applications, packages and Run Scripts"
+      },
+      {
+        "title": "Remote Desktop",
+        "slug": "remote-desktop/",
+        "body": "Remote Desktop Services, Azure Virtual Desktop, Windows 365"
+      },
+      {
+        "title": "Security",
+        "slug": "security/",
+        "body": "Rights, signing and AllSigned, Trusted Publishers, Constrained Language Mode, App Control"
+      },
+      {
+        "title": "Troubleshooting",
+        "slug": "troubleshooting/",
+        "body": "Frequent questions and where to look"
+      }
+    ]
+  }
+}

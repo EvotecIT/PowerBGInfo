@@ -1,0 +1,164 @@
+{
+  "note": "One source for platform support. The home page tabs and /platforms/ read it. Status values: shipped, preview, partial, no, idea, na. Preview means the work is in PowerBGInfo PR #91 and ships with the next release; keep it until that release and the DesktopManager and ChartForgeX packages it needs are published.",
+  "statusLabels": {
+    "shipped": "Supported",
+    "preview": "Preview",
+    "partial": "Partial",
+    "no": "Not supported",
+    "idea": "Planned",
+    "na": "Not applicable"
+  },
+  "platforms": [
+    {
+      "id": "windows",
+      "title": "Windows",
+      "status": "shipped",
+      "summary": "Windows desktops and servers. PowerShell 5.1 and 7, desktop and lock screen, every monitor, every profile.",
+      "prompt": "PS>",
+      "install": [
+        "Install-Module PowerBGInfo -Scope CurrentUser",
+        "Invoke-BGInfo -Path .\\helpdesk.json"
+      ],
+      "comment": "Desktop, lock screen and every monitor"
+    },
+    {
+      "id": "macos",
+      "title": "macOS",
+      "status": "preview",
+      "summary": "The current user's wallpaper through AppKit on each reported screen. The lock screen is not available.",
+      "prompt": "%",
+      "install": [
+        "pwsh -c \"Install-Module PowerBGInfo\"",
+        "pwsh -c \"Get-BGInfoCapability\"",
+        "pwsh -c \"Invoke-BGInfo -Path ./helpdesk.json\""
+      ],
+      "comment": ""
+    },
+    {
+      "id": "linux",
+      "title": "Linux",
+      "status": "preview",
+      "summary": "GNOME through GSettings and KDE Plasma through D-Bus. Other desktops render to a file.",
+      "prompt": "$",
+      "install": [
+        "pwsh -c \"Install-Module PowerBGInfo\"",
+        "pwsh -c \"Get-BGInfoCapability\"",
+        "pwsh -c \"Invoke-BGInfo -Path ./helpdesk.json\""
+      ],
+      "comment": ""
+    },
+    {
+      "id": "headless",
+      "title": "Servers and CI",
+      "status": "preview",
+      "summary": "Render a PNG without a desktop, for documentation, signage or a VM template. Set the width and height yourself.",
+      "prompt": "PS>",
+      "install": [
+        "New-BGInfo -Target File -ConfigurationDirectory ./out -OutputFileName machine.png {",
+        "    New-BGInfoBackground -Width 1920 -Height 1080",
+        "    New-BGInfoValue -BuiltinValue HostName -Name 'Computer'",
+        "}"
+      ],
+      "comment": "No desktop needed: writes ./out/machine.png"
+    }
+  ],
+  "capabilities": [
+    {
+      "title": "Render a wallpaper to a file",
+      "windows": "shipped",
+      "macos": "preview",
+      "gnome": "preview",
+      "kde": "preview",
+      "headless": "preview",
+      "notes": {
+        "headless": "Pass width and height"
+      }
+    },
+    {
+      "title": "Apply as the user's wallpaper",
+      "windows": "shipped",
+      "macos": "preview",
+      "gnome": "preview",
+      "kde": "preview",
+      "headless": "na",
+      "notes": {
+        "macos": "All Spaces not yet qualified",
+        "gnome": "GSettings",
+        "kde": "Plasma D-Bus"
+      }
+    },
+    {
+      "title": "One image per monitor",
+      "windows": "shipped",
+      "macos": "preview",
+      "gnome": "partial",
+      "kde": "partial",
+      "headless": "na",
+      "notes": {
+        "macos": "Checked on one display so far",
+        "gnome": "One image for all screens",
+        "kde": "Screen 0 when screens cannot be listed"
+      }
+    },
+    {
+      "title": "Lock screen",
+      "windows": "shipped",
+      "macos": "no",
+      "gnome": "idea",
+      "kde": "idea",
+      "headless": "na"
+    },
+    {
+      "title": "All users and the default profile",
+      "windows": "shipped",
+      "macos": "no",
+      "gnome": "no",
+      "kde": "no",
+      "headless": "na"
+    },
+    {
+      "title": "System facts",
+      "windows": "shipped",
+      "macos": "preview",
+      "gnome": "preview",
+      "kde": "preview",
+      "headless": "preview",
+      "notes": {
+        "windows": "WMI and registry"
+      }
+    },
+    {
+      "title": "Capability check",
+      "windows": "preview",
+      "macos": "preview",
+      "gnome": "preview",
+      "kde": "preview",
+      "headless": "preview",
+      "notes": {
+        "windows": "Get-BGInfoCapability and --doctor"
+      }
+    }
+  ],
+  "columns": [
+    {
+      "id": "windows",
+      "title": "Windows"
+    },
+    {
+      "id": "macos",
+      "title": "macOS"
+    },
+    {
+      "id": "gnome",
+      "title": "Linux, GNOME"
+    },
+    {
+      "id": "kde",
+      "title": "Linux, KDE"
+    },
+    {
+      "id": "headless",
+      "title": "Servers and CI"
+    }
+  ]
+}

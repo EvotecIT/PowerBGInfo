@@ -1,0 +1,237 @@
+{
+  "hero": {
+    "eyebrow": "Ask and fix: self-service for Windows",
+    "title": "Answers and fixes at the desk",
+    "lede": "InformationBox is a Windows app for the person in front of the screen. It shows their device, account and network status, warns before their password expires, opens your support links and runs the fixes you choose to offer. You brand it and control it from one protected config file.",
+    "primary": { "label": "Get InformationBox", "url": "#download" },
+    "secondary": { "label": "Source on GitHub", "url": "https://github.com/EvotecIT/InformationBox" },
+    "stats": [
+      { "label": "Built-in fixes", "value": "29" },
+      { "label": "Themes", "value": "7" },
+      { "label": "Licence", "value": "AGPL-3.0" }
+    ],
+    "caption": "Illustration of the InformationBox window with sample data. Contoso, Alex Wilber and every value shown are fictional. Click the tabs or change the theme in the window's footer."
+  },
+  "sample": {
+    "company": "Contoso Ltd",
+    "join": "Hybrid Azure AD joined",
+    "config": "C:\\ProgramData\\InformationBox\\config.json",
+    "zone": "HQ",
+    "primaryLink": "Create Ticket",
+    "ip": "10.0.4.27",
+    "updated": "Updated: 10/22/2026 9:41 AM",
+    "password": { "value": "12 days", "caption": "Expires Nov 3" },
+    "network": { "value": "Wi-Fi", "caption": "Intel(R) Wi-Fi 6E AX211" },
+    "device": [
+      { "label": "Machine", "value": "CONTOSO-LT-042" },
+      { "label": "User", "value": "alex.wilber" },
+      { "label": "Domain", "value": "CONTOSO" },
+      { "label": "Tenant", "value": "Contoso Ltd" }
+    ],
+    "net": [
+      { "label": "Connection", "value": "Wi-Fi" },
+      { "label": "SSID", "value": "Contoso-Corp" },
+      { "label": "IPv4", "value": "10.0.4.27" }
+    ],
+    "health": [
+      { "label": "Join state", "value": "HybridAzureAdJoined" },
+      { "label": "Connection", "value": "Wi-Fi" },
+      { "label": "VPN", "value": "No" },
+      { "label": "Uptime", "value": "2d 4h" },
+      { "label": "Internet (8.8.8.8)", "value": "OK (14 ms)" },
+      { "label": "Entra ID", "value": "OK (22 ms)" },
+      { "label": "Disk space", "value": "OK (41% free)" },
+      { "label": "Intune enrolled", "value": "Yes" }
+    ],
+    "account": [
+      { "label": "Display name", "value": "Alex Wilber" },
+      { "label": "UPN", "value": "alex.wilber@contoso.com" },
+      { "label": "Email", "value": "alex.wilber@contoso.com" },
+      { "label": "Job title", "value": "Field engineer" },
+      { "label": "Department", "value": "Operations" },
+      { "label": "Office", "value": "Building 4" }
+    ],
+    "otp": [
+      { "issuer": "Contoso VPN", "label": "alex.wilber", "code": "482 913", "count": "18" },
+      { "issuer": "Fabrikam Portal", "label": "awilber", "code": "079 351", "count": "18" }
+    ],
+    "netrows": [
+      { "label": "Connection", "value": "Wi-Fi" },
+      { "label": "Adapter", "value": "Intel(R) Wi-Fi 6E AX211" },
+      { "label": "SSID", "value": "Contoso-Corp" },
+      { "label": "IPv4", "value": "10.0.4.27" },
+      { "label": "VPN", "value": "No" }
+    ],
+    "links": ["Create Ticket", "Knowledge Base", "IT Portal"],
+    "sites": ["Intranet"],
+    "contact": { "label": "IT Service Desk", "email": "servicedesk@contoso.com", "phone": "+1-800-555-0100" },
+    "fixGroups": [
+      { "name": "OneDrive", "items": ["Restart OneDrive", "Reset OneDrive"] },
+      { "name": "Microsoft Teams", "items": ["Restart Teams", "Reset Teams cache"] },
+      { "name": "Network", "items": ["Release/Renew IP", "Flush DNS cache"] }
+    ],
+    "fix": {
+      "name": "Restart OneDrive",
+      "description": "Close and restart the OneDrive sync client.",
+      "output": "Stopping OneDrive...\nStarting OneDrive...\nOneDrive restarted."
+    },
+    "themes": ["Auto", "Light", "Dark", "Classic", "Ocean", "Forest", "Sunset"]
+  },
+  "desk": {
+    "title": "What the person at the desk gets",
+    "body": "One window, docked to the bottom-right corner by default, with a tray icon to bring it back. It shows cached data the moment it opens, refreshes in the background and marks the footer Offline when it could not reach live sources.",
+    "header": "The header names the organisation and the device's join state (Azure AD, hybrid, domain, workplace or workgroup). The first support link becomes a button beside it, so Create Ticket is always one click away.",
+    "tabs": [
+      { "name": "Status", "body": "Days until the password expires, the connection type and adapter, and the IPv4 address with a Copy IP button. Device and Network cards list the machine, user, domain, tenant, SSID and address." },
+      { "name": "Health", "body": "Join state, connection, VPN, uptime, ping results for the targets you configure, free space on the system drive, the last Windows Update install and Intune enrolment with its last sync. No administrator rights needed." },
+      { "name": "Account", "body": "Display name, UPN, email, job title, department, office, phones and aliases. The data comes from Microsoft Graph when you configure it and from the Windows session otherwise. Copy UPN puts the sign-in name on the clipboard." },
+      { "name": "OTP", "body": "One-time password codes from an encrypted vault that belongs to this Windows account. See below." },
+      { "name": "Network", "body": "Connection, adapter, SSID, IPv4 and VPN state, with buttons that open the Windows Network and VPN settings pages." },
+      { "name": "Support", "body": "Your links, the local sites for the user's zone and your service desk contacts. The tab appears only when you configure at least one of them." },
+      { "name": "Troubleshoot", "body": "The fixes you choose to show, grouped by category, with search, a confirmation step and the command's output as it runs." }
+    ]
+  },
+  "fixes": {
+    "title": "Fixes the user can run",
+    "body": "Common end-user problems have a built-in fix: a stuck OneDrive, a broken Teams cache, a stale IP address, a full print queue. Each fix is compiled into the app. The protected machine config can reorder, hide or rename them, and no config file can add a command.",
+    "userLabel": "Runs as the user",
+    "adminLabel": "Requires administrator",
+    "groups": [
+      { "name": "OneDrive", "user": ["Restart OneDrive", "Reset OneDrive"], "admin": [] },
+      { "name": "Microsoft Teams", "user": ["Restart Teams", "Reset Teams cache"], "admin": [] },
+      { "name": "Browser", "user": ["Clear Edge cache", "Clear Chrome cache", "Clear Firefox cache"], "admin": [] },
+      { "name": "Microsoft Office", "user": ["Restart Outlook", "Clear Outlook cache", "Repair Teams add-in", "Clear Office cache"], "admin": [] },
+      { "name": "Network", "user": ["Release/Renew IP", "Reset VPN adapter", "Test connectivity"], "admin": ["Flush DNS cache", "Reset Winsock", "Reset network stack"] },
+      { "name": "Printing", "user": [], "admin": ["Restart Print Spooler", "Clear print queue"] },
+      { "name": "Windows", "user": ["Reset Microsoft Store", "Restart Explorer", "Clear temp files", "Check Windows Update", "Refresh Group Policy (User)"], "admin": ["System file check", "DISM repair", "Refresh Group Policy (Computer)"] },
+      { "name": "Support & Logs", "user": ["Collect basic logs", "Collect & email logs"], "admin": [] }
+    ],
+    "notes": [
+      { "title": "As the user", "body": "Fixes run in a hidden Windows PowerShell as the signed-in user. Output streams into the Troubleshoot tab, and a command that runs longer than five minutes is stopped." },
+      { "title": "Administrator fixes", "body": "Fixes marked Requires administrator do not prompt for elevation in the standard builds, so they fail unless InformationBox already runs elevated. A custom build can turn on UAC prompts in its embedded defaults. The elevated command then runs in its own PowerShell window, and the tab records its exit status." },
+      { "title": "Logs for the helpdesk", "body": "Collect basic logs writes a diagnostics zip to the desktop. Collect & email logs does the same and opens a message to your support address." }
+    ]
+  },
+  "otp": {
+    "title": "One-time passwords",
+    "body": "The OTP tab keeps TOTP and HOTP codes on the machine the user already works on, in a vault encrypted with Windows DPAPI for their account.",
+    "points": [
+      { "title": "Add a code", "body": "Type the provider, account label and Base32 secret, or use Add QR to scan a QR code already on the screen. Pick region limits the scan to part of the screen, and migration QR codes import all their accounts at once." },
+      { "title": "Copy a code", "body": "Compact mode shows one account and the list view shows them all. Copy puts the current code on the clipboard. For HOTP it saves the next counter first." },
+      { "title": "Where it lives", "body": "The vault is %LocalAppData%\\InformationBox\\otp-vault.authimo. It works only for the Windows account that created it, so keep the recovery method your provider gives you." }
+    ],
+    "licence": "OTP uses the AuthIMO NuGet package. AuthIMO has a separate, proprietary licence and requires an agreement with Evotec Services."
+  },
+  "admin": {
+    "title": "For admins: one config file, locked down",
+    "body": "Everything the user sees comes from a JSON config. InformationBox reads the first file it finds and does not merge it with the next one.",
+    "order": [
+      { "path": "--config <path>", "body": "Choose a config file on the command line.", "status": "idea", "statusLabel": "Planned" },
+      { "path": "C:\\ProgramData\\InformationBox\\config.json", "body": "The machine config. Read only when it is protected, and the only file that can change how fixes are presented.", "status": "shipped", "statusLabel": "Machine" },
+      { "path": "%APPDATA%\\InformationBox\\config.json", "body": "Per-user config. It can change the window, links and branding. Its fixes section is ignored.", "status": "partial", "statusLabel": "User, UI only" },
+      { "path": "Embedded defaults", "body": "The config.default.json compiled into the app. Used when no other file loads.", "status": "na", "statusLabel": "Fallback" }
+    ],
+    "extra": "Theme choice and OTP settings are saved per user in %LOCALAPPDATA%\\InformationBox\\settings.json. The log is %APPDATA%\\InformationBox\\logs\\log.txt.",
+    "protect": {
+      "title": "When the machine config counts",
+      "body": "InformationBox skips the machine config entirely unless all of these hold:",
+      "rules": [
+        "The file and its folder are owned by Administrators, SYSTEM or TrustedInstaller.",
+        "Only those principals can write to them.",
+        "Neither the file nor the folder is a reparse point."
+      ],
+      "howto": "Create the folder and file from an elevated deployment, remove inherited write access for users and give users read access."
+    },
+    "limits": {
+      "title": "What JSON cannot do",
+      "rules": [
+        "Add an executable fix or replace a fix's command. Fixes without a built-in id are not run.",
+        "Change a fix's requiresAdmin value or turn on UAC prompts. Elevation comes only from the embedded defaults.",
+        "Rename or recategorise an administrator fix. Its name, description and confirmation text come from the built-in catalog.",
+        "Open a file path or a non-web link. Links and local sites accept only http and https URLs without embedded credentials."
+      ],
+      "placeholders": "Built-in commands can use {{SUPPORT_EMAIL}}, {{COMPANY_NAME}} and {{PRODUCT_NAME}}. They are filled from your branding as single-quoted PowerShell literals."
+    },
+    "samples": [
+      {
+        "id": "branding",
+        "title": "Branding",
+        "body": "Your product name, company, logo, icon, colours, default theme and support address. The theme can be Auto, Light, Dark, Classic, Ocean, Forest or Sunset; Auto follows Windows.",
+        "file": "config.json",
+        "code": "\"branding\": {\n  \"productName\": \"Contoso Help\",\n  \"companyName\": \"Contoso Ltd\",\n  \"primaryColor\": \"#0050b3\",\n  \"secondaryColor\": \"#e5f1ff\",\n  \"logo\": \"Assets/logo.png\",\n  \"logoWidth\": 0,\n  \"logoHeight\": 40,\n  \"icon\": \"Assets/app.ico\",\n  \"theme\": \"Auto\",\n  \"supportEmail\": \"servicedesk@contoso.com\"\n}"
+      },
+      {
+        "id": "tenants",
+        "title": "Tenant overrides",
+        "body": "One file can serve several organisations. Key an override by the Entra tenant ID the device is joined to, and its sections replace the base config's branding, layout, links, local sites, contacts, password policy, feature flags or health checks. Security settings in an override are discarded.",
+        "file": "config.json",
+        "code": "\"tenantOverrides\": {\n  \"00000000-0000-0000-0000-000000000000\": {\n    \"branding\": { \"productName\": \"Fabrikam Help\", \"supportEmail\": \"help@fabrikam.com\" },\n    \"layout\": { \"defaultWidth\": 720, \"denseMode\": true }\n  }\n}"
+      },
+      {
+        "id": "password",
+        "title": "Password policy",
+        "body": "The maximum password age, in days, for accounts synced from on-premises AD and for cloud-only accounts. On an Azure AD joined device with a client ID configured, InformationBox reads the account from Microsoft Graph with the delegated User.Read permission and checks AD over LDAP for synced accounts. Otherwise it asks on-premises AD over LDAP.",
+        "file": "config.json",
+        "code": "\"passwordPolicy\": {\n  \"onPremDays\": 360,\n  \"cloudDays\": 180\n},\n\"auth\": { \"clientId\": \"\" }"
+      },
+      {
+        "id": "flags",
+        "title": "Support tab and feature flags",
+        "body": "Links, zones, local sites and contacts fill the Support tab. Zones map the user's DNS domain to a site, and local sites show only in their zone. showLocalSites and showContacts hide those cards. showHelp and showHealth are accepted, but the current source does not change the window for them.",
+        "file": "config.json",
+        "code": "\"featureFlags\": {\n  \"showLocalSites\": true,\n  \"showHelp\": true,\n  \"showContacts\": true,\n  \"showHealth\": false\n},\n\"links\": [ { \"name\": \"Create Ticket\", \"url\": \"https://helpdesk.contoso.com\", \"section\": \"Support\", \"order\": 1 } ],\n\"zones\": [ { \"domain\": \"corp.contoso.com\", \"zone\": \"HQ\" } ],\n\"localSites\": [ { \"label\": \"Intranet\", \"url\": \"https://intranet.contoso.com\", \"zone\": \"HQ\" } ],\n\"contacts\": [ { \"label\": \"IT Service Desk\", \"email\": \"servicedesk@contoso.com\", \"phone\": \"+1-800-555-0100\" } ]"
+      },
+      {
+        "id": "fixes",
+        "title": "Fix presentation",
+        "body": "From the protected machine config, address a built-in fix by its id to change its order or hide it. For fixes that run as the user you can also change the name, description, confirmation text and category.",
+        "file": "C:\\ProgramData\\InformationBox\\config.json",
+        "code": "\"fixes\": [\n  {\n    \"id\": \"restart-onedrive\",\n    \"name\": \"Restart OneDrive\",\n    \"description\": \"Close and restart the OneDrive sync client\",\n    \"category\": \"OneDrive\",\n    \"confirm\": \"OneDrive will be restarted. Continue?\",\n    \"visible\": true,\n    \"order\": 1\n  },\n  { \"id\": \"clear-firefox-cache\", \"visible\": false }\n]"
+      },
+      {
+        "id": "layout",
+        "title": "Window and tray",
+        "body": "Size, the corner and monitor it opens on, tray-only mode and whether Close hides to the tray. Dense mode is on by default.",
+        "file": "config.json",
+        "code": "\"layout\": {\n  \"defaultWidth\": 680,\n  \"defaultHeight\": 440,\n  \"horizontalAnchor\": \"Right\",\n  \"verticalAnchor\": \"Bottom\",\n  \"multiMonitor\": \"Active\",\n  \"trayOnly\": false,\n  \"minimizeOnClose\": true,\n  \"denseMode\": true\n}"
+      }
+    ]
+  },
+  "flavours": {
+    "title": "Four ways to ship it",
+    "body": "Build/Deploy.ps1 publishes four Windows x64 builds from the same source and zips each one. Pick by whether your machines already have the .NET 10 Desktop Runtime.",
+    "columns": ["Build", "What you get", "Needs .NET 10", "Zip"],
+    "rows": [
+      { "name": "portable", "what": "Self-contained, loose files", "dotnet": false, "zip": "InformationBox-portable.zip" },
+      { "name": "single-contained", "what": "Self-contained, one compressed file that extracts its native libraries", "dotnet": false, "zip": "InformationBox-single-contained.zip" },
+      { "name": "single-fx", "what": "Framework-dependent, one compressed file", "dotnet": true, "zip": "InformationBox-singlefx.zip" },
+      { "name": "fx", "what": "Framework-dependent, loose files; the smallest download", "dotnet": true, "zip": "InformationBox-fx.zip" }
+    ],
+    "yes": "Yes",
+    "no": "No"
+  },
+  "download": {
+    "title": "Download and source",
+    "body": "Portable builds will be published on GitHub Releases. Until the first release appears there, build them from source on Windows with the .NET 10 SDK.",
+    "releaseStatus": "First release pending",
+    "releases": "https://github.com/EvotecIT/InformationBox/releases",
+    "source": "https://github.com/EvotecIT/InformationBox",
+    "build": "git clone https://github.com/EvotecIT/InformationBox.git\ncd InformationBox\n\n# All four flavours into Artefacts\\\npwsh Build/Deploy.ps1\n\n# Or a single debug build\ndotnet build InformationBox/InformationBox.csproj -c Debug",
+    "facts": [
+      { "label": "Runs on", "value": "Windows (x64 builds)" },
+      { "label": "Built with", "value": ".NET 10, WPF" },
+      { "label": "Licence", "value": "AGPL-3.0" },
+      { "label": "OTP dependency", "value": "AuthIMO, separate proprietary licence" }
+    ]
+  },
+  "pair": {
+    "title": "Works with PowerBGInfo",
+    "body": "PowerBGInfo puts a machine's name, address and support contacts on the wallpaper, where everyone at the desk sees them without opening anything. InformationBox is where the user acts on them: copy the address, check the password, open a ticket or run a fix.",
+    "steps": [
+      { "verb": "Show", "product": "PowerBGInfo", "body": "The wallpaper names the machine, its IP address and who to call. A QR code on it can open your helpdesk page.", "status": "shipped", "statusLabel": "Available" },
+      { "verb": "Ask and fix", "product": "InformationBox", "body": "The window gives the user the same facts to copy, their account and password status, and fixes to try before they call.", "status": "shipped", "statusLabel": "Available" },
+      { "verb": "Hand off", "product": "Wallpaper tile and QR code", "body": "A PowerBGInfo tile or QR code that opens InformationBox on the right tab.", "status": "idea", "statusLabel": "Planned" }
+    ],
+    "more": { "label": "See PowerBGInfo wallpapers", "url": "/gallery/" }
+  }
+}

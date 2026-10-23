@@ -1,0 +1,98 @@
+  <section class="pb-atlas pbg-logic" id="your-logic" aria-labelledby="pbg-logic-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-logic-title">{{ pbg.logic.title }}</h2>
+      <p>{{ pbg.logic.body }}</p>
+    </div>
+
+    <div class="pbg-split">
+      <div class="pbg-split__text">
+        <h3>{{ pbg.logic.data.title }}</h3>
+        <p>{{ pbg.logic.data.body }}</p>
+        <p><a class="pb-link" href="{{ built.source.templateUrl }}">{{ pbg.logic.data.template }}: {{ built.source.template | string.split "/" | array.last }}</a></p>
+      </div>
+      <figure class="pb-codeblock pbg-split__code" data-lang="powershell">
+        <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ final.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ final.data | html.escape }}</code></pre>
+      </figure>
+    </div>
+
+    <div class="pbg-split">
+      <div class="pbg-split__text">
+        <h3>{{ pbg.logic.sources.title }}</h3>
+        <p>{{ pbg.logic.sources.body }}</p>
+      </div>
+      <div class="pbg-tabs pbg-split__code" data-pb-tabs>
+        <div class="pb-seg" role="tablist" aria-label="Data sources">
+          {{~ k = 0; for c in built.sources; if c.id != "system-info"; k = k + 1 ~}}
+          <button type="button" role="tab" id="pbg-src-tab-{{ c.id }}" aria-controls="pbg-src-{{ c.id }}" aria-selected="{{ if k == 1 }}true{{ else }}false{{ end }}" tabindex="{{ if k == 1 }}0{{ else }}-1{{ end }}" style="--key: var(--pb-s{{ k }})"><span class="pb-key" aria-hidden="true"></span>{{ c.label }}</button>
+          {{~ end; end ~}}
+        </div>
+        {{~ k = 0; for c in built.sources; if c.id != "system-info"; k = k + 1 ~}}
+        <div class="pbg-tabs__panel" role="tabpanel" id="pbg-src-{{ c.id }}" aria-labelledby="pbg-src-tab-{{ c.id }}"{{ if k != 1 }} hidden{{ end }}>
+          <p>{{ c.body }}</p>
+          <figure class="pb-codeblock" data-lang="powershell">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ c.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ c.code | html.escape }}</code></pre>
+          </figure>
+        </div>
+        {{~ end; end ~}}
+      </div>
+    </div>
+
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ pbg.logic.safety.title }}</h3>
+          <p>{{ pbg.logic.safety.body }}</p>
+        </div>
+        <ul class="pbg-points">
+          {{~ for p in pbg.logic.safety.points ~}}<li>{{ p }}</li>{{~ end ~}}
+        </ul>
+      </div>
+      <p class="pbg-step__layer"><span class="pb-key" aria-hidden="true"></span><strong>{{ timeout.title }}.</strong> {{ timeout.body }}</p>
+      <div class="pb-pair pbg-pair">
+        <div class="pb-pair__source pbg-stack">
+          <figure class="pb-codeblock" data-lang="powershell">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ timeout.file }}</span><span class="pb-count" title="Lines added and removed against step 8">+{{ timeout.added }} &minus;{{ timeout.removed }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ timeout.changed | html.escape }}</code></pre>
+          </figure>
+          {{~ if timeout.warnings ~}}
+          <figure class="pb-codeblock pbg-console" data-lang="console">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">Console</span><span class="pb-codeblock__file">{{ timeout.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code>{{ timeout.warnings | html.escape }}</code></pre>
+          </figure>
+          {{~ end ~}}
+        </div>
+        {{~ r = timeout.render ~}}
+        <figure class="pb-output pb-pair__output">
+          <figcaption><span class="pb-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+          <a class="pb-figure__open" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="The same wallpaper drawn from the fallback values: the heading reads STATUS UNAVAILABLE, the details read unknown and the panels are empty." /></a>
+        </figure>
+      </div>
+    </div>
+
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ pbg.logic.swap.title }}</h3>
+          <p>{{ pbg.logic.swap.body }}</p>
+        </div>
+        <div>
+          <p class="pbg-tokens__label">{{ pbg.logic.swap.tokens }}</p>
+          <ul class="pb-tags pbg-tokens">{{~ for t in pbg.logic.swap.tokenList ~}}<li class="pb-tag"><code>{{ t }}</code></li>{{~ end ~}}</ul>
+        </div>
+      </div>
+      <div class="pb-pair pbg-pair">
+        <figure class="pb-codeblock pb-pair__source" data-lang="powershell">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">{{ swap.file }}</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ swap.code | html.escape }}</code></pre>
+        </figure>
+        {{~ w = show.widgets["system-info"] ~}}
+        <figure class="pb-output pb-pair__output">
+          <figcaption><span class="pb-output__file"><a href="{{ w.url }}">{{ w.file }}</a></span><span>{{ w.renders.dark.width }} x {{ w.renders.dark.height }}</span></figcaption>
+          {{~ img_renders = w.renders; img_alt = pbg.logic.swap.alt; img_sizes = "(max-width: 1180px) 100vw, 600px" ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+      </div>
+    </div>
+  </section>

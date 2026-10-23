@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--powerbginfo{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## A PowerBGInfo story page. The page's meta.sections lists which parts of the story it tells, in order:
+     stage, scenarios, build, logic, capabilities, parts, start and production (partials/pbg/). The data each part
+     reads is bound once in partials/pbg/setup.html. ## ~}}
+{{ include "pbg/setup" }}
+<main id="main" class="pb-main pb-pbg">
+  {{~ for section in (page.meta.sections | string.split ",") ~}}
+  {{ include ("pbg/" + section) }}
+  {{~ end ~}}
+  {{~ if content != "" ~}}
+  <section class="pb-guide" aria-label="Notes">
+    <div class="pb-prose">
+{{ content }}
+    </div>
+  </section>
+  {{~ end ~}}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

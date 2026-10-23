@@ -1,0 +1,318 @@
+{
+  "note": "Copy for /platforms/. Platform rows, statuses and the capability matrix come from data/platforms.json. Facts are checked against PowerBGInfo PR #91 (feature/cross-platform-engine): docs/cross-platform.md, Examples/Run.BGInfo.CrossPlatform.ps1, TODO.md and Sources/. Keep planned guides labelled as planned until they are published.",
+  "pr": {
+    "title": "PowerBGInfo pull request #91",
+    "url": "https://github.com/EvotecIT/PowerBGInfo/pull/91"
+  },
+  "hero": {
+    "eyebrow": "Windows, macOS, Linux and headless",
+    "title": "What runs where",
+    "lede": "Windows is supported today. macOS, Linux and headless rendering are in preview: the work is in PowerBGInfo pull request #91 and ships with the next release, together with new DesktopManager and ChartForgeX releases.",
+    "check": "A rendered image does not prove that a desktop accepted it. `Get-BGInfoCapability` and the CLI's `--doctor` report what the current desktop can do before you apply anything.",
+    "term": {
+      "title": "PowerBGInfo.Cli --doctor",
+      "prompt": "%",
+      "command": "PowerBGInfo.Cli --doctor",
+      "output": [
+        "Desktop backend: macos",
+        "Available: True",
+        "Wallpaper: True",
+        "Per-display images: True",
+        "Physical display dimensions: True",
+        "File rendering: supported without a desktop session",
+        "Public AppKit desktop images for the current user's active Spaces/screens. Tile, Span, all-Spaces enumeration and lock screen changes are unsupported."
+      ],
+      "caption": "Real output from the PR #91 build on a Mac. `Get-BGInfoCapability` returns the same report as an object."
+    }
+  },
+  "cards": {
+    "title": "Pick your platform",
+    "body": "Each card shows the status today and the shortest way to try it. The full steps for each platform are further down the page.",
+    "more": "How to run it"
+  },
+  "matrix": {
+    "title": "Capabilities by desktop",
+    "body": "One row per job PowerBGInfo does. Linux is split by desktop, because GNOME and KDE Plasma change the wallpaper in different ways.",
+    "footnote": "Preview statuses follow the PR #91 test record. On macOS, applying, reading back and restoring a wallpaper were checked on a real desktop with one display. GNOME and KDE Plasma have not yet been checked on a real graphical session, and the module and CLI still need their native Linux test run."
+  },
+  "howto": {
+    "title": "Run it on your platform",
+    "body": "PowerBGInfo performs one run and exits. Each platform needs the same three decisions: where it runs, which session it runs in, and what refreshes it."
+  },
+  "guides": [
+    {
+      "id": "windows",
+      "lede": "The supported platform today. Windows PowerShell 5.1 or PowerShell 7, the desktop and the lock screen, every monitor and, with elevation, every profile on the machine.",
+      "steps": [
+        "Install the module from the PowerShell Gallery for yourself, or for all users on machines that run it unattended.",
+        "Build a layout in PowerShell or JSON and render it with `-Target File` until it looks right.",
+        "Choose `Wallpaper`, `LogonScreen` or `Both` with `-Target`. `-AllUsers` also writes the wallpaper into every local profile.",
+        "Refresh it at sign-in with Task Scheduler, Group Policy, Intune or Configuration Manager."
+      ],
+      "code": {
+        "lang": "powershell",
+        "label": "PowerShell",
+        "lines": [
+          "Install-Module PowerBGInfo -Scope CurrentUser",
+          "",
+          "# Check the image first, then apply it",
+          "Invoke-BGInfo -Path .\\helpdesk.json -Target File",
+          "Invoke-BGInfo -Path .\\helpdesk.json -Target Both"
+        ]
+      },
+      "linksTitle": "Windows guides",
+      "links": [
+        {
+          "title": "Install",
+          "url": "/docs/install/",
+          "note": "PowerShell Gallery, scope and signing"
+        },
+        {
+          "title": "Run in production",
+          "url": "/docs/deployment/",
+          "note": "Targets, accounts and routes"
+        },
+        {
+          "title": "Task Scheduler",
+          "url": "/docs/task-scheduler/",
+          "note": "Sign-in and timed refresh"
+        },
+        {
+          "title": "Group Policy",
+          "url": "/docs/group-policy/",
+          "note": "Domain-joined machines"
+        },
+        {
+          "title": "Microsoft Intune",
+          "url": "/docs/intune/",
+          "note": "Cloud-managed devices"
+        },
+        {
+          "title": "Configuration Manager",
+          "url": "/docs/configuration-manager/",
+          "note": "Packages and baselines"
+        },
+        {
+          "title": "Remote Desktop",
+          "url": "/docs/remote-desktop/",
+          "note": "RDS, Azure Virtual Desktop, Windows 365"
+        },
+        {
+          "title": "Security",
+          "url": "/docs/security/",
+          "note": "Signing, AllSigned and least privilege"
+        },
+        {
+          "title": "Troubleshooting",
+          "url": "/docs/troubleshooting/",
+          "note": "When the wallpaper does not change"
+        }
+      ]
+    },
+    {
+      "id": "macos",
+      "lede": "Preview. PowerBGInfo sets the current user's desktop picture through AppKit on each screen macOS reports. There is no lock-screen or all-users option.",
+      "steps": [
+        "Install PowerShell 7.4 or later. The portable build of the module needs it.",
+        "Run `Get-BGInfoCapability` in your own login session and check that the `macos` backend is available.",
+        "Render with `-NoApply` and open the PNG before you change anything.",
+        "Apply it with `-Target Wallpaper`.",
+        "To refresh it at login or on a timer, run the same command from a LaunchAgent in your account."
+      ],
+      "code": {
+        "lang": "powershell",
+        "label": "PowerShell 7.4+",
+        "lines": [
+          "Install-Module PowerBGInfo -Scope CurrentUser",
+          "Get-BGInfoCapability",
+          "",
+          "# Render to a file and look at it first",
+          "Invoke-BGInfo -Path ./helpdesk.json -NoApply",
+          "",
+          "# Then set it as your desktop picture",
+          "Invoke-BGInfo -Path ./helpdesk.json -Target Wallpaper"
+        ]
+      },
+      "linksTitle": "macOS guides",
+      "links": [
+        {
+          "title": "Schedule with a LaunchAgent",
+          "planned": true,
+          "note": "Guide planned"
+        },
+        {
+          "title": "Pull request #91",
+          "url": "https://github.com/EvotecIT/PowerBGInfo/pull/91",
+          "note": "The cross-platform work and its documentation"
+        }
+      ]
+    },
+    {
+      "id": "linux",
+      "lede": "Preview. GNOME through GSettings and KDE Plasma through its D-Bus scripting interface. On any other desktop PowerBGInfo renders a file and leaves applying it to you.",
+      "steps": [
+        "Install PowerShell 7.4 or later and the module.",
+        "Open a terminal inside the graphical session of the user who will see the wallpaper. An SSH session, root or a system account cannot change that desktop.",
+        "Run `Get-BGInfoCapability` to see which desktop backend it found.",
+        "Set the image size with `New-BGInfoBackground -Width` and `-Height`. The GNOME and KDE adapters do not report physical screen sizes.",
+        "GNOME uses one image for every screen, so keep monitor index 0. KDE also needs index 0 when it cannot list its screens.",
+        "To refresh it, run the command from a systemd user timer or an XDG autostart entry."
+      ],
+      "code": {
+        "lang": "powershell",
+        "label": "PowerShell 7.4+",
+        "lines": [
+          "# In the user's desktop session, not over SSH",
+          "Get-BGInfoCapability",
+          "",
+          "$facts = Get-BGInfoSystemInfo",
+          "New-BGInfo -Target Wallpaper -OutputFileName 'machine.png' `",
+          "    -ConfigurationDirectory \"$HOME/.local/share/PowerBGInfo\" {",
+          "    New-BGInfoBackground -Width 1920 -Height 1080",
+          "    New-BGInfoLabel -Name $facts.ComputerName -FontSize 56",
+          "    New-BGInfoValue -Name 'OS' -Value $facts.OSName",
+          "    New-BGInfoValue -Name 'Uptime' -Value $facts.UptimeText",
+          "}"
+        ]
+      },
+      "linksTitle": "Linux guides",
+      "links": [
+        {
+          "title": "Schedule with a systemd user timer or XDG autostart",
+          "planned": true,
+          "note": "Guide planned"
+        },
+        {
+          "title": "Pull request #91",
+          "url": "https://github.com/EvotecIT/PowerBGInfo/pull/91",
+          "note": "The cross-platform work and its documentation"
+        }
+      ]
+    },
+    {
+      "id": "headless",
+      "lede": "Preview. `-Target File` never reads or changes a wallpaper, so it runs on a server, in a container or in a CI job with no desktop at all.",
+      "steps": [
+        "Use `-Target File` with `New-BGInfo`, `-NoApply` with `Invoke-BGInfo` or `--no-apply` with the CLI.",
+        "Give the size with `New-BGInfoBackground -Width` and `-Height`. There is no monitor to measure.",
+        "Install the fonts the layout uses on the build host. Fonts resolve where the image renders.",
+        "Keep paths in JSON relative, so the same file works on Windows, macOS and Linux."
+      ],
+      "uses": [
+        {
+          "title": "Documentation",
+          "body": "Screenshots of a layout for a runbook or a change request."
+        },
+        {
+          "title": "Signage",
+          "body": "A status screen rendered on a schedule and shown by a player."
+        },
+        {
+          "title": "VM templates",
+          "body": "A machine identity image baked into a golden image."
+        }
+      ],
+      "code": {
+        "lang": "powershell",
+        "label": "PowerShell 7.4+",
+        "lines": [
+          "$facts = Get-BGInfoSystemInfo",
+          "New-BGInfo -Target File -Theme Graphite -OutputFileName 'machine.png' `",
+          "    -ConfigurationDirectory ./out {",
+          "    New-BGInfoBackground -Width 1920 -Height 1080",
+          "    New-BGInfoLabel -Name $facts.ComputerName -FontSize 56",
+          "    New-BGInfoValue -Name 'OS' -Value $facts.OSName",
+          "    New-BGInfoValue -Name 'Uptime' -Value $facts.UptimeText",
+          "}"
+        ]
+      },
+      "cli": {
+        "lang": "shell",
+        "label": "CLI",
+        "lines": [
+          "PowerBGInfo.Cli --config ./helpdesk.json --no-apply --directory ./out"
+        ],
+        "note": "The CLI writes the image path to standard output and warnings to standard error."
+      },
+      "linksTitle": "Related",
+      "links": [
+        {
+          "title": "Run in production",
+          "url": "/docs/deployment/",
+          "note": "Author and test every layout with -Target File"
+        },
+        {
+          "title": "Pull request #91",
+          "url": "https://github.com/EvotecIT/PowerBGInfo/pull/91",
+          "note": "Portable rendering and the CLI"
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "title": "Limits to plan around",
+    "body": "These hold for the preview in pull request #91. Each one fails or warns plainly instead of guessing.",
+    "items": [
+      {
+        "title": "Lock screen and all users are Windows only",
+        "body": "On macOS and Linux a lock-screen or all-users request fails before anything renders or changes. Use `Wallpaper` for the current desktop or `File` for an image."
+      },
+      {
+        "title": "HEIC wallpapers become a plain backdrop",
+        "body": "When the current macOS wallpaper is HEIC or another format the renderer cannot read, PowerBGInfo warns and draws on a plain background. Name a PNG, JPEG, GIF, BMP, PPM or TIFF image, or use a generated background, to keep a photo."
+      },
+      {
+        "title": "Fonts come from the rendering host",
+        "body": "Text uses the fonts installed where the image renders. Install the same licensed fonts on every host where the type must match."
+      },
+      {
+        "title": "Windows paths do not travel",
+        "body": "A Windows-rooted path such as `C:\\Wallpapers\\base.jpg` in JSON is rejected on macOS and Linux. Use relative paths, with either slash, or a local absolute path."
+      },
+      {
+        "title": "It must run in the user's session",
+        "body": "Changing a wallpaper needs the graphical session of the user who will see it. An SSH session, a system account or an administrator token does not replace it."
+      },
+      {
+        "title": "Policy can still refuse",
+        "body": "A managed-device policy can block a change that the backend reports as supported. Check the result, not only the render."
+      }
+    ]
+  },
+  "study": {
+    "label": "Under study",
+    "tag": "Study, not a feature",
+    "title": "iPhone and iPad",
+    "lede": "We are looking at whether PowerBGInfo is useful for Apple mobile devices. Nothing here ships, and nothing here is promised.",
+    "points": [
+      {
+        "title": "What stops it",
+        "body": "iOS and iPadOS give apps no way to set the wallpaper, so PowerBGInfo cannot run on the device and change it."
+      },
+      {
+        "title": "What could work",
+        "body": "Device management can set a wallpaper on supervised devices. Microsoft Intune and Jamf are two services that offer it. What each service supports differs, so check yours."
+      },
+      {
+        "title": "The idea",
+        "body": "PowerBGInfo renders one image per device from your inventory, with the asset tag, the owner and a helpdesk QR code, and your MDM delivers it."
+      }
+    ],
+    "questions": [
+      "How each MDM takes an image per device rather than one image for a group.",
+      "Which screen sizes to render for the models in a fleet.",
+      "How often the image needs refreshing when an owner changes.",
+      "Drawing a QR code, which PowerBGInfo does not do today."
+    ],
+    "questionsTitle": "Open questions",
+    "mock": {
+      "caption": "Mock-up of the idea, not a render.",
+      "time": "09:41",
+      "tag": "ASSET IT-04127",
+      "owner": "Assigned to Front desk",
+      "help": "Lost? Call the helpdesk"
+    },
+    "ask": "Would you use this? Tell us in a GitHub issue.",
+    "askUrl": "https://github.com/EvotecIT/PowerBGInfo/issues"
+  }
+}

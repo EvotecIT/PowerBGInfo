@@ -13,9 +13,10 @@
     PowerShellVersion      = '5.1'
     PrivateData            = @{
         PSData = @{
-            IconUri                    = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
+            # Publish this cutover metadata only after powerbginfo.com is live.
+            IconUri                    = 'https://powerbginfo.com/apple-touch-icon.png'
             LicenseUri                 = 'https://github.com/EvotecIT/PowerBGInfo/blob/master/License'
-            ProjectUri                 = 'https://github.com/EvotecIT/PowerBGInfo'
+            ProjectUri                 = 'https://powerbginfo.com'
             Tags                       = @('windows', 'macos', 'linux', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
             RequireLicenseAcceptance   = $false
             ExternalModuleDependencies = @()

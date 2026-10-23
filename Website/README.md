@@ -1,19 +1,65 @@
-# PowerBGInfo Website Content
+# PowerBGInfo Website
 
-This folder contains curated source content that the Evotec website imports for the PowerBGInfo project page.
+This folder is the source of two things:
+
+- **powerbginfo.com**, a standalone PowerForge site for PowerBGInfo, DesktopManager and InformationBox (`site.json`, `pipeline.json`, `themes/powerbginfo/`, `content/pages/`, `data/`, `static/`).
+- **The PowerBGInfo docs that evotec.xyz imports** for /projects/powerbginfo/ (`content/project-docs/docs/` and `content/examples/`). powerbginfo.com publishes the same files under /docs/ and /examples/.
 
 ## Layout
 
-- `content/project-docs/docs/` contains the project documentation shown under /projects/powerbginfo/docs/, including the production deployment guides (`deployment.md`, `task-scheduler.md`, `group-policy.md`, `intune.md`, `configuration-manager.md`, `remote-desktop.md`, `security.md`, `troubleshooting.md`). These files are the only copy of that material; the repository README links to the published pages. Keep their file names stable: other sites link to them.
-- `content/examples/` contains curated website examples shown under /projects/powerbginfo/examples/.
-- API artifacts are not enabled from this folder yet. Add `WebsiteArtifacts/apidocs` and wire it in the website catalog only when external help/API metadata is generated and reviewed.
+- `content/project-docs/docs/` holds the documentation, including the production deployment guides (`deployment.md`, `task-scheduler.md`, `group-policy.md`, `intune.md`, `configuration-manager.md`, `remote-desktop.md`, `security.md`, `troubleshooting.md`). These files are the only copy of that material; the repository README links to the published pages. Keep their file names stable: other sites link to them. `toc.yml` orders the docs menu on both sites.
+- `content/examples/` holds curated website examples.
+- `content/pages/` holds the powerbginfo.com pages. Most are front matter only; their copy lives in `data/`.
+- `data/` holds page data: `home.json`, `products.json`, `platforms.json` (the one source of platform support, read by the home page and /platforms/), `desktopmanager.json`, `informationbox.json`, `platforms-page.json`, and the wallpaper story data `powerbginfo.json`, `powerbginfo-showcase.json` and `powerbginfo-build.json`.
+- `build/Sync-PowerBGInfo.ps1` snapshots the showcase and feature renders into `static/powerbginfo/` and writes `data/powerbginfo-showcase.json`. `build/Render-PowerBGInfoSteps.ps1` runs `powerbginfo/steps/*.ps1` and writes `static/powerbginfo/build/` and `data/powerbginfo-build.json`. Both read this repository at a recorded commit and never change it.
+- `themes/powerbginfo/` is forked from the ChartForgeX site theme. Classes use the `pb-` prefix (shared components) and `pbg-` (wallpaper story parts in `partials/pbg/`).
 
-## Editing Rules
+## Building
 
-- Keep this folder intentional and small.
-- Do not mirror raw `Examples/`, `Example/`, or generated output folders into the public website.
-- Add only examples that have a clear explanation, a small code sample, and a link back to the original source file.
-- Keep links rooted at /projects/powerbginfo/ so the same content works on localhost, evotec.xyz, and evotec.pl. Between docs pages use the relative form `../security/` or `../security/#anchor`; the hub's link check resolves those, while `security.md` links would break on the site.
+```powershell
+./build.ps1            # full pipeline: build, sitemap, verify, audit
+./build.ps1 -Serve     # build and serve locally
+```
 
-The website pipeline prefers this `Website/content/...` layout over legacy root-level content folders.
+`build.ps1` finds the PowerForge engine through `-PowerForgeRoot`, `$env:POWERFORGE_ROOT` or a sibling `PSPublishModule` checkout.
 
+## Editing rules
+
+- Keep this folder intentional and small. Do not mirror raw `Examples/` or generated output folders into it.
+- Add only examples that have a clear explanation, a small code sample and a link back to the original source file.
+- Docs links stay rooted at /projects/powerbginfo/ so the same files work on evotec.xyz and evotec.pl. powerbginfo.com rewrites them when it renders a docs page (`themes/powerbginfo/layouts/docs.html`). Between docs pages use the relative form `../security/` or `../security/#anchor`; `security.md` links break on both sites.
+- Platform support changes in `data/platforms.json` only. Use `preview` until the release that ships it is published.
+- Every wallpaper on the site is real PowerBGInfo output. Mockups and illustrations must say so in their caption.
+
+## Quality gates and source snapshots
+
+`./build.ps1 -CI` verifies the immutable engine lock, builds sitemap and agent discovery files, checks SEO, navigation, links and assets, then optimizes the output and repeats the checks. The image optimizer generates WebP variants at 480, 960 and 1440 pixels for `powerbginfo/**`. Both audits enforce at most six render-blocking head resources.
+
+The verify baseline contains one known engine warning: collection-relative TOC entries are compared against site-root routes ([PSPublishModule #1165](https://github.com/EvotecIT/PSPublishModule/issues/1165)). Keep the shared TOC relative for the evotec.xyz importer. Remove that baseline after the engine fix is released and the lock is updated. The SEO baseline records 17 existing title/description length advisories; it does not allow missing canonicals, broken links or content leaks. Copy changes belong with the site's visual/copy owner.
+
+The data scripts default `RepositoryPath` to this repository. Pass the exact `-Ref` recorded by both showcase/feature render manifests to `Sync-PowerBGInfo.ps1`. `Render-PowerBGInfoSteps.ps1 -Ref v2.0.6` exports an isolated source snapshot before building and rendering on Windows. An explicit `ModulePath` must point to a separate source snapshot. Both scripts stage output and restore the previous website snapshot if promotion fails.
+
+The committed renders and source URLs record their exact source commit in `data/powerbginfo-showcase.json`. Refresh renders and recorded sources together on Windows before moving those links to another commit or release tag. Do not relabel old images as newer release output.
+
+## Launch and GitHub Pages
+
+The deployment workflow builds only `v2-speedygonzales` and publishes through the pinned PowerForge GitHub Pages workflow. Pull requests use the separate website CI workflow and do not deploy. `static/CNAME` is copied to the artifact as `powerbginfo.com`; GitHub Actions Pages deployments also require the repository's Pages custom-domain setting (a CNAME artifact alone does not set it).
+
+Before the owner merges or dispatches deployment:
+
+1. Pages is configured with Source **GitHub Actions** and Custom domain **powerbginfo.com**. Verify these settings before launch. This repository's default branch is `v2-speedygonzales`.
+2. Configure the `production` environment with `CLOUDFLARE_ZONE_ID` (variable) and make `CLOUDFLARE_API_TOKEN` available to the pinned Cloudflare site-policy action. An organization secret with selected-repository access can supply the token; a same-name environment secret overrides it. The action applies the site's response/cache policy after deployment. HSTS is explicitly disabled for the initial cutover and can be reviewed separately after HTTPS works.
+3. The owner adds these DNS records in Cloudflare, initially DNS only so GitHub can verify the domain and issue its certificate:
+
+   | Type | Name | Value |
+   | --- | --- | --- |
+   | A | `@` | `185.199.108.153` |
+   | A | `@` | `185.199.109.153` |
+   | A | `@` | `185.199.110.153` |
+   | A | `@` | `185.199.111.153` |
+   | CNAME | `www` | `evotecit.github.io` |
+
+   Optional IPv6: four `AAAA` records at `@`: `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`. Do not point `www` at a repository path. These values follow [GitHub's custom-domain documentation](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+4. After the approved deployment, verify the apex and www redirect, enable Enforce HTTPS once the certificate is available, and verify the final Cloudflare policy on the live site.
+
+The site is live over HTTPS. GitHub Enforce HTTPS and Cloudflare Always Use HTTPS redirect HTTP requests; Cloudflare uses Full (strict) TLS to the GitHub origin. Keep those settings when maintaining the site. `PowerBGInfo.psd1` contains the site ProjectUri and PNG IconUri for the next normal module release. Website deployment does not publish a module.

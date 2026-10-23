@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--page pb-body--platforms{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## Platforms: what PowerBGInfo does on each kind of machine and how to run it there. Statuses, the platform rows
+     and the capability matrix come from data/platforms.json (shared with the home page); the copy, the per-platform
+     steps, the limits and the Apple devices study come from data/platforms-page.json. ## ~}}
+{{~ plat = data.platforms; pp = data["platforms-page"]; labels = plat.statusLabels
+    byid = {}; for p in plat.platforms; byid[p.id] = p; end
+    ## Copy marks commands and parameters with backticks; they render as inline code that never breaks. ##
+    func pbtext; ret $0 | html.escape | regex.replace "`([^`]+)`" "<code>$1</code>"; end ~}}
+<main id="main" class="pb-main pb-plat">
+  <header class="pb-stage pb-tone-dark pb-plat-hero">
+    <div class="pb-stage__inner">
+      <div class="pb-stage__text">
+        <p class="pb-plat-hero__eyebrow">{{ pp.hero.eyebrow }}</p>
+        <h1>{{ pp.hero.title }}</h1>
+        <p class="pb-stage__lede">{{ pp.hero.lede }}</p>
+        <ul class="pb-plat-hero__list" aria-label="Status by platform">
+          {{~ for p in plat.platforms ~}}
+          <li><a href="#run-{{ p.id }}">{{ p.title }}</a> <span class="pb-status pb-status--{{ p.status }}">{{ labels[p.status] }}</span></li>
+          {{~ end ~}}
+        </ul>
+        <div class="pb-stage__actions">
+          <a class="pb-btn pb-btn--glow" href="#matrix">Compare capabilities</a>
+          <a class="pb-btn pb-btn--ghost" href="{{ pp.pr.url }}">Read pull request #91</a>
+        </div>
+      </div>
+      <div class="pb-stage__art">
+        <figure class="pb-plat-term">
+          <figcaption class="pb-plat-term__bar"><span class="pb-plat-term__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>{{ pp.hero.term.title }}</span></figcaption>
+          <pre><code><span class="pb-plat-term__prompt" aria-hidden="true">{{ pp.hero.term.prompt }} </span>{{ pp.hero.term.command | html.escape }}
+{{ for line in pp.hero.term.output }}<span class="pb-plat-term__out">{{ line | html.escape }}</span>
+{{ end }}</code></pre>
+        </figure>
+        <p class="pb-plat-hero__check">{{ pp.hero.check | pbtext }}</p>
+        <p class="pb-plat-hero__caption">{{ pp.hero.term.caption | pbtext }}</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="pb-section pb-plat-cards" aria-labelledby="pb-plat-cards-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-plat-cards-title">{{ pp.cards.title }}</h2>
+        <p class="pb-lede">{{ pp.cards.body }}</p>
+      </div>
+      <ul class="pb-plat-cards__grid">
+        {{~ for p in plat.platforms ~}}
+        <li class="pb-prodcard pb-plat-card pb-plat-card--{{ p.status }}">
+          <span class="pb-status pb-status--{{ p.status }}">{{ labels[p.status] }}</span>
+          <h3><a href="#run-{{ p.id }}">{{ p.title }}</a></h3>
+          <p>{{ p.summary }}</p>
+          <pre class="pb-plat-card__term"><code>{{~ for line in p.install ~}}<span class="pb-plat-card__line"><span class="pb-plat-term__prompt" aria-hidden="true">{{ p.prompt }} </span>{{ line | html.escape }}</span>
+{{ end }}{{ if p.comment != "" }}<span class="pb-plat-card__line pb-plat-term__out"># {{ p.comment }}</span>{{ end }}</code></pre>
+          <a class="pb-link pb-plat-card__more" href="#run-{{ p.id }}">{{ pp.cards.more }}<span class="pb-visually-hidden"> on {{ p.title }}</span></a>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pb-section pb-plat-matrix" id="matrix" aria-labelledby="pb-plat-matrix-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-plat-matrix-title">{{ pp.matrix.title }}</h2>
+        <p class="pb-lede">{{ pp.matrix.body }}</p>
+      </div>
+      <ul class="pb-legend" aria-label="Status key">
+        {{~ for s in ["shipped", "preview", "partial", "idea", "no", "na"] ~}}
+        <li><span class="pb-status pb-status--{{ s }}">{{ labels[s] }}</span></li>
+        {{~ end ~}}
+      </ul>
+      <div class="pb-matrix-wrap" tabindex="0" role="region" aria-labelledby="pb-plat-matrix-title">
+        <table class="pb-matrix">
+          <thead>
+            <tr>
+              <th scope="col">Capability</th>
+              {{~ for c in plat.columns ~}}
+              <th scope="col">{{ c.title }}</th>
+              {{~ end ~}}
+            </tr>
+          </thead>
+          <tbody>
+            {{~ for cap in plat.capabilities ~}}
+            <tr>
+              <th scope="row">{{ cap.title }}</th>
+              {{~ for c in plat.columns; st = cap[c.id]; note = null; if cap.notes; note = cap.notes[c.id]; end ~}}
+              <td><span class="pb-status pb-status--{{ st }}">{{ labels[st] }}</span>{{ if note }}<small>{{ note }}</small>{{ end }}</td>
+              {{~ end ~}}
+            </tr>
+            {{~ end ~}}
+          </tbody>
+        </table>
+      </div>
+      <p class="pb-plat-matrix__foot">{{ pp.matrix.footnote | pbtext }}</p>
+    </div>
+  </section>
+
+  <section class="pb-section pb-plat-run" aria-labelledby="pb-plat-run-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-plat-run-title">{{ pp.howto.title }}</h2>
+        <p class="pb-lede">{{ pp.howto.body }}</p>
+      </div>
+      {{~ for g in pp.guides; p = byid[g.id] ~}}
+      <article class="pb-plat-guide" id="run-{{ g.id }}" aria-labelledby="run-{{ g.id }}-title">
+        <div class="pb-plat-guide__text">
+          <p class="pb-plat-guide__status"><span class="pb-status pb-status--{{ p.status }}">{{ labels[p.status] }}</span></p>
+          <h3 id="run-{{ g.id }}-title">{{ p.title }}</h3>
+          <p class="pb-plat-guide__lede">{{ g.lede | pbtext }}</p>
+          <ol class="pb-plat-guide__steps">
+            {{~ for s in g.steps ~}}
+            <li>{{ s | pbtext }}</li>
+            {{~ end ~}}
+          </ol>
+          {{~ if g.uses ~}}
+          <dl class="pb-plat-guide__uses">
+            {{~ for u in g.uses ~}}
+            <div><dt>{{ u.title }}</dt><dd>{{ u.body }}</dd></div>
+            {{~ end ~}}
+          </dl>
+          {{~ end ~}}
+        </div>
+        <div class="pb-plat-guide__code">
+          <figure class="pb-codeblock" data-lang="{{ g.code.lang }}">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">{{ g.code.label }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-{{ g.code.lang }}">{{ g.code.lines | array.join "\n" | html.escape }}</code></pre>
+          </figure>
+          {{~ if g.cli ~}}
+          <figure class="pb-codeblock" data-lang="{{ g.cli.lang }}">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">{{ g.cli.label }}</span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-{{ g.cli.lang }}">{{ g.cli.lines | array.join "\n" | html.escape }}</code></pre>
+          </figure>
+          <p class="pb-plat-guide__note">{{ g.cli.note }}</p>
+          {{~ end ~}}
+          <h4 class="pb-plat-guide__links-title">{{ g.linksTitle }}</h4>
+          <ul class="pb-plat-guide__links{{ if g.links.size > 4 }} pb-plat-guide__links--grid{{ end }}">
+            {{~ for l in g.links ~}}
+            {{~ if l.planned ~}}
+            <li class="pb-plat-guide__planned"><span class="pb-plat-guide__ltitle">{{ l.title }}</span> <span class="pb-status pb-status--idea">{{ l.note }}</span></li>
+            {{~ else ~}}
+            <li><a href="{{ l.url }}"><span class="pb-plat-guide__ltitle">{{ l.title }}</span><span class="pb-plat-guide__lnote">{{ l.note }}</span></a></li>
+            {{~ end ~}}
+            {{~ end ~}}
+          </ul>
+        </div>
+      </article>
+      {{~ end ~}}
+    </div>
+  </section>
+
+  <section class="pb-section pb-plat-limits" aria-labelledby="pb-plat-limits-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-plat-limits-title">{{ pp.limits.title }}</h2>
+        <p class="pb-lede">{{ pp.limits.body }}</p>
+      </div>
+      <ul class="pb-plat-limits__grid">
+        {{~ for l in pp.limits.items ~}}
+        <li>
+          <h3>{{ l.title }}</h3>
+          <p>{{ l.body | pbtext }}</p>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pb-section pb-plat-study" id="study" aria-labelledby="pb-plat-study-title">
+    <div class="pb-section__inner pb-plat-study__inner">
+      <div class="pb-plat-study__text">
+        <p class="pb-plat-study__tag"><span>{{ pp.study.label }}</span> {{ pp.study.tag }}</p>
+        <h2 id="pb-plat-study-title">{{ pp.study.title }}</h2>
+        <p class="pb-lede">{{ pp.study.lede }}</p>
+        <dl class="pb-plat-study__points">
+          {{~ for pt in pp.study.points ~}}
+          <div><dt>{{ pt.title }}</dt><dd>{{ pt.body }}</dd></div>
+          {{~ end ~}}
+        </dl>
+        <h3 class="pb-plat-study__qtitle">{{ pp.study.questionsTitle }}</h3>
+        <ul class="pb-plat-study__questions">
+          {{~ for q in pp.study.questions ~}}
+          <li>{{ q }}</li>
+          {{~ end ~}}
+        </ul>
+        <p class="pb-plat-study__ask"><a class="pb-link" href="{{ pp.study.askUrl }}">{{ pp.study.ask }}</a></p>
+      </div>
+      <figure class="pb-plat-phone" aria-describedby="pb-plat-phone-cap">
+        <div class="pb-plat-phone__body" aria-hidden="true">
+          <span class="pb-plat-phone__island"></span>
+          <span class="pb-plat-phone__time">{{ pp.study.mock.time }}</span>
+          <span class="pb-plat-phone__card">
+            <span class="pb-plat-phone__tag">{{ pp.study.mock.tag }}</span>
+            <span class="pb-plat-phone__owner">{{ pp.study.mock.owner }}</span>
+            <span class="pb-plat-phone__qr"></span>
+            <span class="pb-plat-phone__help">{{ pp.study.mock.help }}</span>
+          </span>
+        </div>
+        <figcaption id="pb-plat-phone-cap">{{ pp.study.mock.caption }}</figcaption>
+      </figure>
+    </div>
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

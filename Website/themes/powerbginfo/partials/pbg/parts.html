@@ -1,0 +1,16 @@
+  <section class="pb-atlas pbg-parts" id="chartforgex" aria-labelledby="pbg-parts-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-parts-title">{{ pbg.parts.title }}</h2>
+      <p>{{ pbg.parts.body }}</p>
+    </div>
+    <ul class="pbg-parts__grid">
+      {{~ for p in pbg.parts.items ~}}
+      <li class="pbg-part" style="--key: var(--pb-s{{ for.index + 1 }})">
+        <h3><span class="pb-key" aria-hidden="true"></span>{{ p.title }}</h3>
+        <code>{{ p.command }}</code>
+        <p>{{ p.body }}</p>
+        <p class="pbg-part__links">{{~ for l in p.links ~}}<a class="pb-link" href="{{ l.url }}">{{ l.title }}</a>{{~ end ~}}</p>
+      </li>
+      {{~ end ~}}
+    </ul>
+  </section>

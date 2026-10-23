@@ -1,0 +1,87 @@
+  <section class="pb-atlas pbg-caps" id="capabilities" aria-labelledby="pbg-caps-title">
+    <div class="pb-atlas__head">
+      <h2 id="pbg-caps-title">{{ pbg.capabilities.title }}</h2>
+      <p>{{ pbg.capabilities.body }}</p>
+    </div>
+
+    {{~ th = pbg.capabilities.themes ~}}
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ th.title }}</h3>
+          <p>{{ th.body }} <a class="pb-link" href="{{ show.themes.url }}">{{ show.themes.script | string.split "/" | array.last }}</a></p>
+        </div>
+        <figure class="pb-codeblock pbg-oneliner" data-lang="powershell">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ th.snippet | html.escape }}</code></pre>
+        </figure>
+      </div>
+      <ul class="pbg-themes">
+        {{~ for t in show.themes.presets ~}}
+        <li style="--key: var(--pb-s{{ for.index + 1 }})">
+          <figure class="pbg-thumb">
+            {{~ img_renders = t.renders; img_alt = t.name + " theme preset: the theme example wallpaper for APP-WEB-02 with a requests card and a CPU chart."; img_sizes = "(max-width: 620px) 50vw, (max-width: 1180px) 33vw, 390px" ~}}
+            {{ include "powerbginfo/image" }}
+            <figcaption><span class="pb-key" aria-hidden="true"></span>{{ t.name }}</figcaption>
+          </figure>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+
+    {{~ rg = pbg.capabilities.regions ~}}
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ rg.title }}</h3>
+          <p>{{ rg.body }} <a class="pb-link" href="{{ show.regions.url }}">{{ show.regions.script | string.split "/" | array.last }}</a></p>
+        </div>
+        <figure class="pb-codeblock pbg-oneliner" data-lang="powershell">
+          <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ rg.snippet | html.escape }}</code></pre>
+        </figure>
+      </div>
+      <div class="pbg-regions">
+        {{~ for z in show.regions.sizes ~}}
+        {{~ shape = "landscape"; img_sizes = "(max-width: 900px) 100vw, 760px"
+            if z.height > z.width; shape = "portrait"; img_sizes = "(max-width: 900px) 100vw, 420px"; end ~}}
+        <figure class="pb-output pbg-regions__{{ shape }}">
+          <figcaption><span class="pb-output__file">{{ z.width }} x {{ z.height }}</span></figcaption>
+          {{~ img_renders = z.renders; img_alt = "The regions example for FILE-SRV-07 at " + z.width + " x " + z.height + ": a left column with a memory card and a CPU chart, a right column with a shares table and volume bars, and a bottom band with network, a CPU gauge and a list." ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+        {{~ end ~}}
+      </div>
+    </div>
+
+    {{~ wg = pbg.capabilities.widgets ~}}
+    <div class="pbg-block">
+      <div class="pbg-split pbg-split--head">
+        <div class="pbg-split__text">
+          <h3>{{ wg.title }}</h3>
+          <p>{{ wg.body }} <a class="pb-link" href="{{ src.featuresUrl }}">Examples/Features</a></p>
+        </div>
+      </div>
+      <ul class="pbg-widgets">
+        {{~ for i in wg.items ~}}
+        {{~ w = show.widgets[i.id]; c = i.crop
+            img_sizes = "(max-width: 620px) 300vw, (max-width: 1000px) 160vw, 1200px"
+            if i.wide; img_sizes = "(max-width: 1280px) 105vw, 1240px"; end ~}}
+        <li class="pbg-widget{{ if i.wide }} pbg-widget--wide{{ end }}" style="--key: var(--pb-s{{ (for.index % 6) + 1 }})">
+          <div class="pbg-widget__head">
+            <h4><span class="pb-key{{ if for.index >= 6 }} pb-key--hollow{{ end }}" aria-hidden="true"></span>{{ i.title }}</h4>
+            <p>{{ i.body }}</p>
+          </div>
+          <div class="pbg-crop" style="--x: {{ c.x }}; --y: {{ c.y }}; --w: {{ c.w }}; --h: {{ c.h }}">
+            {{~ img_renders = w.renders; img_alt = i.title + " from " + w.file + ", cropped to the widget." ~}}
+            {{ include "powerbginfo/image" }}
+          </div>
+          <figure class="pb-codeblock pbg-oneliner" data-lang="powershell">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file"><a href="{{ w.url }}">{{ w.file }}</a></span><span class="pb-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ i.snippet | html.escape }}</code></pre>
+          </figure>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>

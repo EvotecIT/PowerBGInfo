@@ -1,0 +1,18 @@
+{{~ ## The dark title band of landing pages: the page title and lede beside real ChartForgeX output. Set stage_title,
+     stage_lede, stage_side (HTML under the lede) and stage_art (HTML for the output column) before including it.
+     Set stage_wide = true to set the output full width under the title instead of beside it, for output that needs the
+     room, such as source shown next to its render. ## ~}}
+<header class="pb-stage pb-tone-dark{{ if stage_wide }} pb-stage--wide{{ end }}">
+  <div class="pb-stage__inner">
+    <div class="pb-stage__text">
+      <h1>{{ stage_title }}</h1>
+      {{~ if stage_lede && stage_lede != "" ~}}
+      <p class="pb-stage__lede">{{ stage_lede }}</p>
+      {{~ end ~}}
+      {{~ if stage_side && stage_side != "" ~}}{{ stage_side }}{{~ end ~}}
+    </div>
+    {{~ if stage_art && stage_art != "" ~}}
+    <div class="pb-stage__art">{{ stage_art }}</div>
+    {{~ end ~}}
+  </div>
+</header>

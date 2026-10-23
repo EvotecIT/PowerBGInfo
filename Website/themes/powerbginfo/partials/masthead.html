@@ -1,0 +1,10 @@
+{{~ # The page title band shared by every inner page. Set masthead_title, masthead_lede and masthead_extra (HTML under the lede) before including it. ~}}
+<header class="pb-masthead">
+  <div class="pb-masthead__inner">
+    <h1>{{ masthead_title }}</h1>
+    {{~ if masthead_lede && masthead_lede != "" ~}}
+    <p class="pb-lede">{{ masthead_lede }}</p>
+    {{~ end ~}}
+    {{~ if masthead_extra && masthead_extra != "" ~}}{{ masthead_extra }}{{~ end ~}}
+  </div>
+</header>

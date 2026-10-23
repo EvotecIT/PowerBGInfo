@@ -1,0 +1,9 @@
+  <section class="pb-guide" id="get-started" aria-labelledby="pbg-start-title">
+    <div class="pb-guide__head">
+      <h2 id="pbg-start-title">{{ pbg.start.title }}</h2>
+      <p>{{ pbg.start.body }}</p>
+    </div>
+    {{~ steps_html = content ~}}
+    {{ include "steps" }}
+    <p class="pbg-links">{{~ for l in pbg.start.links ~}}<a class="pb-tag pb-tag--link" href="{{ l.url }}">{{ l.title }}</a>{{~ end ~}}</p>
+  </section>

@@ -1,0 +1,27 @@
+{{~ ## Two marquee rows, each half of the gallery. Each row starts halfway through its share, so the first tiles in view are
+     matrices, maps and indicators rather than the plainest line and area charts. ## ~}}
+{{~ items = data.gallery.items; half = items.size // 2 ~}}
+<section class="pb-wall" aria-labelledby="pb-wall-title">
+  <div class="pb-wall__head">
+    <h2 id="pb-wall-title">{{ data.gallery.items.size }} chart examples. One renderer.</h2>
+    <p>Bars to Sankey, calendars to word clouds, maps to org charts. Every tile is ChartForgeX output with matching light and dark themes and the C# that drew it.</p>
+    <a class="pb-btn pb-btn--ghost" href="/gallery/">Open the gallery</a>
+  </div>
+  {{~ for row in 0..1 ~}}
+  <div class="pb-wall__row{{ if row == 1 }} pb-wall__row--reverse{{ end }}" aria-hidden="true">
+    <div class="pb-wall__track">
+      {{~ for pass in 0..1 ~}}
+      {{~ count = row == 0 ? half : items.size - half; shift = count // 2 ~}}
+      {{~ for k in 0..(count - 1) ~}}
+      {{~ item = items[row * half + ((k + shift) % count)] ~}}
+      <a class="pb-wall__tile" href="/gallery/" tabindex="-1">
+        <img class="pb-only-light" src="{{ item.thumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
+        <img class="pb-only-dark" src="{{ item.darkThumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
+        <span>{{ item.familyLabel }}</span>
+      </a>
+      {{~ end ~}}
+      {{~ end ~}}
+    </div>
+  </div>
+  {{~ end ~}}
+</section>

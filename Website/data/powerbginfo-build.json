@@ -1,0 +1,311 @@
+{
+  "generatedBy": "Website/build/Render-PowerBGInfoSteps.ps1",
+  "source": {
+    "repository": "EvotecIT/PowerBGInfo",
+    "url": "https://github.com/EvotecIT/PowerBGInfo",
+    "commit": "2f6f22d910ba1da63adbebf18147e5085158ed08",
+    "short": "2f6f22d",
+    "version": "2.0.3",
+    "template": "Examples/Run.BGInfo.Template.ps1",
+    "templateUrl": "https://github.com/EvotecIT/PowerBGInfo/blob/2f6f22d910ba1da63adbebf18147e5085158ed08/Examples/Run.BGInfo.Template.ps1"
+  },
+  "steps": [
+    {
+      "id": "01-canvas",
+      "step": 1,
+      "group": null,
+      "section": "build",
+      "title": "Start with an empty canvas",
+      "body": "New-BGInfoBackground sets the size and paints one colour. Without it, PowerBGInfo draws on -FilePath or on the wallpaper that is already set, and never on its own earlier output.",
+      "file": "01-canvas.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Color = '#0B1222'\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 11,
+      "data": null,
+      "changed": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Color = '#0B1222'\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "added": 9,
+      "removed": 0,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/01-canvas.png",
+        "file": "01-canvas.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 41.0
+      }
+    },
+    {
+      "id": "02-gradient",
+      "step": 2,
+      "group": "backdrop",
+      "section": "build",
+      "title": "Gradient",
+      "body": "Two colours blend across the canvas.",
+      "file": "02-gradient.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Gradient = '#0B3B46', '#050A14'\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 11,
+      "data": null,
+      "changed": "Gradient = '#0B3B46', '#050A14'\n",
+      "added": 1,
+      "removed": 1,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/02-gradient.png",
+        "file": "02-gradient.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 65.0
+      }
+    },
+    {
+      "id": "03-glows",
+      "step": 2,
+      "group": "backdrop",
+      "section": "build",
+      "title": "Glows",
+      "body": "Soft radial light at relative positions, so it lands in the same place at every resolution.",
+      "file": "03-glows.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Gradient = '#0B3B46', '#050A14'\n    Glow = @(\n        New-BGInfoBackgroundGlow -X 0.85 -Y 0.1 -Radius 0.6 -Color '#2DD4BF40'\n        New-BGInfoBackgroundGlow -X 0.05 -Y 0.95 -Radius 0.5 -Color '#3B82F633'\n    )\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 15,
+      "data": null,
+      "changed": "Glow = @(\n    New-BGInfoBackgroundGlow -X 0.85 -Y 0.1 -Radius 0.6 -Color '#2DD4BF40'\n    New-BGInfoBackgroundGlow -X 0.05 -Y 0.95 -Radius 0.5 -Color '#3B82F633'\n)\n",
+      "added": 4,
+      "removed": 0,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/03-glows.png",
+        "file": "03-glows.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 172.0
+      }
+    },
+    {
+      "id": "04-pattern",
+      "step": 2,
+      "group": "backdrop",
+      "section": "build",
+      "title": "Pattern",
+      "body": "A grid on top. Dots work the same way.",
+      "file": "04-pattern.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Gradient = '#0B3B46', '#050A14'\n    Glow = @(\n        New-BGInfoBackgroundGlow -X 0.85 -Y 0.1 -Radius 0.6 -Color '#2DD4BF40'\n        New-BGInfoBackgroundGlow -X 0.05 -Y 0.95 -Radius 0.5 -Color '#3B82F633'\n    )\n    Pattern = 'Grid'\n    PatternSpacing = 64\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 17,
+      "data": null,
+      "changed": "Pattern = 'Grid'\nPatternSpacing = 64\n",
+      "added": 2,
+      "removed": 0,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/04-pattern.png",
+        "file": "04-pattern.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 236.0
+      }
+    },
+    {
+      "id": "05-details",
+      "step": 3,
+      "group": null,
+      "section": "build",
+      "title": "Name the machine",
+      "body": "Labels and name and value pairs form the text block in the top-left corner. -BuiltinValue HostName, OSName or IPv4Address read the machine the script runs on; this page uses fixed values so anyone can reproduce the render.",
+      "file": "05-details.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n    Gradient = '#0B3B46', '#050A14'\n    Glow = @(\n        New-BGInfoBackgroundGlow -X 0.85 -Y 0.1 -Radius 0.6 -Color '#2DD4BF40'\n        New-BGInfoBackgroundGlow -X 0.05 -Y 0.95 -Radius 0.5 -Color '#3B82F633'\n    )\n    Pattern = 'Grid'\n    PatternSpacing = 64\n}\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Color '#2DD4BF' -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -Color White -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n} -Color '#94A3B8' -ValueColor White -FontSize 18 -SpaceX 64 -SpaceY 56 `\n    -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 25,
+      "data": null,
+      "changed": "    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Color '#2DD4BF' -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -Color White -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n} -Color '#94A3B8' -ValueColor White -FontSize 18 -SpaceX 64 -SpaceY 56 `\n    -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "added": 8,
+      "removed": 1,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/05-details.png",
+        "file": "05-details.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 258.0
+      }
+    },
+    {
+      "id": "06-theme",
+      "step": 4,
+      "group": null,
+      "section": "build",
+      "title": "Pick a theme preset",
+      "body": "-Theme Aurora gives the text, the panels and the backdrop one look, so the hand-picked colours and the background layers go. Parameters you set still win, and -ThemeMode Light gives the light pair.",
+      "file": "06-theme.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Accent -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 17,
+      "data": null,
+      "changed": "New-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Accent -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -FontSize 64 -Bold\n\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "added": 4,
+      "removed": 12,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/06-theme.png",
+        "file": "06-theme.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 233.0
+      }
+    },
+    {
+      "id": "07-chart",
+      "step": 5,
+      "group": null,
+      "section": "build",
+      "title": "Add the first chart",
+      "body": "A chart panel placed by anchor and offsets, the way PowerBGInfo has always placed them. It picks up the theme's panel, type and series colour without a single colour parameter.",
+      "file": "07-chart.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Accent -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values 12, 18, 25, 22, 30, 27 `\n        -ValueSuffix ' %' -NoHistory `\n        -Anchor TopRight -OffsetX 64 -OffsetY 56 -Width 460 -Height 240\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 21,
+      "data": null,
+      "changed": "New-BGInfoChart -Title 'CPU' -Kind Area -Values 12, 18, 25, 22, 30, 27 `\n    -ValueSuffix ' %' -NoHistory `\n    -Anchor TopRight -OffsetX 64 -OffsetY 56 -Width 460 -Height 240\n",
+      "added": 3,
+      "removed": 0,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/07-chart.png",
+        "file": "07-chart.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 235.0
+      }
+    },
+    {
+      "id": "08-regions",
+      "step": 6,
+      "group": null,
+      "section": "build",
+      "title": "Let regions do the layout",
+      "body": "-Region Right stacks panels in a column and -Region Bottom shares a band. Nobody computes widths, the taskbar stays clear, and the layout follows the screen size; the region renders further down show it at ultrawide and portrait sizes.",
+      "file": "08-regions.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Accent -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values 12, 18, 25, 22, 30, 27 `\n        -ValueSuffix ' %' -NoHistory `\n        -Region Right\n    New-BGInfoMetric -Region Right -Label 'Memory' -Value 86 -Unit '%' `\n        -Caption 'of 32 GB' -Height 150\n\n    New-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar `\n        -Values 63, 93 -Labels 'C: System', 'D: Data' -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -NoHistory\n    New-BGInfoChart -Region Bottom -Title 'Network' -Kind Line `\n        -Values 120, 180, 160, 220, 260, 240 -ValueSuffix ' Mbps' -NoHistory\n    New-BGInfoList -Region Bottom -Title 'This week' -Item @(\n        @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n        @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n    )\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 34,
+      "data": null,
+      "changed": "    -Region Right\nNew-BGInfoMetric -Region Right -Label 'Memory' -Value 86 -Unit '%' `\n    -Caption 'of 32 GB' -Height 150\n\nNew-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar `\n    -Values 63, 93 -Labels 'C: System', 'D: Data' -Maximum 100 `\n    -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n    -NoHistory\nNew-BGInfoChart -Region Bottom -Title 'Network' -Kind Line `\n    -Values 120, 180, 160, 220, 260, 240 -ValueSuffix ' Mbps' -NoHistory\nNew-BGInfoList -Region Bottom -Title 'This week' -Item @(\n    @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n    @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n)\n",
+      "added": 13,
+      "removed": 1,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/08-regions.png",
+        "file": "08-regions.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 245.0
+      }
+    },
+    {
+      "id": "09-thresholds",
+      "step": 7,
+      "group": null,
+      "section": "build",
+      "title": "Add thresholds",
+      "body": "Warning and critical thresholds turn the memory card amber and the D: bar red by themselves, using the theme's status colours.",
+      "file": "09-thresholds.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name 'FINANCE · FLOOR 3' -Accent -FontWeight 700\n    New-BGInfoLabel -Name 'WS-FIN-0042' -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value 'CONTOSO\\anowak'\n    New-BGInfoValue -Name 'Windows' -Value 'Windows 11 Enterprise'\n    New-BGInfoValue -Name 'IP address' -Value '10.20.4.37'\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values 12, 18, 25, 22, 30, 27 `\n        -ValueSuffix ' %' -NoHistory `\n        -Region Right\n    New-BGInfoMetric -Region Right -Label 'Memory' -Value 86 -Unit '%' `\n        -Caption 'of 32 GB' -Height 150 `\n        -WarningThreshold 80 -CriticalThreshold 90\n\n    New-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar `\n        -Values 63, 93 -Labels 'C: System', 'D: Data' -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -NoHistory -WarningThreshold 80 -CriticalThreshold 90\n    New-BGInfoChart -Region Bottom -Title 'Network' -Kind Line `\n        -Values 120, 180, 160, 220, 260, 240 -ValueSuffix ' Mbps' -NoHistory\n    New-BGInfoList -Region Bottom -Title 'This week' -Item @(\n        @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n        @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n    )\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n",
+      "lines": 35,
+      "data": null,
+      "changed": "-Caption 'of 32 GB' -Height 150 `\n-WarningThreshold 80 -CriticalThreshold 90\n\n-NoHistory -WarningThreshold 80 -CriticalThreshold 90\n",
+      "added": 3,
+      "removed": 2,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/09-thresholds.png",
+        "file": "09-thresholds.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 245.0
+      }
+    },
+    {
+      "id": "10-data",
+      "step": 8,
+      "group": null,
+      "section": "build",
+      "title": "Bring your own data",
+      "body": "The values move into one function, Invoke-BGInfoDataSource runs it with a time limit and a fallback, and the drawing code only reads $data. The wallpaper looks the same; now it is yours.",
+      "file": "10-data.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n#region Data: your logic goes here\nfunction Get-MyWallpaperData {\n    # Sample values. Each comment names a live source for the same value.\n    [pscustomobject] @{\n        Team = 'FINANCE · FLOOR 3'\n        Name = 'WS-FIN-0042'                # $env:COMPUTERNAME\n        User = 'CONTOSO\\anowak'             # Win32_ComputerSystem.UserName\n        Windows = 'Windows 11 Enterprise'   # Win32_OperatingSystem.Caption\n        IPv4 = '10.20.4.37'                 # Get-NetIPAddress\n        Cpu = 12, 18, 25, 22, 30, 27        # Get-Counter, or your monitoring\n        Memory = 86                         # Win32_OperatingSystem, % in use\n        # Get-Volume | Where-Object DriveLetter, % used per volume\n        Volumes = [ordered] @{ 'C: System' = 63; 'D: Data' = 93 }\n        Network = 120, 180, 160, 220, 260, 240\n        Tasks = @(\n            @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n            @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n        )\n    }\n}\n\n# What the wallpaper shows when the source fails or runs out of time.\n$fallback = [pscustomobject] @{\n    Team = 'STATUS UNAVAILABLE'; Name = $env:COMPUTERNAME\n    User = 'unknown'; Windows = 'unknown'; IPv4 = 'unknown'\n    Cpu = @(0); Memory = 0; Volumes = @{ 'C:' = 0 }; Network = @(0)\n    Tasks = @(@{ Text = 'Status unknown'; Checked = $false })\n}\n$source = @{\n    Name = 'Wallpaper data'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n#endregion\n\n#region Presentation: reads only $data\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name $data.Team -Accent -FontWeight 700\n    New-BGInfoLabel -Name $data.Name -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value $data.User\n    New-BGInfoValue -Name 'Windows' -Value $data.Windows\n    New-BGInfoValue -Name 'IP address' -Value $data.IPv4\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values $data.Cpu `\n        -ValueSuffix ' %' -NoHistory `\n        -Region Right\n    New-BGInfoMetric -Region Right -Label 'Memory' -Unit '%' `\n        -Value $data.Memory -Caption 'of 32 GB' -Height 150 `\n        -WarningThreshold 80 -CriticalThreshold 90\n\n    New-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar `\n        -Values @($data.Volumes.Values) -Labels @($data.Volumes.Keys) `\n        -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -NoHistory -WarningThreshold 80 -CriticalThreshold 90\n    New-BGInfoChart -Region Bottom -Title 'Network' -Kind Line `\n        -Values $data.Network -ValueSuffix ' Mbps' -NoHistory\n    New-BGInfoList -Region Bottom -Title 'This week' -Item $data.Tasks\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n#endregion\n",
+      "lines": 72,
+      "data": "#region Data: your logic goes here\nfunction Get-MyWallpaperData {\n    # Sample values. Each comment names a live source for the same value.\n    [pscustomobject] @{\n        Team = 'FINANCE · FLOOR 3'\n        Name = 'WS-FIN-0042'                # $env:COMPUTERNAME\n        User = 'CONTOSO\\anowak'             # Win32_ComputerSystem.UserName\n        Windows = 'Windows 11 Enterprise'   # Win32_OperatingSystem.Caption\n        IPv4 = '10.20.4.37'                 # Get-NetIPAddress\n        Cpu = 12, 18, 25, 22, 30, 27        # Get-Counter, or your monitoring\n        Memory = 86                         # Win32_OperatingSystem, % in use\n        # Get-Volume | Where-Object DriveLetter, % used per volume\n        Volumes = [ordered] @{ 'C: System' = 63; 'D: Data' = 93 }\n        Network = 120, 180, 160, 220, 260, 240\n        Tasks = @(\n            @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n            @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n        )\n    }\n}\n\n# What the wallpaper shows when the source fails or runs out of time.\n$fallback = [pscustomobject] @{\n    Team = 'STATUS UNAVAILABLE'; Name = $env:COMPUTERNAME\n    User = 'unknown'; Windows = 'unknown'; IPv4 = 'unknown'\n    Cpu = @(0); Memory = 0; Volumes = @{ 'C:' = 0 }; Network = @(0)\n    Tasks = @(@{ Text = 'Status unknown'; Checked = $false })\n}\n$source = @{\n    Name = 'Wallpaper data'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n#endregion\n",
+      "changed": "#region Data: your logic goes here\nfunction Get-MyWallpaperData {\n    # Sample values. Each comment names a live source for the same value.\n    [pscustomobject] @{\n        Team = 'FINANCE · FLOOR 3'\n        Name = 'WS-FIN-0042'                # $env:COMPUTERNAME\n        User = 'CONTOSO\\anowak'             # Win32_ComputerSystem.UserName\n        Windows = 'Windows 11 Enterprise'   # Win32_OperatingSystem.Caption\n        IPv4 = '10.20.4.37'                 # Get-NetIPAddress\n        Cpu = 12, 18, 25, 22, 30, 27        # Get-Counter, or your monitoring\n        Memory = 86                         # Win32_OperatingSystem, % in use\n        # Get-Volume | Where-Object DriveLetter, % used per volume\n        Volumes = [ordered] @{ 'C: System' = 63; 'D: Data' = 93 }\n        Network = 120, 180, 160, 220, 260, 240\n        Tasks = @(\n            @{ Text = 'Month-end close'; Checked = $false; Value = 'Fri' }\n            @{ Text = 'Backups verified'; Checked = $true; Value = '02:10' }\n        )\n    }\n}\n\n# What the wallpaper shows when the source fails or runs out of time.\n$fallback = [pscustomobject] @{\n    Team = 'STATUS UNAVAILABLE'; Name = $env:COMPUTERNAME\n    User = 'unknown'; Windows = 'unknown'; IPv4 = 'unknown'\n    Cpu = @(0); Memory = 0; Volumes = @{ 'C:' = 0 }; Network = @(0)\n    Tasks = @(@{ Text = 'Status unknown'; Checked = $false })\n}\n$source = @{\n    Name = 'Wallpaper data'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n#endregion\n\n#region Presentation: reads only $data\n\n    New-BGInfoLabel -Name $data.Team -Accent -FontWeight 700\n    New-BGInfoLabel -Name $data.Name -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value $data.User\n    New-BGInfoValue -Name 'Windows' -Value $data.Windows\n    New-BGInfoValue -Name 'IP address' -Value $data.IPv4\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values $data.Cpu `\n\n    New-BGInfoMetric -Region Right -Label 'Memory' -Unit '%' `\n        -Value $data.Memory -Caption 'of 32 GB' -Height 150 `\n\n        -Values @($data.Volumes.Values) -Labels @($data.Volumes.Keys) `\n        -Maximum 100 `\n\n        -Values $data.Network -ValueSuffix ' Mbps' -NoHistory\n    New-BGInfoList -Region Bottom -Title 'This week' -Item $data.Tasks\n\n#endregion\n",
+      "added": 49,
+      "removed": 14,
+      "warnings": "",
+      "render": {
+        "url": "/powerbginfo/build/10-data.png",
+        "file": "10-data.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 245.0
+      }
+    },
+    {
+      "id": "11-timeout",
+      "step": null,
+      "group": null,
+      "section": "logic",
+      "title": "When the source does not answer",
+      "body": "The same script with a source that hangs. Invoke-BGInfoDataSource stops waiting after ten seconds, writes a warning and returns the fallback, and the wallpaper still renders.",
+      "file": "11-timeout.ps1",
+      "script": "param([string] $OutputDirectory = \"$env:TEMP\\PowerBGInfo\")\n\n#region Data: your logic goes here\nfunction Get-MyWallpaperData {\n    # A source that never answers: a CMDB that is down, a share that hangs.\n    Start-Sleep -Seconds 60\n    [pscustomobject] @{ Team = 'too late' }\n}\n\n# What the wallpaper shows when the source fails or runs out of time.\n$fallback = [pscustomobject] @{\n    Team = 'STATUS UNAVAILABLE'; Name = $env:COMPUTERNAME\n    User = 'unknown'; Windows = 'unknown'; IPv4 = 'unknown'\n    Cpu = @(0); Memory = 0; Volumes = @{ 'C:' = 0 }; Network = @(0)\n    Tasks = @(@{ Text = 'Status unknown'; Checked = $false })\n}\n$source = @{\n    Name = 'Wallpaper data'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n#endregion\n\n#region Presentation: reads only $data\n$backdrop = @{\n    Width = 1920\n    Height = 1080\n}\n\nNew-BGInfo -Theme Aurora -ThemeMode Dark -Target File {\n    New-BGInfoBackground @backdrop\n\n    New-BGInfoLabel -Name $data.Team -Accent -FontWeight 700\n    New-BGInfoLabel -Name $data.Name -FontSize 64 -Bold\n    New-BGInfoValue -Name 'User' -Value $data.User\n    New-BGInfoValue -Name 'Windows' -Value $data.Windows\n    New-BGInfoValue -Name 'IP address' -Value $data.IPv4\n    New-BGInfoValue -Name 'Support' -Value 'ext. 4357'\n\n    New-BGInfoChart -Title 'CPU' -Kind Area -Values $data.Cpu `\n        -ValueSuffix ' %' -NoHistory `\n        -Region Right\n    New-BGInfoMetric -Region Right -Label 'Memory' -Unit '%' `\n        -Value $data.Memory -Caption 'of 32 GB' -Height 150 `\n        -WarningThreshold 80 -CriticalThreshold 90\n\n    New-BGInfoChart -Region Bottom -Title 'Volumes used' -Kind ProgressBar `\n        -Values @($data.Volumes.Values) -Labels @($data.Volumes.Keys) `\n        -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -NoHistory -WarningThreshold 80 -CriticalThreshold 90\n    New-BGInfoChart -Region Bottom -Title 'Network' -Kind Line `\n        -Values $data.Network -ValueSuffix ' Mbps' -NoHistory\n    New-BGInfoList -Region Bottom -Title 'This week' -Item $data.Tasks\n} -ConfigurationDirectory $OutputDirectory -OutputFileName 'wallpaper.png'\n#endregion\n",
+      "lines": 58,
+      "data": "#region Data: your logic goes here\nfunction Get-MyWallpaperData {\n    # A source that never answers: a CMDB that is down, a share that hangs.\n    Start-Sleep -Seconds 60\n    [pscustomobject] @{ Team = 'too late' }\n}\n\n# What the wallpaper shows when the source fails or runs out of time.\n$fallback = [pscustomobject] @{\n    Team = 'STATUS UNAVAILABLE'; Name = $env:COMPUTERNAME\n    User = 'unknown'; Windows = 'unknown'; IPv4 = 'unknown'\n    Cpu = @(0); Memory = 0; Volumes = @{ 'C:' = 0 }; Network = @(0)\n    Tasks = @(@{ Text = 'Status unknown'; Checked = $false })\n}\n$source = @{\n    Name = 'Wallpaper data'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n#endregion\n",
+      "changed": "# A source that never answers: a CMDB that is down, a share that hangs.\nStart-Sleep -Seconds 60\n[pscustomobject] @{ Team = 'too late' }\n",
+      "added": 3,
+      "removed": 17,
+      "warnings": "WARNING: Wallpaper data did not finish within 10 s; using the default value.",
+      "render": {
+        "url": "/powerbginfo/build/11-timeout.png",
+        "file": "11-timeout.png",
+        "width": 1920,
+        "height": 1080,
+        "kb": 223.0
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "cim",
+      "label": "CIM and WMI",
+      "body": "Operating system, memory, uptime and fixed disks from Get-CimInstance. Read-only, and no module to install.",
+      "file": "cim.ps1",
+      "code": "function Get-MyWallpaperData {\n    $os = Get-CimInstance -ClassName Win32_OperatingSystem\n    $disks = Get-CimInstance -ClassName Win32_LogicalDisk `\n        -Filter 'DriveType = 3'\n    $uptime = (Get-Date) - $os.LastBootUpTime\n    $free = $os.FreePhysicalMemory / $os.TotalVisibleMemorySize\n\n    $volumes = [ordered] @{}\n    foreach ($disk in $disks) {\n        $used = 1 - $disk.FreeSpace / $disk.Size\n        $volumes[$disk.DeviceID] = [int] (100 * $used)\n    }\n    [pscustomobject] @{\n        Windows = $os.Caption\n        Uptime = '{0} days {1} h' -f $uptime.Days, $uptime.Hours\n        Memory = [int] (100 * (1 - $free))\n        Volumes = $volumes\n    }\n}\n"
+    },
+    {
+      "id": "registry",
+      "label": "Registry",
+      "body": "The Windows release and build, and values your build or asset process wrote under its own key.",
+      "file": "registry.ps1",
+      "code": "function Get-MyWallpaperData {\n    $key = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion'\n    $windows = Get-ItemProperty -Path $key\n    # Your own values, written by the build or the asset process.\n    $asset = Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Contoso\\Asset' `\n        -ErrorAction SilentlyContinue\n\n    [pscustomobject] @{\n        Release = $windows.DisplayVersion\n        Build = '{0}.{1}' -f $windows.CurrentBuild, $windows.UBR\n        Team = if ($asset) { $asset.Department } else { 'unassigned' }\n        AssetTag = if ($asset) { $asset.Tag } else { 'unknown' }\n    }\n}\n"
+    },
+    {
+      "id": "active-directory",
+      "label": "Active Directory",
+      "body": "The signed-in user's department and title, and the computer's description and owner, from the ActiveDirectory module.",
+      "file": "active-directory.ps1",
+      "code": "function Get-MyWallpaperData {\n    # Needs the RSAT ActiveDirectory module and a domain controller in reach.\n    Import-Module ActiveDirectory -ErrorAction Stop\n    $user = Get-ADUser -Identity $env:USERNAME -Properties Department, Title\n    $computer = Get-ADComputer -Identity $env:COMPUTERNAME `\n        -Properties Description, ManagedBy\n\n    [pscustomobject] @{\n        User = $user.Name\n        Team = '{0} · {1}' -f $user.Department, $user.Title\n        Role = $computer.Description\n        Owner = if ($computer.ManagedBy) {\n            (Get-ADObject -Identity $computer.ManagedBy).Name\n        } else { 'not set' }\n    }\n}\n"
+    },
+    {
+      "id": "rest-api",
+      "label": "REST API",
+      "body": "A CMDB or ticketing API through Invoke-RestMethod. The function runs in its own runspace, so it gets the computer name through -ArgumentList.",
+      "file": "rest-api.ps1",
+      "code": "function Get-MyWallpaperData {\n    param([string] $ComputerName)\n    $uri = \"https://cmdb.contoso.com/api/devices/$ComputerName\"\n    $device = Invoke-RestMethod -Uri $uri -UseDefaultCredentials -TimeoutSec 5\n\n    [pscustomobject] @{\n        Owner = $device.owner\n        Team = $device.costCenter\n        Tickets = $device.openTickets\n    }\n}\n\n# The function runs in its own runspace: pass in what it needs.\n$source = @{\n    Name = 'CMDB'\n    TimeoutSeconds = 10\n    ScriptBlock = ${function:Get-MyWallpaperData}\n    ArgumentList = $env:COMPUTERNAME\n    Default = $fallback\n}\n$data = Invoke-BGInfoDataSource @source\n"
+    },
+    {
+      "id": "monitoring-export",
+      "label": "Monitoring export",
+      "body": "JSON and CSV files that a monitoring tool already exports, read with ConvertFrom-Json and Import-Csv.",
+      "file": "monitoring-export.ps1",
+      "code": "function Get-MyWallpaperData {\n    # The monitoring tool exports one JSON and one CSV file per machine.\n    $share = '\\\\mon01.contoso.com\\exports'\n    $status = Get-Content -Path \"$share\\$env:COMPUTERNAME.json\" -Raw |\n        ConvertFrom-Json\n    $checks = Import-Csv -Path \"$share\\$env:COMPUTERNAME-checks.csv\"\n\n    [pscustomobject] @{\n        Cpu = $status.cpu.history         # numbers, oldest first\n        Memory = $status.memory.percent\n        Tasks = foreach ($check in $checks) {\n            @{ Text = $check.Name; Checked = $check.State -eq 'OK' }\n        }\n    }\n}\n"
+    },
+    {
+      "id": "system-info",
+      "label": "Swap a built-in helper",
+      "body": "Get-BGInfoSystemInfo returns plain data. A function of your own that returns the same property names replaces it without touching the layout.",
+      "file": "system-info.ps1",
+      "code": "# The built-in helper: read-only, each probe limited to five seconds.\n$facts = Get-BGInfoSystemInfo\n\n# Your own function with the same property names drops in for it.\nfunction Get-MySystemInfo {\n    $os = Get-CimInstance -ClassName Win32_OperatingSystem\n    $uptime = (Get-Date) - $os.LastBootUpTime\n    $volumes = Get-Volume | Where-Object { $_.DriveLetter -and $_.Size }\n\n    [pscustomobject] @{\n        ComputerName = $env:COMPUTERNAME\n        OSName = $os.Caption\n        UptimeText = '{0} days {1} h' -f $uptime.Days, $uptime.Hours\n        Disks = foreach ($volume in $volumes) {\n            [pscustomobject] @{\n                Drive = \"$($volume.DriveLetter):\"\n                FreeGB = [Math]::Round($volume.SizeRemaining / 1GB, 1)\n                UsedPercent = [Math]::Round(\n                    100 * (1 - $volume.SizeRemaining / $volume.Size), 1)\n            }\n        }\n    }\n}\n$facts = Get-MySystemInfo\n\n# The presentation code reads the same names either way.\n$facts.Disks | New-BGInfoTable -Region Right -Title 'Disks' `\n    -Property Drive, FreeGB, UsedPercent\n"
+    }
+  ]
+}

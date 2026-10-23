@@ -1,0 +1,140 @@
+<#
+    Meeting room PC. The question for someone walking in: which room is
+    this, is it free, and how do I get my laptop on the screen?
+
+    The data block returns plain values; the presentation block only reads
+    them. Comments name the command or source that supplies each value.
+#>
+param(
+    [ValidateSet('Light', 'Dark')]
+    [string] $Theme = 'Dark',
+    [int] $Width = 1920,
+    [int] $Height = 1080,
+    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
+)
+
+Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+
+#region Data: your logic goes here
+function Get-MeetingRoomData {
+    $today = Get-Date '2026-10-16'
+    # Microsoft Graph: GET /users/{room}/calendarView for today, for this
+    # room and its neighbours. One row per booking.
+    function Booking($room, $from, $to) {
+        $kind = if ($room -eq 'Oslo') { 'This room' } else { 'Nearby rooms' }
+        [pscustomobject] @{
+            Lane = $room; Category = $kind
+            Start = $today.Add([timespan] $from)
+            End = $today.Add([timespan] $to)
+        }
+    }
+    [pscustomobject] @{
+        Available = $true
+        Room     = 'Oslo'
+        Where    = 'BUILDING A  ·  FLOOR 4  ·  ROOM 4.12'
+        Seats    = '10 seats · video bar · whiteboard'
+        Book     = 'Outlook or Teams, room "Oslo 4.12"'
+        Now      = $today.AddHours(11).AddMinutes(50)
+        Bookings = @(
+            Booking 'Oslo' '08:30' '09:30'
+            Booking 'Oslo' '10:00' '11:30'
+            Booking 'Oslo' '13:00' '14:00'
+            Booking 'Oslo' '15:00' '16:30'
+            Booking 'Bergen' '09:00' '12:30'
+            Booking 'Bergen' '14:00' '15:00'
+            Booking 'Tromsø' '08:00' '10:00'
+            Booking 'Tromsø' '11:00' '17:00'
+        )
+        # The guest network: WIFI:T:<WPA|nopass>;S:<SSID>;P:<key>;;
+        Wifi     = @{
+            Ssid = 'CONTOSO-GUEST'
+            Text = 'WIFI:T:nopass;S:CONTOSO-GUEST;;'
+        }
+        Steps    = @(
+            'Plug the USB-C cable on the table into your laptop'
+            'Press Share on the touch panel'
+            'No cable? In Teams choose Cast, then Oslo'
+            'The screen turns off 5 minutes after you leave'
+        )
+    }
+}
+
+$fallback = [pscustomobject] @{
+    Available = $false
+    Room = $env:COMPUTERNAME; Where = 'MEETING ROOM'; Seats = 'unavailable'
+    Book = 'Outlook or Teams'; Now = Get-Date; Bookings = @()
+    Wifi = @{ Ssid = 'CONTOSO-GUEST'; Text = 'WIFI:T:nopass;S:CONTOSO-GUEST;;' }
+    Steps = @('Call the service desk on ext. 4357')
+}
+$source = @{
+    Name           = 'Meeting room data'
+    TimeoutSeconds = 10
+    ScriptBlock    = ${function:Get-MeetingRoomData}
+    Default        = $fallback
+}
+$room = Invoke-BGInfoDataSource @source
+#endregion
+
+#region Presentation: reads only $room
+$scale = [Math]::Round($Height / 1080, 2)
+$look = New-BGInfoTheme Orchid -Mode $Theme -Scale $scale
+$here = @($room.Bookings | Where-Object Lane -EQ $room.Room)
+$current = $here |
+    Where-Object { $_.Start -le $room.Now -and $_.End -gt $room.Now }
+$next = $here | Where-Object Start -GT $room.Now | Sort-Object Start |
+    Select-Object -First 1
+$status = if (-not $room.Available) {
+    @{ Text = 'Availability unavailable'; Status = 'Info' }
+} elseif ($current) {
+    @{
+        Text   = "In use until $($current.End.ToString('HH:mm'))"
+        Status = 'Warning'
+    }
+} elseif ($next) {
+    @{ Text = "Free until $($next.Start.ToString('HH:mm'))"; Status = 'Ok' }
+} else {
+    @{ Text = 'Free for the rest of the day'; Status = 'Ok' }
+}
+$after = if (-not $room.Available) { 'unavailable' } elseif ($next) {
+    "$($next.Start.ToString('HH:mm'))–$($next.End.ToString('HH:mm'))"
+} else { 'none today' }
+# This room takes the accent; the rooms next door stay quiet.
+$quiet = $look.Muted.WithAlpha(150).ToHexRgba()
+$day = $room.Bookings | Select-Object *, @{
+    Name = 'Color'
+    Expression = {
+        if ($_.Lane -eq $room.Room) { $look.Accent.ToHex() } else { $quiet }
+    }
+}
+
+New-BGInfo -Theme $look -Target File {
+    New-BGInfoBackground -Width $Width -Height $Height -Pattern None
+
+    New-BGInfoLabel -Name $room.Where -Accent -FontSize ([int](15 * $scale)) `
+        -FontWeight 700
+    New-BGInfoLabel -Name $room.Room -FontSize ([int](150 * $scale)) `
+        -FontWeight 700
+    New-BGInfoLabel -Name "●  $($status.Text)" -Status $status.Status `
+        -FontSize ([int](34 * $scale)) -FontWeight 600
+    New-BGInfoLabel -Name ' ' -FontSize ([int](8 * $scale))
+    New-BGInfoValue -Name 'Next booking' -Value $after
+    New-BGInfoValue -Name 'Room' -Value $room.Seats
+    New-BGInfoValue -Name 'Book it' -Value $room.Book
+    New-BGInfoValue -Name 'Help' -Value 'ext. 4357, or help.contoso.com'
+
+    # Right column: guest Wi-Fi on the phone, then how to share a screen.
+    New-BGInfoQRCode -Region Right -Text $room.Wifi.Text -Title 'Guest Wi-Fi' `
+        -Caption $room.Wifi.Ssid -Note 'scan to join' `
+        -Height ([int](330 * $scale))
+    New-BGInfoList -Region Right -Title 'Share your screen' -Marker Number `
+        -Item $room.Steps
+
+    # Bottom band: today in this room and the two next to it.
+    if (@($day).Count -gt 0) {
+        New-BGInfoTimeline -Region Bottom -Title 'Today' -NoLegend `
+        -Note 'Bergen and Tromsø are next door' `
+            -Item $day -Now $room.Now -Height ([int](280 * $scale))
+    }
+} -ConfigurationDirectory $OutputDirectory `
+    -OutputFileName "meeting-room-$($Theme.ToLower()).png"
+#endregion

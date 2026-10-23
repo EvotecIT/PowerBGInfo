@@ -1,0 +1,160 @@
+/* PowerBGInfo design tokens. The palette comes from the wallpapers PowerBGInfo draws: navy and graphite panels,
+   a cobalt accent for headings and links, and the green, amber and red of a status line. */
+
+:root {
+  /* Surfaces and ink */
+  --pb-page: #eef1f6;
+  --pb-card: #ffffff;
+  --pb-card-alt: #f6f8fb;
+  --pb-sunken: #e6eaf1;
+  --pb-line: #dbe0e8;
+  --pb-line-strong: #c5ccd8;
+  --pb-ink: #111827;
+  --pb-ink-2: #4a5568;
+  --pb-ink-3: #5d6778;
+  --pb-accent: #2453d1;
+  --pb-accent-ink: #ffffff;
+  --pb-accent-soft: #e1e8fb;
+  --pb-signal: #a8650f;
+  --pb-focus: #2453d1;
+  --pb-glow: #5b8cff;
+
+  /* Status, as a wallpaper reports it */
+  --pb-ok: #0f8a59;
+  --pb-ok-soft: #dcf3e8;
+  --pb-warn: #a8650f;
+  --pb-warn-soft: #fbedd6;
+  --pb-crit: #bb3a33;
+  --pb-crit-soft: #f9e0de;
+  --pb-idle: #5d6280;
+  --pb-idle-soft: #e7e8f0;
+
+  /* Stage: the desktop band of landing pages, dark in both themes like a wallpaper. */
+  --pb-stage-bg: #070d18;
+  --pb-stage-panel: #0f1726;
+  --pb-stage-ink: #eef2f9;
+  --pb-stage-ink-2: #a9b4c8;
+  --pb-stage-line: rgba(255, 255, 255, .09);
+
+  /* Panel grid: the faint grid behind PowerBGInfo panels. */
+  --pb-grid: rgba(17, 24, 39, .05);
+  --pb-grid-strong: rgba(17, 24, 39, .085);
+  --pb-tick: #98a1b2;
+  --pb-axis: #b7bfcc;
+  --pb-band: #e6eaf1;
+
+  /* Series keys, in order. Past six keys, legends switch to hollow markers rather than new hues. */
+  --pb-s1: #2f6fe4;
+  --pb-s2: #0f9f75;
+  --pb-s3: #7b61e8;
+  --pb-s4: #c47f08;
+  --pb-s5: #c2456e;
+  --pb-s6: #2a8fb0;
+
+  /* Code: follows the page theme. Dark bands reassign these locally. */
+  --pb-code-bg: #f6f8fb;
+  --pb-code-bar: #ecf0f5;
+  --pb-code-line: #dbe0e8;
+  --pb-code-ink: #1a2130;
+  --pb-code-muted: #657085;
+  --pb-code-key: #2453d1;
+  --pb-code-str: #8f5600;
+  --pb-code-num: #b4450b;
+  --pb-code-type: #0f7a5a;
+  --pb-code-var: #7a3fb8;
+  --pb-code-label: #4a5568;
+  --pb-scroll-thumb: rgba(17, 24, 39, .26);
+  --pb-scroll-thumb-hover: rgba(17, 24, 39, .46);
+
+  /* Shape and depth: hairlines first, one restrained shadow for floating layers only. */
+  --pb-r-sm: 6px;
+  --pb-r: 10px;
+  --pb-r-lg: 14px;
+  --pb-shadow: 0 1px 0 rgba(17, 24, 39, .04), 0 18px 40px -24px rgba(17, 24, 39, .28);
+  --pb-shadow-float: 0 40px 80px -30px rgba(7, 13, 24, .5);
+
+  /* Type: Archivo throughout; headings use its wide cut, like the labels on a status board. */
+  --pb-max: 1240px;
+  --pb-gutter: clamp(16px, 4vw, 40px);
+  --pb-font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pb-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --pb-display-stretch: 118%;
+  --pb-t-display: clamp(2.25rem, 1.4rem + 2.7vw, 3.6rem);
+  --pb-t-h2: clamp(1.5rem, 1.25rem + .8vw, 1.875rem);
+  --pb-t-h3: 1.1875rem;
+  --pb-t-lede: clamp(1.0625rem, 1rem + .3vw, 1.1875rem);
+  --pb-t-body: 1.0625rem;
+  --pb-t-small: .875rem;
+  --pb-t-micro: .75rem;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --pb-page: #080d17;
+  --pb-card: #101828;
+  --pb-card-alt: #0c1321;
+  --pb-sunken: #060a12;
+  --pb-line: #1e2a3f;
+  --pb-line-strong: #2b3a54;
+  --pb-ink: #e9eef7;
+  --pb-ink-2: #a6b0c3;
+  --pb-ink-3: #8590a5;
+  --pb-accent: #7ea3ff;
+  --pb-accent-ink: #071026;
+  --pb-accent-soft: #15244a;
+  --pb-signal: #f2b33d;
+  --pb-focus: #f2b33d;
+  --pb-ok: #3fd49c;
+  --pb-ok-soft: #10302a;
+  --pb-warn: #f2b33d;
+  --pb-warn-soft: #33270f;
+  --pb-crit: #f27b70;
+  --pb-crit-soft: #3a1c1c;
+  --pb-idle: #a9aecb;
+  --pb-idle-soft: #222840;
+  --pb-grid: rgba(233, 238, 247, .045);
+  --pb-grid-strong: rgba(233, 238, 247, .08);
+  --pb-tick: #5a6478;
+  --pb-axis: #34405a;
+  --pb-band: #0c1321;
+  --pb-s1: #5b8cff;
+  --pb-s2: #2fd39a;
+  --pb-s3: #9a86f2;
+  --pb-s4: #f2b33d;
+  --pb-s5: #e5708f;
+  --pb-s6: #4fc0e0;
+  --pb-shadow: 0 1px 0 rgba(0, 0, 0, .4), 0 22px 48px -26px rgba(0, 0, 0, .85);
+  --pb-shadow-float: 0 40px 80px -30px rgba(0, 0, 0, .9);
+  --pb-scroll-thumb: rgba(233, 238, 247, .24);
+  --pb-scroll-thumb-hover: rgba(233, 238, 247, .44);
+  color-scheme: dark;
+}
+
+/* Dark code values: the dark theme, plus the bands that stay dark in both themes. */
+:root[data-theme="dark"],
+.pb-tone-dark {
+  --pb-code-bg: #0a101c;
+  --pb-code-bar: #0f1726;
+  --pb-code-line: #1f2b40;
+  --pb-code-ink: #e3e9f3;
+  --pb-code-muted: #8590a5;
+  --pb-code-key: #7ea3ff;
+  --pb-code-str: #f2b33d;
+  --pb-code-num: #f7924f;
+  --pb-code-type: #2fd39a;
+  --pb-code-var: #c4b5fd;
+  --pb-code-label: #a6b0c3;
+}
+.pb-tone-dark {
+  --pb-s1: #5b8cff;
+  --pb-s2: #2fd39a;
+  --pb-s3: #9a86f2;
+  --pb-s4: #f2b33d;
+  --pb-s5: #e5708f;
+  --pb-s6: #4fc0e0;
+  --pb-ok: #3fd49c;
+  --pb-warn: #f2b33d;
+  --pb-crit: #f27b70;
+  --pb-scroll-thumb: rgba(233, 238, 247, .24);
+  --pb-scroll-thumb-hover: rgba(233, 238, 247, .44);
+}

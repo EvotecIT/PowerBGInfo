@@ -1,0 +1,779 @@
+/* PowerBGInfo site: shell, type and the shared components every page uses. Forked from the ChartForgeX site theme.
+   Tokens live in tokens.css. Page-specific layout lives in docs.css, gallery.css, home.css, pages.css,
+   powerbginfo.css and products.css.
+
+   The structural idea is the desktop the products draw on: dark wallpaper bands with a faint panel grid, panel
+   rules, legend keys for categories and status chips for what works where. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 88px;
+  background: var(--pb-page);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--pb-page);
+  color: var(--pb-ink);
+  font-family: var(--pb-font);
+  font-size: var(--pb-t-body);
+  line-height: 1.6;
+  font-stretch: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga";
+  overflow-wrap: break-word;
+}
+
+img, svg { max-width: 100%; }
+img { height: auto; }
+
+a { color: var(--pb-accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--pb-focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--pb-ink);
+  font-weight: 740;
+  font-stretch: 112%;
+  letter-spacing: -.012em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+p { margin: 0; text-wrap: pretty; }
+
+code, pre, kbd, samp { font-family: var(--pb-mono); font-variant-ligatures: none; }
+
+.pb-muted { color: var(--pb-ink-3); font-size: .9375rem; }
+.pb-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.pb-link {
+  color: var(--pb-accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--pb-accent) 40%, transparent);
+}
+.pb-link:hover { border-bottom-color: var(--pb-accent); }
+
+/* Theme-dependent images: the page theme decides which render shows. */
+.pb-only-dark { display: none !important; }
+:root[data-theme="dark"] .pb-only-dark { display: block !important; }
+:root[data-theme="dark"] .pb-only-light { display: none !important; }
+
+.pb-skip {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 40;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--pb-ink);
+  color: var(--pb-page);
+}
+.pb-skip:focus { top: 12px; }
+
+/* Shared width */
+.pb-header__inner,
+.pb-main > .pb-section,
+.pb-masthead__inner,
+.pb-cta,
+.pb-page,
+.pb-footer__inner,
+.pb-footer__family {
+  width: min(100% - 2 * var(--pb-gutter), var(--pb-max));
+  margin-inline: auto;
+}
+
+/* Header */
+.pb-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--pb-page) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--pb-line);
+}
+
+.pb-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+}
+
+.pb-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pb-ink);
+  font-weight: 760;
+  font-stretch: 116%;
+  font-size: 1.125rem;
+  letter-spacing: -.01em;
+  text-decoration: none;
+}
+.pb-logo { flex: none; display: block; }
+
+.pb-icon-link,
+.pb-theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pb-ink-2);
+  cursor: pointer;
+}
+.pb-icon-link:hover,
+.pb-theme-toggle:hover { color: var(--pb-ink); border-color: var(--pb-line); background: var(--pb-card); }
+.pb-theme-toggle__moon { display: none; }
+:root[data-theme="dark"] .pb-theme-toggle__moon { display: block; }
+:root[data-theme="dark"] .pb-theme-toggle__sun { display: none; }
+
+/* Buttons */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid var(--pb-accent);
+  border-radius: 10px;
+  background: var(--pb-accent);
+  color: var(--pb-accent-ink);
+  font: inherit;
+  font-size: .9688rem;
+  font-weight: 640;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.pb-btn:hover { background: color-mix(in srgb, var(--pb-accent) 86%, var(--pb-ink)); }
+.pb-btn--quiet { background: transparent; color: var(--pb-ink); border-color: var(--pb-line-strong); }
+.pb-btn--quiet:hover { background: var(--pb-card); border-color: var(--pb-ink-3); }
+.pb-btn--small { min-height: 38px; padding: 0 14px; font-size: .875rem; }
+
+.pb-copy {
+  flex: none;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--pb-line-strong);
+  border-radius: 8px;
+  background: var(--pb-card);
+  color: var(--pb-ink-2);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pb-copy:hover { color: var(--pb-ink); border-color: var(--pb-ink-3); }
+.pb-copy[data-copied] { color: var(--pb-accent); border-color: var(--pb-accent); }
+
+/* Install command */
+.pb-install {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--pb-line);
+  border-radius: 12px;
+  background: var(--pb-card);
+}
+.pb-install code {
+  flex: 1;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  white-space: nowrap;
+  font-size: .9375rem;
+  color: var(--pb-ink);
+}
+.pb-install__prompt { color: var(--pb-signal); font-weight: 700; }
+
+/* Masthead: the page title band. A faint plot grid aligned to the content edge, the title set like a chart title,
+   and an axis rule with major and minor ticks along the bottom edge. */
+.pb-masthead {
+  --pb-grid-x: max(var(--pb-gutter), calc((100% - var(--pb-max)) / 2));
+  position: relative;
+  border-bottom: 1px solid var(--pb-axis);
+  background:
+    repeating-linear-gradient(to right, var(--pb-grid) 0 1px, transparent 1px 64px) var(--pb-grid-x) 0 / auto,
+    repeating-linear-gradient(to top, var(--pb-grid) 0 1px, transparent 1px 32px) 0 100% / auto,
+    var(--pb-page);
+}
+.pb-masthead::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 9px;
+  background:
+    linear-gradient(var(--pb-accent), var(--pb-accent)) var(--pb-grid-x) 0 / 2px 9px no-repeat,
+    repeating-linear-gradient(to right, var(--pb-tick) 0 1px, transparent 1px 64px) var(--pb-grid-x) 0 / 100% 6px no-repeat,
+    repeating-linear-gradient(to right, var(--pb-axis) 0 1px, transparent 1px 16px) var(--pb-grid-x) 0 / 100% 3px no-repeat;
+  pointer-events: none;
+}
+.pb-masthead__inner { padding-block: clamp(40px, 6vw, 76px) clamp(28px, 4vw, 44px); }
+.pb-masthead h1 {
+  max-width: 22ch;
+  font-size: var(--pb-t-display);
+  font-weight: 780;
+  font-stretch: 116%;
+  letter-spacing: -.03em;
+  line-height: 1.02;
+}
+.pb-masthead .pb-lede { margin-top: 16px; }
+.pb-key {
+  /* A legend swatch. Past six keys the marker turns hollow instead of taking a new hue. */
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--key, var(--pb-accent));
+}
+.pb-key--hollow { background: transparent; box-shadow: inset 0 0 0 2px var(--key, var(--pb-accent)); }
+
+.pb-lede { color: var(--pb-ink-2); font-size: var(--pb-t-lede); line-height: 1.55; max-width: 62ch; }
+
+/* Counts in legends, tabs and headings: tabular figures in the mono face. */
+.pb-count { color: var(--pb-ink-3); font-family: var(--pb-mono); font-size: var(--pb-t-micro); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Stage: the title band of landing pages. It stays dark in both themes, like the home hero, and sets the page title
+   beside real ChartForgeX output on the same plot grid and axis as the masthead. */
+.pb-stage {
+  --pb-ink: var(--pb-stage-ink);
+  --pb-ink-2: var(--pb-stage-ink-2);
+  --pb-ink-3: #8b97ad;
+  --pb-line: var(--pb-stage-line);
+  --pb-line-strong: rgba(255, 255, 255, .18);
+  --pb-card: var(--pb-stage-panel);
+  --pb-card-alt: #0b1220;
+  --pb-page: var(--pb-stage-bg);
+  --pb-accent: #7ea3ff;
+  --pb-focus: #f2b33d;
+  --pb-grid: rgba(255, 255, 255, .045);
+  --pb-axis: rgba(255, 255, 255, .24);
+  --pb-tick: rgba(255, 255, 255, .34);
+  --pb-grid-x: max(var(--pb-gutter), calc((100% - var(--pb-max)) / 2));
+  position: relative;
+  border-bottom: 1px solid var(--pb-axis);
+  background:
+    repeating-linear-gradient(to right, var(--pb-grid) 0 1px, transparent 1px 64px) var(--pb-grid-x) 0 / auto,
+    repeating-linear-gradient(to top, var(--pb-grid) 0 1px, transparent 1px 32px) 0 100% / auto,
+    var(--pb-stage-bg);
+  color: var(--pb-ink);
+  color-scheme: dark;
+}
+.pb-stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 9px;
+  background:
+    linear-gradient(var(--pb-glow), var(--pb-glow)) var(--pb-grid-x) 0 / 2px 9px no-repeat,
+    repeating-linear-gradient(to right, var(--pb-tick) 0 1px, transparent 1px 64px) var(--pb-grid-x) 0 / 100% 6px no-repeat,
+    repeating-linear-gradient(to right, var(--pb-axis) 0 1px, transparent 1px 16px) var(--pb-grid-x) 0 / 100% 3px no-repeat;
+  pointer-events: none;
+}
+.pb-stage__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+  width: min(100% - 2 * var(--pb-gutter), var(--pb-max));
+  margin-inline: auto;
+  padding-block: clamp(44px, 6vw, 88px);
+}
+.pb-stage__inner:not(:has(.pb-stage__art)) { grid-template-columns: minmax(0, 1fr); }
+.pb-stage h1 {
+  max-width: 14ch;
+  overflow-wrap: normal;
+  color: var(--pb-ink);
+  font-size: clamp(2.25rem, 1rem + 2.7vw, 3.875rem);
+  font-weight: 800;
+  font-stretch: 120%;
+  line-height: .96;
+  letter-spacing: -.035em;
+}
+.pb-stage__lede { max-width: 46ch; margin-top: 20px; color: var(--pb-ink-2); font-size: var(--pb-t-lede); line-height: 1.55; }
+.pb-stage__stats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0 20px; max-width: 480px; margin: 28px 0 0; padding: 0; }
+.pb-stage__stats > div { display: flex; flex-direction: column; min-width: 0; padding: 12px 8px 0 0; border-top: 1px solid var(--pb-axis); }
+.pb-stage__stats > div:first-child { border-top-color: var(--pb-glow); }
+.pb-stage__stats dt { color: var(--pb-ink-3); font-size: .8125rem; }
+.pb-stage__stats dd { margin: auto 0 0; padding-top: 2px; color: var(--pb-ink); font-family: var(--pb-mono); font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.pb-stage__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.pb-stage__install { margin-top: 28px; max-width: 520px; background: var(--pb-card); }
+.pb-stage__install + .pb-stage__actions { margin-top: 16px; }
+.pb-stage__art { min-width: 0; }
+
+/* Wide stage: the title row on top (title and lede left, figures and actions right), the output full width below. */
+.pb-stage--wide .pb-stage__inner { grid-template-columns: minmax(0, 1fr); gap: clamp(32px, 4vw, 52px); align-items: start; }
+.pb-stage--wide .pb-stage__text {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  grid-template-rows: auto auto;
+  align-items: end;
+  gap: 0 clamp(32px, 5vw, 72px);
+}
+.pb-stage--wide h1 { grid-column: 1; grid-row: 1; max-width: 18ch; }
+.pb-stage--wide .pb-stage__lede { grid-column: 1; grid-row: 2; align-self: start; }
+.pb-stage--wide .pb-stage__stats { grid-column: 2; grid-row: 1; margin-top: 0; }
+.pb-stage--wide .pb-stage__actions { grid-column: 2; grid-row: 2; align-self: start; }
+
+/* Pair: source beside the output it renders. Nothing overlaps; the source column is as wide as its longest line
+   (up to a cap) and the output takes the rest, so both read in full. Below 1180px, where the output would shrink
+   under its natural size, the output comes first at full width and the source follows. */
+.pb-pair { display: grid; grid-template-columns: fit-content(500px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.pb-pair__source pre { font-size: .75rem; }
+.pb-pair__output { display: flex; flex-direction: column; }
+.pb-pair__output img { flex: 1; min-height: 0; object-fit: contain; }
+
+.pb-btn--glow {
+  background: var(--pb-glow);
+  border-color: var(--pb-glow);
+  color: #050a14;
+  box-shadow: 0 0 0 1px rgba(91, 140, 255, .35), 0 12px 40px -12px rgba(91, 140, 255, .65);
+}
+.pb-btn--glow:hover { background: #7ea3ff; }
+.pb-btn--ghost { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .22); color: #fff; }
+.pb-btn--ghost:hover { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .4); }
+
+/* Output window: a rendered file framed like the home hero's window, with its name and size in the bar. */
+.pb-output {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--pb-r-lg);
+  background: #101318;
+  box-shadow: 0 40px 100px -40px rgba(57, 135, 229, .45), 0 30px 70px -40px rgba(0, 0, 0, .9);
+}
+.pb-output > figcaption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  background: #0c0f13;
+  color: #8d96a2;
+  font-family: var(--pb-mono);
+  font-size: .75rem;
+}
+.pb-output > figcaption::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--pb-glow); }
+.pb-output__file { flex: 1; min-width: 0; overflow: hidden; color: #c8d0da; text-overflow: ellipsis; white-space: nowrap; }
+.pb-output img { display: block; width: 100%; height: auto; }
+/* Code block: one component for docs, examples, the gallery viewer, Mermaid, the playground, PowerShell and the API
+   references. The block is the frame: an opaque caption bar, then the code in its own scroll area, so code scrolled in
+   either direction never passes under the caption and the scrollbars start below it. A plain Markdown block reserves
+   the same height for the bar (38px bar + 14px padding = 52px), so enhancing it never shifts layout. A block that
+   should stop growing sets --pb-code-max (or a height); the code scrolls inside it. */
+.pb-codeblock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--pb-code-line);
+  border-radius: var(--pb-r);
+  background: var(--pb-code-bg);
+  color: var(--pb-code-ink);
+}
+.pb-codeblock__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 6px 0 14px;
+  border-bottom: 1px solid var(--pb-code-line);
+  border-radius: calc(var(--pb-r) - 1px) calc(var(--pb-r) - 1px) 0 0;
+  background: var(--pb-code-bar);
+  color: var(--pb-code-label);
+  font-family: var(--pb-mono);
+  font-size: var(--pb-t-micro);
+  font-weight: 500;
+}
+.pb-codeblock__lang { display: inline-flex; flex: none; align-items: center; gap: 8px; white-space: nowrap; }
+.pb-codeblock__lang::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--pb-lang, var(--pb-code-muted));
+}
+.pb-codeblock__file { overflow: hidden; color: var(--pb-code-muted); text-overflow: ellipsis; white-space: nowrap; }
+.pb-codeblock__actions { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.pb-codeblock__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 27px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pb-code-label);
+  font: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pb-codeblock__btn:hover { border-color: var(--pb-code-line); background: var(--pb-code-bg); color: var(--pb-code-ink); }
+.pb-codeblock__btn svg { flex: none; }
+.pb-codeblock__btn[data-copied] { color: var(--pb-code-key); }
+.pb-codeblock[data-lang="csharp"] { --pb-lang: var(--pb-s3); }
+.pb-codeblock[data-lang="powershell"] { --pb-lang: var(--pb-s1); }
+.pb-codeblock[data-lang="mermaid"] { --pb-lang: var(--pb-s4); }
+.pb-codeblock[data-lang="bash"], .pb-codeblock[data-lang="shell"] { --pb-lang: var(--pb-s5); }
+.pb-codeblock[data-lang="markdown"] { --pb-lang: var(--pb-s2); }
+.pb-codeblock[data-lang="json"], .pb-codeblock[data-lang="xml"], .pb-codeblock[data-lang="markup"] { --pb-lang: var(--pb-s6); }
+
+.pb-codeblock pre,
+.pb-prose pre {
+  margin: 0;
+  overflow: auto;
+  padding: 52px 20px 18px;
+  border: 1px solid var(--pb-code-line);
+  border-radius: var(--pb-r);
+  background:
+    linear-gradient(var(--pb-code-line), var(--pb-code-line)) 0 37px / 100% 1px no-repeat,
+    linear-gradient(var(--pb-code-bar), var(--pb-code-bar)) 0 0 / 100% 37px no-repeat,
+    var(--pb-code-bg);
+  color: var(--pb-code-ink);
+  font-size: .8125rem;
+  line-height: 1.7;
+  tab-size: 4;
+  text-shadow: none;
+}
+.pb-codeblock > pre {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: var(--pb-code-max, none);
+  padding-top: 14px;
+  border: 0;
+  border-radius: 0 0 calc(var(--pb-r) - 1px) calc(var(--pb-r) - 1px);
+  background: none;
+}
+.pb-codeblock pre code,
+.pb-prose pre code { display: block; width: max-content; min-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; white-space: pre; }
+
+/* A bare code surface without the caption bar, for code shown as artwork inside a frame. */
+.pb-code {
+  margin: 0;
+  overflow: auto;
+  padding: 18px 20px;
+  border-radius: var(--pb-r);
+  background: var(--pb-code-bg);
+  color: var(--pb-code-ink);
+  font-size: .8125rem;
+  line-height: 1.65;
+  tab-size: 4;
+}
+.pb-code code { font-family: inherit; }
+
+/* Syntax colours for Prism tokens and the hand-marked spans in generated artwork. */
+.token.comment, .token.prolog, .token.doctype, .token.cdata, .pb-code .c { color: var(--pb-code-muted); font-style: normal; }
+.token.punctuation, .token.operator { color: var(--pb-code-ink); }
+.token.keyword, .token.boolean, .token.important, .token.atrule, .token.selector, .token.directive, .pb-code .k { color: var(--pb-code-key); }
+.token.string, .token.char, .token.attr-value, .token.regex, .token.url, .pb-code .s { color: var(--pb-code-str); }
+.token.number, .token.constant, .token.symbol, .pb-code .n { color: var(--pb-code-num); }
+.token.class-name, .token.function, .token.builtin, .token.tag, .token.property, .token.attr-name, .token.namespace, .pb-code .t { color: var(--pb-code-type); }
+.token.variable, .token.parameter, .token.interpolation { color: var(--pb-code-var); }
+.token.namespace { opacity: .85; }
+.token.region, .token.preprocessor { color: var(--pb-code-muted); }
+
+/* Tabs and segmented controls, set like a chart legend: each option carries a series key, a label and an optional
+   tabular count. The selected option is lifted onto the card surface and underlined by its own key colour; the only
+   motion is that key rule drawing in when the selection changes. One component serves tabs (aria-selected), toggles
+   (aria-pressed) and filters. .pb-seg--legend drops the tray for long, wrapping legends. */
+.pb-seg,
+.pb-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--pb-line);
+  border-radius: 12px;
+  background: var(--pb-card-alt);
+}
+.pb-seg > button,
+.pb-segment > button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--pb-ink-2);
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 620;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pb-seg > button:hover,
+.pb-segment > button:hover { color: var(--pb-ink); background: color-mix(in srgb, var(--pb-card) 70%, transparent); }
+.pb-seg > button::after,
+.pb-segment > button::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--key, var(--pb-accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .24s cubic-bezier(.2, .7, .2, 1);
+}
+.pb-seg > button:is([aria-pressed="true"], [aria-selected="true"]),
+.pb-segment > button:is([aria-pressed="true"], [aria-selected="true"]) {
+  border-color: var(--pb-line-strong);
+  background: var(--pb-card);
+  color: var(--pb-ink);
+  box-shadow: 0 1px 2px rgba(22, 24, 28, .1);
+}
+.pb-seg > button:is([aria-pressed="true"], [aria-selected="true"])::after,
+.pb-segment > button:is([aria-pressed="true"], [aria-selected="true"])::after { transform: scaleX(1); }
+.pb-seg .pb-key { width: 10px; height: 10px; }
+.pb-seg .pb-count { margin-left: 2px; }
+.pb-seg--legend { gap: 6px; padding: 0; border: 0; background: none; }
+.pb-seg--legend > button { border-color: var(--pb-line); background: var(--pb-card); }
+.pb-seg--legend > button:hover { border-color: var(--pb-ink-3); background: var(--pb-card); }
+.pb-seg--legend > button:is([aria-pressed="true"], [aria-selected="true"]) { border-color: var(--pb-ink); box-shadow: inset 0 0 0 1px var(--pb-ink); }
+.pb-key--light { background: #f2f3f4; box-shadow: inset 0 0 0 1px #9ca1a9; }
+.pb-key--dark { background: #0c0d10; box-shadow: inset 0 0 0 1px #5d636c; }
+/* Sections */
+.pb-main { display: block; }
+.pb-section { padding-block: clamp(56px, 8vw, 104px); }
+.pb-section + .pb-section { border-top: 1px solid var(--pb-line); }
+.pb-section__head { max-width: 720px; margin-bottom: clamp(28px, 4vw, 44px); }
+.pb-section__head h1,
+.pb-section__head h2 { font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.625rem); }
+.pb-section__head p { margin-top: 14px; color: var(--pb-ink-2); font-size: var(--pb-t-body); max-width: 64ch; }
+.pb-section__more { margin-top: 32px; }
+
+/* Plain pages (404, generic content) */
+.pb-page { padding-block: clamp(40px, 6vw, 72px); }
+
+/* Prose: a measured column with real rhythm. */
+.pb-prose { max-width: 72ch; color: var(--pb-ink-2); }
+:is(.pb-prose, .pb-prose > article) > * + * { margin-top: 1.05em; }
+:is(.pb-prose, .pb-prose > article) > :first-child { margin-top: 0; }
+.pb-prose h2 {
+  position: relative;
+  margin-top: 2.4em;
+  padding-top: .9em;
+  border-top: 1px solid var(--pb-line);
+  font-size: var(--pb-t-h2);
+  font-weight: 740;
+  letter-spacing: -.02em;
+}
+.pb-prose h2::before {
+  /* A single major tick where the section rule starts. */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 2px;
+  height: 7px;
+  background: var(--pb-accent);
+}
+.pb-prose h3 { margin-top: 1.9em; font-size: var(--pb-t-h3); font-weight: 700; font-stretch: 106%; }
+.pb-prose h4 { margin-top: 1.6em; font-size: 1rem; font-weight: 700; font-stretch: 100%; }
+.pb-prose h2 + *, .pb-prose h3 + *, .pb-prose h4 + * { margin-top: .6em; }
+.pb-prose strong { color: var(--pb-ink); font-weight: 650; }
+.pb-prose a { font-weight: 560; }
+.pb-prose ul, .pb-prose ol { padding-left: 1.4em; }
+.pb-prose li + li { margin-top: .4em; }
+.pb-prose li > ul, .pb-prose li > ol { margin-top: .4em; }
+.pb-prose ul > li::marker { color: var(--pb-tick); }
+.pb-prose ol > li::marker { color: var(--pb-ink-3); font-family: var(--pb-mono); font-size: .85em; }
+.pb-prose hr { height: 1px; margin-block: 2.4em; border: 0; background: var(--pb-line); }
+.pb-prose img { border: 1px solid var(--pb-line); border-radius: var(--pb-r); background: var(--pb-card); }
+.pb-prose :not(pre) > code {
+  padding: .12em .38em;
+  border: 1px solid var(--pb-line);
+  border-radius: 5px;
+  background: var(--pb-card-alt);
+  color: var(--pb-ink);
+  font-size: .86em;
+  overflow-wrap: anywhere;
+}
+:is(.pb-prose, .pb-prose > article) > :is(pre, .pb-codeblock, .pb-tablewrap) { margin-block: 1.5em; }
+.pb-prose blockquote {
+  /* Callout: a ruled note keyed with the signal colour. */
+  margin-inline: 0;
+  padding: 14px 18px 14px 20px;
+  border: 1px solid var(--pb-line);
+  border-left: 3px solid var(--pb-signal);
+  border-radius: 0 var(--pb-r) var(--pb-r) 0;
+  background: var(--pb-card);
+  color: var(--pb-ink-2);
+}
+.pb-prose blockquote > * + * { margin-top: .6em; }
+
+/* Data tables: booktabs rules, tabular figures and no zebra. */
+.pb-tablewrap { overflow-x: auto; max-width: 100%; }
+.pb-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 2px solid var(--pb-ink);
+  border-bottom: 2px solid var(--pb-ink);
+  font-size: .9375rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.pb-prose th, .pb-prose td { padding: 9px 14px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
+.pb-prose th:first-child, .pb-prose td:first-child { padding-left: 0; }
+.pb-prose thead th {
+  padding-top: 12px;
+  border-bottom: 1px solid var(--pb-ink-3);
+  color: var(--pb-ink-3);
+  font-size: .8125rem;
+  font-weight: 640;
+  font-stretch: 92%;
+  vertical-align: bottom;
+}
+.pb-prose tbody tr:last-child > * { border-bottom: 0; }
+.pb-prose td:first-child { color: var(--pb-ink); font-weight: 600; }
+/* The first column names the row: keep it wide enough to read in a word or two, not one word per line. */
+.pb-prose th:first-child, .pb-prose td:first-child { min-width: min(11em, 34vw); }
+/* Long identifiers (registry paths, CSP nodes, file paths) wrap at the column edge rather than forcing the table
+   wider than the page or being cut off. Short ones stay on one line because they fit. */
+.pb-prose td code { white-space: normal; overflow-wrap: anywhere; }
+.pb-tablewrap { overscroll-behavior-x: contain; }
+.pb-tablewrap:focus-visible { outline: 2px solid var(--pb-focus); outline-offset: 2px; }
+.pb-tablewrap > table { min-width: 34rem; }
+
+/* Not found: an empty chart, plotted on the same grid as everything else. */
+.pb-empty { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
+.pb-empty__chart { margin: 0; padding: clamp(12px, 2vw, 24px); border: 1px solid var(--pb-line); border-radius: var(--pb-r-lg); background: var(--pb-card); }
+.pb-empty__chart { position: relative; }
+.pb-empty__chart img { display: block; width: 100%; height: auto; }
+.pb-empty__note {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  padding: 6px 12px;
+  border: 1px dashed var(--pb-line-strong);
+  border-radius: 8px;
+  background: var(--pb-card);
+  color: var(--pb-ink-2);
+  font-size: .9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* Footer */
+.pb-footer {
+  position: relative;
+  margin-top: clamp(48px, 7vw, 96px);
+  border-top: 1px solid var(--pb-line);
+  background: var(--pb-card-alt);
+  font-size: .9375rem;
+}
+.pb-footer__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  padding-block: 48px 32px;
+}
+.pb-footer__brand p { margin-top: 12px; max-width: 36ch; color: var(--pb-ink-2); }
+.pb-footer__col h2 { margin-bottom: 12px; font-size: .875rem; font-stretch: 100%; color: var(--pb-ink); }
+.pb-footer__col a { display: block; padding-block: 4px; color: var(--pb-ink-2); text-decoration: none; }
+.pb-footer__col a:hover { color: var(--pb-ink); }
+.pb-footer__family {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding-block: 20px 32px;
+  border-top: 1px solid var(--pb-line);
+  color: var(--pb-ink-3);
+}
+.pb-footer__family a { color: var(--pb-ink-2); text-decoration: none; font-weight: 560; }
+.pb-footer__family a:hover { color: var(--pb-accent); }
+
+/* Scrollbars: thin, a muted thumb on a transparent track. Browsers with scrollbar-color use it; the webkit rules
+   are the fallback and brighten the thumb on hover. Code surfaces take their thumb from the code ink. */
+.pb-codeblock pre, .pb-prose pre, .pb-code, pre[class*="language-"] {
+  --pb-scroll-thumb: color-mix(in srgb, var(--pb-code-ink) 26%, transparent);
+  --pb-scroll-thumb-hover: color-mix(in srgb, var(--pb-code-ink) 46%, transparent);
+}
+* { scrollbar-width: thin; scrollbar-color: var(--pb-scroll-thumb) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: var(--pb-scroll-thumb) padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--pb-scroll-thumb-hover) padding-box; }
+
+/* Compact layouts */
+@media (max-width: 960px) {
+  .pb-footer__inner { grid-template-columns: 1fr 1fr; }
+  .pb-footer__brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 1180px) {
+  .pb-pair { grid-template-columns: minmax(0, 1fr); }
+  .pb-pair__output { order: -1; }
+}
+
+@media (max-width: 900px) {
+  .pb-stage__inner { grid-template-columns: minmax(0, 1fr); }
+  .pb-stage--wide .pb-stage__text { display: block; }
+  .pb-stage--wide .pb-stage__stats { margin-top: 28px; }
+}
+
+@media (max-width: 820px) {
+  .pb-empty { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .pb-masthead__inner { padding-block: 36px 28px; }
+  .pb-stage__stats { gap: 0 14px; }
+  .pb-stage__stats dd { font-size: 1.5rem; }
+  .pb-codeblock pre, .pb-prose pre { padding-inline: 16px; font-size: .78rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* Headings use Archivo's wide cut, like the labels on a PowerBGInfo panel. */
+h1, h2, .pb-display { font-stretch: var(--pb-display-stretch); }
+
+/* Section content width, for sections that are not atlas or guide blocks. */
+.pb-section__inner {
+  width: min(100% - 2 * var(--pb-gutter), var(--pb-max));
+  margin-inline: auto;
+}
+/* A section that is a direct child of main is already page width; its inner wrapper must not inset it again. */
+.pb-main > .pb-section > .pb-section__inner { width: 100%; }

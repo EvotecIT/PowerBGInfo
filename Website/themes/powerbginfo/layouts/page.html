@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--page{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="pb-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="pb-page">
+    <div class="pb-prose">
+{{ content }}
+    </div>
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

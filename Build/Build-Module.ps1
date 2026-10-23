@@ -49,9 +49,9 @@ Build-Module -ModuleName 'PowerBGInfo' {
         Description            = 'PowerBGInfo is a module that allows you to create background images with information about your environment.'
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags                   = @('windows', 'macos', 'linux', 'image', 'monitor', 'bginfo', 'charts', 'topology', 'diagrams')
-        # A URL to the main website for this project.
-        ProjectUri             = 'https://github.com/EvotecIT/PowerBGInfo'
-        IconUri                = 'https://evotec.xyz/wp-content/uploads/2022/12/PowerBGInfo.png'
+        # Website cutover metadata: publish only after powerbginfo.com is live.
+        ProjectUri             = 'https://powerbginfo.com'
+        IconUri                = 'https://powerbginfo.com/apple-touch-icon.png'
         LicenseUri             = 'https://github.com/EvotecIT/PowerBGInfo/blob/master/License'
         DotNetFrameworkVersion = '4.7.2'
     }

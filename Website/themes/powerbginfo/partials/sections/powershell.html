@@ -1,0 +1,39 @@
+{{~ ip = data.imageplayground; psx = data["powershell-examples"]; ex = {}; for e in psx.examples; ex[e.id] = e; end ~}}
+{{~ flag = ex["service-health"]; story = ex["console-story"]; board = null; replay = null ~}}
+{{~ for o in flag.outputs ~}}{{~ if o.file == flag.show[0] ~}}{{~ board = o ~}}{{~ end ~}}{{~ end ~}}
+{{~ for o in story.outputs ~}}{{~ if o.file == story.show[0] ~}}{{~ replay = o ~}}{{~ end ~}}{{~ end ~}}
+<section class="pb-ps pb-tone-dark" aria-labelledby="pb-ps-title">
+  <div class="pb-ps__inner">
+    <div class="pb-ps__copy">
+      <h2 id="pb-ps-title">ChartForgeX in PowerShell</h2>
+      <p>{{ data.powershell.intro }}</p>
+      <ul class="pb-ps__families">
+        {{~ for f in ip.families ~}}
+        <li><strong>{{ f.commandCount }}</strong><span>{{ f.title }}</span></li>
+        {{~ end ~}}
+      </ul>
+      <div class="pb-install pb-install--dark">
+        <code><span class="pb-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
+        <button type="button" class="pb-copy" data-pb-copy="{{ ip.module.install }}">Copy</button>
+      </div>
+      <p class="pb-ps__label">Runnable scripts, shown with what they wrote</p>
+      <ul class="pb-ps__featured">
+        {{~ for id in ["service-health", "service-map", "stacked-builds", "console-story"] ~}}
+        <li><a href="/powershell/#{{ id }}"><span>{{ ex[id].title }}</span><code>{{ id }}.ps1</code></a></li>
+        {{~ end ~}}
+      </ul>
+      <p class="pb-ps__more"><a class="pb-link" href="/powershell/">See all {{ psx.examples.size }} scripts and the coverage roadmap</a></p>
+    </div>
+    <div class="pb-ps__art">
+      <figure class="pb-ps__board">
+        <img src="{{ board.url }}" width="{{ board.width }}" height="{{ board.height }}" loading="lazy" decoding="async" alt="Service health dashboard written by an ImagePlayground script: metric cards, a services table, a checklist and a latency chart." />
+        <figcaption>{{ flag.id }}.ps1 &rarr; {{ board.file }}</figcaption>
+      </figure>
+      <figure class="pb-ps__map">
+        <img src="{{ replay.url }}" width="{{ replay.width }}" height="{{ replay.height }}" loading="lazy" decoding="async" alt="Animated terminal session rendered by ImagePlayground: a service health table, then a restart preview that passes its health check." />
+        <figcaption>{{ story.id }}.ps1 &rarr; {{ replay.file }}</figcaption>
+      </figure>
+    </div>
+    {{ include "imageplayground-about" }}
+  </div>
+</section>

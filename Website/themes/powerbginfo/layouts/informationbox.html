@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="pb-body pb-body--informationbox{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## InformationBox product page. Copy, sample values and tables come from data/informationbox.json. The hero shows an
+     HTML illustration of the app window filled with fictional Contoso data; its tabs use the shared [data-pb-tabs]
+     wiring in site.js and its theme select is wired by the small script at the end of this layout. ## ~}}
+{{~ ib = data.informationbox; hero = ib.hero; s = ib.sample ~}}
+<main id="main" class="pb-main pb-ibx">
+  <header class="pb-stage pb-tone-dark pb-ibx-stage">
+    <div class="pb-stage__inner">
+      <div class="pb-stage__text">
+        <p class="pb-ibx-eyebrow">{{ hero.eyebrow }}</p>
+        <h1>{{ hero.title }}</h1>
+        <p class="pb-stage__lede">{{ hero.lede }}</p>
+        <div class="pb-stage__actions">
+          <a class="pb-btn pb-btn--glow" href="{{ hero.primary.url }}">{{ hero.primary.label }}</a>
+          <a class="pb-btn pb-btn--ghost" href="{{ hero.secondary.url }}">{{ hero.secondary.label }}</a>
+        </div>
+        <dl class="pb-stage__stats">
+          {{~ for st in hero.stats ~}}
+          <div><dt>{{ st.label }}</dt><dd>{{ st.value }}</dd></div>
+          {{~ end ~}}
+        </dl>
+      </div>
+      <div class="pb-stage__art">
+        <figure class="pb-ibx-shot">
+          <div class="pb-ibx-win" data-ibx-theme="auto" data-ibx-window>
+            <div class="pb-ibx-win__title" aria-hidden="true">
+              <span class="pb-ibx-win__app">i</span>
+              <span class="pb-ibx-win__name">Information Box</span>
+              <span class="pb-ibx-win__ctl"><i class="pb-ibx-ctl--min"></i><i class="pb-ibx-ctl--max"></i><i class="pb-ibx-ctl--close"></i></span>
+            </div>
+            <div class="pb-ibx-win__body" data-pb-tabs>
+              <div class="pb-ibx-win__head">
+                <div class="pb-ibx-win__who">
+                  <p class="pb-ibx-win__org"><span>{{ s.company }}</span> <span class="pb-ibx-badge">{{ s.join }}</span></p>
+                  <p class="pb-ibx-win__meta">Config: {{ s.config }}</p>
+                  <p class="pb-ibx-win__meta">Zone: {{ s.zone }}</p>
+                </div>
+                <span class="pb-ibx-win__primary">{{ s.primaryLink }}</span>
+              </div>
+              <div class="pb-ibx-tabs" role="tablist" aria-label="InformationBox tabs (illustration)">
+                {{~ for t in ib.desk.tabs ~}}
+                <button type="button" role="tab" id="ibx-tab-{{ t.name | string.downcase }}" aria-controls="ibx-panel-{{ t.name | string.downcase }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}">{{ t.name }}</button>
+                {{~ end ~}}
+              </div>
+              <div class="pb-ibx-panels">
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-status" aria-labelledby="ibx-tab-status">
+                  <div class="pb-ibx-strip">
+                    <div><span class="pb-ibx-strip__label">Password</span><span class="pb-ibx-strip__value">{{ s.password.value }}</span><span class="pb-ibx-strip__cap">{{ s.password.caption }}</span></div>
+                    <div><span class="pb-ibx-strip__label">Network</span><span class="pb-ibx-strip__value">{{ s.network.value }}</span><span class="pb-ibx-strip__cap">{{ s.network.caption }}</span></div>
+                    <div><span class="pb-ibx-strip__label">IPv4</span><span class="pb-ibx-strip__value">{{ s.ip }}</span><button type="button" class="pb-ibx-chip" data-pb-copy="{{ s.ip }}">Copy IP</button></div>
+                  </div>
+                  <div class="pb-ibx-cards">
+                    <div class="pb-ibx-card">
+                      <p class="pb-ibx-card__title">Device</p>
+                      <dl class="pb-ibx-rows">{{ for r in s.device }}<div><dt>{{ r.label }}</dt><dd>{{ r.value }}</dd></div>{{ end }}</dl>
+                    </div>
+                    <div class="pb-ibx-card">
+                      <p class="pb-ibx-card__title">Network</p>
+                      <dl class="pb-ibx-rows">{{ for r in s.net }}<div><dt>{{ r.label }}</dt><dd>{{ r.value }}</dd></div>{{ end }}</dl>
+                    </div>
+                  </div>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-health" aria-labelledby="ibx-tab-health" hidden>
+                  <div class="pb-ibx-card">
+                    <p class="pb-ibx-card__title">Health Checks</p>
+                    <dl class="pb-ibx-rows pb-ibx-rows--two">{{ for r in s.health }}<div><dt>{{ r.label }}</dt><dd>{{ r.value }}</dd></div>{{ end }}</dl>
+                  </div>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-account" aria-labelledby="ibx-tab-account" hidden>
+                  <div class="pb-ibx-card">
+                    <p class="pb-ibx-card__title">Account (Online)</p>
+                    <p class="pb-ibx-card__cap">Synced from Microsoft Graph</p>
+                    <p><span class="pb-ibx-chip">Copy UPN</span></p>
+                    <dl class="pb-ibx-rows pb-ibx-rows--two">{{ for r in s.account }}<div><dt>{{ r.label }}</dt><dd>{{ r.value }}</dd></div>{{ end }}</dl>
+                  </div>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-otp" aria-labelledby="ibx-tab-otp" hidden>
+                  <div class="pb-ibx-otp__head">
+                    <div><p class="pb-ibx-card__title">One-time passwords</p><p class="pb-ibx-card__cap">Stored encrypted for this Windows account</p></div>
+                    <span class="pb-ibx-otp__tools"><span class="pb-ibx-chip">Reload</span><span class="pb-ibx-chip">Add</span><span class="pb-ibx-chip">Add QR</span></span>
+                  </div>
+                  <ul class="pb-ibx-otp">
+                    {{~ for o in s.otp ~}}
+                    <li class="pb-ibx-card">
+                      <span class="pb-ibx-otp__who"><strong>{{ o.issuer }}</strong><small>{{ o.label }}</small></span>
+                      <span class="pb-ibx-otp__code">{{ o.code }}</span>
+                      <span class="pb-ibx-otp__count">{{ o.count }}</span>
+                      <span class="pb-ibx-chip">Copy</span>
+                    </li>
+                    {{~ end ~}}
+                  </ul>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-network" aria-labelledby="ibx-tab-network" hidden>
+                  <p class="pb-ibx-chips"><span class="pb-ibx-chip">Open Network settings</span><span class="pb-ibx-chip">Open VPN settings</span></p>
+                  <div class="pb-ibx-card">
+                    <dl class="pb-ibx-rows pb-ibx-rows--two">{{ for r in s.netrows }}<div><dt>{{ r.label }}</dt><dd>{{ r.value }}</dd></div>{{ end }}</dl>
+                  </div>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-support" aria-labelledby="ibx-tab-support" hidden>
+                  <div class="pb-ibx-card">
+                    <p class="pb-ibx-card__title">Links</p>
+                    <p class="pb-ibx-chips">{{ for l in s.links }}<span class="pb-ibx-chip pb-ibx-chip--link">{{ l }}</span>{{ end }}</p>
+                    <p class="pb-ibx-card__title">Local sites</p>
+                    <p class="pb-ibx-chips">{{ for l in s.sites }}<span class="pb-ibx-chip pb-ibx-chip--link">{{ l }}</span>{{ end }}</p>
+                    <p class="pb-ibx-card__title">Contacts</p>
+                    <p class="pb-ibx-contact"><strong>{{ s.contact.label }}</strong> <span>{{ s.contact.email }}</span> <span>{{ s.contact.phone }}</span></p>
+                  </div>
+                </div>
+                <div class="pb-ibx-panel" role="tabpanel" id="ibx-panel-troubleshoot" aria-labelledby="ibx-tab-troubleshoot" hidden>
+                  <div class="pb-ibx-fix">
+                    <div class="pb-ibx-fix__list">
+                      <span class="pb-ibx-fix__search">Search actions...</span>
+                      {{~ for g in s.fixGroups ~}}
+                      <p class="pb-ibx-fix__group">{{ g.name }}</p>
+                      {{~ for it in g.items ~}}
+                      <p class="pb-ibx-fix__item{{ if it == s.fix.name }} is-selected{{ end }}">{{ it }}</p>
+                      {{~ end ~}}
+                      {{~ end ~}}
+                    </div>
+                    <div class="pb-ibx-card pb-ibx-fix__detail">
+                      <p class="pb-ibx-card__title">{{ s.fix.name }}</p>
+                      <p class="pb-ibx-card__cap">{{ s.fix.description }}</p>
+                      <p><span class="pb-ibx-run">Run</span></p>
+                      <p class="pb-ibx-fix__out-head"><span>Output</span> <span class="pb-ibx-ok">Success</span></p>
+                      <pre class="pb-ibx-fix__out">{{ s.fix.output | html.escape }}</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pb-ibx-win__foot">
+                <label class="pb-ibx-theme">Theme:
+                  <select data-ibx-theme-select aria-label="Theme of this illustration">
+                    {{~ for th in s.themes ~}}
+                    <option value="{{ th | string.downcase }}">{{ th }}</option>
+                    {{~ end ~}}
+                  </select>
+                </label>
+                <span class="pb-ibx-win__updated">{{ s.updated }}</span>
+                <span class="pb-ibx-win__btns"><span class="pb-ibx-chip">Refresh</span><span class="pb-ibx-chip pb-ibx-chip--close">Close</span></span>
+              </div>
+            </div>
+          </div>
+          <figcaption class="pb-ibx-shot__caption">{{ hero.caption }}</figcaption>
+        </figure>
+      </div>
+    </div>
+  </header>
+
+  <section class="pb-section pb-ibx-desk" aria-labelledby="ibx-desk-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-desk-title">{{ ib.desk.title }}</h2>
+        <p class="pb-lede">{{ ib.desk.body }}</p>
+      </div>
+      <p class="pb-ibx-desk__header">{{ ib.desk.header }}</p>
+      <ol class="pb-ibx-tablist">
+        {{~ for t in ib.desk.tabs ~}}
+        <li>
+          <h3><span class="pb-ibx-tablist__num">{{ for.index + 1 }}</span>{{ t.name }}</h3>
+          <p>{{ t.body }}</p>
+        </li>
+        {{~ end ~}}
+      </ol>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-fixes" aria-labelledby="ibx-fixes-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-fixes-title">{{ ib.fixes.title }}</h2>
+        <p class="pb-lede">{{ ib.fixes.body }}</p>
+      </div>
+      <div class="pb-ibx-catalog">
+        <p class="pb-ibx-catalog__key"><span class="pb-ibx-fixchip">{{ ib.fixes.userLabel }}</span> <span class="pb-ibx-fixchip pb-ibx-fixchip--admin">{{ ib.fixes.adminLabel }}</span></p>
+        <ul class="pb-ibx-catalog__grid">
+          {{~ for g in ib.fixes.groups ~}}
+          <li>
+            <h3>{{ g.name }}</h3>
+            <ul class="pb-ibx-catalog__items">
+              {{~ for it in g.user ~}}<li class="pb-ibx-fixchip">{{ it }}</li>{{~ end ~}}
+              {{~ for it in g.admin ~}}<li class="pb-ibx-fixchip pb-ibx-fixchip--admin">{{ it }}</li>{{~ end ~}}
+            </ul>
+          </li>
+          {{~ end ~}}
+        </ul>
+      </div>
+      <div class="pb-ibx-notes">
+        {{~ for n in ib.fixes.notes ~}}
+        <div>
+          <h3>{{ n.title }}</h3>
+          <p>{{ n.body }}</p>
+        </div>
+        {{~ end ~}}
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-otpsec" aria-labelledby="ibx-otp-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-otp-title">{{ ib.otp.title }}</h2>
+        <p class="pb-lede">{{ ib.otp.body }}</p>
+      </div>
+      <div class="pb-ibx-notes">
+        {{~ for n in ib.otp.points ~}}
+        <div>
+          <h3>{{ n.title }}</h3>
+          <p>{{ n.body }}</p>
+        </div>
+        {{~ end ~}}
+      </div>
+      <p class="pb-ibx-licence">{{ ib.otp.licence }}</p>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-admin" id="admins" aria-labelledby="ibx-admin-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-admin-title">{{ ib.admin.title }}</h2>
+        <p class="pb-lede">{{ ib.admin.body }}</p>
+      </div>
+      <ol class="pb-ibx-order">
+        {{~ for o in ib.admin.order ~}}
+        <li>
+          <code>{{ o.path | html.escape }}</code>
+          <span class="pb-status pb-status--{{ o.status }}">{{ o.statusLabel }}</span>
+          <p>{{ o.body }}</p>
+        </li>
+        {{~ end ~}}
+      </ol>
+      <p class="pb-ibx-extra">{{ ib.admin.extra }}</p>
+      <div class="pb-ibx-rules">
+        <div class="pb-ibx-rules__box">
+          <h3>{{ ib.admin.protect.title }}</h3>
+          <p>{{ ib.admin.protect.body }}</p>
+          <ul>{{ for r in ib.admin.protect.rules }}<li>{{ r }}</li>{{ end }}</ul>
+          <p>{{ ib.admin.protect.howto }}</p>
+        </div>
+        <div class="pb-ibx-rules__box pb-ibx-rules__box--limits">
+          <h3>{{ ib.admin.limits.title }}</h3>
+          <ul>{{ for r in ib.admin.limits.rules }}<li>{{ r }}</li>{{ end }}</ul>
+          <p>{{ ib.admin.limits.placeholders | html.escape }}</p>
+        </div>
+      </div>
+      <div class="pb-ibx-samples">
+        {{~ for x in ib.admin.samples ~}}
+        <article class="pb-ibx-sample" id="config-{{ x.id }}">
+          <div class="pb-ibx-sample__text">
+            <h3>{{ x.title }}</h3>
+            <p>{{ x.body }}</p>
+          </div>
+          <figure class="pb-codeblock" data-lang="json">
+            <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">JSON</span><span class="pb-codeblock__file">{{ x.file }}</span></figcaption>
+            <pre><code class="language-json">{{ x.code | html.escape }}</code></pre>
+          </figure>
+        </article>
+        {{~ end ~}}
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-flavours" aria-labelledby="ibx-flavours-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-flavours-title">{{ ib.flavours.title }}</h2>
+        <p class="pb-lede">{{ ib.flavours.body }}</p>
+      </div>
+      <div class="pb-matrix-wrap">
+        <table class="pb-matrix">
+          <thead><tr>{{ for c in ib.flavours.columns }}<th scope="col">{{ c }}</th>{{ end }}</tr></thead>
+          <tbody>
+            {{~ for r in ib.flavours.rows ~}}
+            <tr>
+              <th scope="row"><code>{{ r.name }}/</code></th>
+              <td>{{ r.what }}</td>
+              <td>{{ if r.dotnet }}<span class="pb-status pb-status--partial">{{ ib.flavours.yes }}</span>{{ else }}<span class="pb-status pb-status--shipped">{{ ib.flavours.no }}</span>{{ end }}</td>
+              <td><code>{{ r.zip }}</code></td>
+            </tr>
+            {{~ end ~}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-download" id="download" aria-labelledby="ibx-download-title">
+    <div class="pb-section__inner pb-ibx-download__grid">
+      <div>
+        <div class="pb-section__head">
+          <h2 id="ibx-download-title">{{ ib.download.title }}</h2>
+          <p class="pb-lede">{{ ib.download.body }}</p>
+        </div>
+        <p class="pb-ibx-download__status"><span class="pb-status pb-status--idea">{{ ib.download.releaseStatus }}</span></p>
+        <p class="pb-ibx-download__actions">
+          <a class="pb-btn" href="{{ ib.download.releases }}">GitHub Releases</a>
+          <a class="pb-btn pb-btn--quiet" href="{{ ib.download.source }}">Source code</a>
+        </p>
+        <dl class="pb-ibx-facts">
+          {{~ for f in ib.download.facts ~}}
+          <div><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></div>
+          {{~ end ~}}
+        </dl>
+      </div>
+      <figure class="pb-codeblock" data-lang="powershell">
+        <figcaption class="pb-codeblock__bar"><span class="pb-codeblock__lang">PowerShell</span><span class="pb-codeblock__file">Build from source</span></figcaption>
+        <pre><code class="language-powershell">{{ ib.download.build | html.escape }}</code></pre>
+      </figure>
+    </div>
+  </section>
+
+  <section class="pb-section pb-ibx-pair" aria-labelledby="ibx-pair-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="ibx-pair-title">{{ ib.pair.title }}</h2>
+        <p class="pb-lede">{{ ib.pair.body }}</p>
+      </div>
+      <ol class="pb-ibx-flow">
+        {{~ for st in ib.pair.steps ~}}
+        <li class="pb-ibx-flow__step pb-ibx-flow__step--{{ st.status }}">
+          <span class="pb-ibx-flow__verb">{{ st.verb }}</span>
+          <h3>{{ st.product }}</h3>
+          <p>{{ st.body }}</p>
+          <span class="pb-status pb-status--{{ st.status }}">{{ st.statusLabel }}</span>
+        </li>
+        {{~ end ~}}
+      </ol>
+      <p class="pb-section__more"><a class="pb-btn pb-btn--quiet" href="{{ ib.pair.more.url }}">{{ ib.pair.more.label }}</a></p>
+    </div>
+  </section>
+  {{~ if content != "" ~}}
+  <section class="pb-section pb-ibx-notes-page" aria-label="Notes">
+    <div class="pb-section__inner">
+      <div class="pb-prose">
+{{ content }}
+      </div>
+    </div>
+  </section>
+  {{~ end ~}}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+<script>
+(function () {
+  var win = document.querySelector('[data-ibx-window]');
+  var select = win && win.querySelector('[data-ibx-theme-select]');
+  if (!select) return;
+  select.addEventListener('change', function () { win.setAttribute('data-ibx-theme', select.value); });
+})();
+</script>
+</body>
+</html>
