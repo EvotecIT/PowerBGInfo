@@ -120,8 +120,8 @@ public partial class BgInfoGenerator
         if (!chosenBase && config.Background == null && string.IsNullOrWhiteSpace(config.OutputFileName) &&
             IsPreservedDesktopBackgroundSource(imagePath) && !IsSamePath(imagePath!, baseImagePath)) {
             // The generated native backdrop has no user-authored source name.
-            // Keep the trusted current output name instead of deriving one from its GUID base.
-            outputPath = NormalizeOutputPathExtension(Path.Combine(config.ConfigurationDirectory, Path.GetFileName(baseImagePath!)), config.Target);
+            // Its default remains stable even when the current image is a retained refresh copy.
+            outputPath = Path.Combine(config.ConfigurationDirectory, "PowerBgInfo.png");
         }
         if (!string.IsNullOrWhiteSpace(backgroundImagePath) && IsSamePath(backgroundImagePath!, outputPath)) {
             backgroundImagePath = PreserveInPlaceBaseImage(backgroundImagePath!, outputPath);

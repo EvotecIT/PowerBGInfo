@@ -3,6 +3,14 @@ using ChartForgeX.Primitives;
 namespace PowerBGInfo.Tests;
 
 public sealed class BgInfoOutputRegistryTests {
+    [Theory]
+    [InlineData("first\nsecond_PowerBgInfo.png")]
+    [InlineData("first\nsecond_PowerBgInfo_001.png")]
+    [InlineData("first\nsecond_refresh_0123456789abcdef0123456789abcdef.png")]
+    public void GeneratedNameRecognitionIncludesLegalUnixNewlines(string name) {
+        Assert.True(BgInfoOutputRegistry.HasOwnOutputName(name));
+    }
+
     [Fact]
     public void NativeFileNamesRoundTripWithoutCreatingAnotherProvenanceRecord() {
         using var folder = new RegistryFolder();

@@ -120,6 +120,16 @@ public partial class BgInfoGenerator
         var nativeAssignmentAttempted = false;
         var originalPathAssigned = false;
         try {
+            // A failed second assignment may leave this copy as the actual desktop.
+            // Publish its resolved original before it can become a future input.
+            if (!BgInfoOutputRegistry.TryGetSource(outputPath, out var original)) {
+                throw new IOException("The refresh image's original background could not be read. The refresh was not applied.");
+            }
+            BgInfoOutputRegistry.Record(refreshPath, original);
+            if (!BgInfoOutputRegistry.TryGetSource(refreshPath, out var recordedOriginal) ||
+                (original == null ? recordedOriginal != null : !IsSamePath(original, recordedOriginal))) {
+                throw new IOException("The refresh image's original background could not be recorded. The refresh was not applied.");
+            }
             // Native and target-guard failures must propagate rather than being
             // retried as copy failures against a potentially changed target.
             RecheckSelectedNativeTarget();
@@ -130,6 +140,7 @@ public partial class BgInfoGenerator
         } finally {
             if (ownsRefresh && (!nativeAssignmentAttempted || originalPathAssigned)) {
                 TryDelete(refreshPath);
+                if (!File.Exists(refreshPath)) BgInfoOutputRegistry.Forget(refreshPath);
             } else if (ownsRefresh) {
                 WriteWarning($"The temporary wallpaper image was retained at '{refreshPath}' because native state may still reference it. Restore the intended wallpaper before removing this file.");
             }

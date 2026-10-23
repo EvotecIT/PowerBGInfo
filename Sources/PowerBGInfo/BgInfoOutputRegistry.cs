@@ -27,10 +27,15 @@ internal static class BgInfoOutputRegistry {
     // Default output names: <name>_PowerBgInfo.<ext>, slideshow copies <name>_PowerBgInfo_001.<ext>,
     // and the temporary refresh copy <name>_refresh_<guid>.<ext>.
     private static readonly Regex OwnName = new(@"^(?:PowerBgInfo$|.*(?:_PowerBgInfo(?:_\d{3})?|_refresh_[0-9a-f]{32})$)",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
     /// <summary>Records that <paramref name="outputPath"/> was drawn on <paramref name="sourcePath"/>. Never throws.</summary>
-    public static void Record(string outputPath, string? sourcePath) {
+    public static void Record(string outputPath, string? sourcePath) => Update(outputPath, sourcePath, remove: false);
+
+    /// <summary>Forgets an owned transient output after it is no longer referenced or retained. Never throws.</summary>
+    internal static void Forget(string outputPath) => Update(outputPath, null, remove: true);
+
+    private static void Update(string outputPath, string? sourcePath, bool remove) {
         string? temporaryPath = null;
         var temporaryOwned = false;
         try {
@@ -41,9 +46,12 @@ internal static class BgInfoOutputRegistry {
             using var updateLock = AcquireLock(registryPath, readOnly: false);
             var entries = Load(registryPath, out var earlierOriginsUnavailable);
             var key = Path.GetFileName(fullPath);
-            entries.RemoveAll(entry => BgInfoPaths.AreSame(Path.Combine(directory, entry.Key), fullPath));
-            var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath!);
-            entries.Add(new KeyValuePair<string, string>(key, source));
+            var removed = entries.RemoveAll(entry => BgInfoPaths.AreSame(Path.Combine(directory, entry.Key), fullPath));
+            if (remove && removed == 0) return;
+            if (!remove) {
+                var source = string.IsNullOrWhiteSpace(sourcePath) ? string.Empty : Path.GetFullPath(sourcePath!);
+                entries.Add(new KeyValuePair<string, string>(key, source));
+            }
             var lines = new List<string>(entries.Count + 2) { Header };
             if (earlierOriginsUnavailable) lines.Add(UnavailableOriginsMarker);
             lines.AddRange(entries.Select(entry => Encode(entry.Key) + Separator + Encode(entry.Value)));
