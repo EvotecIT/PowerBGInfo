@@ -49,14 +49,18 @@
       <div class="pb-stage__art">
         <figure class="pb-monitor" data-pbg-monitor>
           <div class="pb-monitor__screen">
-            <img data-pbg-screen src="{{ first.renders.dark.url }}" width="{{ first.renders.dark.width }}" height="{{ first.renders.dark.height }}" fetchpriority="high" decoding="async" alt="{{ pbg.alts[first.id] }}" />
+            {{~ ## One image per scenario, so the build's image step gives each its own responsive sources. The chips
+                 only switch which one is visible; hidden lazy images load when first shown. ## ~}}
+            {{~ for s in screens ~}}
+            <img data-pbg-screen="{{ s.id }}" src="{{ s.renders.dark.url }}" width="{{ s.renders.dark.width }}" height="{{ s.renders.dark.height }}" sizes="(max-width: 1000px) calc(100vw - 32px), 700px" decoding="async"{{ if for.first }} fetchpriority="high"{{ else }} loading="lazy" hidden{{ end }} alt="{{ pbg.alts[s.id] }}" />
+            {{~ end ~}}
           </div>
           <div class="pb-monitor__stand" aria-hidden="true"></div>
           <figcaption class="pb-monitor__caption">
             <span class="pb-monitor__file" data-pbg-screen-file>{{ first.renders.dark.file }}</span>
             <span class="pb-monitor__scenes" aria-label="Show another wallpaper">
               {{~ for s in screens ~}}
-              <a href="/gallery/#{{ s.id }}" data-pbg-scene aria-pressed="{{ if for.first }}true{{ else }}false{{ end }}" data-src="{{ s.renders.dark.url }}" data-file="{{ s.renders.dark.file }}" data-alt="{{ pbg.alts[s.id] | html.escape }}">{{ s.title }}</a>
+              <a href="/gallery/#{{ s.id }}" data-pbg-scene="{{ s.id }}" aria-pressed="{{ if for.first }}true{{ else }}false{{ end }}" data-file="{{ s.renders.dark.file }}">{{ s.title }}</a>
               {{~ end ~}}
             </span>
           </figcaption>

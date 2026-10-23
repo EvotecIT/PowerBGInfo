@@ -16,7 +16,7 @@ meta.source_code.license: https://github.com/EvotecIT/PowerBGInfo/blob/v2-speedy
 Install-Module PowerBGInfo -Scope CurrentUser
 ```
 
-The module works in Windows PowerShell 5.1 and in PowerShell 7.4 or later. It needs no separate helper modules; run the same command again to update.
+The module works in Windows PowerShell 5.1 and in PowerShell 7.4 or later. It needs no separate helper modules. Use `Update-Module PowerBGInfo` after testing a new version.
 
 ## Render a preview to a file
 

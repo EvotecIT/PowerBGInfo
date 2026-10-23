@@ -653,7 +653,7 @@ code, pre, kbd, samp { font-family: var(--pb-mono); font-variant-ligatures: none
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
-.pb-prose th, .pb-prose td { padding: 10px 14px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
+.pb-prose th, .pb-prose td { padding: 9px 14px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
 .pb-prose th:first-child, .pb-prose td:first-child { padding-left: 0; }
 .pb-prose thead th {
   padding-top: 12px;
@@ -666,7 +666,14 @@ code, pre, kbd, samp { font-family: var(--pb-mono); font-variant-ligatures: none
 }
 .pb-prose tbody tr:last-child > * { border-bottom: 0; }
 .pb-prose td:first-child { color: var(--pb-ink); font-weight: 600; }
-.pb-prose td code { white-space: nowrap; overflow-wrap: normal; }
+/* The first column names the row: keep it wide enough to read in a word or two, not one word per line. */
+.pb-prose th:first-child, .pb-prose td:first-child { min-width: min(11em, 34vw); }
+/* Long identifiers (registry paths, CSP nodes, file paths) wrap at the column edge rather than forcing the table
+   wider than the page or being cut off. Short ones stay on one line because they fit. */
+.pb-prose td code { white-space: normal; overflow-wrap: anywhere; }
+.pb-tablewrap { overscroll-behavior-x: contain; }
+.pb-tablewrap:focus-visible { outline: 2px solid var(--pb-focus); outline-offset: 2px; }
+.pb-tablewrap > table { min-width: 34rem; }
 
 /* Not found: an empty chart, plotted on the same grid as everything else. */
 .pb-empty { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(28px, 4vw, 56px); align-items: center; }

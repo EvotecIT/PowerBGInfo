@@ -197,13 +197,13 @@
 .pbg-routes { margin-top: 28px; overflow: hidden; border: 1px solid var(--pb-line); border-radius: var(--pb-r-lg); background: var(--pb-card); }
 .pbg-routes table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
 .pbg-routes th,
-.pbg-routes td { padding: 14px 18px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
+.pbg-routes td { padding: 12px 16px; border-bottom: 1px solid var(--pb-line); text-align: left; vertical-align: top; }
 .pbg-routes tbody tr:last-child > * { border-bottom: 0; }
 .pbg-routes thead th { color: var(--pb-ink-3); font-size: .8125rem; font-weight: 640; background: var(--pb-card-alt); }
 .pbg-routes tbody th { width: 24%; color: var(--pb-ink); font-weight: 680; }
 .pbg-routes tbody th .pb-key { display: inline-block; margin-right: 8px; vertical-align: .05em; }
-.pbg-routes td { color: var(--pb-ink-2); line-height: 1.5; }
-.pbg-routes td:last-child { width: 15%; }
+.pbg-routes td { color: var(--pb-ink-2); line-height: 1.45; }
+.pbg-routes td:last-child { width: 17%; min-width: 9em; }
 .pbg-guides { margin-top: clamp(36px, 4vw, 52px); }
 .pbg-guides ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
 .pbg-guides a { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--pb-line); border-radius: 10px; background: var(--pb-card); color: var(--pb-ink); text-decoration: none; }

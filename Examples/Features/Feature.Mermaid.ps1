@@ -35,9 +35,10 @@ $diagram = Invoke-BGInfoDataSource -Name 'Escalation diagram' -TimeoutSeconds 5 
 $scale = [Math]::Round($Height / 1080, 2)
 New-BGInfo -Theme (New-BGInfoTheme Midnight -Mode $Theme -Scale $scale) -Target File {
     New-BGInfoBackground -Width $Width -Height $Height
+    New-BGInfoLayout -BandHeight ([int](720 * $scale))
     New-BGInfoLabel -Name 'MERMAID' -Accent -FontWeight 700
     New-BGInfoLabel -Name 'Who to call, and when' -FontSize ([int](40 * $scale)) -FontWeight 600
 
-    New-BGInfoMermaid -Region Bottom -Title 'Escalation path' -Definition $diagram -Height ([int](360 * $scale))
+    New-BGInfoMermaid -Region Bottom -Title 'Escalation path' -Definition $diagram -Height ([int](720 * $scale))
 } -ConfigurationDirectory $OutputDirectory -OutputFileName "mermaid-$($Theme.ToLower())-$Width.png"
 #endregion

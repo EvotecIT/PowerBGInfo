@@ -1,4 +1,8 @@
-﻿<#
+﻿#Requires -Version 5.1
+<#
+.SYNOPSIS
+    Renders a wallpaper from fictional data or your own data-collection helper.
+.DESCRIPTION
     Template: copy this file and fill in Get-MyWallpaperData. Nothing else
     needs to change.
 
@@ -11,21 +15,47 @@
     3. Presentation. The New-BGInfo block reads only $data. The theme picks the
        look; regions place the panels on any screen size.
 
-    The file target only writes an image. Use -Target Wallpaper (or run the
-    script from a logon task) when you are ready to apply it.
+    The file target only writes an image. Use -Target Wallpaper when you are
+    ready to apply it, including when configuring a logon task.
+.PARAMETER Target
+    File writes an image without changing the desktop. Wallpaper also applies it.
+.PARAMETER Theme
+    Light or Dark mode for the Graphite theme.
+.PARAMETER Width
+    Width of the rendered image in pixels.
+.PARAMETER Height
+    Height of the rendered image in pixels.
+.PARAMETER OutputDirectory
+    Folder for the rendered image.
+.EXAMPLE
+    .\Run.BGInfo.Template.ps1 -Target File -Theme Light -OutputDirectory C:\Temp\BGInfo
+.OUTPUTS
+    The path of the rendered image and any data-source warnings.
 #>
+[CmdletBinding()]
 param(
     [ValidateSet('Light', 'Dark')]
     [string] $Theme = 'Dark',
     [int] $Width = 1920,
     [int] $Height = 1080,
-    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
+    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output'),
+    [ValidateSet('File', 'Wallpaper')]
+    [string] $Target = 'File'
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force -ErrorAction Stop
 
 #region 1. Data: your logic goes here
 function Get-MyWallpaperData {
+    <#
+    .SYNOPSIS
+        Returns fictional sample data for the template's layout.
+    .DESCRIPTION
+        Replace the body with trusted data collection. The caller runs it in
+        an isolated runspace with a timeout and a fallback value.
+    .OUTPUTS
+        One object with Title, Heading, Facts, Cpu, DiskUsed and Tasks.
+    #>
     # your logic: replace these sample values with real lookups, for example
     #   $os = Get-CimInstance Win32_OperatingSystem
     #   $open = 'https://help.contoso.com/api/open'
@@ -67,7 +97,7 @@ $data = Invoke-BGInfoDataSource @source
 #region 2. Presentation: reads only $data
 $scale = [Math]::Round([Math]::Min($Width, $Height) / 1080, 2)
 $look = New-BGInfoTheme Graphite -Mode $Theme -Scale $scale
-New-BGInfo -Theme $look -Target File {
+New-BGInfo -Theme $look -Target $Target {
     New-BGInfoBackground -Width $Width -Height $Height
 
     New-BGInfoLabel -Name $data.Title -Accent -FontWeight 700

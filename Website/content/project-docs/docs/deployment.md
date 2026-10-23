@@ -270,11 +270,23 @@ optional corporate image next to it as `Corporate.jpg`.
 ```powershell
 #Requires -Version 5.1
 <#
-    Set-BGInfoWallpaper.ps1
-    Renders one wallpaper per monitor for the signed-in user and applies
-    it. Run it in the user's session. -Target File only writes the images,
-    which is how to test it.
+.SYNOPSIS
+    Renders one wallpaper per monitor for the signed-in user.
+.DESCRIPTION
+    Run in the user's session. The default target applies the wallpapers;
+    -Target File only writes images. Failures return exit code 1.
+.PARAMETER Target
+    Wallpaper applies the images. File renders without changing the desktop.
+.PARAMETER BaseImage
+    Optional background image. A missing file uses the theme background.
+.PARAMETER OutputDirectory
+    Per-user folder for rendered images and last-run.log.
+.EXAMPLE
+    .\Set-BGInfoWallpaper.ps1 -Target File -OutputDirectory C:\Temp\BGInfo
+.OUTPUTS
+    Image paths and diagnostic messages. Writes images and a transcript.
 #>
+[CmdletBinding()]
 param(
     [ValidateSet('Wallpaper', 'File')]
     [string] $Target = 'Wallpaper',
@@ -283,32 +295,44 @@ param(
         Join-Path $env:LOCALAPPDATA 'PowerBGInfo')
 )
 
+# Define helpers before execution. This sample has no external lookup.
+function Get-MyWallpaperData {
+    <#
+    .SYNOPSIS
+        Returns sample support details; replace this body with your lookup.
+    .OUTPUTS
+        A hashtable with Owner and Support values consumed by the layout.
+    #>
+    @{
+        Owner = 'Finance IT'
+        Support = 'ext. 4357'
+    }
+}
+
 $ErrorActionPreference = 'Stop'
 $exitCode = 0
-New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
-$log = Join-Path $OutputDirectory 'last-run.log'
-Start-Transcript -Path $log | Out-Null
+$transcriptStarted = $false
 
 try {
+    New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+    $log = Join-Path $OutputDirectory 'last-run.log'
+    Start-Transcript -Path $log | Out-Null
+    $transcriptStarted = $true
     Import-Module -Name PowerBGInfo
 
     #region 1. Data: your logic goes here
     # Read-only; each WMI probe inside has its own five-second limit.
     $facts = Get-BGInfoSystemInfo
 
-    function Get-MyWallpaperData {
-        param($ComputerName)
-        # your logic: CMDB, Active Directory, a REST API...
-        # (Invoke-RestMethod -Uri $uri -TimeoutSec 5).owner
-        @{ Owner = 'Finance IT'; Support = 'ext. 4357' }
+    $fallback = @{
+        Owner = 'Owner unavailable'
+        Support = 'ext. 4357'
     }
-    $fallback = @{ Owner = 'Owner unavailable'; Support = 'ext. 4357' }
     $dataSource = @{
         Name           = 'Wallpaper data'
         TimeoutSeconds = 10
         Default        = $fallback
         ScriptBlock    = ${function:Get-MyWallpaperData}
-        ArgumentList   = $env:COMPUTERNAME
     }
     $data = Invoke-BGInfoDataSource @dataSource
     #endregion
@@ -317,7 +341,11 @@ try {
     $monitors = @(Get-BGInfoMonitor)
     if ($monitors.Count -eq 0) {
         # No monitor reported: render once at the 1920 x 1080 fallback.
-        $monitors = @(@{ Index = 0; Width = 1920; Height = 1080 })
+        $monitors = @(@{
+            Index = 0
+            Width = 1920
+            Height = 1080
+        })
     }
     $background = @{}
     if (Test-Path -LiteralPath $BaseImage) {
@@ -328,7 +356,9 @@ try {
     foreach ($monitor in $monitors) {
         # 1 at 1080 lines, 1.33 at 1440, 2 at 2160.
         $scale = [int]($monitor.Height / 10.8) / 100
-        if ($scale -lt 1) { $scale = 1 }
+        if ($scale -lt 1) {
+            $scale = 1
+        }
         $theme = New-BGInfoTheme -Preset Graphite -Mode Dark -Scale $scale
         $render = @{
             Theme                  = $theme
@@ -353,11 +383,21 @@ try {
         }
     }
     #endregion
-} catch {
+}
+catch {
     Write-Warning "PowerBGInfo failed: $($_.Exception.Message)"
     $exitCode = 1
-} finally {
-    Stop-Transcript | Out-Null
+}
+finally {
+    if ($transcriptStarted) {
+        try {
+            Stop-Transcript | Out-Null
+        }
+        catch {
+            Write-Warning "Could not stop the transcript: $($_.Exception.Message)"
+            $exitCode = 1
+        }
+    }
 }
 exit $exitCode
 ```
@@ -378,12 +418,23 @@ Notes on the script:
   otherwise every run appends one sample per monitor to the same history.
 - `Invoke-BGInfoDataSource` runs the function in its own runspace, so it
   cannot see the script's variables. Pass what it needs with
-  `-ArgumentList`. When the function throws, returns nothing or runs out of
+  `-ArgumentList` and declare those inputs in the helper's `param()` block.
+  Import any required modules inside that helper. The sample helper above
+  returns fixed support details and needs no arguments. When the function
+  throws, reports an error, returns nothing or runs out of
   time, the cmdlet writes a warning and returns `-Default`; the wallpaper
   still renders. The data is a hashtable rather than `[pscustomobject]`,
   which Constrained Language Mode does not allow.
+- Give each external request its own timeout and use `-ErrorAction Stop`
+  when later steps require its result. The outer script's error preference
+  is not inherited by the data-source runspace. Cancellation is cooperative:
+  an uninterruptible provider may continue cleaning up after the fallback
+  returns. The runspace is for trusted code, not a security sandbox.
 - The transcript overwrites `last-run.log` on every run, so it does not
-  grow. It lists the path of every image written and every warning.
+  grow. It lists the path of every image written and every warning. Setup
+  failures also return exit code `1`; transcript cleanup runs only after
+  a successful start. When the transcript cannot start, read the process's
+  warning output because there may be no log file.
 - Mind the file size on session hosts and in roaming profiles. On a test
   machine a 3840 x 2160 image over a photographic `Corporate.jpg` was
   about 18.5 MB as PNG and 4 MB as JPEG; over the plain theme backdrop it

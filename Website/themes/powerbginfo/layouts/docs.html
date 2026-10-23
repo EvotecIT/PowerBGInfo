@@ -20,7 +20,10 @@
     article = article | string.replace 'href="/projects/powerbginfo/' 'href="/'
     article = article | string.replace 'href="/projects/chartforgex/' 'href="https://chartforgex.com/'
     article = article | string.replace 'href="/projects/desktopmanager/' 'href="/desktopmanager/'
-    article = article | string.replace 'href="/projects/' 'href="https://evotec.xyz/projects/' ~}}
+    article = article | string.replace 'href="/projects/' 'href="https://evotec.xyz/projects/'
+    ## Wide tables scroll inside their own frame instead of being clipped by the article column. ##
+    article = article | string.replace '<table>' '<div class="pb-tablewrap" tabindex="0" role="region" aria-label="Table, scrolls sideways"><table>'
+    article = article | string.replace '</table>' '</table></div>' ~}}
 <main id="main" class="pb-main">
   {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
   {{ include "masthead" }}
