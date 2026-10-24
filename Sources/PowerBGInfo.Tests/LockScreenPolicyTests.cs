@@ -51,6 +51,7 @@ public class LockScreenPolicyTests
     [Fact]
     public void ReadsTheEditionOfThisMachine()
     {
-        Assert.False(string.IsNullOrWhiteSpace(LockScreenPolicy.ReadEditionId()));
+        if (OperatingSystem.IsWindows()) Assert.False(string.IsNullOrWhiteSpace(LockScreenPolicy.ReadEditionId()));
+        else Assert.Null(LockScreenPolicy.ReadEditionId());
     }
 }

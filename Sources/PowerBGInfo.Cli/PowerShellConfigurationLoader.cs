@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PowerBGInfo.Cli;
 
@@ -14,7 +15,7 @@ internal static class PowerShellConfigurationLoader {
         public string ScriptDirectory { get; set; } = string.Empty;
     }
 
-    public static LoadResult Load(string scriptPath, string? modulePath, string? powerShellPath) {
+    public static LoadResult Load(string scriptPath, string? modulePath, string? powerShellPath, TimeSpan? timeout = null) {
         if (string.IsNullOrWhiteSpace(scriptPath)) {
             throw new ArgumentException("Script path is required.", nameof(scriptPath));
         }
@@ -32,40 +33,33 @@ internal static class PowerShellConfigurationLoader {
             }
         }
 
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "PowerBGInfo");
-        Directory.CreateDirectory(tempDirectory);
+        using var temporary = PowerShellConfigurationTemporaryDirectory.Create();
+        var tempJsonPath = temporary.OutputPath;
+        var wrapperPath = temporary.WrapperPath;
+        temporary.WriteWrapper(BuildWrapperScript());
+        RunPowerShell(wrapperPath, fullScriptPath, tempJsonPath, fullModulePath, powerShellPath, timeout ?? TimeSpan.FromMinutes(2));
 
-        var tempJsonPath = Path.Combine(tempDirectory, $"{Path.GetFileNameWithoutExtension(fullScriptPath)}.{Guid.NewGuid():N}.json");
-        var wrapperPath = Path.Combine(tempDirectory, $"powerbginfo-script-wrapper.{Guid.NewGuid():N}.ps1");
-
-        try {
-            File.WriteAllText(wrapperPath, BuildWrapperScript(), Encoding.UTF8);
-            RunPowerShell(wrapperPath, fullScriptPath, tempJsonPath, fullModulePath, powerShellPath);
-
-            if (!File.Exists(tempJsonPath)) {
-                throw new InvalidOperationException($"The PowerShell script did not produce a BGInfo configuration at '{tempJsonPath}'.");
-            }
-
-            return new LoadResult {
-                Configuration = BgInfoConfigurationJson.Load(tempJsonPath, Path.GetDirectoryName(fullScriptPath)),
-                ScriptDirectory = Path.GetDirectoryName(fullScriptPath) ?? Environment.CurrentDirectory
-            };
-        } finally {
-            TryDeleteFile(wrapperPath);
-            TryDeleteFile(tempJsonPath);
+        if (!File.Exists(tempJsonPath)) {
+            throw new InvalidOperationException($"The PowerShell script did not produce a BGInfo configuration at '{tempJsonPath}'.");
         }
+
+        return new LoadResult {
+            Configuration = BgInfoConfigurationJson.Load(tempJsonPath, Path.GetDirectoryName(fullScriptPath)),
+            ScriptDirectory = Path.GetDirectoryName(fullScriptPath) ?? Environment.CurrentDirectory
+        };
     }
 
-    private static void RunPowerShell(string wrapperPath, string scriptPath, string outputPath, string? modulePath, string? powerShellPath) {
+    private static void RunPowerShell(string wrapperPath, string scriptPath, string outputPath, string? modulePath, string? powerShellPath, TimeSpan timeout) {
+        if (timeout <= TimeSpan.Zero || timeout.TotalMilliseconds > int.MaxValue) throw new ArgumentOutOfRangeException(nameof(timeout));
         var candidates = GetPowerShellCandidates(powerShellPath);
         Exception? lastError = null;
 
         foreach (var candidate in candidates) {
             try {
-                Execute(candidate, wrapperPath, scriptPath, outputPath, modulePath);
+                Execute(candidate, wrapperPath, scriptPath, outputPath, modulePath, timeout);
                 return;
-            } catch (Win32Exception ex) {
-                lastError = ex;
+            } catch (PowerShellHostStartException ex) {
+                lastError = ex.InnerException;
             } catch (InvalidOperationException) {
                 throw;
             }
@@ -84,7 +78,7 @@ internal static class PowerShellConfigurationLoader {
         yield return "powershell";
     }
 
-    private static void Execute(string powerShellPath, string wrapperPath, string scriptPath, string outputPath, string? modulePath) {
+    private static void Execute(string powerShellPath, string wrapperPath, string scriptPath, string outputPath, string? modulePath, TimeSpan timeout) {
         using var process = new Process {
             StartInfo = new ProcessStartInfo {
                 FileName = powerShellPath,
@@ -97,23 +91,68 @@ internal static class PowerShellConfigurationLoader {
             }
         };
 
-        process.Start();
-        var standardOutput = process.StandardOutput.ReadToEnd();
-        var standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0) {
-            var message = new StringBuilder();
-            message.AppendLine($"PowerShell script execution failed with exit code {process.ExitCode}.");
-
-            if (!string.IsNullOrWhiteSpace(standardError)) {
-                message.AppendLine(standardError.Trim());
-            } else if (!string.IsNullOrWhiteSpace(standardOutput)) {
-                message.AppendLine(standardOutput.Trim());
-            }
-
-            throw new InvalidOperationException(message.ToString().Trim());
+        using var lifetime = new ConfigurationScriptLifetime(process.StartInfo, Path.GetDirectoryName(wrapperPath)!);
+        var elapsed = Stopwatch.StartNew();
+        try {
+            process.Start();
+        } catch (Win32Exception error) {
+            // Only host launch failure permits another candidate. A later native
+            // cleanup failure must never execute the author's script a second time.
+            throw new PowerShellHostStartException(error);
         }
+        try {
+            lifetime.Attach(process);
+            var output = Task.Run(() => DrainOutput(process.StandardOutput));
+            var errors = Task.Run(() => DrainOutput(process.StandardError));
+            int exitCode;
+            try {
+                exitCode = lifetime.WaitForCompletion(elapsed, timeout);
+            } finally {
+                // Descendants may retain both pipes even after the script exits.
+                // End their owned scope before waiting for or disposing readers.
+                lifetime.Terminate();
+            }
+            if (!process.WaitForExit(ConfigurationScriptLifetime.RemainingMilliseconds(elapsed, timeout)) ||
+                !Task.WaitAll(new Task[] { output, errors }, ConfigurationScriptLifetime.RemainingMilliseconds(elapsed, timeout))) {
+                throw ConfigurationScriptLifetime.Deadline(timeout);
+            }
+            var standardOutput = output.GetAwaiter().GetResult();
+            var standardError = errors.GetAwaiter().GetResult();
+
+            if (exitCode != 0) {
+                var message = new StringBuilder();
+                message.AppendLine($"PowerShell script execution failed with exit code {exitCode}.");
+
+                if (!string.IsNullOrWhiteSpace(standardError)) {
+                    message.AppendLine(standardError.Trim());
+                } else if (!string.IsNullOrWhiteSpace(standardOutput)) {
+                    message.AppendLine(standardOutput.Trim());
+                }
+
+                throw new InvalidOperationException(message.ToString().Trim());
+            }
+        } finally {
+            lifetime.Terminate();
+            // Allow kernel termination to close inherited pipe handles before
+            // Process.Dispose closes the readers used by the drain tasks.
+            process.WaitForExit(5000);
+        }
+    }
+
+    // Continue draining after the capture limit so a noisy child cannot fill either pipe.
+    private static string DrainOutput(StreamReader reader) {
+        const int maximumCharacters = 65536;
+        var captured = new StringBuilder();
+        var buffer = new char[4096];
+        try {
+            int read;
+            while ((read = reader.Read(buffer, 0, buffer.Length)) != 0) {
+                var retain = Math.Min(read, maximumCharacters - captured.Length);
+                if (retain > 0) captured.Append(buffer, 0, retain);
+            }
+        } catch (ObjectDisposedException) { }
+        catch (IOException) { }
+        return captured.ToString();
     }
 
     private static string BuildArguments(string wrapperPath, string scriptPath, string outputPath, string? modulePath) {
@@ -181,95 +220,14 @@ internal static class PowerShellConfigurationLoader {
     }
 
     private static string BuildWrapperScript() {
-        return """
-param(
-    [Parameter(Mandatory = $true)]
-    [string] $ScriptPath,
-    [Parameter(Mandatory = $true)]
-    [string] $OutputPath,
-    [string] $ModulePath
-)
-
-$ErrorActionPreference = 'Stop'
-
-if ($ModulePath) {
-    Import-Module -Name $ModulePath -Force
-} elseif (-not (Get-Module -Name PowerBGInfo)) {
-    $scriptImportsPowerBGInfo = $false
-    try {
-        $scriptText = Get-Content -LiteralPath $ScriptPath -Raw -ErrorAction Stop
-        $scriptImportsPowerBGInfo = $scriptText -match '(?im)^\s*Import-Module\b[^\r\n]*(PowerBGInfo|PowerBGInfo\.psd1|PowerBGInfo\.psm1|PowerBGInfo\.PowerShell\.dll)\b'
-    } catch {
+        using var resource = typeof(PowerShellConfigurationLoader).Assembly.GetManifestResourceStream("PowerBGInfo.Cli.ConfigurationWrapper.ps1")
+            ?? throw new InvalidOperationException("The configuration-script resource is missing.");
+        using var reader = new StreamReader(resource);
+        return reader.ReadToEnd();
     }
 
-    if (-not $scriptImportsPowerBGInfo) {
-        try {
-            Import-Module -Name PowerBGInfo -Force -ErrorAction Stop
-        } catch {
-        }
-    }
-}
-
-$scriptDirectory = [System.IO.Path]::GetDirectoryName($ScriptPath)
-if ([string]::IsNullOrWhiteSpace($scriptDirectory)) {
-    $scriptDirectory = (Get-Location).Path
-}
-Push-Location
-Set-Location -LiteralPath $scriptDirectory
-try {
-    $results = & $ScriptPath
-} finally {
-    Pop-Location
-}
-
-$config = @($results | Where-Object {
-    $candidate = $_.PSObject.BaseObject
-    $candidate -ne $null -and $candidate.GetType().FullName -eq 'PowerBGInfo.BgInfoConfiguration'
-} | Select-Object -Last 1)
-if ($config.Count -gt 0) {
-    $configuration = $config[0].PSObject.BaseObject
-    $configurationType = $configuration.GetType()
-    $jsonType = $configurationType.Assembly.GetType('PowerBGInfo.BgInfoConfigurationJson', $true)
-    $saveMethod = $jsonType.GetMethod('Save', [type[]] @($configurationType, [string]))
-    if ($null -eq $saveMethod) {
-        throw "Unable to find PowerBGInfo.BgInfoConfigurationJson.Save."
-    }
-    $saveMethod.Invoke($null, @($configuration, $OutputPath)) | Out-Null
-    Write-Output $OutputPath
-    return
-}
-
-$jsonPath = @(
-    $results |
-        Where-Object { $_ -is [string] } |
-        ForEach-Object {
-            try {
-                $candidate = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_)
-                if ((Test-Path -LiteralPath $candidate) -and ([System.IO.Path]::GetExtension($candidate) -ieq '.json')) {
-                    $candidate
-                }
-            } catch {
-            }
-        } |
-        Select-Object -Last 1
-)
-
-if ($jsonPath.Count -gt 0) {
-    Copy-Item -LiteralPath $jsonPath[0] -Destination $OutputPath -Force
-    Write-Output $OutputPath
-    return
-}
-
-throw "Script must return a [PowerBGInfo.BgInfoConfiguration] object (for example via New-BGInfo -PassThru) or a path to a JSON configuration file."
-""";
+    private sealed class PowerShellHostStartException : Exception {
+        internal PowerShellHostStartException(Win32Exception error) : base(error.Message, error) { }
     }
 
-    private static void TryDeleteFile(string path) {
-        try {
-            if (File.Exists(path)) {
-                File.Delete(path);
-            }
-        } catch {
-        }
-    }
 }

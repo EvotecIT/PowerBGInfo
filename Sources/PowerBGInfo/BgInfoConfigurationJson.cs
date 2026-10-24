@@ -108,7 +108,8 @@ public static partial class BgInfoConfigurationJson {
             configuration.FilePath = ResolvePath(model.FilePath, baseDirectory);
         }
         if (!string.IsNullOrWhiteSpace(model.OutputFileName)) {
-            configuration.OutputFileName = model.OutputFileName!;
+            // Keep relative output portable until command overrides select the final directory.
+            configuration.OutputFileName = ResolvePath(model.OutputFileName, string.Empty);
         }
         if (!string.IsNullOrWhiteSpace(model.FontFamilyName)) {
             configuration.FontFamilyName = model.FontFamilyName!;
@@ -260,7 +261,7 @@ public static partial class BgInfoConfigurationJson {
             MonitorIndex = configuration.MonitorIndex,
             SpaceX = configuration.SpaceX,
             SpaceY = configuration.SpaceY,
-            WallpaperFit = configuration.WallpaperFit.ToString(),
+            WallpaperFit = configuration.HasExplicitWallpaperFit ? configuration.WallpaperFit.ToString() : null,
             TextPosition = configuration.TextPosition.ToString(),
             Target = configuration.Target.ToString(),
             ForceWallpaperRefresh = configuration.ForceWallpaperRefresh,
@@ -1144,7 +1145,11 @@ public static partial class BgInfoConfigurationJson {
         setter(parsed);
     }
 
-    private static string ResolvePath(string? path, string baseDirectory) {
+    /// <summary>
+    /// Resolves authored configuration paths using the host's filesystem syntax. Relative Windows
+    /// separators are portable; foreign Windows roots are rejected on Unix rather than renamed.
+    /// </summary>
+    internal static string ResolvePath(string? path, string baseDirectory) {
         if (string.IsNullOrWhiteSpace(path)) {
             return string.Empty;
         }
@@ -1152,6 +1157,12 @@ public static partial class BgInfoConfigurationJson {
         var safePath = path!;
         if (Path.IsPathRooted(safePath)) {
             return safePath;
+        }
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) {
+            if ((safePath.Length > 1 && char.IsLetter(safePath[0]) && safePath[1] == ':') || safePath.StartsWith("\\", StringComparison.Ordinal)) {
+                throw new ArgumentException("A Windows-rooted path cannot be resolved on this platform. Use a relative configuration path or a local absolute path.", nameof(path));
+            }
+            safePath = safePath.Replace('\\', Path.DirectorySeparatorChar);
         }
 
         if (string.IsNullOrWhiteSpace(baseDirectory)) {

@@ -15,7 +15,11 @@ internal static class SessionUser {
             using var process = Process.GetCurrentProcess();
             sessionId = process.SessionId;
         } catch { /* An unreadable session must not fall back to another user's account. */ }
-        return Resolve(() => new DesktopSessionService().GetSessionUser()?.AccountName, consoleUserFromWmi, sessionId);
+        return Resolve(() => {
+            var session = new PortableDesktopService().GetSession();
+            return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) || session.HasGraphicalSession
+                ? session.AccountName : null;
+        }, consoleUserFromWmi, sessionId);
     }
 
     /// <summary>Applies source precedence and presentation at the session and WMI read boundaries.</summary>

@@ -8,7 +8,7 @@ $DevelopmentConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDev
     throw "PowerBGInfoDevelopmentConfiguration must be Debug or Release. Received '$Env:PowerBGInfoDevelopmentConfiguration'."
 }
 $DevelopmentPath = "$PSScriptRoot\Sources\PowerBGInfo.PowerShell\bin\$DevelopmentConfiguration"
-$DevelopmentFolderCore = "net8.0-windows"
+$DevelopmentFolderCore = "net8.0"
 $DevelopmentFolderDefault = "net472"
 $BinaryModules = @(
     "PowerBGInfo.PowerShell.dll"

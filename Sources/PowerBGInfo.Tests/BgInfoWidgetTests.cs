@@ -1,10 +1,17 @@
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using static PowerBGInfo.Tests.BgInfoBackgroundTests;
 
 namespace PowerBGInfo.Tests;
 
+// Font registration is process-wide. This collection cannot overlap other tests while a fixture face is installed.
+[CollectionDefinition("Canvas typography fonts", DisableParallelization = true)]
+public sealed class CanvasTypographyFontCollection {
+}
+
+[Collection("Canvas typography fonts")]
 public class BgInfoWidgetTests
 {
     private static readonly ChartColor Panel = ChartColor.FromRgb(12, 18, 34);
@@ -320,21 +327,41 @@ public class BgInfoWidgetTests
     private static (RgbaImage Image, int Height) RenderRegionTypography(
         double scale, double? valueFontSize = null, bool useCanvasScale = false)
     {
-        var visual = new BgInfoVisualCanvas {
-            Transparent = true,
-            TileTextScale = useCanvasScale ? scale : 1
-        };
-        visual.Tiles.Add(new BgInfoVisualCanvasTile {
-            Label = "HOSTNAME",
-            Value = "WORKSTATION-01",
-            Detail = "Windows desktop",
-            TextScale = useCanvasScale ? null : scale,
-            ValueFontSize = valueFontSize
-        });
+        const string family = "PowerBGInfo test Carlito";
+        var assembly = typeof(BgInfoWidgetTests).Assembly;
+        using var regular = assembly.GetManifestResourceStream("PowerBGInfo.Tests.Fixtures.Fonts.Carlito.Carlito-Regular.ttf");
+        using var bold = assembly.GetManifestResourceStream("PowerBGInfo.Tests.Fixtures.Fonts.Carlito.Carlito-Bold.ttf");
+        Assert.NotNull(regular);
+        Assert.NotNull(bold);
+        FontRegistry.Register(family, regular);
+        try {
+            FontRegistry.Register(family, bold, weight: 700);
+            var visual = new BgInfoVisualCanvas {
+                Transparent = true,
+                FontFamilyName = family,
+                // Keep the glyph mask independent of muted theme colors: its
+                // brightness threshold must measure text size, not contrast.
+                TileLabelColor = ChartColor.White,
+                TileValueColor = ChartColor.White,
+                TileDetailColor = ChartColor.White,
+                TileGlassTop = ChartColor.Black,
+                TileGlassBottom = ChartColor.Black,
+                TileTextScale = useCanvasScale ? scale : 1
+            };
+            visual.Tiles.Add(new BgInfoVisualCanvasTile {
+                Label = "HOSTNAME",
+                Value = "WORKSTATION-01",
+                Detail = "Windows desktop",
+                TextScale = useCanvasScale ? null : scale,
+                ValueFontSize = valueFontSize
+            });
 
-        var height = BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080);
-        using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 480, height, 1080);
-        return (rendered.ToRgbaImage(), height);
+            var height = BgInfoVisualCanvasRenderer.MeasureRegionHeight(visual, 1080);
+            using var rendered = BgInfoVisualCanvasRenderer.RenderRegion(visual, 480, height, 1080);
+            return (rendered.ToRgbaImage(), height);
+        } finally {
+            FontRegistry.Clear();
+        }
     }
 
     private static List<int> MeasureBrightGlyphRows(RgbaImage image)

@@ -3,6 +3,22 @@ namespace PowerBGInfo.Tests;
 public class BgInfoMonitorTests
 {
     [Fact]
+    public void ProviderUsesCanonicalWallpaperIndicesAndDoesNotInventUnknownGeometry()
+    {
+        var selected = BgInfoDesktopDefaultsTests.QualifiedTarget(targetIndex: 0, physicalIndex: 2);
+        var unknown = BgInfoDesktopDefaultsTests.QualifiedTarget(targetIndex: 1, hasGeometry: false);
+        var other = BgInfoDesktopDefaultsTests.QualifiedTarget(targetIndex: 2, physicalIndex: 4);
+
+        var monitors = BgInfoMonitorProvider.FromWallpaperTargets(new[] { other, unknown, selected });
+
+        Assert.Equal(new[] { 0, 2 }, monitors.Select(monitor => monitor.Index));
+        Assert.Equal(2, selected.Display!.Index);
+        Assert.Equal(160, monitors[0].Width);
+        Assert.Equal(120, monitors[0].Height);
+        Assert.Equal(selected.Display.Id, monitors[0].Id);
+    }
+
+    [Fact]
     public void CreateTurnsDesktopBoundsIntoSize()
     {
         var monitor = BgInfoMonitorProvider.Create(1, @"\\.\DISPLAY2", primary: false, left: -2560, top: 0, right: 0, bottom: 1440, scale: 1.254);

@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using DesktopManager;
+using System.Runtime.InteropServices;
 
 namespace PowerBGInfo;
 
@@ -30,6 +31,7 @@ internal static class LockScreenPolicy {
 
     /// <summary>Reads EditionID, for example Professional or Enterprise; null when it cannot be read.</summary>
     public static string? ReadEditionId() {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return null;
         try {
             using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             return key?.GetValue("EditionID") as string;

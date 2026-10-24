@@ -56,18 +56,26 @@ foreach ($Module in $PSDInformation.RequiredModules) {
 }
 Write-Color
 
-Import-Module $PSScriptRoot\*.psd1 -Force
-$result = Invoke-Pester -Path @(
-    "$PSScriptRoot\Tests"
-    "$PSScriptRoot\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1"
-    "$PSScriptRoot\Sources\PowerBGInfo.Tests\Features.Tests.ps1"
-    "$PSScriptRoot\Sources\PowerBGInfo.Tests\WidgetContracts.Tests.ps1"
-) -Verbose -PassThru
+$previousTestModule = $Env:POWERBGINFO_TEST_MODULE
+try {
+    if ([string]::IsNullOrWhiteSpace($Env:POWERBGINFO_TEST_MODULE)) {
+        $Env:POWERBGINFO_TEST_MODULE = $PrimaryModule.FullName
+    }
+    Import-Module -Name $PrimaryModule.FullName -Force -ErrorAction Stop
+    $result = Invoke-Pester -Path @(
+        "$PSScriptRoot\Tests"
+        "$PSScriptRoot\Sources\PowerBGInfo.Tests\Cmdlet.Tests.ps1"
+        "$PSScriptRoot\Sources\PowerBGInfo.Tests\Features.Tests.ps1"
+        "$PSScriptRoot\Sources\PowerBGInfo.Tests\WidgetContracts.Tests.ps1"
+    ) -Verbose -PassThru
 
-$failedCount = if ($result.PSObject.Properties.Name -contains 'FailedCount') { [int]$result.FailedCount } else { 0 }
-$failedBlocksCount = if ($result.PSObject.Properties.Name -contains 'FailedBlocksCount') { [int]$result.FailedBlocksCount } else { 0 }
-$failedContainersCount = if ($result.PSObject.Properties.Name -contains 'FailedContainersCount') { [int]$result.FailedContainersCount } else { 0 }
-$failedResult = $result.PSObject.Properties.Name -contains 'Result' -and $result.Result -ne 'Passed'
-if ($failedResult -or $failedCount -gt 0 -or $failedBlocksCount -gt 0 -or $failedContainersCount -gt 0) {
-    throw "PowerBGInfo tests failed: $failedCount tests, $failedBlocksCount blocks, $failedContainersCount containers."
+    $failedCount = if ($result.PSObject.Properties.Name -contains 'FailedCount') { [int]$result.FailedCount } else { 0 }
+    $failedBlocksCount = if ($result.PSObject.Properties.Name -contains 'FailedBlocksCount') { [int]$result.FailedBlocksCount } else { 0 }
+    $failedContainersCount = if ($result.PSObject.Properties.Name -contains 'FailedContainersCount') { [int]$result.FailedContainersCount } else { 0 }
+    $failedResult = $result.PSObject.Properties.Name -contains 'Result' -and $result.Result -ne 'Passed'
+    if ($failedResult -or $failedCount -gt 0 -or $failedBlocksCount -gt 0 -or $failedContainersCount -gt 0) {
+        throw "PowerBGInfo tests failed: $failedCount tests, $failedBlocksCount blocks, $failedContainersCount containers."
+    }
+} finally {
+    [Environment]::SetEnvironmentVariable('POWERBGINFO_TEST_MODULE', $previousTestModule, 'Process')
 }

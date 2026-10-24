@@ -25,8 +25,9 @@ Website: [powerbginfo.com](https://powerbginfo.com/).
 
 # PowerBGInfo
 
-**PowerBGInfo** turns PowerShell data into Windows desktop and lock screen
-backgrounds. Put the machine's identity, the signed-in user, support
+**PowerBGInfo** turns PowerShell data into desktop backgrounds on Windows,
+macOS, GNOME, and KDE Plasma, and lock screen backgrounds on Windows.
+Put the machine's identity, the signed-in user, support
 details, health and status, charts, diagrams and QR codes straight on the
 wallpaper, for every monitor, and refresh it at every sign-in. It is a
 PowerShell alternative to Sysinternals BGInfo: the layout is a script, the
@@ -59,7 +60,16 @@ Install from the [PowerShell Gallery](https://www.powershellgallery.com/packages
 Install-Module -Name PowerBGInfo -Scope CurrentUser
 ```
 
-PowerBGInfo runs in Windows PowerShell 5.1 and PowerShell 7 on Windows.
+PowerBGInfo runs in Windows PowerShell 5.1 on Windows and PowerShell 7.4 or later on
+Windows, macOS, and Linux. File rendering works without a graphical session.
+Use `Get-BGInfoCapability` to inspect the desktop backend before applying a
+wallpaper; per-display images and automatic sizing depend on that backend.
+See the [cross-platform guide](Website/content/project-docs/docs/cross-platform.md)
+for the support boundaries and portable example.
+When using the current wallpaper as the base, PowerBGInfo preserves its reported
+fit unless you supply `-WallpaperFit`. Unreadable or unsupported source images
+stop the run before desktop application. Choose `-FilePath` or an explicit
+`New-BGInfoBackground` to select another base.
 The rendering and desktop libraries ship inside the module, so nothing
 else needs installing. Releases are Authenticode-signed by Evotec. Run
 `Update-Module -Name PowerBGInfo` to update an existing installation.
@@ -402,8 +412,9 @@ A layout can be exported to JSON, reviewed and versioned on its own, and
 rendered again later:
 
 ```powershell
-$json = "$env:TEMP\PowerBGInfo\layout.json"
-New-BGInfo -Target File -ConfigurationDirectory "$env:TEMP\PowerBGInfo" `
+$outputDirectory = Join-Path ([IO.Path]::GetTempPath()) 'PowerBGInfo'
+$json = Join-Path $outputDirectory 'layout.json'
+New-BGInfo -Target File -ConfigurationDirectory $outputDirectory `
     -JsonPath $json -ExportOnly {
     New-BGInfoValue -BuiltinValue HostName -Name 'Machine'
     New-BGInfoValue -BuiltinValue LoggedOnUser -Name 'User'
@@ -426,15 +437,15 @@ NativeAOT.
 
 The VS Code PowerShell extension has a known problem with the module in
 Windows PowerShell 5.1. The regular Windows PowerShell 5.1 console,
-Windows PowerShell ISE and PowerShell 7 work.
+Windows PowerShell ISE and PowerShell 7.4 or later work.
 
 ## Development and validation
 
 Build and test the current checkout:
 
 ```powershell
-dotnet test .\Sources\PowerBGInfo.sln
-.\PowerBGInfo.Tests.ps1
+dotnet test ./Sources/PowerBGInfo.sln
+./PowerBGInfo.Tests.ps1
 ```
 
 For a fuller pass, the validation script builds the solution and runs the
@@ -442,5 +453,16 @@ For a fuller pass, the validation script builds the solution and runs the
 to keep the rendered files:
 
 ```powershell
-.\Build\Validate-PowerBGInfo.ps1 -Configuration Release
+./Build/Validate-PowerBGInfo.ps1 -Configuration Release
 ```
+
+For a NativeAOT CLI export, select the portable target and the CLI's publish
+profile. Set the runtime to the build host; this example uses Apple Silicon:
+
+```powershell
+dotnet publish ./Sources/PowerBGInfo.Cli/PowerBGInfo.Cli.csproj -c Release `
+    -f net8.0 -r osx-arm64 -p:PublishProfile=NativeAot
+```
+
+The profile enables AOT for the executable without applying AOT publish settings
+to the net472 dependency builds.

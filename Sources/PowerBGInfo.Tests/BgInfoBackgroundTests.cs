@@ -85,6 +85,32 @@ public class BgInfoBackgroundTests
     }
 
     [Fact]
+    public void ContainedBackgroundImagePreservesItsFitAndOpacity()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "bginfo-background-" + Path.GetRandomFileName() + ".png");
+        try
+        {
+            File.WriteAllBytes(source, ChartForgeX.Composition.ImageComposition.Create(4, 2, ChartColor.FromRgb(200, 0, 0)).ToPng());
+            var background = new BgInfoBackground {
+                Color = Navy,
+                ImagePath = source,
+                ImageFit = BgInfoImageFit.Contain,
+                ImageOpacity = 0.5
+            };
+
+            using var image = BgInfoBackgroundRenderer.Render(background, 8, 8);
+            var pixels = image.ToRgbaImage();
+
+            AssertNear(Navy, Pixel(pixels, 4, 0));
+            AssertNear(ChartColor.FromRgb(105, 10, 30), Pixel(pixels, 4, 4));
+        }
+        finally
+        {
+            File.Delete(source);
+        }
+    }
+
+    [Fact]
     public void BackgroundReplacesTheBaseImageAndSkipsTheSlideshow()
     {
         if (!OperatingSystem.IsWindows())
