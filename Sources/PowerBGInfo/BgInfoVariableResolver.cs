@@ -119,9 +119,9 @@ internal static partial class BgInfoVariableResolver {
     private static IReadOnlyList<IReadOnlyDictionary<string, string>> ResolveVolumes(string? argument) {
         var values = new List<IReadOnlyDictionary<string, string>>();
         IEnumerable<DriveInfo> drives = DriveInfo.GetDrives().Where(drive => drive.IsReady);
-        var driveFilter = NormalizeDriveLetter(argument);
+        var driveFilter = NormalizeVolumeIdentity(argument);
         if (!string.IsNullOrWhiteSpace(driveFilter)) {
-            drives = drives.Where(drive => string.Equals(NormalizeDriveLetter(drive.Name), driveFilter, StringComparison.OrdinalIgnoreCase));
+            drives = drives.Where(drive => string.Equals(NormalizeVolumeIdentity(drive.Name), driveFilter, BgInfoPaths.Comparison));
         }
 
         int index = 0;
@@ -140,7 +140,7 @@ internal static partial class BgInfoVariableResolver {
             double usedPercent = totalSize > 0 ? (double)usedSpace / totalSize * 100d : 0d;
             var context = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 ["Index"] = index.ToString(CultureInfo.CurrentCulture),
-                ["DriveLetter"] = NormalizeDriveLetter(drive.Name) ?? string.Empty,
+                ["DriveLetter"] = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ? NormalizeDriveLetter(drive.Name) ?? string.Empty : string.Empty,
                 ["DriveRoot"] = drive.Name,
                 ["Name"] = drive.Name,
                 ["VolumeLabel"] = drive.VolumeLabel ?? string.Empty,
@@ -174,6 +174,20 @@ internal static partial class BgInfoVariableResolver {
         }
 
         return $"{size.ToString(size >= 100d || unitIndex == 0 ? "0" : "0.##", CultureInfo.CurrentCulture)} {units[unitIndex]}";
+    }
+
+    internal static string? NormalizeVolumeIdentity(string? drive) {
+        if (string.IsNullOrWhiteSpace(drive)) return null;
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) return NormalizeDriveLetter(drive);
+        var authoredPath = drive!.Trim();
+        string path;
+        try { path = BgInfoPaths.GetIdentity(authoredPath); }
+        catch (IOException) {
+            // Volume filtering is read-only; inaccessible directory listings must
+            // not abort a render. Image ownership keeps its separate fail-closed rule.
+            path = Path.GetFullPath(authoredPath);
+        }
+        return path.Length > 1 ? path.TrimEnd(Path.DirectorySeparatorChar) : path;
     }
 
     private static string? NormalizeDriveLetter(string? drive) {

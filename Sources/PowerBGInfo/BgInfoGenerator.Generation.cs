@@ -2,7 +2,7 @@ namespace PowerBGInfo;
 
 public partial class BgInfoGenerator {
     /// <summary>
-    /// Generates the BGInfo image and returns its path. Runs for the same Windows
+    /// Generates the BGInfo image and returns its path. Runs for the same
     /// user serialize across processes and sessions through rendering and application.
     /// </summary>
     /// <param name="config">Configuration controlling layout and output.</param>

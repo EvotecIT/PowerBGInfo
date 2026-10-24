@@ -147,6 +147,54 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>Get-BGInfoCapability</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>BGInfoCapability</command:noun>
+      <maml:description>
+        <maml:para>Reports the current desktop backend and the wallpaper operations it supports.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Reads capabilities without changing the desktop. File rendering works independently of desktop availability. Linux backends may support wallpaper changes while requiring explicit image dimensions.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-BGInfoCapability</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters />
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>DesktopManager.DesktopCapabilities</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>Get-BGInfoCapability</dev:code>
+        <dev:remarks>
+          <maml:para>Shows the selected Windows, macOS, GNOME, KDE, or unsupported backend and its limits.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>Get-BGInfoMonitor</command:name>
       <command:verb>Get</command:verb>
       <command:noun>BGInfoMonitor</command:noun>
@@ -155,8 +203,8 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Each object has the Index that New-BGInfo -MonitorIndex takes, the device name, the bounds in desktop coordinates, whether it is the primary monitor, and the display scale when Windows reports one. Loop over the output to render one image per monitor.</maml:para>
-      <maml:para>The cmdlet only reads the display configuration, needs no elevation and works in Constrained Language Mode. It returns nothing when no monitor can be read, for example in a session without a desktop.</maml:para>
+      <maml:para>Each object has the Index that New-BGInfo -MonitorIndex takes, the device name, the bounds in desktop coordinates, the backend display identity, whether it is the primary monitor, and the display scale when the backend reports one. Loop over the output to render one image per monitor.</maml:para>
+      <maml:para>The cmdlet only reads the display configuration, needs no elevation and works in Constrained Language Mode. It returns nothing when physical display geometry is unavailable, for example on a headless host or the current Linux adapters. Supply explicit background dimensions in those cases.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem parameterSetName="__AllParameterSets">
@@ -211,13 +259,13 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>foreach ($monitor in Get-BGInfoMonitor) {&#xD;
-    New-BGInfo -MonitorIndex $monitor.Index -Target File `&#xD;
-        -ConfigurationDirectory C:\Temp\BGInfo `&#xD;
-        -OutputFileName "wallpaper-$($monitor.Index).png" {&#xD;
-        New-BGInfoBackground&#xD;
-        New-BGInfoValue -Name 'Size' -Value "$($monitor.Width) x $($monitor.Height)"&#xD;
-    }&#xD;
+        <dev:code>foreach ($monitor in Get-BGInfoMonitor) {
+    New-BGInfo -MonitorIndex $monitor.Index -Target File `
+        -ConfigurationDirectory ([IO.Path]::GetTempPath()) `
+        -OutputFileName "wallpaper-$($monitor.Index).png" {
+        New-BGInfoBackground -Width $monitor.Width -Height $monitor.Height
+        New-BGInfoValue -Name 'Size' -Value "$($monitor.Width) x $($monitor.Height)"
+    }
 }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -267,8 +315,8 @@
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>$facts = Get-BGInfoSystemInfo&#xD;
-New-BGInfoValue -Name 'Uptime' -Value $facts.UptimeText&#xD;
+        <dev:code>$facts = Get-BGInfoSystemInfo
+New-BGInfoValue -Name 'Uptime' -Value $facts.UptimeText
 $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPercent</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -295,7 +343,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Override configuration output directory.</maml:para>
+            <maml:para>Override configuration output directory, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -331,7 +379,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Override output file name.</maml:para>
+            <maml:para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -343,7 +391,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>Path to the JSON configuration file.</maml:para>
+            <maml:para>Filesystem path to the JSON configuration file, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -376,7 +424,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Override configuration output directory.</maml:para>
+          <maml:para>Override configuration output directory, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -412,7 +460,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Override output file name.</maml:para>
+          <maml:para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -424,7 +472,7 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>Path to the JSON configuration file.</maml:para>
+          <maml:para>Filesystem path to the JSON configuration file, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -645,11 +693,11 @@ $facts.Disks | New-BGInfoTable -Title 'Disks' -Property Drive, FreeGB, UsedPerce
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>$patch = Invoke-BGInfoDataSource -Name 'Patch level' -TimeoutSeconds 10 -Default 'unknown' -ScriptBlock {&#xD;
-    (Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1).HotFixID&#xD;
-}&#xD;
-$tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList $uri -ScriptBlock {&#xD;
-    param($uri) (Invoke-RestMethod -Uri $uri -TimeoutSec 5).count&#xD;
+        <dev:code>$patch = Invoke-BGInfoDataSource -Name 'Patch level' -TimeoutSeconds 10 -Default 'unknown' -ScriptBlock {
+    (Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1).HotFixID
+}
+$tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList $uri -ScriptBlock {
+    param($uri) (Invoke-RestMethod -Uri $uri -TimeoutSec 5).count
 }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -868,7 +916,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Output directory for generated BGInfo images.</maml:para>
+            <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -928,7 +976,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FilePath</maml:name>
           <maml:description>
-            <maml:para>Optional base wallpaper file path. When omitted, current wallpaper is used.</maml:para>
+            <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1012,7 +1060,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name for the generated image.</maml:para>
+            <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1649,7 +1697,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Output directory for generated BGInfo images.</maml:para>
+          <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1709,7 +1757,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FilePath</maml:name>
         <maml:description>
-          <maml:para>Optional base wallpaper file path. When omitted, current wallpaper is used.</maml:para>
+          <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1793,7 +1841,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name for the generated image.</maml:para>
+          <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2621,11 +2669,11 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfo -Target File {&#xD;
-    New-BGInfoBackground -Width 1920 -Height 1080 -Gradient '#0B1022', '#05070F' -Glow @(&#xD;
-        New-BGInfoBackgroundGlow -X 0.15 -Y 0.1 -Radius 0.55 -Color '#4F46E566'&#xD;
-    ) -Pattern Dots&#xD;
-    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME&#xD;
+        <dev:code>New-BGInfo -Target File {
+    New-BGInfoBackground -Width 1920 -Height 1080 -Gradient '#0B1022', '#05070F' -Glow @(
+        New-BGInfoBackgroundGlow -X 0.15 -Y 0.1 -Radius 0.55 -Color '#4F46E566'
+    ) -Pattern Dots
+    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME
 } -ConfigurationDirectory $PSScriptRoot -OutputFileName 'Generated.png'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -4047,7 +4095,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = 4624; StartTime = (Get-Date).AddDays(-90) } -MaxEvents 5000 |&#xD;
+        <dev:code>Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = 4624; StartTime = (Get-Date).AddDays(-90) } -MaxEvents 5000 |
     ForEach-Object TimeCreated | New-BGInfoCalendarHeatmap -Region Bottom -Title 'Sign-ins, last 90 days'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -7486,7 +7534,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ConfigurationDirectory</maml:name>
           <maml:description>
-            <maml:para>Output directory for generated BGInfo images.</maml:para>
+            <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -7546,7 +7594,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>FilePath</maml:name>
           <maml:description>
-            <maml:para>Optional base wallpaper file path.</maml:para>
+            <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -7630,7 +7678,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>OutputFileName</maml:name>
           <maml:description>
-            <maml:para>Optional output file name for the generated image.</maml:para>
+            <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -8275,7 +8323,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ConfigurationDirectory</maml:name>
         <maml:description>
-          <maml:para>Output directory for generated BGInfo images.</maml:para>
+          <maml:para>Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -8335,7 +8383,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>FilePath</maml:name>
         <maml:description>
-          <maml:para>Optional base wallpaper file path.</maml:para>
+          <maml:para>Optional base wallpaper filesystem path, relative to the current PowerShell location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -8419,7 +8467,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>OutputFileName</maml:name>
         <maml:description>
-          <maml:para>Optional output file name for the generated image.</maml:para>
+          <maml:para>Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -10007,10 +10055,10 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfo -Theme Graphite -Target File {&#xD;
-    New-BGInfoLayout -Margin 48 -ColumnWidth 480 -IconAreaWidth 120&#xD;
-    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values 12, 30, 22&#xD;
-    New-BGInfoChart -Region Right -Title 'Memory' -Kind Gauge -Values 64&#xD;
+        <dev:code>New-BGInfo -Theme Graphite -Target File {
+    New-BGInfoLayout -Margin 48 -ColumnWidth 480 -IconAreaWidth 120
+    New-BGInfoChart -Region Right -Title 'CPU' -Kind Area -Values 12, 30, 22
+    New-BGInfoChart -Region Right -Title 'Memory' -Kind Gauge -Values 64
 } -ConfigurationDirectory $PSScriptRoot -OutputFileName 'regions.png'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -10810,9 +10858,9 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoList -Region Left -Title 'Before you leave' -Item @(&#xD;
-    @{ Text = 'Save to OneDrive'; Checked = $true }&#xD;
-    @{ Text = 'Sign out'; Checked = $false }&#xD;
+        <dev:code>New-BGInfoList -Region Left -Title 'Before you leave' -Item @(
+    @{ Text = 'Save to OneDrive'; Checked = $true }
+    @{ Text = 'Sign out'; Checked = $false }
 )</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -11548,12 +11596,12 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoMermaid -Region Right -Title 'Escalation' -Definition @'&#xD;
-flowchart TD&#xD;
-    A[Service desk] --&gt; B{Resolved in 30 min?}&#xD;
-    B -- No --&gt; C[On-call engineer]&#xD;
-    C --&gt; D[Major incident]&#xD;
-'@&#xD;
+        <dev:code>New-BGInfoMermaid -Region Right -Title 'Escalation' -Definition @'
+flowchart TD
+    A[Service desk] --&gt; B{Resolved in 30 min?}
+    B -- No --&gt; C[On-call engineer]
+    C --&gt; D[Major incident]
+'@
 Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalation'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -12631,7 +12679,7 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoMetric -Region Right -Label 'CPU' -Value 38 -Unit '%' -Symbol 'CPU' `&#xD;
+        <dev:code>New-BGInfoMetric -Region Right -Label 'CPU' -Value 38 -Unit '%' -Symbol 'CPU' `
     -History 52, 48, 44, 41, 38 -WarningThreshold 70 -CriticalThreshold 90 -Caption '5 minute trend'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -14724,7 +14772,7 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |&#xD;
+        <dev:code>Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
     New-BGInfoTable -Region Right -Title 'Top processes' -Property Name, Id, @{ Name = 'CPU s'; Expression = { [math]::Round($_.CPU) } }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -14990,11 +15038,11 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>$theme = New-BGInfoTheme -Preset Aurora -Mode Light -Accent '#0EA5E9' -Scale 1.33&#xD;
-New-BGInfo -Theme $theme -Target File {&#xD;
-    New-BGInfoBackground -Width 2560 -Height 1440&#xD;
-    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME&#xD;
-    New-BGInfoChart -Region Bottom -Title 'CPU' -Kind Area -Values 12, 30, 22&#xD;
+        <dev:code>$theme = New-BGInfoTheme -Preset Aurora -Mode Light -Accent '#0EA5E9' -Scale 1.33
+New-BGInfo -Theme $theme -Target File {
+    New-BGInfoBackground -Width 2560 -Height 1440
+    New-BGInfoValue -Name 'Host' -Value $env:COMPUTERNAME
+    New-BGInfoChart -Region Bottom -Title 'CPU' -Kind Area -Values 12, 30, 22
 } -ConfigurationDirectory $PSScriptRoot -OutputFileName 'themed.png'</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -15778,9 +15826,9 @@ New-BGInfo -Theme $theme -Target File {&#xD;
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>New-BGInfoTimeline -Region Bottom -Title 'This week' -Now (Get-Date) -Item @(&#xD;
-    New-BGInfoTimelineItem 'On call' 'A. Novak' -Start '2026-10-12' -End '2026-10-15' -Category 'On call'&#xD;
-    New-BGInfoTimelineItem 'SQL-PROD-01' 'Patching' -Start '2026-10-18 02:00' -Duration '02:00' -Category Maintenance -Status Warning&#xD;
+        <dev:code>New-BGInfoTimeline -Region Bottom -Title 'This week' -Now (Get-Date) -Item @(
+    New-BGInfoTimelineItem 'On call' 'A. Novak' -Start '2026-10-12' -End '2026-10-15' -Category 'On call'
+    New-BGInfoTimelineItem 'SQL-PROD-01' 'Patching' -Start '2026-10-18 02:00' -Duration '02:00' -Category Maintenance -Status Warning
 )</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -19221,8 +19269,8 @@ New-BGInfo -Theme $theme -Target File {&#xD;
       </command:example>
       <command:example>
         <maml:title>EXAMPLE 2</maml:title>
-        <dev:code>Get-VM | Select-Object Name, CPUUsage, @{ Name = 'MemoryGB'; Expression = { $_.MemoryAssigned / 1GB } } |&#xD;
-    New-BGInfoTreemap -Region Center -Title 'Memory by VM, colored by CPU' -ValueProperty MemoryGB -ValueSuffix ' GB' `&#xD;
+        <dev:code>Get-VM | Select-Object Name, CPUUsage, @{ Name = 'MemoryGB'; Expression = { $_.MemoryAssigned / 1GB } } |
+    New-BGInfoTreemap -Region Center -Title 'Memory by VM, colored by CPU' -ValueProperty MemoryGB -ValueSuffix ' GB' `
         -ColorProperty CPUUsage -WarningThreshold 70 -CriticalThreshold 90</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -22462,13 +22510,13 @@ New-BGInfo -Theme $theme -Target File {&#xD;
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>$tiles = @(&#xD;
-    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'&#xD;
-    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31 -MiniChartMaximum 100&#xD;
-)&#xD;
-&#xD;
-New-BGInfo -Target File {&#xD;
-    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -ThemeMode Light -TitleColor White -SubtitleColor White -Tile $tiles&#xD;
+        <dev:code>$tiles = @(
+    New-BGInfoVisualCanvasTile -Side Left -IconKind Computer -SurfaceStyle Raised -Label HOSTNAME -Value '{{HostName}}'
+    New-BGInfoVisualCanvasTile -Side Right -IconKind Cpu -SurfaceStyle Raised -Label 'CPU LOAD' -Value '31% active' -MiniChartKind Area -MiniChartValues 22,28,25,36,31 -MiniChartMaximum 100
+)
+
+New-BGInfo -Target File {
+    New-BGInfoVisualCanvas -Title 'PowerBGInfo' -Subtitle 'High-contrast information boxes' -ThemeMode Light -TitleColor White -SubtitleColor White -Tile $tiles
 } -FilePath .\Examples\Samples\TapC-Evotec-2560x1080.jpg -ConfigurationDirectory .\Examples\Output -OutputFileName 'PowerBGInfo.VisualCanvas.ContrastBox.jpg' -WallpaperFit Fill</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
@@ -22573,9 +22621,9 @@ New-BGInfo -Target File {&#xD;
     <command:examples>
       <command:example>
         <maml:title>EXAMPLE 1</maml:title>
-        <dev:code>$features = @(&#xD;
-    New-BGInfoVisualCanvasFeature -Icon 'A+' -Label 'light contrast boxes'&#xD;
-    New-BGInfoVisualCanvasFeature -Icon 'JSON' -Label 'portable config'&#xD;
+        <dev:code>$features = @(
+    New-BGInfoVisualCanvasFeature -Icon 'A+' -Label 'light contrast boxes'
+    New-BGInfoVisualCanvasFeature -Icon 'JSON' -Label 'portable config'
 )</dev:code>
         <dev:remarks>
           <maml:para></maml:para>

@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace PowerBGInfo;
 
-/// <summary>Owns one synchronous generation transaction for the effective Windows user.</summary>
+/// <summary>Owns one synchronous generation transaction for the effective user.</summary>
 internal sealed class BgInfoGenerationLease : IDisposable {
     [ThreadStatic] private static FileStream? _currentLock;
     [ThreadStatic] private static int _depth;
@@ -35,7 +35,7 @@ internal sealed class BgInfoGenerationLease : IDisposable {
                 _currentLock = stream;
                 _depth = 1;
                 return new BgInfoGenerationLease();
-            } catch (IOException ex) when ((ex.HResult & 0xffff) is 32 or 33) {
+            } catch (IOException ex) when ((ex.HResult & 0xffff) is 32 or 33 or 11 or 35) {
                 // Sharing/lock violations mean another process owns the transaction.
                 // Other I/O failures should remain actionable instead of waiting five minutes.
                 var remaining = timeout - wait.Elapsed;

@@ -244,8 +244,26 @@ public class BgInfoConfigurationJsonTests
 
         var configuration = BgInfoConfigurationJson.Load(path, scriptDirectory);
 
-        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Samples\\wallpaper.jpg")), configuration.FilePath);
-        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..\\Output")), configuration.ConfigurationDirectory);
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..", "Samples", "wallpaper.jpg")), configuration.FilePath);
+        Assert.Equal(Path.GetFullPath(Path.Combine(scriptDirectory, "..", "Output")), configuration.ConfigurationDirectory);
+    }
+
+    [Theory]
+    [InlineData("FilePath", @"C:\Images\wallpaper.png")]
+    [InlineData("FilePath", @"\\server\images\wallpaper.png")]
+    [InlineData("FilePath", @"\Images\wallpaper.png")]
+    [InlineData("ConfigurationDirectory", @"\Output")]
+    public void NonWindowsLoadRejectsWindowsRootsInsteadOfReinterpretingThem(string property, string windowsPath)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        var path = Path.GetTempFileName();
+        try {
+            File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string> { [property] = windowsPath }));
+            var error = Assert.Throws<ArgumentException>(() => BgInfoConfigurationJson.Load(path));
+            Assert.Contains("Windows-rooted path", error.Message);
+        } finally {
+            File.Delete(path);
+        }
     }
 
     [Fact]

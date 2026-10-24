@@ -8,7 +8,7 @@ namespace PowerBGInfo;
 /// <summary>
 /// Defines the configuration used to generate a BGInfo overlay image.
 /// </summary>
-public class BgInfoConfiguration {
+public partial class BgInfoConfiguration {
     private Color? _color;
     private Color? _valueColor;
     private string? _fontFamilyName;
@@ -242,9 +242,12 @@ public class BgInfoConfiguration {
     /// </summary>
     public int SpaceY { get; set; } = 10;
     /// <summary>
-    /// Gets or sets the wallpaper fit mode applied after generation.
+    /// Gets or sets an explicit wallpaper fit. When omitted, a current-desktop run preserves the native fit.
     /// </summary>
-    public DesktopWallpaperPosition WallpaperFit { get; set; } = DesktopWallpaperPosition.Center;
+    public DesktopWallpaperPosition WallpaperFit {
+        get => _wallpaperFit;
+        set { _wallpaperFit = value; HasExplicitWallpaperFit = true; }
+    }
     /// <summary>
     /// Gets or sets the layout anchor position.
     /// </summary>

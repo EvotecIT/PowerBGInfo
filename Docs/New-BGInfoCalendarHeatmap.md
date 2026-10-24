@@ -1,7 +1,7 @@
 ---
 external help file: PowerBGInfo-help.xml
 Module Name: PowerBGInfo
-online version: https://github.com/EvotecIT/PowerBGInfo
+online version: https://powerbginfo.com
 schema: 2.0.0
 ---
 # New-BGInfoCalendarHeatmap

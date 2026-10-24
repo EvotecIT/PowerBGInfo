@@ -6,15 +6,15 @@ namespace PowerBGInfo.PowerShell;
 [Cmdlet(VerbsLifecycle.Invoke, "BGInfo")]
 [OutputType(typeof(string))]
 public sealed class CmdletInvokeBGInfo : PSCmdlet {
-    /// <para>Path to the JSON configuration file.</para>
+    /// <para>Filesystem path to the JSON configuration file, relative to the current PowerShell location.</para>
     [Parameter(Mandatory = true, Position = 0)]
     public string Path { get; set; } = string.Empty;
 
-    /// <para>Override output file name.</para>
+    /// <para>Override output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.</para>
     [Parameter]
     public string OutputFileName { get; set; } = string.Empty;
 
-    /// <para>Override configuration output directory.</para>
+    /// <para>Override configuration output directory, relative to the current PowerShell location.</para>
     [Parameter]
     public string ConfigurationDirectory { get; set; } = string.Empty;
 
@@ -32,13 +32,13 @@ public sealed class CmdletInvokeBGInfo : PSCmdlet {
 
     /// <summary>Loads the configuration and runs BGInfo.</summary>
     protected override void EndProcessing() {
-        var config = BgInfoConfigurationJson.Load(Path);
+        var config = BgInfoConfigurationJson.Load(PowerShellFileSystemPath.Resolve(SessionState, Path, nameof(Path)));
 
         if (MyInvocation.BoundParameters.ContainsKey(nameof(OutputFileName))) {
-            config.OutputFileName = OutputFileName;
+            config.OutputFileName = PowerShellFileSystemPath.ResolveOutputFileName(SessionState, OutputFileName);
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(ConfigurationDirectory))) {
-            config.ConfigurationDirectory = ConfigurationDirectory;
+            config.ConfigurationDirectory = PowerShellFileSystemPath.Resolve(SessionState, ConfigurationDirectory, nameof(ConfigurationDirectory));
         }
         if (MyInvocation.BoundParameters.ContainsKey(nameof(MonitorIndex))) {
             config.MonitorIndex = MonitorIndex;

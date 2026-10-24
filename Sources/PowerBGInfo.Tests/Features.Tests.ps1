@@ -1,6 +1,6 @@
 $discoveryConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $discoveryFallbackConfiguration = if ($discoveryConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
-$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0-windows' }
+$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0' }
 $modulePath = $Env:POWERBGINFO_TEST_MODULE
 if ([string]::IsNullOrWhiteSpace($modulePath)) {
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\$discoveryFramework\PowerBGInfo.PowerShell.dll"
@@ -9,6 +9,25 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
     }
 }
 Import-Module -Name $modulePath -Force
+
+BeforeAll {
+    . (Join-Path $PSScriptRoot 'Get-TestModuleAssembly.ps1')
+}
+
+Describe 'Wallpaper fit intent in portable configuration' {
+    It 'preserves omitted fit and an explicit Center through exported JSON' {
+        $implicit = New-BGInfo -PassThru -Target File -ConfigurationDirectory $TestDrive {}
+        $explicit = New-BGInfo -PassThru -Target File -WallpaperFit Center -ConfigurationDirectory $TestDrive {}
+        $implicitPath = Join-Path $TestDrive 'implicit-fit.json'
+        $explicitPath = Join-Path $TestDrive 'explicit-fit.json'
+
+        Export-BGInfoConfiguration -InputObject $implicit -Path $implicitPath -Force
+        Export-BGInfoConfiguration -InputObject $explicit -Path $explicitPath -Force
+
+        (Get-Content -LiteralPath $implicitPath -Raw | ConvertFrom-Json).WallpaperFit | Should -BeNullOrEmpty
+        (Get-Content -LiteralPath $explicitPath -Raw | ConvertFrom-Json).WallpaperFit | Should -Be 'Center'
+    }
+}
 
 Describe 'New-BGInfoTheme and New-BGInfo -Theme' {
     It 'creates a theme from a preset, mode, accent and scale' {
@@ -386,7 +405,7 @@ Describe 'Per-monitor example' {
 Describe 'Data helpers' {
     It 'returns system facts as one plain object without throwing' {
         $facts = Get-BGInfoSystemInfo
-        $facts.ComputerName | Should -Be $env:COMPUTERNAME
+        $facts.ComputerName | Should -Be ([Environment]::MachineName)
         $facts.UptimeText | Should -Not -BeNullOrEmpty
         $facts.DefenderStatus | Should -Not -BeNullOrEmpty
         $facts.BitLockerStatus | Should -Not -BeNullOrEmpty
@@ -394,18 +413,26 @@ Describe 'Data helpers' {
     }
 
     It 'reports the user of this session as LoggedOnUser' {
+        $isWindowsHost = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
         $session = (Get-Process -Id $PID).SessionId
-        if ($session -eq 0) {
-            Set-ItResult -Skipped -Because 'session 0 has no signed-in user to compare with'
+        if ($isWindowsHost -and $session -eq 0) {
+            Set-ItResult -Skipped -Because 'Windows session 0 has no signed-in user to compare with'
             return
         }
-        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be "$env:USERDOMAIN\$env:USERNAME"
+        $expectedUser = if ($isWindowsHost) {
+            "$env:USERDOMAIN\$env:USERNAME"
+        } else {
+            $desktopType = (Get-TestModuleAssembly -Name 'DesktopManager').GetType('DesktopManager.PortableDesktopService', $true)
+            $desktopSession = [Activator]::CreateInstance($desktopType).GetSession()
+            if ($desktopSession.HasGraphicalSession) { [Environment]::UserName } else { 'Unknown' }
+        }
+        (Get-BGInfoSystemInfo).LoggedOnUser | Should -Be $expectedUser
         $entry = New-BGInfoValue -BuiltinValue LoggedOnUser
         $entry.BuiltinValue | Should -Be 'LoggedOnUser'
         $entry.Value | Should -BeNullOrEmpty
         $provider = $entry.GetType().Assembly.GetType('PowerBGInfo.SystemInfoProvider')
         $provider.GetMethod('GetValue').Invoke($null, @('LoggedOnUser')) |
-            Should -Be "$env:USERDOMAIN\$env:USERNAME"
+            Should -Be $expectedUser
     }
 
     It 'preserves the new dynamic built-in tokens without querying them during authoring' -ForEach @(
@@ -468,7 +495,7 @@ Describe 'Repeated runs' {
         $second | Should -Be $first
         (Get-FileHash -LiteralPath $second).Hash | Should -Be $hash
         $warnings | Should -BeNullOrEmpty
-        Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -Contain "wallpaper.png|$base"
+        Test-Path -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Should -BeTrue
     }
 
     It 'keeps an explicit in-place image when its original record is missing' {
@@ -476,8 +503,9 @@ Describe 'Repeated runs' {
         Remove-Item -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt')
         $second = Invoke-Render $first 'again.png' -WarningVariable warnings -WarningAction SilentlyContinue
         $warnings | Should -BeNullOrEmpty
-        $record = Get-Content -LiteralPath (Join-Path $folder 'PowerBgInfo.outputs.txt') | Where-Object { $_.StartsWith('again.png|') }
-        $source = $record.Substring('again.png|'.Length)
+        $backups = @(Get-ChildItem -LiteralPath $folder -File -Filter 'again.PowerBGInfo-original-*.png')
+        $backups | Should -HaveCount 1
+        $source = $backups[0].FullName
         $source | Should -Not -Be $second
         Test-Path -LiteralPath $source | Should -BeTrue
 

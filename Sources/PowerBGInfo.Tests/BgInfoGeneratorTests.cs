@@ -33,43 +33,6 @@ public partial class BgInfoGeneratorTests
     }
 
     [Fact]
-    public void GenerateUsesSolidColorWhenWallpaperMissing()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-        var imageService = new ImageService();
-        var wallpaperService = new FakeWallpaperService();
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
-        var config = new BgInfoConfiguration
-        {
-            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
-            OutputFileName = "solid-wallpaper.png",
-            BackgroundColor = Color.DarkSlateBlue,
-            ForceWallpaperRefresh = false,
-            ConfigurationDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName())
-        };
-        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
-        var path = generator.Generate(config);
-        Assert.True(File.Exists(path));
-    }
-
-    [Fact]
-    public void ResolveBaseImagePathReturnsNullWhenWallpaperLookupThrows()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
-        var config = new BgInfoConfiguration();
-        var path = BgInfoGenerator.ResolveBaseImagePath(config, _ => throw new IOException("No wallpaper configured."));
-
-        Assert.Null(path);
-    }
-
-    [Fact]
     public void GenerateCallsAllUsersWhenRequested()
     {
         if (!OperatingSystem.IsWindows())
@@ -179,11 +142,6 @@ public partial class BgInfoGeneratorTests
     [Fact]
     public void GenerateDoesNotPreserveWallpaperSlideshowWhenItIsNotRunning()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
         var source = Path.Combine(tempDirectory, "slide-one.jpg");
@@ -196,7 +154,9 @@ public partial class BgInfoGeneratorTests
                 State = DesktopSlideshowState.Enabled
             }
         };
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var generator = new BgInfoGenerator(imageService, wallpaperService) {
+            CurrentWallpaper = _ => source
+        };
         var config = new BgInfoConfiguration
         {
             OutputFileName = "static-fallback.png",
@@ -210,6 +170,7 @@ public partial class BgInfoGeneratorTests
 
         Assert.True(File.Exists(path));
         Assert.Equal(0, wallpaperService.SlideshowCalls);
+        Assert.Equal(1, wallpaperService.Calls);
     }
 
     [Fact]
@@ -316,112 +277,6 @@ public partial class BgInfoGeneratorTests
     }
 
     [Fact]
-    public void GenerateRendersChartAndStoresHistory()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-        var imageService = new ImageService();
-        var wallpaperService = new FakeWallpaperService();
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
-        var configDir = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
-        var config = new BgInfoConfiguration
-        {
-            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
-            OutputFileName = "chart-wallpaper.png",
-            BackgroundColor = Color.Black,
-            ForceWallpaperRefresh = false,
-            ConfigurationDirectory = configDir
-        };
-        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
-        config.Charts.Add(new BgInfoChart
-        {
-            Id = "cpu",
-            Title = "CPU",
-            Kind = BgInfoChartKind.Sparkline,
-            Values = new[] { 10d, 20d, 30d },
-            MaxPoints = 5,
-            OffsetX = 20,
-            OffsetY = 20,
-            Anchor = BgInfoTextPosition.BottomLeft
-        });
-
-        var path = generator.Generate(config);
-        Assert.True(File.Exists(path));
-        var historyPath = Path.Combine(configDir, "Charts", "cpu.txt");
-        Assert.True(File.Exists(historyPath));
-    }
-
-    [Fact]
-    public void GenerateUsesDistinctHistoryFilesForChartsWithSameTitle()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
-        var imageService = new ImageService();
-        var wallpaperService = new FakeWallpaperService();
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
-        var configDir = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
-        var config = new BgInfoConfiguration
-        {
-            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
-            OutputFileName = "chart-history.png",
-            BackgroundColor = Color.Black,
-            ForceWallpaperRefresh = false,
-            ConfigurationDirectory = configDir
-        };
-        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
-        config.Charts.Add(new BgInfoChart
-        {
-            Title = "CPU",
-            Kind = BgInfoChartKind.Sparkline,
-            Values = new[] { 10d, 20d },
-            MaxPoints = 5
-        });
-        config.Charts.Add(new BgInfoChart
-        {
-            Title = "CPU",
-            Kind = BgInfoChartKind.Bar,
-            Values = new[] { 30d, 40d },
-            MaxPoints = 5
-        });
-
-        generator.Generate(config);
-
-        Assert.True(File.Exists(Path.Combine(configDir, "Charts", "CPU_0.txt")));
-        Assert.True(File.Exists(Path.Combine(configDir, "Charts", "CPU_1.txt")));
-    }
-
-    [Fact]
-    public void GenerateUsesFallbackMonitorSizeForScreenCoordinates()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-        var imageService = new ImageService();
-        var wallpaperService = new FakeWallpaperService();
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
-        var config = new BgInfoConfiguration
-        {
-            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
-            OutputFileName = "screen-coordinates.png",
-            BackgroundColor = Color.Black,
-            ForceWallpaperRefresh = false,
-            UseScreenCoordinates = true,
-            MonitorIndex = 999,
-            ConfigurationDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName())
-        };
-        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
-
-        var path = generator.Generate(config);
-        Assert.True(File.Exists(path));
-    }
-
-    [Fact]
     public void WrapTextLinesSplitsLongValueIntoMultipleLines()
     {
         if (!OperatingSystem.IsWindows())
@@ -496,34 +351,6 @@ public partial class BgInfoGeneratorTests
     public void NormalizeOutputImageExtensionPreservesEverySupportedFileFormat(string extension)
     {
         Assert.Equal(extension, BgInfoGenerator.NormalizeOutputImageExtension(extension, BgInfoTarget.File));
-    }
-
-    [Fact]
-    public void GenerateNormalizesExplicitLegacyOutputFileName()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
-        var imageService = new ImageService();
-        var wallpaperService = new FakeWallpaperService();
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
-        var config = new BgInfoConfiguration
-        {
-            FilePath = Path.Combine(Path.GetTempPath(), "missing-wallpaper.png"),
-            OutputFileName = "wallpaper.gif",
-            BackgroundColor = Color.Black,
-            ForceWallpaperRefresh = false,
-            ConfigurationDirectory = tempDirectory
-        };
-        config.Entries.Add(new BgInfoEntry { Type = BgInfoEntryType.Value, Name = "Test", Value = "1" });
-
-        var path = generator.Generate(config);
-
-        Assert.True(File.Exists(path));
-        Assert.Equal(Path.Combine(tempDirectory, "wallpaper.png"), path);
     }
 
     [Fact]

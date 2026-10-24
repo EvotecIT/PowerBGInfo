@@ -24,7 +24,8 @@ internal static class BgInfoBackgroundRenderer {
                 throw new FileNotFoundException("BGInfo background image file was not found.", imagePath);
             }
 
-            composition.DrawImageFile(imagePath!, 0, 0, width, height,
+            using var backgroundImage = BgInfoRasterImage.Load(imagePath!);
+            composition.DrawImage(backgroundImage.ToRgbaImage(), 0, 0, width, height,
                 BgInfoImageFitMapper.ToVisualCanvasFit(background.ImageFit), Clamp01(background.ImageOpacity));
         }
 
@@ -41,27 +42,18 @@ internal static class BgInfoBackgroundRenderer {
                 glow.X * width, glow.Y * height, glow.Radius * longestSide, glow.Color, outer);
         }
 
-        DrawPattern(composition, background, width, height);
+        DrawPattern(composition, background);
         return image;
     }
 
-    private static void DrawPattern(ImageComposition composition, BgInfoBackground background, int width, int height) {
+    private static void DrawPattern(ImageComposition composition, BgInfoBackground background) {
         if (background.Pattern == BgInfoBackgroundPattern.None || background.PatternColor.A == 0) return;
         var spacing = Math.Max(8, background.PatternSpacing);
         if (background.Pattern == BgInfoBackgroundPattern.Grid) {
-            var gridOffset = spacing / 2;
-            for (var x = gridOffset; x < width; x += spacing) composition.FillRectangle(x, 0, 1, height, background.PatternColor);
-            for (var y = gridOffset; y < height; y += spacing) composition.FillRectangle(0, y, width, 1, background.PatternColor);
+            composition.FillGridPattern(background.PatternColor, spacing);
             return;
         }
-
-        var offset = spacing / 2d;
-        var radius = Math.Max(0.8, spacing / 40d);
-        for (var y = offset; y < height; y += spacing) {
-            for (var x = offset; x < width; x += spacing) {
-                composition.FillCircle(x, y, radius, background.PatternColor);
-            }
-        }
+        composition.FillDotPattern(background.PatternColor, spacing, Math.Max(0.8, spacing / 40d));
     }
 
     private static double Clamp01(double value) => double.IsNaN(value) ? 1d : Math.Max(0d, Math.Min(1d, value));

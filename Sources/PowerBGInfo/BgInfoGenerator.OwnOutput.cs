@@ -2,6 +2,8 @@ namespace PowerBGInfo;
 
 public partial class BgInfoGenerator
 {
+    private const string DesktopBackgroundBasePrefix = ".PowerBGInfo-original-desktop-";
+
     /// <summary>Receives warnings from a run, for example when a base image is PowerBGInfo's own earlier output.</summary>
     public Action<string>? Warning { get; set; }
 
@@ -37,7 +39,7 @@ public partial class BgInfoGenerator
 
         // The record holds the base the output was drawn on, already resolved when it was written,
         // so one step back is the original. Null means a plain or generated background.
-        if (BgInfoOutputRegistry.TryGetSource(candidate!, out var source))
+        if (BgInfoOutputRegistry.TryGetSource(candidate!, out var source, out var untrustedSnapshot))
         {
             if (source != null && !File.Exists(source))
             {
@@ -47,12 +49,18 @@ public partial class BgInfoGenerator
             return IsSamePath(source ?? string.Empty, candidate) ? null : source;
         }
 
+        if (untrustedSnapshot)
+        {
+            throw new InvalidDataException("The earlier output provenance cannot establish an original image. "
+                + "Choose an explicit original FilePath or Background and a different output path before rendering again.");
+        }
+
         if (chosenByUser && isPlannedOutput && File.Exists(candidate))
         {
             return candidate;
         }
 
-        var isKnownOutputPath = knownOutputPaths?.Contains(TryGetFullPath(candidate!)) == true;
+        var isKnownOutputPath = knownOutputPaths?.Contains(NormalizePath(candidate!)) == true;
         if (!isPlannedOutput && !isKnownOutputPath && !BgInfoOutputRegistry.HasOwnOutputName(candidate!))
         {
             return candidate;
@@ -68,28 +76,51 @@ public partial class BgInfoGenerator
         var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
         var name = Path.GetFileNameWithoutExtension(outputPath);
         var extension = Path.GetExtension(outputPath);
-        var backupPath = Path.Combine(directory, $"{name}.PowerBGInfo-original-{Guid.NewGuid():N}{extension}");
+        var suffix = $".PowerBGInfo-original-{Guid.NewGuid():N}{extension}";
+        // Image extensions and this suffix are ASCII. Omit an oversized source stem
+        // instead of exceeding either UTF-16 or UTF-8 filename-component limits.
+        if (name.Length + suffix.Length > 255 || System.Text.Encoding.UTF8.GetByteCount(name + suffix) > 255) name = string.Empty;
+        var backupPath = Path.Combine(directory, name + suffix);
         File.Copy(sourcePath, backupPath);
         return backupPath;
+    }
+
+    /// <summary>Publishes pristine synthesized backdrop pixels once; failed creation removes only the file this call reserved.</summary>
+    private static string PreserveDesktopBackground(byte[] png, string outputPath) {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath))!;
+        var path = Path.Combine(directory, DesktopBackgroundBasePrefix + Guid.NewGuid().ToString("N") + ".png");
+        var ownsFile = false;
+        try {
+            using (var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
+                ownsFile = true;
+                stream.Write(png, 0, png.Length);
+            }
+            return path;
+        } catch {
+            if (ownsFile) TryDelete(path);
+            throw;
+        }
+    }
+
+    /// <summary>Recognizes our bounded native-backdrop base name after its trusted provenance mapping has resolved.</summary>
+    private static bool IsPreservedDesktopBackgroundSource(string? path) {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var name = Path.GetFileName(path);
+        return name.StartsWith(DesktopBackgroundBasePrefix, StringComparison.OrdinalIgnoreCase)
+            && name.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            && Guid.TryParseExact(name.Substring(DesktopBackgroundBasePrefix.Length, name.Length - DesktopBackgroundBasePrefix.Length - 4), "N", out _);
     }
 
     private void WriteWarning(string message) => Warning?.Invoke(message);
 
     private static bool IsSamePath(string path, string? other)
     {
-        return !string.IsNullOrWhiteSpace(other)
-            && string.Equals(TryGetFullPath(path), TryGetFullPath(other!), StringComparison.OrdinalIgnoreCase);
+        return !string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(other)
+            && BgInfoPaths.AreSame(path, other!);
     }
 
-    private static string TryGetFullPath(string path)
+    private static string NormalizePath(string path)
     {
-        try
-        {
-            return Path.GetFullPath(path);
-        }
-        catch
-        {
-            return path;
-        }
+        return Path.GetFullPath(path);
     }
 }

@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace PowerBGInfo;
 
-public static partial class SystemInfoProvider {
+internal sealed partial class WindowsSystemInfoProvider {
     /// <summary>Caches a completed fact read, while leaving unavailable results eligible for recovery.</summary>
     private sealed class FactCache<T> where T : class {
         private readonly Func<T> _load;

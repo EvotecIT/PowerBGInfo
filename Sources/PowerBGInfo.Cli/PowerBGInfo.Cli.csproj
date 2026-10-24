@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net472;net8.0-windows;net9.0-windows</TargetFrameworks>
+        <TargetFrameworks>net472;net8.0;net8.0-windows;net9.0-windows;net10.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(PublishAot)' == 'true'">
-        <TargetFrameworks>net8.0-windows</TargetFrameworks>
-    </PropertyGroup>
-
     <ItemGroup>
-        <ProjectReference Include="..\\PowerBGInfo\\PowerBGInfo.csproj" />
+        <ProjectReference Include="..\\PowerBGInfo\\PowerBGInfo.csproj" GlobalPropertiesToRemove="PublishAot;PublishProfile;RuntimeIdentifier;SelfContained" />
+        <EmbeddedResource Include="Resources/ConfigurationWrapper.ps1" LogicalName="PowerBGInfo.Cli.ConfigurationWrapper.ps1" />
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>PowerBGInfo.Tests</_Parameter1>
+        </AssemblyAttribute>
     </ItemGroup>
 </Project>

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
+        <TargetFrameworks>net472;net8.0;net8.0-windows</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Description>PowerShell module for generating BGInfo-style desktop overlays on Windows.</Description>
+        <Description>PowerShell module for generating system-information wallpapers on Windows, macOS, and supported Linux desktops.</Description>
         <AssemblyName>PowerBGInfo.PowerShell</AssemblyName>
         <AssemblyTitle>PowerBGInfo.PowerShell</AssemblyTitle>
         <VersionPrefix>2.0.1</VersionPrefix>

@@ -10,9 +10,10 @@ public sealed class OsMetadataBoundaryCollection { }
 public sealed class SystemInfoSnapshotRecoveryTests {
     [Fact]
     public void SnapshotUsesOneUnavailableOsReadAndTheNextSnapshotRetries() {
+        if (SystemInfoProvider.DefaultProvider.GetType().Name != "WindowsSystemInfoProvider") return;
         // Substitute only the existing external-fact loader, without changing cache policy
         // or adding a production hook. Other snapshot facts retain their read-only providers.
-        var cacheField = typeof(SystemInfoProvider).GetField("OsInfoCache", BindingFlags.Static | BindingFlags.NonPublic)!;
+        var cacheField = SystemInfoProvider.DefaultProvider.GetType().GetField("OsInfoCache", BindingFlags.Static | BindingFlags.NonPublic)!;
         var cache = cacheField.GetValue(null)!;
         var cacheType = cache.GetType();
         var loadField = cacheType.GetField("_load", BindingFlags.Instance | BindingFlags.NonPublic)!;

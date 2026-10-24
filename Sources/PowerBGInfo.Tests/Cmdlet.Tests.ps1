@@ -1,6 +1,6 @@
 $discoveryConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $discoveryFallbackConfiguration = if ($discoveryConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
-$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0-windows' }
+$discoveryFramework = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'net472' } else { 'net8.0' }
 $modulePath = $Env:POWERBGINFO_TEST_MODULE
 if ([string]::IsNullOrWhiteSpace($modulePath)) {
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$discoveryConfiguration\$discoveryFramework\PowerBGInfo.PowerShell.dll"
@@ -11,6 +11,7 @@ if ([string]::IsNullOrWhiteSpace($modulePath)) {
 Import-Module -Name $modulePath -Force
 
 BeforeAll {
+. (Join-Path $PSScriptRoot 'Get-TestModuleAssembly.ps1')
 $testConfiguration = if ([string]::IsNullOrWhiteSpace($Env:PowerBGInfoDevelopmentConfiguration)) { 'Debug' } else { $Env:PowerBGInfoDevelopmentConfiguration }
 $fallbackConfiguration = if ($testConfiguration -eq 'Debug') { 'Release' } else { 'Debug' }
 
@@ -19,20 +20,46 @@ function Get-BGInfoTestCliPath {
         return $Env:POWERBGINFO_TEST_CLI
     }
 
-    $path = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
+    $path = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$testConfiguration\net8.0\PowerBGInfo.Cli.dll"
     if (-not (Test-Path -LiteralPath $path)) {
-        $path = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0-windows\PowerBGInfo.Cli.exe"
+        $path = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.Cli\bin\$fallbackConfiguration\net8.0\PowerBGInfo.Cli.dll"
     }
     return $path
+}
+
+function Invoke-BGInfoTestCli {
+    param(
+        [string] $Path,
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]] $Arguments
+    )
+
+    if ([IO.Path]::GetExtension($Path) -eq '.dll') {
+        & dotnet $Path @Arguments
+    } else {
+        & $Path @Arguments
+    }
+    if ($LASTEXITCODE -ne 0) {
+        throw "PowerBGInfo CLI exited with code $LASTEXITCODE."
+    }
 }
 
 function Get-BGInfoTestPowerShellPath {
     $executable = if ($PSVersionTable.PSEdition -eq 'Desktop') {
         'powershell.exe'
-    } else {
+    } elseif ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
         'pwsh.exe'
+    } else {
+        'pwsh'
     }
     return Join-Path -Path $PSHOME -ChildPath $executable
+}
+
+function Read-TestRasterImage {
+    param([string] $Path)
+
+    $decoder = (Get-TestModuleAssembly -Name 'ChartForgeX').GetType('ChartForgeX.Raster.RasterImageDecoder', $true)
+    return $decoder.GetMethod('Read', [type[]] @([string])).Invoke($null, [object[]] @($Path))
 }
 
 function Get-ImagePixelHash {
@@ -40,29 +67,13 @@ function Get-ImagePixelHash {
         [string] $Path
     )
 
-    Add-Type -AssemblyName System.Drawing
-    $bitmap = [System.Drawing.Bitmap]::new($Path)
+    # Decode the image before hashing so encoder metadata cannot affect pixel equality.
+    $image = Read-TestRasterImage -Path $Path
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
     try {
-        $bytes = New-Object byte[] ($bitmap.Width * $bitmap.Height * 4)
-        $index = 0
-        for ($y = 0; $y -lt $bitmap.Height; $y++) {
-            for ($x = 0; $x -lt $bitmap.Width; $x++) {
-                $pixel = $bitmap.GetPixel($x, $y)
-                $bytes[$index++] = $pixel.A
-                $bytes[$index++] = $pixel.R
-                $bytes[$index++] = $pixel.G
-                $bytes[$index++] = $pixel.B
-            }
-        }
-
-        $sha256 = [System.Security.Cryptography.SHA256]::Create()
-        try {
-            return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace('-', '')
-        } finally {
-            $sha256.Dispose()
-        }
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($image.Pixels))).Replace('-', '')
     } finally {
-        $bitmap.Dispose()
+        $sha256.Dispose()
     }
 }
 }
@@ -354,17 +365,10 @@ Describe 'New-BGInfoVisualCanvas cmdlets' {
         $customJson.ValueFontFamilyName | Should -Be 'Consolas'
 
         # Exercise the public JSON loader and native renderer with a small file-only fixture.
-        Add-Type -AssemblyName System.Drawing
         $sourcePath = Join-Path $TestDrive 'font-source.png'
-        $source = [System.Drawing.Bitmap]::new(360, 200)
-        $graphics = [System.Drawing.Graphics]::FromImage($source)
-        try {
-            $graphics.Clear([System.Drawing.Color]::Navy)
-            $source.Save($sourcePath, [System.Drawing.Imaging.ImageFormat]::Png)
-        } finally {
-            $graphics.Dispose()
-            $source.Dispose()
-        }
+        New-BGInfo -Target File -ConfigurationDirectory $TestDrive -OutputFileName 'font-source.png' {
+            New-BGInfoBackground -Width 360 -Height 200 -Color Navy
+        } | Out-Null
         $fontChart = New-BGInfoChart -Title 'Memory working set' -Kind Bar -Values 42,65 -ThemeMode Dark -NoHistory -ShowDataLabels -Width 320 -Height 180 -Anchor TopLeft -OffsetX 20 -OffsetY 10
         $inheritedPath = Join-Path $TestDrive 'inherited-font.json'
         New-BGInfo { $fontChart } -FilePath $sourcePath -Target File -ConfigurationDirectory $TestDrive -OutputFileName 'inherited-font.png' -JsonPath $inheritedPath -ExportOnly | Out-Null
@@ -731,14 +735,9 @@ Describe 'Generated backgrounds and shared panels' {
         } -ConfigurationDirectory $TestDrive -OutputFileName 'generated.png' -Target File
 
         Test-Path -LiteralPath $path | Should -BeTrue
-        Add-Type -AssemblyName System.Drawing
-        $image = [System.Drawing.Bitmap]::new($path)
-        try {
-            $image.Width | Should -Be 320
-            $image.Height | Should -Be 200
-        } finally {
-            $image.Dispose()
-        }
+        $image = Read-TestRasterImage -Path $path
+        $image.Width | Should -Be 320
+        $image.Height | Should -Be 200
     }
 
     It 'rejects a gradient with other than two colors' {
@@ -784,7 +783,7 @@ Describe 'CLI interoperability' {
         Export-BGInfoConfiguration -InputObject $config -Path $configPath -Force | Out-Null
 
         $psResult = Invoke-BGInfo -Path $configPath -NoApply
-        & $cliPath --config $configPath --output cli.png --no-apply | Out-Null
+        Invoke-BGInfoTestCli $cliPath --config $configPath --output cli.png --no-apply | Out-Null
         $cliResult = Join-Path -Path $outputDir -ChildPath 'cli.png'
 
         Get-ImagePixelHash -Path $psResult | Should -Be (Get-ImagePixelHash -Path $cliResult)
@@ -801,7 +800,7 @@ Describe 'CLI interoperability' {
             New-BGInfoValue -BuiltinValue HostName
         } -FilePath $sampleImage -ConfigurationDirectory $outputDir -Target File -OutputFileName 'inline.png' -JsonPath $configPath -ExportOnly | Out-Null
 
-        & $cliPath --config $configPath --no-apply | Out-Null
+        Invoke-BGInfoTestCli $cliPath --config $configPath --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'inline.png') | Should -BeTrue
     }
 
@@ -821,7 +820,7 @@ Describe 'CLI interoperability' {
         $json | Should -Match '"Provider"\s*:\s*"Volumes"'
         $json | Should -Match '"ForEach"\s*:\s*"Volumes"'
 
-        & $cliPath --config $configPath --no-apply | Out-Null
+        Invoke-BGInfoTestCli $cliPath --config $configPath --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'volumes.png') | Should -BeTrue
     }
 
@@ -843,7 +842,7 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --pwsh `
+        Invoke-BGInfoTestCli $cliPath --script $scriptPath --pwsh `
             (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli.png') | Should -BeTrue
     }
@@ -864,7 +863,7 @@ New-BGInfo {
 } -ConfigurationDirectory '$($TestDrive.Replace("'", "''"))' -Target File -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        $result = & $cliPath --script $scriptPath --pwsh `
+        $result = Invoke-BGInfoTestCli $cliPath --script $scriptPath --pwsh `
             (Get-BGInfoTestPowerShellPath) --export-json $exportPath --export-only
 
         $result | Should -Be $exportPath
@@ -879,7 +878,7 @@ New-BGInfo {
         $scriptPath = Join-Path -Path $TestDrive -ChildPath 'bginfo-script-module.ps1'
         $modulePath = $Env:POWERBGINFO_TEST_MODULE
         if ([string]::IsNullOrWhiteSpace($modulePath)) {
-            $moduleFramework = if ($PSEdition -eq 'Core') { 'net8.0-windows' } else { 'net472' }
+            $moduleFramework = if ($PSEdition -eq 'Core') { 'net8.0' } else { 'net472' }
             $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$testConfiguration\$moduleFramework\PowerBGInfo.PowerShell.dll"
             if (-not (Test-Path -LiteralPath $modulePath)) {
                 $modulePath = Join-Path -Path $PSScriptRoot -ChildPath "..\PowerBGInfo.PowerShell\bin\$fallbackConfiguration\$moduleFramework\PowerBGInfo.PowerShell.dll"
@@ -893,7 +892,7 @@ New-BGInfo {
 } -FilePath '$($sampleImage.Replace("'", "''"))' -ConfigurationDirectory '$($outputDir.Replace("'", "''"))' -Target File -OutputFileName 'script-cli-module.png' -PassThru
 "@ | Set-Content -LiteralPath $scriptPath -Encoding UTF8
 
-        & $cliPath --script $scriptPath --module $modulePath --pwsh `
+        Invoke-BGInfoTestCli $cliPath --script $scriptPath --module $modulePath --pwsh `
             (Get-BGInfoTestPowerShellPath) --no-apply | Out-Null
         Test-Path -LiteralPath (Join-Path -Path $outputDir -ChildPath 'script-cli-module.png') | Should -BeTrue
     }

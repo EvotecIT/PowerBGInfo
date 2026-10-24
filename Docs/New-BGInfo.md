@@ -1,7 +1,7 @@
 ---
 external help file: PowerBGInfo-help.xml
 Module Name: PowerBGInfo
-online version: https://github.com/EvotecIT/PowerBGInfo
+online version: https://powerbginfo.com
 schema: 2.0.0
 ---
 # New-BGInfo
@@ -252,7 +252,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationDirectory
-Output directory for generated BGInfo images.
+Filesystem output directory for generated BGInfo images, relative to the current PowerShell location.
 
 ```yaml
 Type: String
@@ -332,7 +332,7 @@ Accept wildcard characters: False
 ```
 
 ### -FilePath
-Optional base wallpaper file path. When omitted, current wallpaper is used.
+Optional base wallpaper filesystem path, relative to the current PowerShell location. When omitted, current wallpaper is used.
 
 ```yaml
 Type: String
@@ -444,7 +444,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutputFileName
-Optional output file name for the generated image.
+Optional output file name. Relative output paths resolve against ConfigurationDirectory; qualified filesystem paths use PowerShell path resolution.
 
 ```yaml
 Type: String
