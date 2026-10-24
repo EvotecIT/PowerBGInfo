@@ -3,6 +3,11 @@ using DesktopManager;
 
 namespace PowerBGInfo.Tests;
 
+// These ownership assertions must not overlap unrelated tests using the same per-user generation lock.
+[CollectionDefinition("BGInfo generation transaction", DisableParallelization = true)]
+public sealed class BgInfoGenerationTransactionCollection { }
+
+[Collection("BGInfo generation transaction")]
 public sealed class BgInfoGenerationConcurrencyTests {
     [Fact]
     public async Task GenerationDoesNotOverwriteAnImageWhileTheSameUsersApplyIsRunning() {
@@ -34,25 +39,36 @@ public sealed class BgInfoGenerationConcurrencyTests {
             Assert.False(initial.SequenceEqual(File.ReadAllBytes(outputs[1])));
         } finally {
             release.Set();
-            if (first != null && second != null) await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5));
-            Directory.Delete(folder, true);
+            try {
+                // WaitAsync does not cancel generation. Join every started worker before disposing its barriers or files.
+                await Task.WhenAll(new[] { first, second }.OfType<Task>());
+            } finally {
+                Directory.Delete(folder, true);
+            }
         }
     }
 
     [Fact]
     public async Task FailedApplicationReleasesGenerationForTheNextThread() {
         var folder = Path.Combine(Path.GetTempPath(), "pbg-generation-failure-" + Guid.NewGuid().ToString("N"));
+        Task<string>? next = null;
         try {
             var service = new CallbackService(() => throw new InvalidOperationException("Controlled apply failure"));
             var generator = new BgInfoGenerator(new ImageService(), service);
             Assert.Throws<InvalidOperationException>(() => generator.Generate(Configuration(folder, ChartColors.Navy)));
             var config = Configuration(folder, ChartColors.DarkRed);
             config.Target = BgInfoTarget.File;
-            var next = Task.Factory.StartNew(() => generator.Generate(config), CancellationToken.None,
+            next = Task.Factory.StartNew(() => generator.Generate(config), CancellationToken.None,
                 TaskCreationOptions.LongRunning, TaskScheduler.Default);
             var output = await next.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.True(File.Exists(output));
-        } finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+        } finally {
+            try {
+                if (next != null) await next;
+            } finally {
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
     }
 
     [Fact]
@@ -76,9 +92,9 @@ public sealed class BgInfoGenerationConcurrencyTests {
         Assert.Equal(expected, BgInfoGenerationLease.LockPath);
         using (var outer = BgInfoGenerationLease.Acquire()) {
             using (var inner = BgInfoGenerationLease.Acquire()) {
-                Assert.Throws<IOException>(() => File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None));
+                Assert.Throws<IOException>(() => { using var unexpected = File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None); });
             }
-            Assert.Throws<IOException>(() => File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None));
+            Assert.Throws<IOException>(() => { using var unexpected = File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None); });
         }
         using var available = File.Open(expected, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
         Assert.True(available.CanWrite);
