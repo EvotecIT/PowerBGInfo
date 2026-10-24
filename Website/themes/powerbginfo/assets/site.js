@@ -551,3 +551,162 @@
     });
   });
 })();
+
+// Image viewer: a click on a wallpaper render opens it large in a dialog instead of navigating to the PNG. Previous
+// and next step through the related renders in the same block (the build steps, the theme presets, the regions or
+// the featured scenarios); the arrow keys and a swipe do the same. The link itself stays, so a modified click, a
+// middle click, "save image" and pages without script still reach the file.
+(function () {
+  if (typeof HTMLDialogElement !== 'function') { return; }
+  var links = document.querySelectorAll('a.pb-figure__open');
+  if (!links.length) { return; }
+
+  var dialog = document.createElement('dialog');
+  dialog.className = 'pb-lightbox';
+  dialog.setAttribute('aria-label', 'Image viewer');
+  dialog.innerHTML =
+    '<div class="pb-lightbox__bar">' +
+      '<div class="pb-lightbox__titles"><p class="pb-lightbox__title" data-lb-title></p><p class="pb-lightbox__count" data-lb-count></p></div>' +
+      '<div class="pb-lightbox__links"><a class="pb-lightbox__link" data-lb-full target="_blank" rel="noopener">Full size</a>' +
+      '<a class="pb-lightbox__link" data-lb-download download>Download</a></div>' +
+      '<button type="button" class="pb-lightbox__close" data-lb-close aria-label="Close viewer">' +
+        '<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>' +
+    '</div>' +
+    '<div class="pb-lightbox__stage">' +
+      '<button type="button" class="pb-lightbox__nav pb-lightbox__nav--prev" data-lb-prev aria-label="Previous image">' +
+        '<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<figure class="pb-lightbox__figure"><img data-lb-image alt="" decoding="async" /><figcaption class="pb-lightbox__caption" data-lb-caption></figcaption></figure>' +
+      '<button type="button" class="pb-lightbox__nav pb-lightbox__nav--next" data-lb-next aria-label="Next image">' +
+        '<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+    '</div>';
+  document.body.appendChild(dialog);
+
+  var image = dialog.querySelector('[data-lb-image]');
+  var title = dialog.querySelector('[data-lb-title]');
+  var count = dialog.querySelector('[data-lb-count]');
+  var caption = dialog.querySelector('[data-lb-caption]');
+  var full = dialog.querySelector('[data-lb-full]');
+  var download = dialog.querySelector('[data-lb-download]');
+  var prev = dialog.querySelector('[data-lb-prev]');
+  var next = dialog.querySelector('[data-lb-next]');
+  var group = [];
+  var index = 0;
+  var opener = null;
+  var locked = null;
+
+  function visible(link) { return link.getClientRects().length > 0 && getComputedStyle(link).display !== 'none'; }
+  // A render belongs to its nearest block; renders inside a nested block (a .pbg-block inside a section) stay out of
+  // the outer group, so the featured scenarios do not mix with the block of screens under them.
+  function boxOf(link) { return link.closest('[data-pb-lightbox-group], .pbg-block, section.pb-atlas') || document.body; }
+  function groupOf(link) {
+    var box = boxOf(link);
+    return Array.prototype.filter.call(box.querySelectorAll('a.pb-figure__open'), function (l) { return boxOf(l) === box && visible(l); });
+  }
+  function text(node) { return node ? node.textContent.replace(/\s+/g, ' ').trim() : ''; }
+  // The title is the heading the render sits under (a build step, a scenario, a widget); the caption parts (theme
+  // name, file, size) follow the count, or become the title when there is no heading.
+  function describe(link) {
+    var img = link.querySelector('img');
+    var item = link.closest('li, section.pb-atlas__group, .pbg-block');
+    var head = text(item && item.querySelector('h3, h4'));
+    var figure = link.closest('figure');
+    var cap = figure && figure.querySelector(':scope > figcaption');
+    var parts = cap ? Array.prototype.map.call(cap.children, text).filter(Boolean) : [];
+    if (cap && !parts.length && text(cap)) { parts = [text(cap)]; }
+    return { head: head, caption: parts.join(' \u00b7 '), alt: img ? img.getAttribute('alt') || '' : '', img: img };
+  }
+  function show(i) {
+    index = (i + group.length) % group.length;
+    var link = group[index];
+    var info = describe(link);
+    var href = link.getAttribute('href');
+    image.removeAttribute('srcset');
+    if (info.img && info.img.getAttribute('srcset')) {
+      image.setAttribute('srcset', info.img.getAttribute('srcset'));
+      image.setAttribute('sizes', '(max-width: 900px) 100vw, 90vw');
+    }
+    image.src = href;
+    image.alt = info.alt;
+    var file = href.split('/').pop();
+    title.textContent = info.head || info.caption || file;
+    caption.textContent = info.alt;
+    caption.hidden = !info.alt;
+    count.textContent = [group.length > 1 ? (index + 1) + ' of ' + group.length : '', info.head ? info.caption || file : file]
+      .filter(Boolean).filter(function (v, n, all) { return all.indexOf(v) === n && v !== title.textContent; }).join(' \u00b7 ');
+    full.href = href;
+    download.href = href;
+    download.setAttribute('download', href.split('/').pop());
+    prev.hidden = next.hidden = group.length < 2;
+    // Warm the neighbours so stepping feels instant.
+    [index - 1, index + 1].forEach(function (n) {
+      if (group.length < 2) { return; }
+      var l = group[(n + group.length) % group.length];
+      var pre = new Image(); pre.src = l.getAttribute('href');
+    });
+  }
+  function lock() {
+    if (locked) { return; }
+    var root = document.documentElement;
+    locked = { x: window.scrollX, y: window.scrollY, overflow: root.style.overflow, gutter: root.style.scrollbarGutter };
+    root.style.scrollbarGutter = 'stable';
+    root.style.overflow = 'hidden';
+  }
+  function unlock() {
+    if (!locked) { return; }
+    var root = document.documentElement;
+    root.style.overflow = locked.overflow;
+    root.style.scrollbarGutter = locked.gutter;
+    window.scrollTo(locked.x, locked.y);
+    locked = null;
+  }
+  function finish() {
+    unlock();
+    if (opener && opener.isConnected) { opener.focus({ preventScroll: true }); }
+  }
+  function close() {
+    if (dialog.open) { dialog.close(); }
+    finish();
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener('click', function (event) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) { return; }
+      event.preventDefault();
+      group = groupOf(link);
+      if (!group.length) { group = [link]; }
+      opener = link;
+      show(Math.max(0, group.indexOf(link)));
+      lock();
+      dialog.showModal();
+      dialog.querySelector(group.length > 1 ? '[data-lb-next]' : '[data-lb-close]').focus();
+    });
+  });
+
+  prev.addEventListener('click', function () { show(index - 1); });
+  next.addEventListener('click', function () { show(index + 1); });
+  dialog.querySelector('[data-lb-close]').addEventListener('click', close);
+  dialog.addEventListener('click', function (event) {
+    if (event.target === dialog || event.target.classList.contains('pb-lightbox__stage')) { close(); }
+  });
+  dialog.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowRight') { event.preventDefault(); show(index + 1); }
+    else if (event.key === 'ArrowLeft') { event.preventDefault(); show(index - 1); }
+    else if (event.key === 'Home') { event.preventDefault(); show(0); }
+    else if (event.key === 'End') { event.preventDefault(); show(group.length - 1); }
+  });
+  // Escape: "cancel" fires before the dialog closes itself; "close" can arrive late, so it only backs up the rest.
+  dialog.addEventListener('cancel', unlock);
+  dialog.addEventListener('close', function () { if (!dialog.open) { finish(); } });
+
+  // Swipe left or right on the image to step.
+  var startX = null;
+  var startY = null;
+  image.addEventListener('pointerdown', function (event) { startX = event.clientX; startY = event.clientY; });
+  image.addEventListener('pointerup', function (event) {
+    if (startX === null || group.length < 2) { return; }
+    var dx = event.clientX - startX;
+    var dy = event.clientY - startY;
+    startX = startY = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { show(index + (dx < 0 ? 1 : -1)); }
+  });
+})();

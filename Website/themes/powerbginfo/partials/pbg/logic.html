@@ -66,7 +66,7 @@
         {{~ r = timeout.render ~}}
         <figure class="pb-output pb-pair__output">
           <figcaption><span class="pb-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
-          <a class="pb-figure__open" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="The same wallpaper drawn from the fallback values: the heading reads STATUS UNAVAILABLE, the details read unknown and the panels are empty." /></a>
+          <a class="pb-figure__open" href="{{ r.url }}" aria-label="Enlarge {{ r.file }}"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="The same wallpaper drawn from the fallback values: the heading reads STATUS UNAVAILABLE, the details read unknown and the panels are empty." /></a>
         </figure>
       </div>
     </div>
