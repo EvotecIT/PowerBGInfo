@@ -142,11 +142,6 @@ public partial class BgInfoGeneratorTests
     [Fact]
     public void GenerateDoesNotPreserveWallpaperSlideshowWhenItIsNotRunning()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var tempDirectory = Path.Combine(Path.GetTempPath(), "bginfo" + Path.GetRandomFileName());
         Directory.CreateDirectory(tempDirectory);
         var source = Path.Combine(tempDirectory, "slide-one.jpg");
@@ -159,7 +154,9 @@ public partial class BgInfoGeneratorTests
                 State = DesktopSlideshowState.Enabled
             }
         };
-        var generator = new BgInfoGenerator(imageService, wallpaperService);
+        var generator = new BgInfoGenerator(imageService, wallpaperService) {
+            CurrentWallpaper = _ => source
+        };
         var config = new BgInfoConfiguration
         {
             OutputFileName = "static-fallback.png",
@@ -173,6 +170,7 @@ public partial class BgInfoGeneratorTests
 
         Assert.True(File.Exists(path));
         Assert.Equal(0, wallpaperService.SlideshowCalls);
+        Assert.Equal(1, wallpaperService.Calls);
     }
 
     [Fact]

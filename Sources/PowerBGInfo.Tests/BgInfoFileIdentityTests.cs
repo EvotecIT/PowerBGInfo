@@ -315,10 +315,11 @@ public sealed class BgInfoFileIdentityTests {
         var parent = Path.Combine(folder.Path, "searchable-only");
         var child = Path.Combine(parent, "volume");
         Directory.CreateDirectory(child);
+        var expectedIdentity = BgInfoVariableResolver.NormalizeVolumeIdentity(child);
         var originalMode = File.GetUnixFileMode(parent);
         try {
             File.SetUnixFileMode(parent, UnixFileMode.UserExecute);
-            Assert.Equal(child, BgInfoVariableResolver.NormalizeVolumeIdentity(child));
+            Assert.Equal(expectedIdentity, BgInfoVariableResolver.NormalizeVolumeIdentity(child));
         } finally {
             File.SetUnixFileMode(parent, originalMode);
         }
