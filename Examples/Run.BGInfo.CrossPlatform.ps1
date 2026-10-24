@@ -9,10 +9,12 @@ Output height in pixels.
 File generates a preview. Wallpaper applies it to the current desktop session.
 .PARAMETER OutputDirectory
 Directory for the generated image and bounded chart history.
+.PARAMETER SpaceY
+Vertical edge spacing in pixels. Adjust it to reserve room for desktop panels.
 .EXAMPLE
 ./Run.BGInfo.CrossPlatform.ps1 -Width 1920 -Height 1080
 .EXAMPLE
-./Run.BGInfo.CrossPlatform.ps1 -Width 1080 -Height 1920 -Target File
+./Run.BGInfo.CrossPlatform.ps1 -Width 1080 -Height 1920 -Target File -SpaceY 64
 .OUTPUTS
 The generated image path.
 #>
@@ -24,13 +26,15 @@ param(
     [int] $Height = 1080,
     [ValidateSet('File', 'Wallpaper')]
     [string] $Target = 'File',
-    [string] $OutputDirectory = (Join-Path ([IO.Path]::GetTempPath()) 'PowerBGInfo-CrossPlatform')
+    [string] $OutputDirectory = (Join-Path ([IO.Path]::GetTempPath()) 'PowerBGInfo-CrossPlatform'),
+    [ValidateRange(0, 16384)]
+    [int] $SpaceY = 40
 )
 
 Import-Module PowerBGInfo -ErrorAction Stop
 $facts = Get-BGInfoSystemInfo
 
-New-BGInfo -Theme Graphite -Target $Target -ConfigurationDirectory $OutputDirectory -OutputFileName 'machine.png' {
+New-BGInfo -Theme Graphite -Target $Target -SpaceY $SpaceY -ConfigurationDirectory $OutputDirectory -OutputFileName 'machine.png' {
     New-BGInfoBackground -Width $Width -Height $Height
     New-BGInfoLabel -Name $facts.ComputerName -FontSize 56
     New-BGInfoValue -Name 'OS' -Value $facts.OSName
