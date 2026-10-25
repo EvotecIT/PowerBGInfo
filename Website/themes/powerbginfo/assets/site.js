@@ -681,9 +681,10 @@
       show(Math.max(0, group.indexOf(link)));
       lock();
       dialog.showModal();
-      // Focus without scrolling: on a short screen the arrows sit under the caption, and scrolling to them would hide
-      // the image. The stage opens at its top.
-      dialog.querySelector(group.length > 1 ? '[data-lb-next]' : '[data-lb-close]').focus({ preventScroll: true });
+      // Focus stays in the bar. On a short screen the arrows sit in the scrolling stage under the caption, and WebKit
+      // scrolls a focused control there into view even with preventScroll, which hides the image. The arrow keys step
+      // through the dialog's own key handler, so nothing needs focus inside the stage.
+      dialog.querySelector('[data-lb-close]').focus({ preventScroll: true });
       settling = true;
       stage.scrollTop = 0;
     });
