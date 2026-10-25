@@ -201,7 +201,7 @@
 .pb-figure__open { position: relative; width: 100%; border-radius: 6px; cursor: zoom-in; }
 .pb-figure__open::after {
   /* A full-size cue in the corner, shown on hover and keyboard focus. */
-  content: "Full size";
+  content: "Enlarge";
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -216,6 +216,120 @@
   transition: opacity .15s ease;
 }
 .pb-figure__open:is(:hover, :focus-visible)::after { opacity: 1; }
+/* Image viewer (site.js): a render opened large, with previous and next through its block. The stage stays dark in
+   both themes so light and dark wallpapers both read against it. */
+.pb-lightbox {
+  width: min(1480px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  border: 1px solid var(--pb-line-strong);
+  border-radius: var(--pb-r-lg);
+  background: var(--pb-card);
+  color: var(--pb-ink);
+  box-shadow: var(--pb-shadow-float);
+}
+.pb-lightbox[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.pb-lightbox::backdrop { background: rgba(7, 13, 24, .78); backdrop-filter: blur(3px); }
+html:has(.pb-lightbox[open]) { overflow: hidden; }
+.pb-lightbox__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 10px 10px 10px 20px;
+  border-bottom: 1px solid var(--pb-line);
+}
+.pb-lightbox__titles { flex: 1; min-width: 0; }
+.pb-lightbox__title { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.pb-lightbox__count { color: var(--pb-ink-3); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.pb-lightbox__count:empty { display: none; }
+.pb-lightbox__links { display: flex; gap: 4px; }
+.pb-lightbox__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--pb-line);
+  border-radius: 8px;
+  color: var(--pb-ink);
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pb-lightbox__link:hover { border-color: var(--pb-ink-3); }
+.pb-lightbox__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pb-ink-2);
+  cursor: pointer;
+}
+.pb-lightbox__close:hover { border-color: var(--pb-line); color: var(--pb-ink); }
+.pb-lightbox__stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+  /* The bar keeps the close button in view; on a short screen or with large text the image and caption scroll. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  padding: clamp(12px, 2vw, 24px);
+  background: var(--pb-stage-bg);
+  color: var(--pb-stage-ink);
+}
+.pb-lightbox__figure { display: grid; justify-items: center; gap: 10px; min-width: 0; margin: 0; }
+.pb-lightbox__figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: max(200px, calc(100vh - 170px));
+  max-height: max(200px, calc(100dvh - 170px));
+  border-radius: 4px;
+  object-fit: contain;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pb-lightbox__caption { max-width: 72ch; color: var(--pb-stage-ink-2); font-size: .875rem; line-height: 1.45; text-align: center; }
+.pb-lightbox__nav {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--pb-stage-line);
+  border-radius: 999px;
+  background: var(--pb-stage-panel);
+  color: var(--pb-stage-ink);
+  cursor: pointer;
+}
+.pb-lightbox__nav:hover { border-color: var(--pb-stage-ink-2); }
+.pb-lightbox__nav[hidden] { visibility: hidden; display: grid; }
+.pb-lightbox :focus-visible { outline: 2px solid var(--pb-focus); outline-offset: 2px; }
+.pb-lightbox__stage :focus-visible { outline-color: var(--pb-glow); }
+
+@media (max-width: 720px) {
+  .pb-lightbox { width: calc(100vw - 16px); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
+  .pb-lightbox__bar { flex-wrap: wrap; padding-left: 14px; }
+  .pb-lightbox__titles { flex-basis: calc(100% - 52px); }
+  .pb-lightbox__links { order: 3; }
+  /* The arrows move to a row under the caption so the image keeps the full width. */
+  .pb-lightbox__stage { grid-template-columns: 1fr 1fr; padding: 10px; }
+  .pb-lightbox__figure { grid-row: 1; grid-column: 1 / -1; }
+  .pb-lightbox__nav { grid-row: 2; }
+  .pb-lightbox__nav--next { justify-self: end; }
+  .pb-lightbox__nav[hidden] { display: none; }
+  .pb-lightbox__figure img { max-height: max(160px, calc(100vh - 230px)); max-height: max(160px, calc(100dvh - 230px)); }
+}
 .pb-figure figcaption {
   display: flex;
   gap: 10px;
