@@ -6,7 +6,7 @@
   },
   "scenarios": {
     "title": "Twelve wallpapers, each with one job",
-    "body": "Each script answers one question for the person in front of the screen, and each renders in light and dark at any resolution. A theme preset gives each its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Three are shown in full here, with the New-BGInfo call that draws each one and the data block it reads.",
+    "body": "Each script answers one question for the person in front of the screen. A theme preset gives it its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Three are shown in full below, with the New-BGInfo call that draws each one and the data block it reads.",
     "featured": [
       "hyperv-host",
       "helpdesk",

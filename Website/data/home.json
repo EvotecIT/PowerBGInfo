@@ -7,6 +7,39 @@
     "body": "Each one answers a question for the person in front of the screen, in light and dark, at any resolution. Every script starts with fixed sample data, so you can reproduce the render before you connect your own sources.",
     "scenarios": ["server-status", "helpdesk", "hyperv-host", "patch-day", "branch-office", "signage"]
   },
+  "surfaces": {
+    "title": "On the desktop or in the terminal",
+    "body": "Some people see a server through its desktop. Others only ever see a prompt. Give each of them the facts where they already look.",
+    "wallpaper": {
+      "label": "Wallpaper",
+      "product": "PowerBGInfo",
+      "body": "For the people in front of the screen: users, the helpdesk, labs, kiosks and console sessions. Facts, health and charts on the desktop and lock screen.",
+      "scenario": "server-status",
+      "link": { "title": "See the wallpapers", "url": "/gallery/" }
+    },
+    "terminal": {
+      "label": "Terminal",
+      "product": "ConsoleMonster",
+      "body": "For the people who live in SSH and PowerShell. A sign-in board with host facts, health checks and disk use, printed once so login stays fast.",
+      "prompt": "$ ssh deploy@app-web-03",
+      "lines": [
+        { "text": "╭─ Health ────────────────────────────────────╮", "tone": "frame", "title": "Health" },
+        { "glyph": "✓", "text": "Memory 61%                               ", "tone": "ok" },
+        { "glyph": "✓", "text": "Disk / 71%                               ", "tone": "ok" },
+        { "glyph": "▴", "text": "Disk /var 88%                            ", "tone": "warn" },
+        { "glyph": "✓", "text": "Disk /home 34%                           ", "tone": "ok" },
+        { "glyph": "✗", "text": "Disk /srv/data 93%                       ", "tone": "crit" },
+        { "glyph": "✗", "text": "Failed: backup-sync.service              ", "tone": "crit" },
+        { "glyph": "✗", "text": "Failed: certbot-renew.timer              ", "tone": "crit" },
+        { "glyph": "▴", "text": "14 updates (3 security)                  ", "tone": "warn" },
+        { "glyph": "▴", "text": "Reboot required                          ", "tone": "warn" },
+        { "text": "╰─────────────────────────────────────────────╯", "tone": "frame" }
+      ],
+      "caption": "The Health panel from the login overview demo on consolemonster.dev, with its sample data.",
+      "link": { "title": "See the login overview", "url": "https://consolemonster.dev/docs/linux-and-ssh/" }
+    },
+    "planned": "The same PowerBGInfo layout drawn in the terminal, so one configuration serves both."
+  },
   "platforms": {
     "title": "Where it runs",
     "body": "Windows is supported today. macOS, Linux and headless rendering are in preview and ship with the next release. Each platform states what it can and cannot do, so a render never pretends a desktop accepted it."

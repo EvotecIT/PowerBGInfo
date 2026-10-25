@@ -37,7 +37,8 @@
   overflow: hidden;
   border: 1px solid var(--pb-line);
   border-radius: var(--pb-r);
-  background: var(--pb-card);
+  /* Sunken while the lazy thumbnail loads, so an empty frame does not look broken. */
+  background: var(--pb-sunken);
   aspect-ratio: var(--pb-card-ratio, 400 / 280);
   transition: border-color .15s ease;
 }
