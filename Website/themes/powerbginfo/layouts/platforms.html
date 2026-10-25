@@ -131,6 +131,13 @@
             {{~ end ~}}
           </dl>
           {{~ end ~}}
+          {{~ if g.aside ~}}
+          <aside class="pb-plat-guide__aside">
+            <h4>{{ g.aside.title }}</h4>
+            <p>{{ g.aside.body }}</p>
+            <a class="pb-link" href="{{ g.aside.link.url }}">{{ g.aside.link.title }}</a>
+          </aside>
+          {{~ end ~}}
         </div>
         <div class="pb-plat-guide__code">
           <figure class="pb-codeblock" data-lang="{{ g.code.lang }}">

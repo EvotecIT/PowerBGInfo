@@ -1,6 +1,8 @@
-  <section class="pb-atlas" id="scenarios" aria-labelledby="pbg-scenarios-title">
-    <div class="pb-atlas__head">
-      <h2 id="pbg-scenarios-title">{{ sc.title }}</h2>
+  <section class="pb-atlas pb-atlas--lede" id="scenarios" aria-labelledby="pbg-scenarios-title">
+    {{~ ## The page title above already names the gallery, so this section's heading stays for the outline only and
+         its text reads as the page lede. ## ~}}
+    <div class="pb-atlas__head pb-atlas__head--lede">
+      <h2 class="pb-visually-hidden" id="pbg-scenarios-title">{{ sc.title }}</h2>
       <p>{{ sc.body }}</p>
     </div>
 

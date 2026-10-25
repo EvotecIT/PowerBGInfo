@@ -72,6 +72,52 @@
 .pb-wall__item a:hover .pb-wall__title { color: var(--pb-accent); }
 .pb-wall__purpose { color: var(--pb-ink-3); font-size: var(--pb-t-small); line-height: 1.45; }
 
+/* Surfaces: the same facts on the wallpaper and in the terminal, side by side. The terminal stays dark in both
+   themes, like the desk terminal above. */
+.pb-surfaces__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.pb-surface {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 1px solid var(--pb-line);
+  border-radius: var(--pb-r-lg);
+  background: var(--pb-card);
+}
+.pb-surface__shot { aspect-ratio: 16 / 9; margin: 0; overflow: hidden; border-bottom: 1px solid var(--pb-line); background: var(--pb-sunken); }
+.pb-surface__shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pb-surface__term { display: grid; grid-template-rows: minmax(0, 1fr) auto; background: #050912; }
+.pb-surface__term pre {
+  display: grid;
+  place-content: center;
+  margin: 0;
+  padding: 14px 16px;
+  overflow: hidden;
+  color: #d5dae4;
+  font-family: var(--pb-mono);
+  font-size: clamp(.6875rem, .55rem + .45vw, .8125rem);
+  line-height: 1.5;
+}
+.pb-surface__term code { font: inherit; white-space: pre; }
+.pb-surface__term figcaption { padding: 0 16px 10px; color: #8b8f9a; font-size: var(--pb-t-micro); text-align: center; }
+.pb-surface__prompt { color: #ff9f1a; }
+.pb-surface__frame { color: #4b5060; }
+.pb-surface__title { color: #eef2f9; font-weight: 700; }
+.pb-surface__ok { color: #4ade80; }
+.pb-surface__warn { color: #fbbf24; }
+.pb-surface__crit { color: #f87171; }
+.pb-surface__text { display: grid; align-content: start; gap: 8px; padding: 20px 22px 22px; }
+.pb-surface__text p { color: var(--pb-ink-2); }
+.pb-surface__text .pb-link { justify-self: start; margin-top: 4px; }
+.pb-surface__label {
+  color: var(--pb-ink-3);
+  font-family: var(--pb-mono);
+  font-size: var(--pb-t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.pb-surface h3 { font-size: 1.25rem; }
+.pb-surfaces__planned { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-top: 18px; color: var(--pb-ink-2); font-size: var(--pb-t-small); }
+
 /* Platform strip: one row per platform with its status. */
 .pb-platstrip__list { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--pb-line); }
 .pb-platstrip__list li {
@@ -87,6 +133,10 @@
 
 @media (max-width: 1000px) {
   .pb-desk .pb-stage__inner { grid-template-columns: minmax(0, 1fr); }
+  .pb-surfaces__pair { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked, the terminal takes its own height instead of matching the wallpaper frame. */
+  .pb-surface__term { aspect-ratio: auto; }
+  .pb-surface__term pre { padding-block: 18px 12px; }
   .pb-tools__list, .pb-wall__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {

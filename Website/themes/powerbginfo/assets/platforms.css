@@ -166,6 +166,11 @@
 .pb-plat-guide__uses dt { color: var(--pb-ink); font-weight: 650; }
 .pb-plat-guide__uses dd { margin: 0; color: var(--pb-ink-2); }
 .pb-plat-guide__code { display: grid; gap: 14px; min-width: 0; }
+/* A pointer to the terminal for machines without a desktop. */
+.pb-plat-guide__aside { display: grid; gap: 6px; margin-top: 22px; padding: 16px 18px; border: 1px solid var(--pb-line); border-left: 3px solid var(--pb-s2); border-radius: var(--pb-r); background: var(--pb-card-alt); }
+.pb-plat-guide__aside h4 { font-size: 1rem; }
+.pb-plat-guide__aside p { color: var(--pb-ink-2); font-size: var(--pb-t-small); }
+.pb-plat-guide__aside .pb-link { justify-self: start; font-size: var(--pb-t-small); }
 .pb-plat-guide__note { margin-top: -4px; color: var(--pb-ink-3); font-size: var(--pb-t-small); }
 .pb-plat-guide__links-title { margin-top: 8px; color: var(--pb-ink-3); font-size: var(--pb-t-micro); font-family: var(--pb-mono); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
 .pb-plat-guide__links { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }

@@ -92,6 +92,47 @@
     </div>
   </section>
 
+  {{~ sf = home.surfaces; wp = sf.wallpaper; tm = sf.terminal
+      for s in show.scenarios; if s.id == wp.scenario; wp_scene = s; end; end ~}}
+  <section class="pb-section pb-surfaces" aria-labelledby="pb-surfaces-title">
+    <div class="pb-section__inner">
+      <div class="pb-section__head">
+        <h2 id="pb-surfaces-title">{{ sf.title }}</h2>
+        <p class="pb-lede">{{ sf.body }}</p>
+      </div>
+      <div class="pb-surfaces__pair">
+        <article class="pb-surface pb-surface--wallpaper" aria-labelledby="pb-surface-wallpaper">
+          <div class="pb-surface__shot">
+            <img class="pb-only-light" src="{{ wp_scene.renders.light.url }}" width="{{ wp_scene.renders.light.width }}" height="{{ wp_scene.renders.light.height }}" sizes="(max-width: 860px) calc(100vw - 32px), 560px" loading="lazy" decoding="async" alt="{{ pbg.alts[wp_scene.id] }}" />
+            <img class="pb-only-dark" src="{{ wp_scene.renders.dark.url }}" width="{{ wp_scene.renders.dark.width }}" height="{{ wp_scene.renders.dark.height }}" sizes="(max-width: 860px) calc(100vw - 32px), 560px" loading="lazy" decoding="async" alt="{{ pbg.alts[wp_scene.id] }} Dark theme." />
+          </div>
+          <div class="pb-surface__text">
+            <p class="pb-surface__label">{{ wp.label }}</p>
+            <h3 id="pb-surface-wallpaper">{{ wp.product }}</h3>
+            <p>{{ wp.body }}</p>
+            <a class="pb-link" href="{{ wp.link.url }}">{{ wp.link.title }}</a>
+          </div>
+        </article>
+        <article class="pb-surface pb-surface--terminal" aria-labelledby="pb-surface-terminal">
+          <figure class="pb-surface__shot pb-surface__term">
+            <pre aria-label="{{ tm.caption }}"><code><span class="pb-surface__prompt">{{ tm.prompt }}</span>
+{{~ for l in tm.lines ~}}
+{{ if l.glyph }}<span class="pb-surface__frame">│</span> <span class="pb-surface__{{ l.tone }}">{{ l.glyph }}</span> {{ l.text }} <span class="pb-surface__frame">│</span>{{ else if l.title }}<span class="pb-surface__{{ l.tone }}">{{ l.text | string.replace l.title ('<b class="pb-surface__title">' + l.title + '</b>') }}</span>{{ else }}<span class="pb-surface__{{ l.tone }}">{{ l.text }}</span>{{ end }}
+{{~ end ~}}</code></pre>
+            <figcaption>{{ tm.caption }}</figcaption>
+          </figure>
+          <div class="pb-surface__text">
+            <p class="pb-surface__label">{{ tm.label }}</p>
+            <h3 id="pb-surface-terminal">{{ tm.product }}</h3>
+            <p>{{ tm.body }}</p>
+            <a class="pb-link" href="{{ tm.link.url }}">{{ tm.link.title }}</a>
+          </div>
+        </article>
+      </div>
+      <p class="pb-surfaces__planned"><span class="pb-status pb-status--idea">Planned</span> {{ sf.planned }}</p>
+    </div>
+  </section>
+
   <section class="pb-section pb-wall" aria-labelledby="pb-wall-title">
     <div class="pb-section__inner">
       <div class="pb-section__head">

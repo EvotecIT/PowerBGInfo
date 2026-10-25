@@ -144,7 +144,7 @@
 /* Theme presets: the same wallpaper in each preset, in the page theme. */
 .pbg-themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
 .pbg-thumb { display: grid; gap: 8px; margin: 0; }
-.pbg-thumb img { display: block; width: 100%; height: auto; border: 1px solid var(--pb-line); border-radius: 8px; }
+.pbg-thumb img { display: block; width: 100%; height: auto; border: 1px solid var(--pb-line); border-radius: 8px; background: var(--pb-sunken); }
 .pbg-thumb figcaption { display: flex; align-items: center; gap: 8px; color: var(--pb-ink); font-size: .9375rem; font-weight: 640; }
 
 /* Regions: 1920 x 1080 and 3440 x 1440 stacked beside the portrait render, at their true proportions. */
@@ -264,3 +264,8 @@
 @media (max-width: 420px) {
   .pb-pbg .pb-install code { font-size: .875rem; }
 }
+
+/* A section whose text continues the page masthead: one lede line, no second title. */
+.pb-atlas--lede { padding-top: clamp(28px, 3.5vw, 44px); }
+.pb-atlas__head--lede { display: block; }
+.pb-atlas__head--lede p { max-width: 68ch; color: var(--pb-ink-2); font-size: clamp(1.0625rem, .98rem + .3vw, 1.1875rem); line-height: 1.6; }
