@@ -279,6 +279,9 @@ html:has(.pb-lightbox[open]) { overflow: hidden; }
   align-items: center;
   gap: 12px;
   min-height: 0;
+  /* The bar keeps the close button in view; on a short screen or with large text the image and caption scroll. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: clamp(12px, 2vw, 24px);
   background: var(--pb-stage-bg);
   color: var(--pb-stage-ink);
@@ -288,8 +291,8 @@ html:has(.pb-lightbox[open]) { overflow: hidden; }
   display: block;
   max-width: 100%;
   height: auto;
-  max-height: calc(100vh - 170px);
-  max-height: calc(100dvh - 170px);
+  max-height: max(200px, calc(100vh - 170px));
+  max-height: max(200px, calc(100dvh - 170px));
   border-radius: 4px;
   object-fit: contain;
   touch-action: pan-y pinch-zoom;
@@ -318,13 +321,13 @@ html:has(.pb-lightbox[open]) { overflow: hidden; }
   .pb-lightbox__bar { flex-wrap: wrap; padding-left: 14px; }
   .pb-lightbox__titles { flex-basis: calc(100% - 52px); }
   .pb-lightbox__links { order: 3; }
-  /* The arrows sit over the image's lower corners so the image keeps the full width. */
-  .pb-lightbox__stage { grid-template-columns: minmax(0, 1fr); padding: 10px 10px 64px; }
-  .pb-lightbox__figure { grid-row: 1; grid-column: 1; }
-  .pb-lightbox__nav { position: absolute; bottom: 10px; }
-  .pb-lightbox__nav--prev { left: 10px; }
-  .pb-lightbox__nav--next { right: 10px; }
-  .pb-lightbox__figure img { max-height: calc(100dvh - 230px); }
+  /* The arrows move to a row under the caption so the image keeps the full width. */
+  .pb-lightbox__stage { grid-template-columns: 1fr 1fr; padding: 10px; }
+  .pb-lightbox__figure { grid-row: 1; grid-column: 1 / -1; }
+  .pb-lightbox__nav { grid-row: 2; }
+  .pb-lightbox__nav--next { justify-self: end; }
+  .pb-lightbox__nav[hidden] { display: none; }
+  .pb-lightbox__figure img { max-height: max(160px, calc(100vh - 230px)); max-height: max(160px, calc(100dvh - 230px)); }
 }
 .pb-figure figcaption {
   display: flex;
