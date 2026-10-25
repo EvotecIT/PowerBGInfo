@@ -594,6 +594,8 @@
   var index = 0;
   var opener = null;
   var locked = null;
+  // Until the visitor scrolls or steps, the stage stays at its top while the image loads and grows above the caption.
+  var settling = false;
 
   function visible(link) { return link.getClientRects().length > 0 && getComputedStyle(link).display !== 'none'; }
   // A render belongs to its nearest block; renders inside a nested block (a .pbg-block inside a section) stay out of
@@ -682,10 +684,15 @@
       // Focus without scrolling: on a short screen the arrows sit under the caption, and scrolling to them would hide
       // the image. The stage opens at its top.
       dialog.querySelector(group.length > 1 ? '[data-lb-next]' : '[data-lb-close]').focus({ preventScroll: true });
+      settling = true;
       stage.scrollTop = 0;
     });
   });
 
+  image.addEventListener('load', function () { if (settling) { stage.scrollTop = 0; } });
+  ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(function (type) {
+    dialog.addEventListener(type, function () { settling = false; }, { passive: true });
+  });
   prev.addEventListener('click', function () { show(index - 1); });
   next.addEventListener('click', function () { show(index + 1); });
   dialog.querySelector('[data-lb-close]').addEventListener('click', close);

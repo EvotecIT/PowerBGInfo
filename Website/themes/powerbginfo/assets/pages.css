@@ -282,6 +282,7 @@ html:has(.pb-lightbox[open]) { overflow: hidden; }
   /* The bar keeps the close button in view; on a short screen or with large text the image and caption scroll. */
   overflow-y: auto;
   overscroll-behavior: contain;
+  overflow-anchor: none;
   padding: clamp(12px, 2vw, 24px);
   background: var(--pb-stage-bg);
   color: var(--pb-stage-ink);
