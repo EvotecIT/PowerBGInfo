@@ -214,7 +214,7 @@
       ],
       "aside": {
         "title": "No desktop at all?",
-        "body": "Linux servers and Server Core never show a wallpaper. For the people who sign in over SSH, ConsoleMonster prints host facts, health checks and disk use in the terminal, once per sign-in.",
+        "body": "Headless Linux servers and Server Core have no wallpaper to show. For the people who sign in over SSH, ConsoleMonster prints host facts, health checks and disk use in the terminal, once per sign-in.",
         "link": {
           "title": "See the login overview on consolemonster.dev",
           "url": "https://consolemonster.dev/docs/linux-and-ssh/"

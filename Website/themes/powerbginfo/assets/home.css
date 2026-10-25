@@ -88,10 +88,11 @@
 .pb-surface__term { display: grid; grid-template-rows: minmax(0, 1fr) auto; background: #050912; }
 .pb-surface__term pre {
   display: grid;
-  place-content: center;
+  /* Safe centring keeps the start of each row reachable when the panel is wider than the card; it then scrolls. */
+  place-content: safe center;
   margin: 0;
   padding: 14px 16px;
-  overflow: hidden;
+  overflow-x: auto;
   color: #d5dae4;
   font-family: var(--pb-mono);
   font-size: clamp(.6875rem, .55rem + .45vw, .8125rem);
