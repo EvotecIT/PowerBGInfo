@@ -589,6 +589,7 @@
   var download = dialog.querySelector('[data-lb-download]');
   var prev = dialog.querySelector('[data-lb-prev]');
   var next = dialog.querySelector('[data-lb-next]');
+  var stage = dialog.querySelector('.pb-lightbox__stage');
   var group = [];
   var index = 0;
   var opener = null;
@@ -678,7 +679,10 @@
       show(Math.max(0, group.indexOf(link)));
       lock();
       dialog.showModal();
-      dialog.querySelector(group.length > 1 ? '[data-lb-next]' : '[data-lb-close]').focus();
+      // Focus without scrolling: on a short screen the arrows sit under the caption, and scrolling to them would hide
+      // the image. The stage opens at its top.
+      dialog.querySelector(group.length > 1 ? '[data-lb-next]' : '[data-lb-close]').focus({ preventScroll: true });
+      stage.scrollTop = 0;
     });
   });
 
