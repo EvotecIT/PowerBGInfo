@@ -17,6 +17,7 @@
 - Added eight more showcase scenarios: domain controller, Hyper-V host, NOC and on call, branch office PC, meeting room, build agent, patch day, and kiosk or signage. `Examples/Run.BGInfo.Showcase.ps1` renders all twelve at every `-Size`, plus an ultrawide on-call and a portrait signage render, and its manifest now records the preset, size and PowerBGInfo features of each render.
 - Added ten server and operations showcase scenarios: production or test (the environment's colour drives the whole wallpaper), RDS session host, SQL Server, file server, server being retired, change freeze, certificate authority, backup server, jump host and Linux server. `Examples/Run.BGInfo.Showcase.ps1` now renders twenty-two scenarios.
 - `New-BGInfoTreemap -ColorProperty` colors each rectangle by a second measure, for example CPU while the size is memory. With `-WarningThreshold`, `-CriticalThreshold` and `-ThresholdDirection` the colors are the status colors (healthy rectangles muted); without them they shade from a faint to the full accent. Thresholds without `-ColorProperty` compare the sizes. Color values and thresholds round-trip through JSON.
+- `New-BGInfoTable -StatusMap` maps your own status words to a status, for example `@{ Active = 'Ok'; Disconnected = 'Warning' }`, so the status column colors values the built-in list doesn't know. The map round-trips through JSON.
 - Timeline items piped as objects or hashtables may carry a `Color`, like `New-BGInfoTimelineItem -Color`.
 - Added independent bold and underline controls for labels, values, chart headers, global defaults, and JSON configurations.
 
@@ -30,6 +31,10 @@
 - The Mermaid feature example gives its diagram panel more of the canvas instead of leaving a large empty middle band.
 - The feature render runner rejects invalid sizes and stops on rendering errors instead of writing an incomplete manifest.
 
+- Bar, line and area charts with `-Labels` show the labels on a category axis, and they honour `-Minimum` and `-Maximum`. Bar charts with `-ShowDataLabels` put every label above its bar and leave room for the tallest one.
+- Timelines that span days label the first day and then every one, two or three days, or every week from a Monday, so the ticks fit the panel and no longer start at an unlabelled day. Taller timeline panels get thicker lanes.
+- Calendar heatmaps draw zero days as a visible neutral cell, distinct from days without data, and shade values from the quietest to the busiest day through the median, so everyday variation stays visible next to a spike. The grid is centred in its panel.
+- Tables with a status column size their columns by content, so long status words such as `Disconnected` no longer truncate next to the dot.
 - Timeline axes read `Wed 14` or `14:00` instead of ISO dates such as `2026-10-14`.
 - Info items in lists, tables and metric cards use the info color instead of the accent, so an Info row under a red or orange accent no longer looks like an alert. List numbers, checks and bullets use one color instead of cycling through the palette.
 - A region column whose panels add up to more than its height shrinks them to fit instead of running past the taskbar or off the image.

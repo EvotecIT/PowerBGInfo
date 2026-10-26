@@ -155,7 +155,7 @@ public sealed class BgInfoChart {
     public float? PositionY { get; set; }
     /// <summary>Values to plot for this run.</summary>
     public IReadOnlyList<double> Values { get; set; } = Array.Empty<double>();
-    /// <summary>Optional labels used by point-based chart kinds.</summary>
+    /// <summary>Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot.</summary>
     public IReadOnlyList<string> Labels { get; set; } = Array.Empty<string>();
     /// <summary>Optional target value used by bullet charts.</summary>
     public double? Target { get; set; }
@@ -281,9 +281,9 @@ public sealed class BgInfoChart {
     public BgInfoChartLegendPosition LegendPosition { get; set; } = BgInfoChartLegendPosition.Bottom;
     /// <summary>Whether to show supported data labels.</summary>
     public bool ShowDataLabels { get; set; }
-    /// <summary>Optional minimum scale value.</summary>
+    /// <summary>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</summary>
     public double? Minimum { get; set; }
-    /// <summary>Optional maximum scale value.</summary>
+    /// <summary>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</summary>
     public double? Maximum { get; set; }
     /// <summary>Whether donut center label is visible.</summary>
     public bool ShowDonutCenterLabel { get; set; } = true;

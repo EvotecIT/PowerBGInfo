@@ -4340,7 +4340,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Labels</maml:name>
           <maml:description>
-            <maml:para>Optional labels used by point-based charts.</maml:para>
+            <maml:para>Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4382,7 +4382,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Maximum</maml:name>
           <maml:description>
-            <maml:para>Optional maximum scale value.</maml:para>
+            <maml:para>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -4440,7 +4440,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Minimum</maml:name>
           <maml:description>
-            <maml:para>Optional minimum scale value.</maml:para>
+            <maml:para>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -5391,7 +5391,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Labels</maml:name>
           <maml:description>
-            <maml:para>Optional labels used by point-based charts.</maml:para>
+            <maml:para>Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -5433,7 +5433,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Maximum</maml:name>
           <maml:description>
-            <maml:para>Optional maximum scale value.</maml:para>
+            <maml:para>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -5491,7 +5491,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Minimum</maml:name>
           <maml:description>
-            <maml:para>Optional minimum scale value.</maml:para>
+            <maml:para>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
           <dev:type>
@@ -6442,7 +6442,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Labels</maml:name>
         <maml:description>
-          <maml:para>Optional labels used by point-based charts.</maml:para>
+          <maml:para>Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -6484,7 +6484,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Maximum</maml:name>
         <maml:description>
-          <maml:para>Optional maximum scale value.</maml:para>
+          <maml:para>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
         <dev:type>
@@ -6542,7 +6542,7 @@ $tickets = Invoke-BGInfoDataSource -Name 'Open tickets' -Default 0 -ArgumentList
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Minimum</maml:name>
         <maml:description>
-          <maml:para>Optional minimum scale value.</maml:para>
+          <maml:para>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">Double</command:parameterValue>
         <dev:type>
@@ -13505,7 +13505,7 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed.</maml:para>
+      <maml:para>Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed; -StatusMap adds your own words.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem parameterSetName="Objects">
@@ -13801,6 +13801,18 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StatusMap</maml:name>
+          <maml:description>
+            <maml:para>Your own status words for the status column, for example @{ Active = 'Ok'; Disconnected = 'Warning'; Listening = 'Info' }. Values are Ok, Warning, Critical or Info. Words not in the map keep their built-in meaning.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Hashtable</command:parameterValue>
+          <dev:type>
+            <maml:name>Hashtable</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -14207,6 +14219,18 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
           <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>StatusMap</maml:name>
+          <maml:description>
+            <maml:para>Your own status words for the status column, for example @{ Active = 'Ok'; Disconnected = 'Warning'; Listening = 'Info' }. Values are Ok, Warning, Critical or Info. Words not in the map keep their built-in meaning.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Hashtable</command:parameterValue>
+          <dev:type>
+            <maml:name>Hashtable</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -14642,6 +14666,18 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>StatusMap</maml:name>
+        <maml:description>
+          <maml:para>Your own status words for the status column, for example @{ Active = 'Ok'; Disconnected = 'Warning'; Listening = 'Info' }. Values are Ok, Warning, Critical or Info. Words not in the map keep their built-in meaning.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Hashtable</command:parameterValue>
+        <dev:type>
+          <maml:name>Hashtable</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>TextColor</maml:name>
         <maml:description>
           <maml:para>Primary content color.</maml:para>
@@ -14774,6 +14810,16 @@ Get-Content .\escalation.mmd | New-BGInfoMermaid -Region Right -Title 'Escalatio
         <maml:title>EXAMPLE 1</maml:title>
         <dev:code>Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
     New-BGInfoTable -Region Right -Title 'Top processes' -Property Name, Id, @{ Name = 'CPU s'; Expression = { [math]::Round($_.CPU) } }</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>EXAMPLE 2</maml:title>
+        <dev:code>@(
+    [pscustomobject]@{ User = 'anna'; State = 'Active' }
+    [pscustomobject]@{ User = 'piotr'; State = 'Disconnected' }
+) | New-BGInfoTable -Region Right -Title 'Sessions' -StatusColumn State -StatusMap @{ Active = 'Ok'; Disconnected = 'Warning' }</dev:code>
         <dev:remarks>
           <maml:para></maml:para>
         </dev:remarks>

@@ -101,11 +101,19 @@ public sealed class CmdletNewBGInfoMetric : BgInfoWidgetCmdlet {
 }
 
 /// <summary>Creates a table panel from objects or explicit rows.</summary>
-/// <para>Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed.</para>
+/// <para>Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed; -StatusMap adds your own words.</para>
 /// <example>
 /// <code>
 /// Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
 ///     New-BGInfoTable -Region Right -Title 'Top processes' -Property Name, Id, @{ Name = 'CPU s'; Expression = { [math]::Round($_.CPU) } }
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// @(
+///     [pscustomobject]@{ User = 'anna'; State = 'Active' }
+///     [pscustomobject]@{ User = 'piotr'; State = 'Disconnected' }
+/// ) | New-BGInfoTable -Region Right -Title 'Sessions' -StatusColumn State -StatusMap @{ Active = 'Ok'; Disconnected = 'Warning' }
 /// </code>
 /// </example>
 [Cmdlet(VerbsCommon.New, "BGInfoTable", DefaultParameterSetName = "Objects")]
@@ -133,6 +141,10 @@ public sealed class CmdletNewBGInfoTable : BgInfoWidgetCmdlet {
     [Parameter]
     public string StatusColumn { get; set; } = string.Empty;
 
+    /// <para>Your own status words for the status column, for example @{ Active = 'Ok'; Disconnected = 'Warning'; Listening = 'Info' }. Values are Ok, Warning, Critical or Info. Words not in the map keep their built-in meaning.</para>
+    [Parameter]
+    public System.Collections.Hashtable? StatusMap { get; set; }
+
     /// <para>Use compact rows.</para>
     [Parameter]
     public SwitchParameter Dense { get; set; }
@@ -157,6 +169,16 @@ public sealed class CmdletNewBGInfoTable : BgInfoWidgetCmdlet {
         widget.ShowHeader = !NoHeader.IsPresent;
         widget.RowStriping = !NoStriping.IsPresent;
         if (!string.IsNullOrWhiteSpace(StatusColumn)) widget.StatusColumn = StatusColumn;
+        if (StatusMap != null) {
+            foreach (System.Collections.DictionaryEntry entry in StatusMap) {
+                var word = entry.Key?.ToString() ?? string.Empty;
+                var value = entry.Value?.ToString() ?? string.Empty;
+                if (!Enum.TryParse<BgInfoStatus>(value, ignoreCase: true, out var status) || !Enum.IsDefined(typeof(BgInfoStatus), status) || status == BgInfoStatus.None) {
+                    throw new PSArgumentException($"Status map word '{word}' has an unknown status '{value}'. Use Ok, Warning, Critical or Info.", nameof(StatusMap));
+                }
+                widget.StatusMap[word] = status;
+            }
+        }
 
         if (ParameterSetName == "Rows") {
             widget.Columns.AddRange(Column);

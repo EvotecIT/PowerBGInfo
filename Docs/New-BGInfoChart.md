@@ -289,7 +289,7 @@ Accept wildcard characters: False
 ```
 
 ### -Labels
-Optional labels used by point-based charts.
+Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.
 
 ```yaml
 Type: String[]
@@ -337,7 +337,7 @@ Accept wildcard characters: False
 ```
 
 ### -Maximum
-Optional maximum scale value.
+Top of the value scale, for example 100 for percentages. Without it the scale fits the data.
 
 ```yaml
 Type: Double
@@ -401,7 +401,7 @@ Accept wildcard characters: False
 ```
 
 ### -Minimum
-Optional minimum scale value.
+Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.
 
 ```yaml
 Type: Double

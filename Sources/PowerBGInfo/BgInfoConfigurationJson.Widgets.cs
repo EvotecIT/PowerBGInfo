@@ -196,6 +196,14 @@ public static partial class BgInfoConfigurationJson {
         };
         if (model.Columns != null) table.Columns.AddRange(model.Columns);
         if (model.Rows != null) foreach (var row in model.Rows) if (row != null) table.Rows.Add(row);
+        if (model.StatusMap != null) {
+            foreach (var entry in model.StatusMap) {
+                if (!Enum.TryParse<BgInfoStatus>(entry.Value, ignoreCase: true, out var status) || !Enum.IsDefined(typeof(BgInfoStatus), status)) {
+                    throw new InvalidOperationException($"Status map word '{entry.Key}' has an unknown status '{entry.Value}'. Use Ok, Warning, Critical or Info.");
+                }
+                table.StatusMap[entry.Key] = status;
+            }
+        }
         return table;
     }
 
@@ -318,6 +326,7 @@ public static partial class BgInfoConfigurationJson {
                 model.Columns = table.Columns.ToArray();
                 model.Rows = table.Rows.Select(row => row.ToArray()).ToList();
                 model.StatusColumn = table.StatusColumn;
+                model.StatusMap = table.StatusMap.Count == 0 ? null : table.StatusMap.ToDictionary(entry => entry.Key, entry => entry.Value.ToString());
                 model.Dense = table.Dense ? true : null;
                 model.ShowHeader = table.ShowHeader ? null : false;
                 model.RowStriping = table.RowStriping ? null : false;
@@ -447,6 +456,7 @@ public static partial class BgInfoConfigurationJson {
         public string[]? Columns { get; set; }
         public List<string[]>? Rows { get; set; }
         public string? StatusColumn { get; set; }
+        public Dictionary<string, string>? StatusMap { get; set; }
         public bool? Dense { get; set; }
         public bool? ShowHeader { get; set; }
         public bool? RowStriping { get; set; }

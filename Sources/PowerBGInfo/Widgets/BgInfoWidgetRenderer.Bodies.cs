@@ -65,11 +65,49 @@ internal static partial class BgInfoWidgetRenderer {
             .WithPngOutputScale(outputScale ?? scale)
             .WithDenseMode(widget.Dense)
             .WithHeader(widget.ShowHeader)
-            .WithRowStriping(widget.RowStriping)
-            .WithColumns(widget.Columns.ToArray());
+            .WithRowStriping(widget.RowStriping);
+        AddTableColumns(widget, table, w);
         foreach (var row in widget.Rows) table.AddRow(row.Cast<object?>().ToArray());
-        if (!string.IsNullOrWhiteSpace(widget.StatusColumn)) table.WithStatusColumn(widget.StatusColumn!);
+        if (!string.IsNullOrWhiteSpace(widget.StatusColumn)) {
+            table.WithStatusColumn(widget.StatusColumn!);
+            ApplyStatusMap(widget, table);
+        }
         return table.RenderRgba();
+    }
+
+    // Equal columns suit plain tables. A status column also carries a dot, so tables with one size each
+    // column by its longest text and give the status column room for the dot; long words then fit.
+    private static void AddTableColumns(BgInfoTableWidget widget, ChartTable table, int width) {
+        var status = string.IsNullOrWhiteSpace(widget.StatusColumn)
+            ? -1
+            : widget.Columns.FindIndex(name => string.Equals(name, widget.StatusColumn, StringComparison.OrdinalIgnoreCase));
+        if (status < 0) {
+            table.WithColumns(widget.Columns.ToArray());
+            return;
+        }
+        var weights = new double[widget.Columns.Count];
+        for (var column = 0; column < weights.Length; column++) {
+            var longest = widget.Columns[column].Length;
+            foreach (var row in widget.Rows) longest = Math.Max(longest, row[column]?.Length ?? 0);
+            weights[column] = Math.Max(4, Math.Min(32, longest)) + (column == status ? 3 : 0) + 2;
+        }
+        var available = Math.Max(weights.Length * 24d, width - 2 * BlockInset);
+        var total = weights.Sum();
+        for (var column = 0; column < weights.Length; column++) {
+            table.AddColumn(widget.Columns[column], width: Math.Floor(available * weights[column] / total));
+        }
+    }
+
+    // An explicit cell status takes precedence over ChartForgeX's built-in status words.
+    private static void ApplyStatusMap(BgInfoTableWidget widget, ChartTable table) {
+        if (widget.StatusMap.Count == 0) return;
+        var column = widget.Columns.FindIndex(name => string.Equals(name, widget.StatusColumn, StringComparison.OrdinalIgnoreCase));
+        if (column < 0) return;
+        for (var index = 0; index < widget.Rows.Count; index++) {
+            if (!widget.StatusMap.TryGetValue(widget.Rows[index][column]?.Trim() ?? string.Empty, out var status)) continue;
+            var visual = BgInfoThreshold.ToVisualStatus(status);
+            table.ConfigureRow(index, row => row.Cells[column].Status = visual);
+        }
     }
 
     private static RgbaImage RenderList(BgInfoListWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
@@ -107,8 +145,8 @@ internal static partial class BgInfoWidgetRenderer {
         return list.RenderRgba();
     }
 
-    private static Chart CreateChart(BgInfoWidget widget, BgInfoWidgetStyle style, int width, int height, bool axes) {
-        var (w, h, scale) = Density(widget, width, height);
+    private static Chart CreateChart(BgInfoWidget widget, BgInfoWidgetStyle style, int width, int height, bool axes, double? renderScale = null) {
+        var (w, h, scale) = renderScale.HasValue ? Density(width, height, renderScale.Value) : Density(widget, width, height);
         var chart = Chart.Create()
             .WithSize(w, h)
             .WithTheme(style.CreateTheme(ChartColor.Transparent), style.Mode)
@@ -141,14 +179,41 @@ internal static partial class BgInfoWidgetRenderer {
                 calendar.CellSize = Math.Floor(cell);
                 calendar.MaximumCellSize = Math.Floor(cell);
             })
+            .WithHeatmapColorScale(CalendarScale(widget, style))
             .AddCalendarHeatmap(widget.Title.Length > 0 ? widget.Title : "Calendar",
                 widget.Items.Select(item => new ChartCalendarHeatmapItem(item.Date.Date, item.Value)),
                 widget.Color ?? style.Accent);
         var grid = chart.ToRgbaImage();
         if (gridPixels >= width) return grid;
+        // A wide panel centres the grid instead of leaving the space to its right empty.
         var output = ImageComposition.CreateTransparent(width * 2, height * 2);
-        output.DrawImage(grid, 0, 0, Math.Min(width, gridPixels) * 2, height * 2);
+        var gridWidth2 = Math.Min(width, gridPixels) * 2;
+        output.DrawImage(grid, (width * 2 - gridWidth2) / 2d, 0, gridWidth2, height * 2);
         return output.ToImage();
+    }
+
+    // Zero days get a visible neutral cell, distinct from both the lowest value and days with no data
+    // (which stay empty), in light and dark. Values ramp from a faint tint at the lowest value through a
+    // clear tint at the median to the full color at the highest, so everyday variation and spikes both read.
+    internal static ChartColorScale CalendarScale(BgInfoCalendarHeatmapWidget widget, BgInfoWidgetStyle style) {
+        var color = widget.Color ?? style.Accent;
+        ChartColor Tint(byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
+        var track = ChartColor.FromRgba(style.Muted.R, style.Muted.G, style.Muted.B, style.Mode == VisualThemeMode.Dark ? (byte)56 : (byte)44);
+        var values = widget.Items.Select(item => item.Value).Where(value => value > 0).OrderBy(value => value).ToList();
+        var stops = new List<ChartColorStop> { new(0, track) };
+        if (values.Count == 0) {
+            stops.Add(new ChartColorStop(1, color));
+            return ChartColorScale.Sequential(stops);
+        }
+        var lowest = values[0];
+        var highest = values[values.Count - 1];
+        var median = values[values.Count / 2];
+        if (lowest < highest) {
+            stops.Add(new ChartColorStop(lowest, Tint(48)));
+            if (median > lowest && median < highest) stops.Add(new ChartColorStop(median, Tint(150)));
+        }
+        stops.Add(new ChartColorStop(highest, color));
+        return ChartColorScale.Sequential(stops);
     }
 
     private static RgbaImage RenderTimeline(BgInfoTimelineWidget widget, BgInfoWidgetStyle style, int width, int height) {
@@ -163,11 +228,24 @@ internal static partial class BgInfoWidgetRenderer {
             if (now > last) last = now;
         }
         var multiDay = first.Date != last.Date;
-        var chart = CreateChart(widget, style, width, height, axes: true)
+        // A taller panel gets thicker lanes and larger lane labels, up to half again the requested scale.
+        var lanes = widget.Items.Select(item => item.Lane.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+        var natural = lanes * 30d + 44 + (widget.ShowLegend ? 34 : 0);
+        var grow = Math.Max(1, Math.Min(1.5, height / (natural * widget.Scale)));
+        var renderScale = widget.Scale * grow;
+        var chart = CreateChart(widget, style, width, height, axes: true, renderScale)
             .WithLegend(widget.ShowLegend)
             .WithDataLabels(true)
             .WithStateCategories(categories)
             .ConfigureXAxis(axis => axis.LabelFormatter = value => FormatTimelineTick(value, multiDay));
+        if (multiDay) {
+            var ticks = TimelineDayTicks(first, last, width / renderScale);
+            chart.ConfigureXAxis(axis => {
+                axis.LabelDensity = ChartLabelDensity.All;
+                axis.Labels.Clear();
+                foreach (var tick in ticks) axis.Labels.Add(new ChartAxisLabel(tick.ToOADate(), FormatTimelineDay(tick)));
+            });
+        }
         if (widget.Now.HasValue) chart.WithGanttLaneNow(widget.Now.Value);
         foreach (var lane in widget.Items.GroupBy(item => item.Lane.Trim(), StringComparer.OrdinalIgnoreCase)) {
             chart.AddGanttLane(lane.Key, lane.Select(item => new ChartGanttLaneItem(item.Start, item.End,
@@ -177,6 +255,29 @@ internal static partial class BgInfoWidgetRenderer {
 
         return chart.ToRgbaImage();
     }
+
+    // Day ticks from the first day of the range, every 1, 2 or 3 days, or weekly from a Monday, so that
+    // the labels fit the lane axis. The first tick is the range's first day (or its first Monday).
+    internal static List<DateTime> TimelineDayTicks(DateTime first, DateTime last, double logicalWidth) {
+        var start = first.Date;
+        var end = last.Date;
+        var span = Math.Max(1, (end - start).TotalDays);
+        var slots = Math.Max(2, (int)Math.Floor((logicalWidth - 140) / 72));
+        var ticks = new List<DateTime>();
+        foreach (var step in new[] { 1, 2, 3 }) {
+            if (span / step + 1 > slots) continue;
+            for (var day = start; day <= end; day = day.AddDays(step)) ticks.Add(day);
+            return ticks;
+        }
+        var weeks = 1;
+        while (span / (7d * weeks) + 1 > slots) weeks++;
+        var monday = start.AddDays(((int)DayOfWeek.Monday - (int)start.DayOfWeek + 7) % 7);
+        for (var day = monday; day <= end; day = day.AddDays(7 * weeks)) ticks.Add(day);
+        if (ticks.Count == 0 || (ticks[0] - start).TotalDays >= 2) ticks.Insert(0, start);
+        return ticks;
+    }
+
+    internal static string FormatTimelineDay(DateTime day) => day.ToString("ddd d", CultureInfo.CurrentCulture);
 
     internal static List<ChartStateCategory> ResolveTimelineCategories(IEnumerable<BgInfoTimelineItem> items, BgInfoWidgetStyle style) {
         var categories = new List<ChartStateCategory>();

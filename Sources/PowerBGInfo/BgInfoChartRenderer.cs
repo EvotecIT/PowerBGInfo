@@ -109,14 +109,16 @@ internal static class BgInfoChartRenderer {
         // Keep a positive native chart interior even when a tall header leaves a short plot.
         // The host still owns the requested tile dimensions and clips its composed content.
         var plotPadding = Math.Min(8d, (Math.Max(1, Math.Min(width, height)) - 1d) / 2d);
+        // Bar, line and area charts with -Labels show them as a category axis under the plot.
+        var categoryAxis = IsCategoryTrendKind(chart.Kind) && chart.Labels.Count > 0;
         var plot = Chart.Create()
             .WithSize(Math.Max(1, width), Math.Max(1, height))
             .WithTheme(CreateOverlayTheme(chart, config), chart.ThemeMode)
             .WithTransparentBackground()
             .WithHeader(false)
             .WithLegend(false)
-            .WithAxes(chart.Kind == BgInfoChartKind.HorizontalBar)
-            .WithXAxisVisible(false)
+            .WithAxes(chart.Kind == BgInfoChartKind.HorizontalBar || categoryAxis)
+            .WithXAxisVisible(categoryAxis)
             .WithYAxisVisible(chart.Kind == BgInfoChartKind.HorizontalBar)
             .WithAxisLines(false)
             .WithCard(false)
@@ -155,6 +157,7 @@ internal static class BgInfoChartRenderer {
         }
 
         ApplyChartOptions(plot, chart);
+        if (IsCategoryTrendKind(chart.Kind)) ApplyCategoryTrendScale(plot, chart, values, categoryAxis);
 
         switch (chart.Kind) {
             case BgInfoChartKind.Bar:
@@ -207,6 +210,30 @@ internal static class BgInfoChartRenderer {
         }
 
         return plot;
+    }
+
+    private static bool IsCategoryTrendKind(BgInfoChartKind kind) =>
+        kind is BgInfoChartKind.Bar or BgInfoChartKind.Line or BgInfoChartKind.Area;
+
+    // Category labels thin themselves when crowded. -Minimum and -Maximum fix the value range; without them,
+    // bars with data labels get headroom so every label sits above its bar, the tallest one included.
+    private static void ApplyCategoryTrendScale(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, bool categoryAxis) {
+        if (categoryAxis) {
+            plot.WithXLabels(BuildLabels(chart, values.Count));
+            plot.ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.Auto);
+        }
+        var maximum = chart.Maximum;
+        if (!maximum.HasValue && chart.Kind == BgInfoChartKind.Bar && chart.ShowDataLabels && values.Count > 0) {
+            var highest = values.Max();
+            if (highest > 0) maximum = highest * 1.18;
+        }
+        if (maximum.HasValue || chart.Minimum.HasValue) {
+            plot.ConfigureYAxis(axis => {
+                if (maximum.HasValue) axis.Maximum = maximum.Value;
+                axis.Minimum = chart.Minimum ?? (chart.Kind == BgInfoChartKind.Bar ? 0 : axis.Minimum);
+            });
+        }
+        if (chart.Kind == BgInfoChartKind.Bar && chart.ShowDataLabels) plot.WithDataLabelPlacement(ChartDataLabelPlacement.Above);
     }
 
     private static void AddTrendSeries(Chart plot, BgInfoChart chart, IReadOnlyList<double> values, int width, ChartColor color, bool smooth, bool area) {

@@ -49,6 +49,7 @@ internal static partial class BgInfoWidgetRenderer {
                     Dense = table.Dense, ShowHeader = table.ShowHeader && offset == 0,
                     RowStriping = table.RowStriping, StatusColumn = table.StatusColumn
                 };
+                foreach (var entry in table.StatusMap) rows.StatusMap[entry.Key] = entry.Value;
                 rows.Columns.AddRange(table.Columns);
                 for (var index = offset; index < offset + length; index++) rows.Rows.Add(table.Rows[index]);
                 batch = rows;

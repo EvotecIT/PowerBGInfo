@@ -88,6 +88,11 @@ public sealed class BgInfoTableWidget : BgInfoWidget {
     public List<string[]> Rows { get; } = new();
     /// <summary>Optional column whose values (OK, Warning, Failed...) get a status dot.</summary>
     public string? StatusColumn { get; set; }
+    /// <summary>
+    /// Maps your own status-column words to a status, for example Active to Ok or Disconnected to Warning.
+    /// Matching ignores case. Words not in the map keep the built-in meaning (OK, Warning, Failed...).
+    /// </summary>
+    public Dictionary<string, BgInfoStatus> StatusMap { get; } = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>Use compact rows.</summary>
     public bool Dense { get; set; }
     /// <summary>Show the column header row.</summary>
@@ -107,6 +112,13 @@ public sealed class BgInfoTableWidget : BgInfoWidget {
         }
         if (!string.IsNullOrWhiteSpace(StatusColumn) && !Columns.Any(column => string.Equals(column, StatusColumn, StringComparison.OrdinalIgnoreCase))) {
             throw new InvalidOperationException($"Status column '{StatusColumn}' is not one of the table columns.");
+        }
+        if (StatusMap.Count > 0 && string.IsNullOrWhiteSpace(StatusColumn)) {
+            throw new InvalidOperationException("A status map needs a status column.");
+        }
+        foreach (var entry in StatusMap) {
+            if (string.IsNullOrWhiteSpace(entry.Key)) throw new InvalidOperationException("Status map words cannot be empty.");
+            if (entry.Value == BgInfoStatus.None) throw new InvalidOperationException($"Status map word '{entry.Key}' needs Ok, Warning, Critical or Info.");
         }
     }
 }

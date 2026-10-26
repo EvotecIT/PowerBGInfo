@@ -34,7 +34,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter(ParameterSetName = "Multiple")]
     public double[] Values { get; set; } = Array.Empty<double>();
 
-    /// <para>Optional labels used by point-based charts.</para>
+    /// <para>Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.</para>
     [Parameter]
     public string[] Labels { get; set; } = Array.Empty<string>();
 
@@ -257,11 +257,11 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public SwitchParameter ShowDataLabels { get; set; }
 
-    /// <para>Optional minimum scale value.</para>
+    /// <para>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</para>
     [Parameter]
     public double Minimum { get; set; }
 
-    /// <para>Optional maximum scale value.</para>
+    /// <para>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</para>
     [Parameter]
     public double Maximum { get; set; }
 
