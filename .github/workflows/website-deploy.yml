@@ -50,6 +50,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+          persist-credentials: false
 
       - name: Apply managed Cloudflare site policy
         uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@7cbb9594e6590b41f0d20f528550848c519855e8
