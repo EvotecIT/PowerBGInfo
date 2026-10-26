@@ -60,7 +60,7 @@
             <span class="pb-monitor__file" data-pbg-screen-file>{{ first.renders.dark.file }}</span>
             <span class="pb-monitor__scenes" aria-label="Show another wallpaper">
               {{~ for s in screens ~}}
-              <a href="/gallery/#{{ s.id }}" data-pbg-scene="{{ s.id }}" aria-pressed="{{ if for.first }}true{{ else }}false{{ end }}" data-file="{{ s.renders.dark.file }}">{{ s.title }}</a>
+              <a href="/gallery/#{{ s.id }}" data-pbg-scene="{{ s.id }}"{{ if for.first }} aria-current="true"{{ end }} data-file="{{ s.renders.dark.file }}">{{ s.title }}</a>
               {{~ end ~}}
             </span>
           </figcaption>
