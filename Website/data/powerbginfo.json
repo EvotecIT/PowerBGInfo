@@ -5,7 +5,7 @@
     "alt": "Server status wallpaper rendered by PowerBGInfo: the host name SQL-PROD-01 with its role and owner, four tiles for uptime, CPU, memory and network, and panels for volumes, network throughput and critical services."
   },
   "scenarios": {
-    "title": "Twelve wallpapers, each with one job",
+    "title": "Twenty-two wallpapers, each with one job",
     "body": "Each script answers one question for the person in front of the screen. A theme preset gives it its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Three are shown in full below, with the New-BGInfo call that draws each one and the data block it reads.",
     "featured": [
       "hyperv-host",
@@ -20,6 +20,12 @@
           "hyperv-host",
           "server-status",
           "domain-controller",
+          "sql-server",
+          "file-server",
+          "rds-session-host",
+          "certificate-authority",
+          "backup-server",
+          "linux-server",
           "build-agent"
         ]
       },
@@ -46,7 +52,17 @@
         "label": "Operations",
         "scenarios": [
           "on-call",
-          "admin-workstation"
+          "admin-workstation",
+          "jump-host"
+        ]
+      },
+      {
+        "id": "change",
+        "label": "Change and lifecycle",
+        "scenarios": [
+          "environment-marker",
+          "change-freeze",
+          "decommission-notice"
         ]
       }
     ],
@@ -85,7 +101,17 @@
     "meeting-room": "Meeting room wallpaper for Oslo: free until 13:00, the next booking, a guest Wi-Fi QR code, numbered steps to share a screen and today's bookings beside the neighbouring rooms.",
     "build-agent": "Build agent wallpaper for BLD-WIN-04: the running pipeline, agent and toolchain details, jobs waiting, free space on D: and C:, a table of the last builds and the pipeline stages as a flow.",
     "patch-day": "Patch day wallpaper: restart in 2 h 15 min with a countdown gauge, what is installing, a checklist for before you go, maintenance windows per ring and bars of installs per ring.",
-    "signage": "Signage wallpaper for an open day at the Contoso innovation hub: the date and time in large type, a QR code for the day and a list of highlights with their times."
+    "signage": "Signage wallpaper for an open day at the Contoso innovation hub: the date and time in large type, a QR code for the day and a list of highlights with their times.",
+    "environment-marker": "Production environment wallpaper for PAY-PRD-07: PRODUCTION in large red type, a reminder that every change needs an approved CAB ticket, the server's role, owner and data class, a QR code for the change policy, the same service's acceptance, test and development servers, and this week's change windows as lanes.",
+    "rds-session-host": "RDS session host wallpaper for RDSH-FIN-03: accepting new sessions from the broker, the collection, profiles and restart window, average logon time over 14 days with one slow day, the signed-in users with their state, CPU and memory, the largest FSLogix containers against their cap, and tiles for sessions, CPU, memory and the profile share.",
+    "sql-server": "SQL Server wallpaper for SQL-FIN-01, the primary replica of AG-FINANCE: one database 9 days past its last full backup, batch requests over two hours, a treemap of databases sized by data and coloured by backup age, the availability group's replicas, a table of databases with their last full and log backups, and space for data, logs and backups.",
+    "file-server": "File server wallpaper for FS01: the Projects share at 91 % of its quota, a treemap of shares sized by data and coloured by quota used, volume usage, open files, the weekly growth of Projects, the last week's quota alerts and the DFS replication backlog per folder.",
+    "decommission-notice": "Retirement notice for FS-AMS-02: 18 days left before the shutdown on 3 November, the server to use instead and the new path, where each share moved and whether it is ready, a migration checklist, the data left to move each night and the SMB sessions still connected.",
+    "change-freeze": "Change freeze wallpaper for FIN-SQL-03: the quarter-end freeze from 15 October to 2 November, emergency changes only, the on-call contact and bridge, a QR code to request an exception, the changes waiting for the freeze to end, what is allowed during it, and the change calendar as lanes.",
+    "certificate-authority": "Certificate authority wallpaper for Contoso Issuing CA 02: 28 certificates expiring within 30 days, the CA's parent, key and CRL schedule, days left on its own certificate, templates with their renewal type and state, expiring certificates in 30-day bands, AIA and CDP reachability, an expiry calendar and failed requests over 30 days.",
+    "backup-server": "Backup server wallpaper for BKP-AMS-01: 47 of 49 jobs succeeded last night, the two that need attention, the next backup window, the immutable, offsite and tape copies with the last restore test, repository space, a year's heatmap of nights with failed or warning jobs and the success rate over 14 nights.",
+    "jump-host": "Jump host wallpaper for JMP-T0-01: privileged access only, the signed-in admin, elevation and MFA, what is never allowed on the host, a QR code for the access policy, the tools allowed here, the admin sessions with their state and the security baseline.",
+    "linux-server": "Linux server wallpaper for web-lnx-04, rendered headless: one failed systemd unit, the kernel, uptime, load and address, the units and their state, listening ports and how each is exposed, package updates, mount usage and the load average over six hours."
   },
   "build": {
     "title": "Build one yourself",
