@@ -201,7 +201,7 @@ New-BGInfo -Theme $look -Target File {
         }
         New-BGInfoTimeline -Region Bottom -Title 'Change windows' `
             -Note 'this week, local time' -Item $windows -Now $envInfo.Now `
-            -Height ([int](250 * $scale))
+            -Height ([int](300 * $scale))
     }
 } -ConfigurationDirectory $OutputDirectory `
     -OutputFileName "environment-marker-$($Theme.ToLower()).png"
