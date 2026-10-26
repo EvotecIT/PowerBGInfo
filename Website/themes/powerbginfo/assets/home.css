@@ -57,7 +57,7 @@
   text-decoration: none;
 }
 .pb-monitor__scenes a:hover { color: var(--pb-ink); border-color: var(--pb-line-strong); }
-.pb-monitor__scenes a[aria-pressed="true"] { color: var(--pb-ink); border-color: var(--pb-s2); background: rgba(47, 211, 154, .08); }
+.pb-monitor__scenes a[aria-current="true"] { color: var(--pb-ink); border-color: var(--pb-s2); background: rgba(47, 211, 154, .08); }
 
 /* Tools: the three products as equal cards. */
 .pb-tools__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
