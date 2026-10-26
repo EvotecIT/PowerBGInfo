@@ -539,13 +539,17 @@
     if (!images.length || !chips.length) { return; }
     chips.forEach(function (chip) {
       chip.addEventListener('click', function (event) {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) { return; }
         var scene = chip.getAttribute('data-pbg-scene');
         var target = null;
         images.forEach(function (image) { if (image.getAttribute('data-pbg-screen') === scene) { target = image; } });
         if (!target) { return; }
         event.preventDefault();
         images.forEach(function (image) { image.hidden = image !== target; });
-        chips.forEach(function (other) { other.setAttribute('aria-pressed', other === chip ? 'true' : 'false'); });
+        chips.forEach(function (other) {
+          if (other === chip) { other.setAttribute('aria-current', 'true'); }
+          else { other.removeAttribute('aria-current'); }
+        });
         if (file) { file.textContent = chip.getAttribute('data-file'); }
       });
     });
