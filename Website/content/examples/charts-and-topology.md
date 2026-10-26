@@ -1,6 +1,6 @@
 ---
 title: "Add operational charts and topology"
-description: "Add compact ChartForgeX visuals to a PowerBGInfo wallpaper."
+description: "Add compact ChartForgeX charts and topology to a PowerBGInfo wallpaper, such as a CPU or capacity trend, service ownership or a lab route."
 layout: docs
 ---
 

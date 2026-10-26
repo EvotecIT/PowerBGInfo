@@ -110,14 +110,163 @@
     "OrganizationLogo": "https://evotec.xyz/favicon.svg",
     "OrganizationSameAs": [
       "https://github.com/EvotecIT",
-      "https://evotec.xyz"
-    ]
+      "https://evotec.xyz",
+      "https://www.powershellgallery.com/profiles/Przemyslaw.Klys",
+      "https://evo.yt/discord"
+    ],
+    "SoftwareApplication": true
   },
   "Social": {
     "Enabled": true,
     "SiteName": "PowerBGInfo",
     "Image": "/powerbginfo/domain-controller-dark.png",
-    "TwitterCard": "summary_large_image"
+    "ImageWidth": 1920,
+    "ImageHeight": 1080,
+    "TwitterCard": "summary_large_image",
+    "TwitterSite": "@PrzemyslawKlys",
+    "TwitterCreator": "@PrzemyslawKlys",
+    "AutoGenerateCards": true,
+    "GeneratedCardsPath": "/site/social",
+    "GeneratedCardCollections": [
+      "pages",
+      "docs",
+      "examples"
+    ],
+    "GeneratedCardTitle": "page",
+    "GeneratedCardTextFit": true,
+    "GeneratedCardLogo": "/favicon.svg",
+    "GeneratedCardFonts": [
+      {
+        "Family": "Archivo",
+        "Weight": "100 900",
+        "Path": "build/social-fonts/archivo-latin.ttf"
+      },
+      {
+        "Family": "JetBrains Mono",
+        "Weight": "400 800",
+        "Path": "build/social-fonts/jetbrains-mono-latin.ttf"
+      }
+    ],
+    "GeneratedCardTheme": "pb-pages",
+    "GeneratedCardThemes": {
+      "pb-pages": {
+        "Style": "product",
+        "Variant": "split",
+        "ColorScheme": "dark",
+        "Tokens": {
+          "socialCard": {
+            "fontDisplay": "Archivo",
+            "fontBody": "Archivo",
+            "fontMono": "JetBrains Mono",
+            "backgroundStart": "#080d17",
+            "backgroundMid": "#0c1321",
+            "backgroundEnd": "#080d17",
+            "surface": "#101828",
+            "surfaceStroke": "#1e2a3f",
+            "textPrimary": "#e9eef7",
+            "textSecondary": "#a6b0c3",
+            "accent": "#7ea3ff",
+            "accentSoft": "#7ea3ff",
+            "accentStrong": "#7ea3ff",
+            "chipBackground": "#0c1321",
+            "chipBorder": "#2b3a54",
+            "chipText": "#a6b0c3",
+            "imageShare": 0.5,
+            "imageFit": "cover",
+            "imageAnchor": "left top",
+            "imagePadding": 0
+          }
+        }
+      },
+      "pb-docs": {
+        "Style": "docs",
+        "Variant": "split",
+        "ColorScheme": "dark",
+        "Tokens": {
+          "socialCard": {
+            "fontDisplay": "Archivo",
+            "fontBody": "Archivo",
+            "fontMono": "JetBrains Mono",
+            "backgroundStart": "#080d17",
+            "backgroundMid": "#0c1321",
+            "backgroundEnd": "#080d17",
+            "surface": "#101828",
+            "surfaceStroke": "#1e2a3f",
+            "textPrimary": "#e9eef7",
+            "textSecondary": "#a6b0c3",
+            "accent": "#2fd39a",
+            "accentSoft": "#2fd39a",
+            "accentStrong": "#2fd39a",
+            "chipBackground": "#0c1321",
+            "chipBorder": "#2b3a54",
+            "chipText": "#a6b0c3",
+            "imageShare": 0.5,
+            "imageFit": "cover",
+            "imageAnchor": "left top",
+            "imagePadding": 0
+          }
+        }
+      },
+      "pb-examples": {
+        "Style": "docs",
+        "Variant": "split",
+        "ColorScheme": "dark",
+        "Tokens": {
+          "socialCard": {
+            "fontDisplay": "Archivo",
+            "fontBody": "Archivo",
+            "fontMono": "JetBrains Mono",
+            "backgroundStart": "#080d17",
+            "backgroundMid": "#0c1321",
+            "backgroundEnd": "#080d17",
+            "surface": "#101828",
+            "surfaceStroke": "#1e2a3f",
+            "textPrimary": "#e9eef7",
+            "textSecondary": "#a6b0c3",
+            "accent": "#f2b33d",
+            "accentSoft": "#f2b33d",
+            "accentStrong": "#f2b33d",
+            "chipBackground": "#0c1321",
+            "chipBorder": "#2b3a54",
+            "chipText": "#a6b0c3",
+            "imageShare": 0.5,
+            "imageFit": "cover",
+            "imageAnchor": "left top",
+            "imagePadding": 0
+          }
+        }
+      }
+    },
+    "GeneratedCardThemesByCollection": {
+      "pages": "pb-pages",
+      "docs": "pb-docs",
+      "examples": "pb-examples"
+    },
+    "GeneratedCardImages": {
+      "pages": {
+        "Pattern": "/powerbginfo/domain-controller-dark.png",
+        "Fallback": "/powerbginfo/domain-controller-dark.png"
+      },
+      "docs": {
+        "Pattern": "/powerbginfo/helpdesk-dark.png",
+        "Fallback": "/powerbginfo/helpdesk-dark.png"
+      },
+      "examples": {
+        "Pattern": "/powerbginfo/server-status-dark.png",
+        "Fallback": "/powerbginfo/server-status-dark.png"
+      }
+    },
+    "GeneratedCardImagesRequired": true,
+    "GeneratedCardBadges": {
+      "/docs/": "DOCS",
+      "/examples/": "EXAMPLE",
+      "/gallery/": "GALLERY",
+      "/build/": "GUIDE",
+      "/platforms/": "PLATFORMS",
+      "/desktopmanager/": "DESKTOPMANAGER",
+      "/informationbox/": "INFORMATIONBOX"
+    },
+    "SocialCardsRequired": true
   },
   "AgentReadiness": {
     "Enabled": true,

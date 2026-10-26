@@ -1,6 +1,6 @@
 ---
 title: "PowerBGInfo troubleshooting"
-description: "Answers to the usual PowerBGInfo questions: reverting, black, stretched or blurry wallpapers, placement, readability, BGInfo migration, Server Core, SYSTEM, the lock screen and multiple monitors."
+description: "Fixes for common PowerBGInfo problems: wallpapers that revert or look black, stretched or blurry, BGInfo migration, SYSTEM runs and multiple monitors."
 layout: docs
 ---
 

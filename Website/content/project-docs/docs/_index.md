@@ -1,6 +1,6 @@
 ---
 title: "PowerBGInfo Docs"
-description: "Documentation for PowerBGInfo: install it, design a wallpaper, and run it in production."
+description: "PowerBGInfo documentation: install the module, design a wallpaper, deploy it with Group Policy, Intune or Configuration Manager, and run it safely."
 layout: docs
 ---
 
