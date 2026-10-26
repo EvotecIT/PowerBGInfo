@@ -166,7 +166,7 @@ New-BGInfo -Theme $look -Target File {
     $band = @{ Region = 'Bottom'; Height = [int](250 * $scale) }
     if (@($jump.Sessions).Count -gt 0) {
         $jump.Sessions | New-BGInfoTable @band -Title 'Admin sessions' `
-            -Note "$(@($jump.Sessions).Count) on this host" -StatusColumn State
+            -Note "$(@($jump.Sessions).Count) on this host" -StatusColumn State -StatusMap @{ Disconnected = 'Warning' }
     }
     if (@($jump.Baseline).Count -gt 0) {
         New-BGInfoList @band -Title 'Security baseline' -Note $jump.BaselineAt `

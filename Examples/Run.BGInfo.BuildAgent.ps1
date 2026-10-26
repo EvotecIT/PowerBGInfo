@@ -143,7 +143,7 @@ New-BGInfo -Theme $look -Target File {
     if ($agent.Available) {
         if ($agent.Builds.Count -gt 0) {
             $agent.Builds | New-BGInfoTable -Region Center -Title 'Last builds' `
-                -Note 'on this agent' -StatusColumn Result
+                -Note 'on this agent' -StatusColumn Result -StatusMap @{ Running = 'Info' }
         }
         if ($agent.Stages.Count -gt 0) {
             $stageNote = if ($at -ge 0) {

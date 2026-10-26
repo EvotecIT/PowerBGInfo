@@ -179,7 +179,7 @@ New-BGInfo -Theme $look -Target File {
     if (@($freeze.Queued).Count -gt 0) {
         $freeze.Queued | New-BGInfoTable -Region Center `
             -Title 'Waiting for the freeze' `
-            -Note "$(@($freeze.Queued).Count) changes" -StatusColumn State
+            -Note "$(@($freeze.Queued).Count) changes" -StatusColumn State -StatusMap @{ Approved = 'Ok' }
     }
 
     # Bottom band: the calendar around the freeze, so the end is in sight.

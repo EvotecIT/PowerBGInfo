@@ -174,7 +174,8 @@ New-BGInfo -Theme $look -Target File {
                 @{ Name = 'CPU'; Expression = { "$($_.Cpu) %" } },
                 @{ Name = 'Memory'; Expression = { "$($_.MemoryGB) GB" } } |
             New-BGInfoTable -Region Right -Title 'Who is on it' `
-                -Note "$(@($rds.Sessions).Count) of $sessions by CPU"
+                -Note "$(@($rds.Sessions).Count) of $sessions by CPU" `
+                -StatusColumn State -StatusMap @{ Active = 'Ok'; Disconnected = 'Warning' }
     }
     if ($rds.Containers.Count -gt 0) {
         $percent = foreach ($size in $rds.Containers.Values) {
