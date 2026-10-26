@@ -1,0 +1,199 @@
+<#
+    Certificate authority. The question for the PKI administrator at this
+    console: will anything expire soon on this CA? Certificates first, then
+    the CA's own certificate, the revocation lists it publishes and whether
+    clients can reach them.
+
+    The data block returns plain values; the presentation block only reads
+    them. Comments name the command or source that supplies each value.
+#>
+param(
+    [ValidateSet('Light', 'Dark')]
+    [string] $Theme = 'Dark',
+    [int] $Width = 1920,
+    [int] $Height = 1080,
+    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
+)
+
+Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+
+#region Data: your logic goes here
+function Get-CertificateAuthorityHealth {
+    $today = Get-Date '2026-10-16 07:00'
+    [pscustomobject] @{
+        Available = $true
+        Now       = $today
+        # certutil -cainfo name, certutil -cainfo type, or PSPKI:
+        #   Get-CertificationAuthority -ComputerName $env:COMPUTERNAME
+        Name      = 'Contoso Issuing CA 02'
+        Type      = 'Enterprise subordinate CA'
+        Host      = 'PKI-ISS-02.corp.contoso.com'
+        Parent    = 'Contoso Root CA (offline)'
+        # certutil -getreg CA\CSP\CNGHashAlgorithm and the CA certificate
+        Key       = 'RSA 4096 · SHA-256'
+        # (Get-CertificationAuthority).Certificate.NotAfter
+        CaExpires = Get-Date '2031-03-14'
+        # Issued certificates by expiry day for the next 90 days:
+        #   certutil -view -restrict ("Disposition=20,NotAfter>=$today," +
+        #       "NotAfter<=$($today.AddDays(90))") `
+        #       -out "RequestID,CommonName,NotAfter,CertificateTemplate" csv
+        # or PSPKI:
+        #   Get-IssuedRequest -Filter "NotAfter -le $($today.AddDays(90))"
+        Expiring  = foreach ($day in 1..90) {
+            $date = $today.Date.AddDays($day)
+            $weekend = $date.DayOfWeek -in 'Saturday', 'Sunday'
+            $value = if ($weekend) { 0 } else { ($day * 7) % 3 }
+            # A batch of web server certificates issued together last year.
+            if ($day -eq 12) { $value = 9 }
+            if ($day -eq 41) { $value = 6 }
+            if ($day -eq 67) { $value = 5 }
+            [pscustomobject] @{ Date = $date; Value = $value }
+        }
+        # Get-CATemplate, with issued and expiring counts per template from
+        # Get-IssuedRequest -Property CertificateTemplate | Group-Object, and
+        # the renewal mode from the template's enrollment flags
+        Templates = @(
+            [pscustomobject] @{ Template = 'Web Server'
+                Issued = 412; 'Expire in 90 d' = 34
+                Renewal = 'Manual'; State = 'Attention' }
+            [pscustomobject] @{ Template = 'Computer'
+                Issued = 1880; 'Expire in 90 d' = 22
+                Renewal = 'Autoenrollment'; State = 'OK' }
+            [pscustomobject] @{ Template = 'User'
+                Issued = 2340; 'Expire in 90 d' = 19
+                Renewal = 'Autoenrollment'; State = 'OK' }
+            [pscustomobject] @{ Template = 'Kerberos Authentication'
+                Issued = 12; 'Expire in 90 d' = 3
+                Renewal = 'Autoenrollment'; State = 'OK' }
+            [pscustomobject] @{ Template = 'Code Signing'
+                Issued = 8; 'Expire in 90 d' = 2
+                Renewal = 'Manual'; State = 'Attention' }
+        )
+        # The CRLs this CA publishes: certutil -dump <file>.crl ("Next Update"),
+        # or PSPKI Get-CRLValidityPeriod. Reachability of every AIA and CDP
+        # URL as pkiview.msc checks it: PSPKI Get-EnterprisePKIHealthStatus,
+        # or certutil -verify -urlfetch <certificate>.
+        Crl       = Get-Date '2026-10-18 06:00'
+        DeltaCrl  = Get-Date '2026-10-16 18:00'
+        Checks    = @(
+            @{ Text = 'AIA · http'; Value = 'reachable'; Status = 'Ok' }
+            @{ Text = 'CDP · http'; Value = 'reachable'; Status = 'Ok' }
+            @{ Text = 'CDP · ldap'; Value = '1 of 2 DCs'; Status = 'Warning' }
+            @{ Text = 'OCSP responder'; Value = 'signing cert ok'
+                Status = 'Ok' }
+        )
+        # Failed requests per day for 30 days: PSPKI Get-FailedRequest, or
+        # certutil -view -restrict "Disposition=30" grouped by SubmittedWhen
+        Failed    = @(1, 0, 2, 1, 0, 0, 0, 1, 3, 1, 0, 2, 0, 0, 1, 2, 1, 0, 1,
+            0, 0, 2, 1, 3, 2, 0, 0, 2, 7, 4)
+    }
+}
+
+$fallback = [pscustomobject] @{
+    Available = $false; Now = Get-Date; Name = $env:COMPUTERNAME
+    Type = 'unknown'; Host = 'unknown'; Parent = 'unknown'; Key = 'unknown'
+    CaExpires = $null
+    Expiring = @(); Templates = @(); Crl = $null; DeltaCrl = $null
+    Checks = @(); Failed = @()
+}
+$source = @{
+    Name           = 'Certificate authority'
+    TimeoutSeconds = 30
+    ScriptBlock    = ${function:Get-CertificateAuthorityHealth}
+    Default        = $fallback
+}
+$ca = Invoke-BGInfoDataSource @source
+#endregion
+
+#region Presentation: reads only $ca
+$scale = [Math]::Round($Height / 1080, 2)
+# Midnight with a teal accent: a security console, not the NOC.
+$dark = $Theme -eq 'Dark'
+$accent = if ($dark) { '#2DD4BF' } else { '#0F766E' }
+$look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale -Accent $accent
+$glow = if ($dark) { '#14B8A62E' } else { '#5EEAD466' }
+
+function Format-Until($date) {
+    $span = $date - $ca.Now
+    if ($span.TotalHours -lt 48) {
+        "in $([int] [Math]::Round($span.TotalHours)) h"
+    }
+    else { "in $([int] [Math]::Floor($span.TotalDays)) days" }
+}
+$soon = @($ca.Expiring | Where-Object { $_.Date -le $ca.Now.AddDays(30) } |
+    Measure-Object Value -Sum)[0].Sum
+$within60 = @($ca.Expiring | Where-Object { $_.Date -le $ca.Now.AddDays(60) } |
+    Measure-Object Value -Sum)[0].Sum
+$within90 = @($ca.Expiring | Measure-Object Value -Sum)[0].Sum
+
+New-BGInfo -Theme $look -Target File {
+    New-BGInfoBackground -Width $Width -Height $Height -Pattern Grid `
+        -PatternSpacing ([int](64 * $scale)) -Glow @(
+        New-BGInfoBackgroundGlow -X 0.0 -Y 0.1 -Radius 0.5 -Color $glow
+    )
+    New-BGInfoLayout -ColumnWidth ([int](460 * $scale))
+
+    New-BGInfoLabel -Name "CERTIFICATE AUTHORITY  ·  $($ca.Type.ToUpper())" `
+        -Accent -FontSize ([int](15 * $scale)) -FontWeight 700
+    New-BGInfoLabel -Name $ca.Name -FontSize ([int](64 * $scale)) `
+        -FontWeight 600
+    if (-not $ca.Available) {
+        New-BGInfoLabel -Name '●  CA data unavailable' -Status Info `
+            -FontWeight 600
+    } elseif ($soon -gt 0) {
+        New-BGInfoLabel -Name "●  $soon certificates expire within 30 days" `
+            -Status Warning -FontWeight 600
+    } else {
+        $text = 'Nothing expires within 30 days; CRL publishes ' +
+            (Format-Until $ca.Crl)
+        New-BGInfoLabel -Name "●  $text" -Status Ok -FontWeight 600
+    }
+    New-BGInfoValue -Name 'Host' -Value $ca.Host
+    New-BGInfoValue -Name 'Parent' -Value $ca.Parent
+    New-BGInfoValue -Name 'Key' -Value $ca.Key
+    if ($null -ne $ca.Crl) {
+        $crl = "next update $(Format-Until $ca.Crl), " +
+            $ca.Crl.ToString('ddd d MMM HH:mm')
+        New-BGInfoValue -Name 'CRL' -Value $crl
+        $delta = "next update $(Format-Until $ca.DeltaCrl), " +
+            $ca.DeltaCrl.ToString('HH:mm')
+        New-BGInfoValue -Name 'Delta CRL' -Value $delta
+    }
+
+    if ($ca.Available) {
+        # Right column: the CA's own certificate, then what clients reach.
+        $caDays = [int] ($ca.CaExpires - $ca.Now).TotalDays
+        New-BGInfoMetric -Region Right -Label 'CA certificate' -Value $caDays `
+            -Unit 'days left' `
+            -Caption "valid until $($ca.CaExpires.ToString('d MMM yyyy'))" `
+            -WarningThreshold 730 -CriticalThreshold 365 `
+            -ThresholdDirection Below -Height ([int](150 * $scale))
+        # Bars draw bottom up, so the nearest window goes last to sit on top.
+        New-BGInfoChart -Region Right -Id 'expiry' `
+            -Title 'Expiring certificates' -Kind HorizontalBar `
+            -Values ($within90 - $within60), ($within60 - $soon), $soon `
+            -Labels '61–90 days', '31–60 days', '0–30 days' `
+            -Palette @($look.Muted, $look.Accent, $look.Warning) `
+            -ShowDataLabels -ShowLatestValue:$false -NoHistory `
+            -Height ([int](230 * $scale))
+        New-BGInfoList -Region Right -Title 'AIA and CDP' -Note 'pkiview' `
+            -Item $ca.Checks
+
+        # Center: what this CA issues, and how much of it renews itself.
+        $ca.Templates | New-BGInfoTable -Region Center -Title 'Templates' `
+            -Note 'manual renewal needs a person' -StatusColumn State
+
+        # Bottom band: every expiry day in the next 90 days, and failures.
+        $band = @{ Region = 'Bottom'; Height = [int](280 * $scale) }
+        $ca.Expiring | New-BGInfoCalendarHeatmap @band `
+            -Title 'Expiry calendar' -Note 'next 90 days' `
+            -Color $look.Warning -Width ([int](480 * $scale))
+        New-BGInfoChart @band -Id 'failed' `
+            -Title 'Failed requests  ·  last 30 days' `
+            -Kind Bar -Values $ca.Failed -ShowLatestValue `
+            -ValueSuffix ' today' -WarningThreshold 5 -CriticalThreshold 20 `
+            -NoHistory
+    }
+} -ConfigurationDirectory $OutputDirectory `
+    -OutputFileName "certificate-authority-$($Theme.ToLower()).png"
+#endregion
