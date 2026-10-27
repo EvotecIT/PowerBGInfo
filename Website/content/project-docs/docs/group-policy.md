@@ -1,6 +1,6 @@
 ---
 title: "Deploy PowerBGInfo with Group Policy"
-description: "Install PowerBGInfo with a startup script, refresh it with a Group Policy Preferences scheduled task or a logon script, and set the execution policy, wallpaper and lock screen policies."
+description: "Install PowerBGInfo with Group Policy, refresh it with a scheduled task or logon script, and set the execution policy and the lock screen image."
 layout: docs
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: "Export and deploy a PowerBGInfo configuration"
-description: "Separate PowerBGInfo layout authoring from scheduled or RMM execution."
+description: "Export a reviewed PowerBGInfo layout to JSON and run it from a scheduled task or RMM tool, so deployments don't carry a long inline script."
 layout: docs
 ---
 

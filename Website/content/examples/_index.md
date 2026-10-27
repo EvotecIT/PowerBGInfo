@@ -1,6 +1,6 @@
 ---
 title: "PowerBGInfo Examples"
-description: "Curated examples for PowerBGInfo."
+description: "Ready-to-adapt PowerBGInfo scripts for common wallpaper layouts: backgrounds built from a script, positioned text, charts and topology, and deployment."
 layout: docs
 ---
 
