@@ -223,9 +223,10 @@ internal static partial class BgInfoWidgetRenderer {
         var keys = categories.ToDictionary(category => category.Label, category => category.Key, StringComparer.OrdinalIgnoreCase);
 
         // The lane axis defaults to ISO dates (2026-10-14); a wallpaper reads better with "Wed 14" or "14:00".
-        var first = widget.Items.Min(item => item.Start);
-        var last = widget.Items.Max(item => item.End ?? item.Start);
+        var first = widget.Items.Min(item => TimelineInstant(item.Start));
+        var last = widget.Items.Max(item => TimelineInstant(item.End ?? item.Start));
         if (widget.Now is { } now) {
+            now = TimelineInstant(now);
             if (now < first) first = now;
             if (now > last) last = now;
         }
@@ -261,14 +262,20 @@ internal static partial class BgInfoWidgetRenderer {
     // Day ticks from the first day of the range, every 1, 2 or 3 days, or weekly from a Monday, so that
     // the labels fit the lane axis. The first tick is the range's first day (or its first Monday).
     internal static List<DateTime> TimelineDayTicks(DateTime first, DateTime last, double logicalWidth) {
+        first = TimelineInstant(first);
+        last = TimelineInstant(last);
         var start = first.Date;
         var end = last.Date;
         var span = Math.Max(1, (end - start).TotalDays);
         var slots = Math.Max(2, (int)Math.Floor((logicalWidth - 140) / 72));
+        var minimumGap = (last - first).TotalDays / slots;
         var ticks = new List<DateTime>();
         foreach (var step in new[] { 1, 2, 3 }) {
             if (span / step + 1 > slots) continue;
-            for (var day = start; day <= end; day = day.AddDays(step)) ticks.Add(day < first ? first : day);
+            for (var day = start; day <= end; day = day.AddDays(step)) {
+                var tick = day < first ? first : day;
+                if (ticks.Count == 0 || (tick - ticks[ticks.Count - 1]).TotalDays >= minimumGap) ticks.Add(tick);
+            }
             return ticks;
         }
         var weeks = 1;
@@ -280,6 +287,10 @@ internal static partial class BgInfoWidgetRenderer {
     }
 
     internal static string FormatTimelineDay(DateTime day) => day.ToString("ddd d", CultureInfo.CurrentCulture);
+
+    // Match the Gantt item's UTC-instant convention for authored ticks and range comparisons.
+    private static DateTime TimelineInstant(DateTime value) => value.Kind == DateTimeKind.Local
+        ? value.ToUniversalTime() : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
     internal static List<ChartStateCategory> ResolveTimelineCategories(IEnumerable<BgInfoTimelineItem> items, BgInfoWidgetStyle style) {
         var categories = new List<ChartStateCategory>();

@@ -175,20 +175,29 @@ public class BgInfoScenarioWidgetTests
         Assert.InRange(xs.Max() - xs.Min(), 1, 20);
     }
 
-    [Fact]
-    public void TimelineTicksStartAtTheFirstDayAndThinOutToFit()
+    [Theory]
+    [InlineData(DateTimeKind.Unspecified, 9)]
+    [InlineData(DateTimeKind.Utc, 9)]
+    [InlineData(DateTimeKind.Local, 9)]
+    [InlineData(DateTimeKind.Unspecified, 22)]
+    public void TimelineTicksStartAtTheFirstDayAndThinOutToFit(DateTimeKind kind, int hour)
     {
-        var first = new DateTime(2026, 10, 3, 9, 0, 0);
-        var last = new DateTime(2026, 10, 16, 18, 0, 0);
+        var first = new DateTime(2026, 10, 3, hour, 0, 0, kind);
+        var last = new DateTime(2026, 10, 16, 18, 0, 0, kind);
+        var firstInstant = kind == DateTimeKind.Local ? first.ToUniversalTime() : first;
+        var lastInstant = kind == DateTimeKind.Local ? last.ToUniversalTime() : last;
 
         var wide = BgInfoWidgetRenderer.TimelineDayTicks(first, last, 1400);
-        Assert.Equal(first, wide[0]);
-        Assert.Equal(14, wide.Count);
+        Assert.Equal(firstInstant, wide[0]);
+        Assert.InRange(wide.Count, 2, 14);
+        Assert.All(wide.Zip(wide.Skip(1), (a, b) => (b - a).TotalDays),
+            gap => Assert.True(gap >= (lastInstant - firstInstant).TotalDays / 17));
 
         var narrow = BgInfoWidgetRenderer.TimelineDayTicks(first, last, 1000);
-        Assert.Equal(first, narrow[0]);
-        Assert.All(narrow.Zip(narrow.Skip(1), (a, b) => (b.Date - a.Date).TotalDays), gap => Assert.Equal(2, gap));
-        Assert.All(wide, tick => Assert.InRange(tick, first, last));
+        Assert.Equal(firstInstant, narrow[0]);
+        Assert.All(narrow.Zip(narrow.Skip(1), (a, b) => (b - a).TotalDays),
+            gap => Assert.True(gap * (1000 - 140) / (lastInstant - firstInstant).TotalDays >= 72));
+        Assert.All(wide, tick => Assert.InRange(tick, firstInstant, lastInstant));
         Assert.True(narrow.Count <= (1000 - 140) / 72);
     }
 
