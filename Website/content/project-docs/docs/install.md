@@ -1,6 +1,6 @@
 ---
 title: "Install PowerBGInfo"
-description: "Install PowerBGInfo from the PowerShell Gallery for one user or for all users."
+description: "Install PowerBGInfo from the PowerShell Gallery for yourself or all users on Windows PowerShell 5.1 or 7, update it, and trust its signed releases."
 layout: docs
 ---
 

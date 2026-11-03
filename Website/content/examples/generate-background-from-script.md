@@ -1,6 +1,6 @@
 ---
 title: "Generate a background from a script"
-description: "Use PowerBGInfo to author endpoint background information in PowerShell."
+description: "Build an endpoint wallpaper from local data in PowerShell with PowerBGInfo, so the machine's inventory is visible on the desktop at a glance."
 layout: docs
 ---
 

@@ -5,4 +5,5 @@ slug: gallery
 layout: powerbginfo
 meta.sections: masthead,scenarios,capabilities,parts
 meta.prism: true
+meta.social_card_image: /powerbginfo/meeting-room-dark.png
 ---

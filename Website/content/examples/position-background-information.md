@@ -1,6 +1,6 @@
 ---
 title: "Position background information"
-description: "Use PowerBGInfo layout options to control where generated information appears."
+description: "Use PowerBGInfo layout options to place wallpaper text where it stays readable, away from logos, the taskbar and other elements on the screen."
 layout: docs
 ---
 

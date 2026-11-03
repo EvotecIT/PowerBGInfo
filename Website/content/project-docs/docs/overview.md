@@ -1,6 +1,6 @@
 ---
 title: "PowerBGInfo overview"
-description: "PowerBGInfo generates Windows desktop and lock screen backgrounds from PowerShell data."
+description: "What PowerBGInfo is for: desktop and lock screen backgrounds built from PowerShell data for labs, admin workstations, support desks, kiosks and servers."
 layout: docs
 ---
 

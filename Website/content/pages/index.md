@@ -1,6 +1,6 @@
 ---
 title: PowerBGInfo - machine facts on the desktop and lock screen
-description: PowerBGInfo draws machine details, health, charts and diagrams onto desktop and lock-screen wallpapers from PowerShell or JSON. With DesktopManager and InformationBox, Evotec's desktop tools for IT teams.
+description: PowerBGInfo draws machine details, health, charts and diagrams onto Windows desktop and lock-screen wallpapers from PowerShell or JSON.
 slug: index
 layout: home
 meta.seo_title: PowerBGInfo - machine facts on the desktop and lock screen
@@ -8,6 +8,19 @@ meta.source_code.name: PowerBGInfo
 meta.source_code.code_repository: https://github.com/EvotecIT/PowerBGInfo
 meta.source_code.programming_language: PowerShell
 meta.source_code.license: https://github.com/EvotecIT/PowerBGInfo/blob/v2-speedygonzales/License
+meta.social_card_image: /powerbginfo/domain-controller-dark.png
+meta.source_code.description: PowerShell module that renders machine details, charts and diagrams onto desktop and lock-screen wallpapers.
+meta.software.name: PowerBGInfo
+meta.software.description: PowerShell module that renders machine details, health, charts and diagrams onto Windows desktop and lock-screen wallpapers. MIT licensed.
+meta.software.category: UtilitiesApplication
+meta.software.operating_system: Windows; file rendering on macOS and Linux
+meta.software.version: 2.0.6
+meta.software.download_url: https://www.powershellgallery.com/packages/PowerBGInfo/2.0.6
+meta.software.website_url: [https://www.powershellgallery.com/packages/PowerBGInfo/2.0.6, https://github.com/EvotecIT/PowerBGInfo, https://github.com/EvotecIT/PowerBGInfo/releases/tag/v2.0.6]
+meta.software.image: /powerbginfo/domain-controller-dark.png
+meta.social_title: "Machine facts on the desktop"
+meta.social_card_badge: POWERSHELL
+meta.social_description: "Machine details, health, charts and diagrams drawn onto Windows wallpapers from PowerShell or JSON."
 ---
 
 ## Install the module

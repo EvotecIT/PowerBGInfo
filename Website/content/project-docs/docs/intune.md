@@ -1,6 +1,6 @@
 ---
 title: "Deploy PowerBGInfo with Microsoft Intune"
-description: "Package PowerBGInfo as a Win32 app that installs the module and registers the refresh task, and use platform scripts, Remediations and the Personalization CSP around it."
+description: "Deploy PowerBGInfo with Intune as a Win32 app that installs the module and registers the refresh task, with platform scripts and Remediations around it."
 layout: docs
 ---
 

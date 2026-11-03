@@ -25,7 +25,7 @@ jobs:
       packages: read
       pages: write
       id-token: write
-    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@7cbb9594e6590b41f0d20f528550848c519855e8
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@a59da372d66af663a6591a9e7d4d9aa3abc4547c
     with:
       website_root: Website
       pipeline_config: Website/pipeline.json
@@ -53,7 +53,7 @@ jobs:
           persist-credentials: false
 
       - name: Apply managed Cloudflare site policy
-        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@7cbb9594e6590b41f0d20f528550848c519855e8
+        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@a59da372d66af663a6591a9e7d4d9aa3abc4547c
         with:
           site-config: Website/site.json
           checkout-caller: "false"

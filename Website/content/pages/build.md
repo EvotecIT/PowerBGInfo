@@ -5,4 +5,5 @@ slug: build
 layout: powerbginfo
 meta.sections: masthead,build,logic
 meta.prism: true
+meta.social_card_image: /powerbginfo/server-status-dark.png
 ---
