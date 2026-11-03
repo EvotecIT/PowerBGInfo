@@ -87,7 +87,8 @@ internal static partial class BgInfoWidgetRenderer {
         }
         var weights = new double[widget.Columns.Count];
         for (var column = 0; column < weights.Length; column++) {
-            var longest = widget.Columns[column].Length;
+            // Headers are bold and set wider than cell text, so they count for more.
+            var longest = (int)Math.Ceiling(widget.Columns[column].Length * 1.35);
             foreach (var row in widget.Rows) longest = Math.Max(longest, row[column]?.Length ?? 0);
             weights[column] = Math.Max(4, Math.Min(32, longest)) + (column == status ? 3 : 0) + 2;
         }
