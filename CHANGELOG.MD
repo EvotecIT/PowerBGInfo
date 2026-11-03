@@ -31,10 +31,10 @@
 - The Mermaid feature example gives its diagram panel more of the canvas instead of leaving a large empty middle band.
 - The feature render runner rejects invalid sizes and stops on rendering errors instead of writing an incomplete manifest.
 
-- Bar, line and area charts with `-Labels` show the labels on a category axis, and they honour `-Minimum` and `-Maximum`. Bar charts with `-ShowDataLabels` put every label above its bar and leave room for the tallest one.
+- Bar, line and area charts with `-Labels` show the labels on a category axis, and they honour `-Minimum` and `-Maximum`. Bar charts with `-ShowDataLabels` leave room for labels while retaining negative values in the automatic range.
 - Timelines that span days label the first day and then every one, two or three days, or every week from a Monday, so the ticks fit the panel and no longer start at an unlabelled day. Taller timeline panels get thicker lanes.
-- Calendar heatmaps draw zero days as a visible neutral cell, distinct from days without data, and shade values from the quietest to the busiest day through the median, so everyday variation stays visible next to a spike. The grid is centred in its panel.
-- Tables with a status column size their columns by content, so long status words such as `Disconnected` no longer truncate next to the dot.
+- Calendar heatmaps draw zero days as a visible neutral cell, distinct from days without data, and shade daily totals from the quietest to the busiest day through the median. Repeated observations on one date contribute to that day's total. The grid is centred in its panel.
+- Tables with a status column size their columns by content and bold headers, so words such as `Disconnected` and `Memory` fit. Large tables keep the same columns across row batches.
 - Timeline axes read `Wed 14` or `14:00` instead of ISO dates such as `2026-10-14`.
 - Info items in lists, tables and metric cards use the info color instead of the accent, so an Info row under a red or orange accent no longer looks like an alert. List numbers, checks and bullets use one color instead of cycling through the palette.
 - A region column whose panels add up to more than its height shrinks them to fit instead of running past the taskbar or off the image.
