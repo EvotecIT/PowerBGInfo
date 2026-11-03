@@ -53,7 +53,7 @@ internal static partial class BgInfoWidgetRenderer {
         return card.RenderRgba();
     }
 
-    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null) {
+    private static RgbaImage RenderTable(BgInfoTableWidget widget, BgInfoWidgetStyle style, int width, int height, int? outputScale = null, BgInfoTableWidget? columnSource = null) {
         if (!CanRenderRowsDirectly(widget, width, height, outputScale)) return RenderBatchedRows(widget, style, width, height);
         var (w, h, scale) = Density(widget, width, height);
         var table = ChartTable.Create()
@@ -66,7 +66,7 @@ internal static partial class BgInfoWidgetRenderer {
             .WithDenseMode(widget.Dense)
             .WithHeader(widget.ShowHeader)
             .WithRowStriping(widget.RowStriping);
-        AddTableColumns(widget, table, w);
+        AddTableColumns(columnSource ?? widget, table, w);
         foreach (var row in widget.Rows) table.AddRow(row.Cast<object?>().ToArray());
         if (!string.IsNullOrWhiteSpace(widget.StatusColumn)) {
             table.WithStatusColumn(widget.StatusColumn!);
@@ -200,7 +200,8 @@ internal static partial class BgInfoWidgetRenderer {
         var color = widget.Color ?? style.Accent;
         ChartColor Tint(byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
         var track = ChartColor.FromRgba(style.Muted.R, style.Muted.G, style.Muted.B, style.Mode == VisualThemeMode.Dark ? (byte)56 : (byte)44);
-        var values = widget.Items.Select(item => item.Value).Where(value => value > 0).OrderBy(value => value).ToList();
+        var values = widget.Items.GroupBy(item => item.Date.Date).Select(day => day.Sum(item => item.Value))
+            .Where(value => value > 0).OrderBy(value => value).ToList();
         var stops = new List<ChartColorStop> { new(0, track) };
         if (values.Count == 0) {
             stops.Add(new ChartColorStop(1, color));
@@ -267,14 +268,14 @@ internal static partial class BgInfoWidgetRenderer {
         var ticks = new List<DateTime>();
         foreach (var step in new[] { 1, 2, 3 }) {
             if (span / step + 1 > slots) continue;
-            for (var day = start; day <= end; day = day.AddDays(step)) ticks.Add(day);
+            for (var day = start; day <= end; day = day.AddDays(step)) ticks.Add(day < first ? first : day);
             return ticks;
         }
         var weeks = 1;
         while (span / (7d * weeks) + 1 > slots) weeks++;
         var monday = start.AddDays(((int)DayOfWeek.Monday - (int)start.DayOfWeek + 7) % 7);
-        for (var day = monday; day <= end; day = day.AddDays(7 * weeks)) ticks.Add(day);
-        if (ticks.Count == 0 || (ticks[0] - start).TotalDays >= 2) ticks.Insert(0, start);
+        for (var day = monday; day <= end; day = day.AddDays(7 * weeks)) ticks.Add(day < first ? first : day);
+        if (ticks.Count == 0 || (ticks[0] - start).TotalDays >= 2) ticks.Insert(0, first);
         return ticks;
     }
 

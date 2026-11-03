@@ -139,18 +139,56 @@ public class BgInfoScenarioWidgetTests
     }
 
     [Fact]
+    public void LabelledBarsRetainNegativeValuesWithAutomaticOrExplicitMaximum()
+    {
+        foreach (var maximum in new double?[] { null, 20 })
+        {
+            var chart = new BgInfoChart { Kind = BgInfoChartKind.Bar, ShowDataLabels = true, Maximum = maximum };
+            var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { -5d, 10 }, new BgInfoConfiguration(), 520, 220);
+
+            Assert.Equal(-5, rendered.Options.YAxis.Minimum);
+            Assert.True(rendered.Options.YAxis.Maximum > 10);
+        }
+    }
+
+    [Fact]
+    public void BatchedStatusRowsKeepTheirStatusDotsInOneColumn()
+    {
+        var table = new BgInfoTableWidget { StatusColumn = "State" };
+        table.Columns.AddRange(new[] { "User", "State" });
+        for (var row = 0; row < 48; row++)
+            table.Rows.Add(new[] { row < 24 ? "a" : "a-much-longer-account-name", "OK" });
+
+        using var rendered = BgInfoWidgetRenderer.Render(table, new BgInfoConfiguration(), 400, 300);
+        var image = rendered.ToRgbaImage();
+        var xs = new List<int>();
+        for (var y = 0; y < image.Height; y++)
+            for (var x = 0; x < image.Width; x++)
+            {
+                var offset = (y * image.Width + x) * 4;
+                if (image.Pixels[offset] < 100 && image.Pixels[offset + 1] > 150 &&
+                    image.Pixels[offset + 2] < 200 && image.Pixels[offset + 3] > 200)
+                    xs.Add(x);
+            }
+
+        Assert.True(xs.Count > 48, "Expected visible green status dots from the rendered rows.");
+        Assert.InRange(xs.Max() - xs.Min(), 1, 20);
+    }
+
+    [Fact]
     public void TimelineTicksStartAtTheFirstDayAndThinOutToFit()
     {
         var first = new DateTime(2026, 10, 3, 9, 0, 0);
         var last = new DateTime(2026, 10, 16, 18, 0, 0);
 
         var wide = BgInfoWidgetRenderer.TimelineDayTicks(first, last, 1400);
-        Assert.Equal(first.Date, wide[0]);
+        Assert.Equal(first, wide[0]);
         Assert.Equal(14, wide.Count);
 
         var narrow = BgInfoWidgetRenderer.TimelineDayTicks(first, last, 1000);
-        Assert.Equal(first.Date, narrow[0]);
-        Assert.All(narrow.Zip(narrow.Skip(1), (a, b) => (b - a).TotalDays), gap => Assert.Equal(2, gap));
+        Assert.Equal(first, narrow[0]);
+        Assert.All(narrow.Zip(narrow.Skip(1), (a, b) => (b.Date - a.Date).TotalDays), gap => Assert.Equal(2, gap));
+        Assert.All(wide, tick => Assert.InRange(tick, first, last));
         Assert.True(narrow.Count <= (1000 - 140) / 72);
     }
 
@@ -208,5 +246,22 @@ public class BgInfoScenarioWidgetTests
         Assert.Equal(accent.R, lowest.R);
         Assert.True(lowest.A < typical.A, "The median day should be clearly stronger than the quietest day.");
         Assert.True(typical.A < busiest.A);
+    }
+
+    [Fact]
+    public void CalendarScaleUsesDailyTotalsForRepeatedDates()
+    {
+        var accent = ChartColor.FromHex("#2F6FEB");
+        var widget = new BgInfoCalendarHeatmapWidget { Color = accent };
+        var day = new DateTime(2026, 10, 1);
+        widget.Items.Add(new BgInfoDatedValue { Date = day, Value = 2 });
+        widget.Items.Add(new BgInfoDatedValue { Date = day.AddDays(1), Value = 3 });
+        for (var record = 0; record < 3; record++)
+            widget.Items.Add(new BgInfoDatedValue { Date = day.AddDays(2).AddHours(record), Value = 3 });
+
+        var scale = BgInfoWidgetRenderer.CalendarScale(widget, new BgInfoWidgetStyle(widget, new BgInfoConfiguration()));
+
+        Assert.Equal(accent, scale.ColorFor(9));
+        Assert.True(scale.ColorFor(3).A < scale.ColorFor(9).A);
     }
 }

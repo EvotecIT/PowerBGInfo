@@ -230,7 +230,8 @@ internal static class BgInfoChartRenderer {
         if (maximum.HasValue || chart.Minimum.HasValue) {
             plot.ConfigureYAxis(axis => {
                 if (maximum.HasValue) axis.Maximum = maximum.Value;
-                axis.Minimum = chart.Minimum ?? (chart.Kind == BgInfoChartKind.Bar ? 0 : axis.Minimum);
+                axis.Minimum = chart.Minimum ?? (chart.Kind == BgInfoChartKind.Bar && values.Count > 0
+                    ? Math.Min(0, values.Min()) : axis.Minimum);
             });
         }
         if (chart.Kind == BgInfoChartKind.Bar && chart.ShowDataLabels) plot.WithDataLabelPlacement(ChartDataLabelPlacement.Above);
