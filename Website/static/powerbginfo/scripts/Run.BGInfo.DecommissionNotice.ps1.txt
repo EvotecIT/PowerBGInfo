@@ -15,7 +15,9 @@ param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+if (-not (Get-Module -Name PowerBGInfo)) {
+    Import-Module PowerBGInfo -ErrorAction Stop
+}
 
 #region Data: your logic goes here
 function Get-DecommissionNotice {
@@ -57,7 +59,7 @@ function Get-DecommissionNotice {
         # The migration runbook steps from the change record; the copy and
         # DFS states from robocopy logs and Get-DfsnFolderTarget.
         Checklist   = @(
-            @{ Text = 'Shares copied'; Value = 'robocopy /MIR'; Status = 'Ok' }
+            @{ Text = 'Copy shares'; Value = 'robocopy /MIR'; Status = 'Pending' }
             @{ Text = 'DFS links switched'; Value = '2 of 4'
                 Status = 'Warning' }
             @{ Text = 'Users notified'; Value = '14 Oct'; Status = 'Ok' }

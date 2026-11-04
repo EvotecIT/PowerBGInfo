@@ -16,7 +16,9 @@ param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+if (-not (Get-Module -Name PowerBGInfo)) {
+    Import-Module PowerBGInfo -ErrorAction Stop
+}
 
 #region Data: your logic goes here
 function Get-FileServerCapacity {
