@@ -49,7 +49,7 @@ function Get-LinuxServerInfo {
         # or sar -q from sysstat for the last six hours
         LoadHistory = @(0.8, 0.9, 1.1, 0.9, 1.0, 1.4, 2.6, 3.1, 2.2, 1.6, 1.3,
             1.2, 1.1, 1.0, 0.9, 1.1, 1.3, 1.2, 1.5, 1.6, 1.4, 1.3, 1.5, 1.42)
-        # df -P --output=target,pcent | Select-Object -Skip 1, or
+        # df --output=target,pcent | Select-Object -Skip 1, or
         # Get-PSDrive -PSProvider FileSystem (Used and Free). Percent used.
         Mounts    = [ordered] @{
             '/'                   = 58

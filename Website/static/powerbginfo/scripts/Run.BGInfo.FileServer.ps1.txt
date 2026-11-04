@@ -199,7 +199,7 @@ New-BGInfo -Theme $look -Target File {
     # How fast the fullest share grows, and when its quota runs out.
     if ($fullest -and @($fs.Growth).Count -gt 1) {
         $growth = $fs.Growth[-1] - $fs.Growth[0]
-        $weekly = [Math]::Round($growth / ($fs.Growth.Count - 1))
+        $weekly = $growth / ($fs.Growth.Count - 1)
         $weeks = if ($weekly -gt 0) {
             [Math]::Floor(($fullest.QuotaGB - $fullest.UsedGB) / $weekly)
         }
@@ -212,7 +212,7 @@ New-BGInfo -Theme $look -Target File {
             $fs.Growth[$i] - $fs.Growth[$i - 1]
         }
         New-BGInfoMetric -Region Right -Label "$($fullest.Name) grows" `
-            -Value $weekly -Unit 'GB / week' -Caption $caption -Status $runway `
+            -Value $weekly -Format '0.###' -Unit 'GB / week' -Caption $caption -Status $runway `
             -History $deltas -HistoryKind Bars -Height ([int](150 * $scale))
     }
 

@@ -15,7 +15,7 @@ param(
 )
 
 if (-not (Get-Module -Name PowerBGInfo)) {
-    Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -ErrorAction Stop
+    Import-Module PowerBGInfo -ErrorAction Stop
 }
 
 #region Data: your logic goes here
