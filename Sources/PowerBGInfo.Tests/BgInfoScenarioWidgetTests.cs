@@ -85,6 +85,9 @@ public class BgInfoScenarioWidgetTests
         table = SessionTable();
         table.StatusMap["Active"] = BgInfoStatus.None;
         Assert.Throws<InvalidOperationException>(() => table.Validate());
+
+        table.StatusMap["Active"] = (BgInfoStatus)99;
+        Assert.Throws<InvalidOperationException>(() => table.Validate());
     }
 
     [Fact]
@@ -232,7 +235,10 @@ public class BgInfoScenarioWidgetTests
         var ticks = BgInfoWidgetRenderer.TimelineDayTicks(first, last, 900);
 
         Assert.Equal(first, ticks[0]);
+        Assert.True(ticks.Count > 1);
         Assert.All(ticks.Skip(1), tick => Assert.Equal(DayOfWeek.Monday, tick.DayOfWeek));
+        Assert.All(ticks.Zip(ticks.Skip(1), (earlier, later) => later - earlier),
+            gap => Assert.True(gap >= TimeSpan.FromDays(9)));
         Assert.True(ticks.Count <= (900 - 140) / 72 + 1);
     }
 

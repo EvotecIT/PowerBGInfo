@@ -1,8 +1,7 @@
 # Repository guidance
 
-Before adding or changing tests, apply the shared
-[test authoring gate](~/.codex/skills/test-audit/SKILL.md#authoring-gate) and
-[contract-focused proof guidance](~/.codex/skills/contract-focused-tests/SKILL.md).
-Resolve `~/.codex` against `CODEX_HOME` when configured. The
-[campaign procedure](~/.codex/skills/test-audit/CAMPAIGN.md) applies to deliberate
-test pruning; campaign coverage is local evidence, not a CI or merge gate.
+Resolve these local paths under `CODEX_HOME`, or `~/.codex` when it is unset.
+Before adding or changing tests, read the authoring gate in
+`skills/test-audit/SKILL.md` and `skills/contract-focused-tests/SKILL.md`.
+Use `skills/test-audit/CAMPAIGN.md` for deliberate test pruning. Campaign
+coverage is local evidence and does not gate CI or merges.

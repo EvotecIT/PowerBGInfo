@@ -281,8 +281,10 @@ internal static partial class BgInfoWidgetRenderer {
         var weeks = 1;
         while (span / (7d * weeks) + 1 > slots) weeks++;
         var monday = start.AddDays(((int)DayOfWeek.Monday - (int)start.DayOfWeek + 7) % 7);
-        for (var day = monday; day <= end; day = day.AddDays(7 * weeks)) ticks.Add(day < first ? first : day);
-        if (ticks.Count == 0 || (ticks[0] - start).TotalDays >= 2) ticks.Insert(0, first);
+        ticks.Add(first);
+        for (var day = monday; day <= end; day = day.AddDays(7 * weeks)) {
+            if ((day - ticks[ticks.Count - 1]).TotalDays >= minimumGap) ticks.Add(day);
+        }
         return ticks;
     }
 

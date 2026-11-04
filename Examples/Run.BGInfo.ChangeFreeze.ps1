@@ -146,9 +146,12 @@ $colors = @{
     Done     = $look.Ok
     Planned  = $look.Muted
 }
-$calendar = $freeze.Calendar | Select-Object *, @{
-    Name = 'Color'; Expression = { "$($colors[$_.Category].ToHex())" }
-}
+$calendar = @(
+    $freeze.Calendar | Select-Object *, @{
+        Name = 'Color'
+        Expression = { "$($colors[$_.Category].ToHex())" }
+    }
+)
 
 New-BGInfo -Theme $look -Target File {
     New-BGInfoBackground -Width $Width -Height $Height -GradientAngle 200 `
@@ -192,7 +195,7 @@ New-BGInfo -Theme $look -Target File {
     }
 
     # Bottom band: the calendar around the freeze, so the end is in sight.
-    if (@($calendar).Count -gt 0) {
+    if ($calendar.Count -gt 0) {
         New-BGInfoTimeline -Region Bottom -Title 'Change calendar' `
             -Note '13 Oct – 4 Nov, local time' -Item $calendar `
             -Now $freeze.Now -Height ([int](300 * $scale))

@@ -118,7 +118,9 @@ public sealed class BgInfoTableWidget : BgInfoWidget {
         }
         foreach (var entry in StatusMap) {
             if (string.IsNullOrWhiteSpace(entry.Key)) throw new InvalidOperationException("Status map words cannot be empty.");
-            if (entry.Value == BgInfoStatus.None) throw new InvalidOperationException($"Status map word '{entry.Key}' needs Ok, Warning, Critical or Info.");
+            if (entry.Value == BgInfoStatus.None || !Enum.IsDefined(typeof(BgInfoStatus), entry.Value)) {
+                throw new InvalidOperationException($"Status map word '{entry.Key}' needs Ok, Warning, Critical or Info.");
+            }
         }
     }
 }
