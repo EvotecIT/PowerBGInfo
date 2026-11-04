@@ -15,7 +15,9 @@ param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+if (-not (Get-Module -Name PowerBGInfo)) {
+    Import-Module PowerBGInfo -ErrorAction Stop
+}
 
 #region Data: your logic goes here
 function Get-ChangeFreeze {
@@ -112,9 +114,16 @@ $look = New-BGInfoTheme Orchid -Mode $Theme -Scale $scale
 $dark = $Theme -eq 'Dark'
 $glow = if ($dark) { '#A78BFA2E' } else { '#C4B5FD66' }
 
-$active = $freeze.Freeze -and $null -ne $freeze.End -and
+$active = $freeze.Available -and $freeze.Freeze -and $null -ne $freeze.End -and
     $freeze.Now -ge $freeze.Start -and $freeze.Now -lt $freeze.End
-if ($active) {
+$ruleStatus = 'Info'
+if (-not $freeze.Available) {
+    $headline = 'Freeze status unknown'
+    $window = 'Confirm the current change policy'
+    $rule = 'Check with the change owner before making changes'
+    $ruleStatus = 'Warning'
+    $ends = ''
+} elseif ($active) {
     $headline = 'Change freeze'
     $window = '{0}  ·  {1} – {2}' -f $freeze.Freeze,
         $freeze.Start.ToString('ddd d MMM'),
@@ -156,7 +165,7 @@ New-BGInfo -Theme $look -Target File {
         -FontWeight 700
     New-BGInfoLabel -Name $window -Accent -FontSize ([int](28 * $scale)) `
         -FontWeight 600
-    New-BGInfoLabel -Name "●  $rule" -Status Info -FontWeight 600
+    New-BGInfoLabel -Name "●  $rule" -Status $ruleStatus -FontWeight 600
     if ($ends) { New-BGInfoValue -Name 'Ends in' -Value $ends }
     New-BGInfoValue -Name 'On call' -Value $freeze.OnCall
     New-BGInfoValue -Name 'Bridge' -Value $freeze.Bridge

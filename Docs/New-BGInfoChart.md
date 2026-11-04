@@ -289,7 +289,7 @@ Accept wildcard characters: False
 ```
 
 ### -Labels
-Category labels, one per value. Bar, Line and Area charts show them on an axis under the plot; the other charts use them in legends and data labels.
+Category labels for the current input values. Bar, Line and Area show them under the plot. HorizontalBar shows them beside the bars. Bullet, Pie, Donut, ProgressBar and Pictorial use them for categories. Older history samples use numbered labels. Sparkline does not show category labels.
 
 ```yaml
 Type: String[]
@@ -337,7 +337,7 @@ Accept wildcard characters: False
 ```
 
 ### -Maximum
-Top of the value scale, for example 100 for percentages. Without it the scale fits the data.
+Upper bound for chart kinds with a configurable maximum. Bar, Line and Area fit the data by default. Gauge, Circle and Bullet default to at least 100 and expand for larger values. RadialBar clamps values to 0–100.
 
 ```yaml
 Type: Double
@@ -401,7 +401,7 @@ Accept wildcard characters: False
 ```
 
 ### -Minimum
-Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.
+Lower bound for Bar, Line, Area, Gauge, Circle and Bullet. Bar can extend below zero for negative values. Gauge, Circle and Bullet start at zero by default. RadialBar uses a fixed 0–100 scale.
 
 ```yaml
 Type: Double

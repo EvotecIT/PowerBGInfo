@@ -43,20 +43,22 @@ public class BgInfoScenarioWidgetTests
         }
     }
 
-    [Fact]
-    public void StatusMapRejectsUnknownStatusInJson()
+    [Theory]
+    [InlineData("Green")]
+    [InlineData("None")]
+    public void StatusMapRejectsUnsupportedStatusInJson(string status)
     {
         var directory = Path.Combine(Path.GetTempPath(), "bginfo-status-map-bad-" + Path.GetRandomFileName());
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "config.json");
-        File.WriteAllText(path, """
+        File.WriteAllText(path, $$"""
             {
               "Widgets": [{
                 "Kind": "Table",
                 "Columns": ["User", "State"],
                 "Rows": [["anna", "Active"]],
                 "StatusColumn": "State",
-                "StatusMap": { "Active": "Green" }
+                "StatusMap": { "Active": "{{status}}" }
               }]
             }
             """);
@@ -64,7 +66,7 @@ public class BgInfoScenarioWidgetTests
         try
         {
             var exception = Assert.ThrowsAny<Exception>(() => BgInfoConfigurationJson.Load(path));
-            Assert.Contains("Green", exception.Message);
+            Assert.Contains($"'{status}'", exception.Message);
         }
         finally
         {
@@ -106,7 +108,7 @@ public class BgInfoScenarioWidgetTests
     public void CategoryTrendChartsShowTheirLabels(BgInfoChartKind kind)
     {
         var labels = new[] { "Thu 8", "Fri 9", "Sat 10", "Sun 11" };
-        var chart = new BgInfoChart { Kind = kind, Labels = labels };
+        var chart = new BgInfoChart { Kind = kind, Labels = labels, UseHistory = false };
 
         var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 4d, 9, 2, 6 }, new BgInfoConfiguration(), 520, 220);
         var texts = XDocument.Parse(rendered.ToSvg()).Descendants()
@@ -115,6 +117,24 @@ public class BgInfoScenarioWidgetTests
             .ToArray();
 
         foreach (var label in labels) Assert.Contains(label, texts);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CategoryLabelsFollowCurrentValuesAfterHistoryAppendOrTrim(bool trimmed)
+    {
+        var chart = new BgInfoChart
+        {
+            Kind = BgInfoChartKind.Bar,
+            Values = new[] { 10d, 20d },
+            Labels = new[] { "Mar", "Apr" }
+        };
+        var retained = trimmed ? new[] { 20d } : new[] { 2d, 3d, 10d, 20d };
+        var expected = trimmed ? new[] { "Apr" } : new[] { "1", "2", "Mar", "Apr" };
+
+        var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, retained, new BgInfoConfiguration(), 520, 220);
+        Assert.Equal(expected, rendered.Options.XAxisLabels.Select(label => label.Text));
     }
 
     [Fact]

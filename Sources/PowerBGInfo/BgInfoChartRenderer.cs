@@ -335,9 +335,10 @@ internal static class BgInfoChartRenderer {
         var minimum = chart.Minimum ?? 0;
         var target = chart.Target ?? maximum;
         var ranges = chart.RangeEnds.Count > 0 ? chart.RangeEnds : null;
+        var labels = BuildLabels(chart, values.Count);
 
         for (var i = 0; i < values.Count; i++) {
-            var series = ChartSeries.CreateBullet(SeriesId(chart, "row:" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)), LabelAt(chart, i),
+            var series = ChartSeries.CreateBullet(SeriesId(chart, "row:" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)), labels[i],
                 new ChartBulletValue(values[i], target, minimum, maximum, ranges), (i < palette.Count ? palette[i] : (ChartColor?)null) ?? accent)
                 .WithDataLabels(chart.ShowDataLabels);
             plot.AddSeries(series);
@@ -362,22 +363,22 @@ internal static class BgInfoChartRenderer {
         return points;
     }
 
-    private static string[] BuildLabels(BgInfoChart chart, int count) {
+    internal static string[] BuildLabels(BgInfoChart chart, int count) {
+        // History appends the current input and trims the oldest samples.
+        // Only the surviving values from this input have configured labels.
+        var currentCount = chart.Values?.Count ?? 0;
+        if (currentCount == 0 && chart.Metric != BgInfoChartMetric.None) currentCount = 1;
+        var offset = chart.UseHistory ? currentCount - count : 0;
         var labels = new string[count];
         for (var i = 0; i < count; i++) {
-            labels[i] = i < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[i])
-                ? chart.Labels[i]
+            var index = i + offset;
+            labels[i] = index >= 0 && index < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[index])
+                ? chart.Labels[index]
                 : (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         return labels;
     }
-
-    private static string LabelAt(BgInfoChart chart, int index) =>
-        index < chart.Labels.Count && !string.IsNullOrWhiteSpace(chart.Labels[index])
-            ? chart.Labels[index]
-            : (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
-
 
     private static ChartSeriesId SeriesId(BgInfoChart chart, string suffix = "values") =>
         new("bginfo:" + (string.IsNullOrWhiteSpace(chart.Id) ? "chart" : chart.Id.Trim()) + ":" + suffix);

@@ -185,7 +185,7 @@ public partial class BgInfoGenerator
             PositionX = source.PositionX,
             PositionY = source.PositionY,
             Values = values.ToArray(),
-            Labels = source.Labels.ToArray(),
+            Labels = source.Labels.Count > 0 ? BgInfoChartRenderer.BuildLabels(source, values.Count) : Array.Empty<string>(),
             Target = source.Target,
             RangeEnds = source.RangeEnds.ToArray(),
             Metric = BgInfoChartMetric.None,

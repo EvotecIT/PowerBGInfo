@@ -198,7 +198,8 @@ public static partial class BgInfoConfigurationJson {
         if (model.Rows != null) foreach (var row in model.Rows) if (row != null) table.Rows.Add(row);
         if (model.StatusMap != null) {
             foreach (var entry in model.StatusMap) {
-                if (!Enum.TryParse<BgInfoStatus>(entry.Value, ignoreCase: true, out var status) || !Enum.IsDefined(typeof(BgInfoStatus), status)) {
+                if (!Enum.TryParse<BgInfoStatus>(entry.Value, ignoreCase: true, out var status) ||
+                    !Enum.IsDefined(typeof(BgInfoStatus), status) || status == BgInfoStatus.None) {
                     throw new InvalidOperationException($"Status map word '{entry.Key}' has an unknown status '{entry.Value}'. Use Ok, Warning, Critical or Info.");
                 }
                 table.StatusMap[entry.Key] = status;

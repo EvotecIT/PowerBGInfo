@@ -405,6 +405,7 @@ foreach ($dimensions in $Size) {
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $repositoryRoot = Split-Path -Path $PSScriptRoot -Parent
+Import-Module (Join-Path $repositoryRoot 'PowerBGInfo.psd1') -Force -ErrorAction Stop
 $staging = Join-Path $OutputDirectory ('.staging-' + [guid]::NewGuid().ToString('N'))
 $previousCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 

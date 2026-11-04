@@ -69,6 +69,7 @@ public class BgInfoChartRendererTests
         var chart = new BgInfoChart {
             Kind = BgInfoChartKind.HorizontalBar,
             Labels = new[] { "Directory", "Database", "File service" },
+            UseHistory = false,
             Palette = new[] { ChartColors.Red, ChartColors.Green, ChartColors.Blue },
             ShowDataLabels = true
         };
@@ -91,7 +92,7 @@ public class BgInfoChartRendererTests
     public void HorizontalBarsKeepEveryCaptionWhenRowsAreDense()
     {
         var labels = new[] { "HV-AMS-01", "HV-AMS-02", "HV-AMS-03", "HV-AMS-04", "HV-AMS-05", "HV-AMS-06" };
-        var chart = new BgInfoChart { Kind = BgInfoChartKind.HorizontalBar, Labels = labels };
+        var chart = new BgInfoChart { Kind = BgInfoChartKind.HorizontalBar, Labels = labels, UseHistory = false };
         var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 12d, 24, 36, 48, 60, 72 }, new BgInfoConfiguration(), 520, 220);
         var captions = XDocument.Parse(rendered.ToSvg()).Descendants()
             .Where(node => node.Name.LocalName == "text")

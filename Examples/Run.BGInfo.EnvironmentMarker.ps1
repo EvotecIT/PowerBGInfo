@@ -18,7 +18,9 @@ param(
     [string] $Environment = 'Production'
 )
 
-Import-Module (Join-Path $PSScriptRoot '..\PowerBGInfo.psd1') -Force
+if (-not (Get-Module -Name PowerBGInfo)) {
+    Import-Module PowerBGInfo -ErrorAction Stop
+}
 
 #region Data: your logic goes here
 function Get-EnvironmentInfo {
@@ -99,7 +101,7 @@ function Get-EnvironmentInfo {
 }
 
 $fallback = [pscustomobject] @{
-    Available = $false; Environment = $Environment; Name = $env:COMPUTERNAME
+    Available = $false; Environment = 'Unknown'; Name = $env:COMPUTERNAME
     Service = 'unknown'; Company = ''; Os = 'unknown'; Role = 'unknown'
     Owner = 'unknown'; Data = 'unknown'
     Policy = 'Environment unknown: treat as production'
@@ -137,7 +139,7 @@ $colors = @{
         Status = 'Info'
     }
 }
-$color = $colors[$envInfo.Environment]
+$color = if ($envInfo.Available) { $colors[$envInfo.Environment] } else { $colors.Production }
 $glow = if ($Theme -eq 'Dark') { $color.Glow } else { $color.GlowLight }
 $look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale `
     -Accent $color.Accent

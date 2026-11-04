@@ -281,9 +281,9 @@ public sealed class BgInfoChart {
     public BgInfoChartLegendPosition LegendPosition { get; set; } = BgInfoChartLegendPosition.Bottom;
     /// <summary>Whether to show supported data labels.</summary>
     public bool ShowDataLabels { get; set; }
-    /// <summary>Bottom of the value scale. Without it bar charts start at zero and other charts fit the data.</summary>
+    /// <summary>Lower bound for Bar, Line, Area, Gauge, Circle and Bullet. Bar can extend below zero for negative values. Gauge, Circle and Bullet start at zero by default. RadialBar uses a fixed 0–100 scale.</summary>
     public double? Minimum { get; set; }
-    /// <summary>Top of the value scale, for example 100 for percentages. Without it the scale fits the data.</summary>
+    /// <summary>Upper bound for supported kinds. Gauge, Circle and Bullet default to at least 100. RadialBar clamps values to 0–100.</summary>
     public double? Maximum { get; set; }
     /// <summary>Whether donut center label is visible.</summary>
     public bool ShowDonutCenterLabel { get; set; } = true;
