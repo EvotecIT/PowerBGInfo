@@ -225,7 +225,10 @@ internal static class BgInfoChartRenderer {
         var maximum = chart.Maximum;
         if (!maximum.HasValue && chart.Kind == BgInfoChartKind.Bar && chart.ShowDataLabels && values.Count > 0) {
             var highest = values.Max();
-            if (highest > 0) maximum = highest * 1.18;
+            if (highest > 0) {
+                var lowest = chart.Minimum ?? Math.Min(0, values.Min());
+                maximum = highest + (highest - lowest) * 0.18;
+            }
         }
         if (maximum.HasValue || chart.Minimum.HasValue) {
             plot.ConfigureYAxis(axis => {

@@ -6,6 +6,10 @@
     Each scenario renders at every -Size, plus the extra sizes it is built
     for (an ultrawide wall display, a portrait sign). Files at 1920x1080 are
     named <scenario>-<theme>.png; other sizes add -<width>x<height>.
+
+    Uses a loaded or installed PowerBGInfo module. Set
+    PowerBGInfoDevelopmentConfiguration to Debug or Release to select a
+    checkout build in a fresh session.
 #>
 param(
     [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output\Showcase'),
@@ -405,7 +409,13 @@ foreach ($dimensions in $Size) {
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $repositoryRoot = Split-Path -Path $PSScriptRoot -Parent
-Import-Module (Join-Path $repositoryRoot 'PowerBGInfo.psd1') -Force -ErrorAction Stop
+if (-not (Get-Module -Name PowerBGInfo)) {
+    if ($env:PowerBGInfoDevelopmentConfiguration -or -not (Get-Module -ListAvailable -Name PowerBGInfo)) {
+        Import-Module (Join-Path $repositoryRoot 'PowerBGInfo.psd1') -ErrorAction Stop
+    } else {
+        Import-Module PowerBGInfo -ErrorAction Stop
+    }
+}
 $staging = Join-Path $OutputDirectory ('.staging-' + [guid]::NewGuid().ToString('N'))
 $previousCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 

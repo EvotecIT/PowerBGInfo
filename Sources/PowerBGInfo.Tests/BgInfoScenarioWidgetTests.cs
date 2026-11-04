@@ -147,15 +147,17 @@ public class BgInfoScenarioWidgetTests
         Assert.Equal(100, rendered.Options.YAxis.Maximum);
     }
 
-    [Fact]
-    public void LabelledBarsLeaveRoomForLabelsAboveTheTallestBar()
+    [Theory]
+    [InlineData(12, 40, 25, 0)]
+    [InlineData(-1000, 1, 0, -1000)]
+    public void LabelledBarsLeaveRoomForLabelsAboveTheTallestBar(double first, double peak, double third, double minimum)
     {
         var chart = new BgInfoChart { Kind = BgInfoChartKind.Bar, ShowDataLabels = true };
 
-        var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { 12d, 40, 25 }, new BgInfoConfiguration(), 520, 220);
+        var rendered = BgInfoChartRenderer.BuildChartForgeXChart(chart, new[] { first, peak, third }, new BgInfoConfiguration(), 520, 220);
 
-        Assert.True(rendered.Options.YAxis.Maximum >= 40 * 1.18 - 0.001);
-        Assert.Equal(0, rendered.Options.YAxis.Minimum);
+        Assert.Equal(minimum, rendered.Options.YAxis.Minimum);
+        Assert.True(rendered.Options.YAxis.Maximum - peak >= (peak - minimum) * 0.18 - 0.001);
     }
 
     [Fact]
