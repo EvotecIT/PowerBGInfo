@@ -142,7 +142,10 @@ New-BGInfo -Theme $look -Target File {
     New-BGInfoValue -Name 'Local admins' -Value $jump.LocalAdmins
 
     # The rules nobody gets to bend, as large as the policy deserves.
-    if (@($jump.Never).Count -gt 0) {
+    if (-not $jump.Available) {
+        New-BGInfoLabel -Name 'Host rules unavailable. Confirm the access policy before continuing.' `
+            -Status Warning -FontWeight 600
+    } elseif (@($jump.Never).Count -gt 0) {
         New-BGInfoLabel -Name ' ' -FontSize ([int](14 * $scale))
         New-BGInfoLabel -Name 'NEVER ON THIS HOST' -Accent `
             -FontSize ([int](15 * $scale)) -FontWeight 700

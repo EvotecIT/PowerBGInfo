@@ -112,34 +112,50 @@ $sql = Invoke-BGInfoDataSource @source
 $scale = [Math]::Round($Height / 1080, 2)
 $look = New-BGInfoTheme Corporate -Mode $Theme -Scale $scale
 
-# One rule for every database: a full backup within 26 hours and a log
-# backup within 30 minutes is OK; a week without a full backup is critical.
+# A full backup within 26 hours and any required log backup within 30 minutes
+# is OK. An offline database, missing full backup or full backup over a week old is critical.
 function Format-Age([double] $Hours) {
     if ($Hours -ge 48) { "$([Math]::Round($Hours / 24)) days" }
     elseif ($Hours -ge 1) { "$([Math]::Round($Hours)) h" }
     else { "$([Math]::Round($Hours * 60)) min" }
 }
 $rows = foreach ($db in $sql.Databases) {
-    $status = if ($db.State -ne 'Online' -or $db.FullHours -gt 168) {
-        'Critical'
+    $requiresLog = $db.Recovery -ne 'Simple'
+    $full = if ($null -eq $db.FullHours) { 'Missing' } else { Format-Age $db.FullHours }
+    $log = if (-not $requiresLog) { 'simple recovery' }
+    elseif ($null -eq $db.LogMinutes) { 'Missing' }
+    else { Format-Age ($db.LogMinutes / 60) }
+    $status = 'OK'
+    $problem = ''
+    if ($db.State -ne 'Online') {
+        $status = 'Critical'
+        $problem = "database state is $($db.State)"
+    } elseif ($null -eq $db.FullHours) {
+        $status = 'Critical'
+        $problem = 'full backup missing'
+    } elseif ($db.FullHours -gt 26) {
+        $status = if ($db.FullHours -gt 168) { 'Critical' } else { 'Warning' }
+        $problem = "last full backup $full ago"
+    } elseif ($requiresLog -and $null -eq $db.LogMinutes) {
+        $status = 'Warning'
+        $problem = 'log backup missing'
+    } elseif ($requiresLog -and $db.LogMinutes -gt 30) {
+        $status = 'Warning'
+        $problem = "last log backup $log ago"
     }
-    elseif ($db.FullHours -gt 26 -or $db.LogMinutes -gt 30) { 'Warning' }
-    else { 'OK' }
-    $log = if ($null -eq $db.LogMinutes) {
-        "$($db.Recovery.ToLower()) recovery"
-    } else { Format-Age ($db.LogMinutes / 60) }
     [pscustomobject] @{
         Database    = $db.Name
         Size        = "$($db.SizeGB) GB"
-        'Last full' = Format-Age $db.FullHours
+        'Last full' = $full
         'Last log'  = $log
         Status      = $status
         Order       = @{ Critical = 0; Warning = 1; OK = 2 }[$status]
-        Hours       = $db.FullHours
+        Problem     = $problem
     }
 }
 $rows = @($rows | Sort-Object Order, Database)
 $worst = $rows | Select-Object -First 1
+$knownFullBackups = @($sql.Databases | Where-Object { $null -ne $_.FullHours })
 
 New-BGInfo -Theme $look -Target File {
     New-BGInfoBackground -Width $Width -Height $Height -Pattern Grid `
@@ -163,7 +179,7 @@ New-BGInfo -Theme $look -Target File {
         New-BGInfoLabel -Name "●  $text" -Status Ok -FontWeight 600
     } else {
         $issues = @($rows | Where-Object Status -NE 'OK').Count
-        $text = "$($worst.Database): last full backup $($worst.'Last full') ago"
+        $text = "$($worst.Database): $($worst.Problem)"
         if ($issues -gt 1) { $text += "  ·  $($issues - 1) more to check" }
         New-BGInfoLabel -Name "●  $text" -Status $worst.Status -FontWeight 600
     }
@@ -175,10 +191,12 @@ New-BGInfo -Theme $look -Target File {
 
     # Right column: where the data is, colored by the age of its last full
     # backup, then the replicas that hold a copy of it.
-    if ($rows.Count -gt 0) {
-        $sql.Databases | New-BGInfoTreemap -Region Right `
+    if ($knownFullBackups.Count -gt 0) {
+        $backupNote = if ($knownFullBackups.Count -eq $rows.Count) { 'color: last full backup' }
+        else { 'databases with known full backups' }
+        $knownFullBackups | New-BGInfoTreemap -Region Right `
             -Title 'Data by database' `
-            -Note 'color: last full backup' -ValueProperty SizeGB `
+            -Note $backupNote -ValueProperty SizeGB `
             -ValueSuffix ' GB' -ColorProperty FullHours `
             -WarningThreshold 26 -CriticalThreshold 168 `
             -Height ([int](360 * $scale))
