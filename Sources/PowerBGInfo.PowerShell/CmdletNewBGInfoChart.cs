@@ -34,7 +34,7 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter(ParameterSetName = "Multiple")]
     public double[] Values { get; set; } = Array.Empty<double>();
 
-    /// <para>Optional labels used by point-based charts.</para>
+    /// <para>Category labels for the current input values. Bar, Line and Area show them under the plot. HorizontalBar shows them beside the bars. Bullet, Pie, Donut, ProgressBar and Pictorial use them for categories. Older history samples use numbered labels. Sparkline does not show category labels.</para>
     [Parameter]
     public string[] Labels { get; set; } = Array.Empty<string>();
 
@@ -257,11 +257,11 @@ public class CmdletNewBGInfoChart : PSCmdlet {
     [Parameter]
     public SwitchParameter ShowDataLabels { get; set; }
 
-    /// <para>Optional minimum scale value.</para>
+    /// <para>Lower bound for Bar, Line, Area, Gauge, Circle and Bullet. Bar can extend below zero for negative values. Gauge, Circle and Bullet start at zero by default. RadialBar uses a fixed 0–100 scale.</para>
     [Parameter]
     public double Minimum { get; set; }
 
-    /// <para>Optional maximum scale value.</para>
+    /// <para>Upper bound for chart kinds with a configurable maximum. Bar, Line and Area fit the data by default. Gauge, Circle and Bullet default to at least 100 and expand for larger values. RadialBar clamps values to 0–100.</para>
     [Parameter]
     public double Maximum { get; set; }
 

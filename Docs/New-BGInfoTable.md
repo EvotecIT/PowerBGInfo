@@ -11,16 +11,16 @@ Creates a table panel from objects or explicit rows.
 ## SYNTAX
 ### Objects (Default)
 ```powershell
-New-BGInfoTable [[-Property] <Object[]>] [-InputObject <Object>] [-StatusColumn <string>] [-Dense] [-NoHeader] [-NoStriping] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
+New-BGInfoTable [[-Property] <Object[]>] [-InputObject <Object>] [-StatusColumn <string>] [-StatusMap <Hashtable>] [-Dense] [-NoHeader] [-NoStriping] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
 ```
 
 ### Rows
 ```powershell
-New-BGInfoTable -Column <string[]> -Row <Object[]> [-StatusColumn <string>] [-Dense] [-NoHeader] [-NoStriping] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
+New-BGInfoTable -Column <string[]> -Row <Object[]> [-StatusColumn <string>] [-StatusMap <Hashtable>] [-Dense] [-NoHeader] [-NoStriping] [-Title <string>] [-Note <string>] [-Id <string>] [-Width <int>] [-Height <int>] [-Region <BgInfoRegion>] [-Anchor <BgInfoTextPosition>] [-OffsetX <int>] [-OffsetY <int>] [-PositionX <int>] [-PositionY <int>] [-ThemeMode <VisualThemeMode>] [-BackgroundColor <Object>] [-BorderColor <Object>] [-CornerRadius <double>] [-Padding <int>] [-TitleColor <Object>] [-TitleFontSize <float>] [-TitleFontWeight <int>] [-TitleTextCase <TextCaseTransform>] [-TextColor <Object>] [-MutedColor <Object>] [-Accent <Object>] [-FontFamilyName <string>] [-Scale <double>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed.
+Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -StatusColumn adds a colored dot for values such as OK, Warning or Failed; -StatusMap adds your own words.
 
 ## EXAMPLES
 
@@ -28,6 +28,14 @@ Pipe objects in and pick columns with -Property, or pass -Column and -Row. A -St
 ```powershell
 Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
     New-BGInfoTable -Region Right -Title 'Top processes' -Property Name, Id, @{ Name = 'CPU s'; Expression = { [math]::Round($_.CPU) } }
+```
+
+### EXAMPLE 2
+```powershell
+@(
+    [pscustomobject]@{ User = 'anna'; State = 'Active' }
+    [pscustomobject]@{ User = 'piotr'; State = 'Disconnected' }
+) | New-BGInfoTable -Region Right -Title 'Sessions' -StatusColumn State -StatusMap @{ Active = 'Ok'; Disconnected = 'Warning' }
 ```
 
 
@@ -422,6 +430,22 @@ Column whose values (OK, Warning, Failed...) get a status dot.
 
 ```yaml
 Type: String
+Parameter Sets: Objects, Rows
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StatusMap
+Your own status words for the status column, for example @{ Active = 'Ok'; Disconnected = 'Warning'; Listening = 'Info' }. Values are Ok, Warning, Critical or Info. Words not in the map keep their built-in meaning.
+
+```yaml
+Type: Hashtable
 Parameter Sets: Objects, Rows
 Aliases: None
 Possible values:

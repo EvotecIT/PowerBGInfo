@@ -119,6 +119,10 @@ internal static partial class BgInfoWidgetRenderer {
     internal static (int Width, int Height, int OutputScale) Density(BgInfoWidget widget, int width, int height) {
         var scale = widget.Scale;
         if (widget.NaturalBodyHeight > 0) scale = Math.Min(scale, height / widget.NaturalBodyHeight);
+        return Density(width, height, scale);
+    }
+
+    internal static (int Width, int Height, int OutputScale) Density(int width, int height, double scale) {
         var logicalWidth = Math.Max(1, (int)Math.Min(int.MaxValue, Math.Round(width / scale)));
         var logicalHeight = Math.Max(1, (int)Math.Min(int.MaxValue, Math.Round(height / scale)));
         var output = Math.Max(1, Math.Min(4, (int)Math.Ceiling(scale)));

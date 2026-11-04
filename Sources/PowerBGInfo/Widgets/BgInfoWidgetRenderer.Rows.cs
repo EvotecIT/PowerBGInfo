@@ -49,6 +49,7 @@ internal static partial class BgInfoWidgetRenderer {
                     Dense = table.Dense, ShowHeader = table.ShowHeader && offset == 0,
                     RowStriping = table.RowStriping, StatusColumn = table.StatusColumn
                 };
+                foreach (var entry in table.StatusMap) rows.StatusMap[entry.Key] = entry.Value;
                 rows.Columns.AddRange(table.Columns);
                 for (var index = offset; index < offset + length; index++) rows.Rows.Add(table.Rows[index]);
                 batch = rows;
@@ -66,7 +67,7 @@ internal static partial class BgInfoWidgetRenderer {
             }
             var batchHeight = batch.NaturalBodyHeight;
             var image = batch is BgInfoTableWidget tableBatch
-                ? RenderTable(tableBatch, style, logicalWidth, (int)Math.Ceiling(batchHeight), outputScale: 1)
+                ? RenderTable(tableBatch, style, logicalWidth, (int)Math.Ceiling(batchHeight), outputScale: 1, columnSource: table)
                 : RenderList((BgInfoListWidget)batch, style, logicalWidth, (int)Math.Ceiling(batchHeight), outputScale: 1);
             var top = contentHeight * 2d * consumed / totalHeight;
             consumed += batchHeight;
