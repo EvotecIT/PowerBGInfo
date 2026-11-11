@@ -11,8 +11,8 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DesktopManagerVersion>4.6.1</DesktopManagerVersion>
-        <ChartForgeXVersion>3.2.0</ChartForgeXVersion>
+        <DesktopManagerVersion>4.7.0</DesktopManagerVersion>
+        <ChartForgeXVersion>3.3.0</ChartForgeXVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CodeGlyphX" Version="3.1.0" />
