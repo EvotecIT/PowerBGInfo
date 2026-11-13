@@ -12,7 +12,7 @@
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <DesktopManagerVersion>4.8.0</DesktopManagerVersion>
-        <ChartForgeXVersion>3.4.0</ChartForgeXVersion>
+        <ChartForgeXVersion>4.0.1</ChartForgeXVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CodeGlyphX" Version="3.1.0" />
