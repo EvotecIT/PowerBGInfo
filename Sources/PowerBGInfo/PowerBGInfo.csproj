@@ -11,7 +11,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>Latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DesktopManagerVersion>4.8.0</DesktopManagerVersion>
+        <DesktopManagerVersion>4.9.1</DesktopManagerVersion>
         <ChartForgeXVersion>4.0.1</ChartForgeXVersion>
     </PropertyGroup>
     <ItemGroup>
