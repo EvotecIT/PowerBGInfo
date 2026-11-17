@@ -3,7 +3,7 @@ Describe 'Packaged AssemblyLoadContext isolation' {
         $packagedAlcRequired = $Env:PowerBGInfoPackagedAlcRequired -eq 'true'
         $packagedModuleRoot = Join-Path $PSScriptRoot '..\Artefacts\Unpacked\Modules'
         $packagedModule = Join-Path $packagedModuleRoot 'PowerBGInfo'
-        $packagedLoader = Join-Path $packagedModule 'Lib\Core\PowerBGInfo.ModuleLoadContext.dll'
+        $packagedLoaderDirectory = Join-Path $packagedModule 'Loader\Core'
         if ($PSVersionTable.PSEdition -ne 'Core') {
             Set-ItResult -Skipped -Because 'AssemblyLoadContext validation requires PowerShell Core'
             return
@@ -14,7 +14,8 @@ Describe 'Packaged AssemblyLoadContext isolation' {
             return
         }
 
-        Test-Path -LiteralPath $packagedLoader | Should -BeTrue -Because 'the packaged build must produce the module-scoped ALC loader'
+        Get-ChildItem -LiteralPath $packagedLoaderDirectory -Filter 'PowerForge.ModuleLoader.V*.dll' -File |
+            Should -HaveCount 1 -Because 'the packaged build must contain one versioned shared ALC loader'
 
         $moduleRootLiteral = $packagedModuleRoot.Replace("'", "''")
         $script = @"

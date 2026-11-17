@@ -26,7 +26,7 @@ param(
     [string] $GitHubApiKeyPath
 )
 
-Import-Module PSPublishModule -MinimumVersion 3.0.170 -Force -ErrorAction Stop
+Import-Module PSPublishModule -MinimumVersion 3.0.193 -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'PowerBGInfo' {
     # Usual defaults as per standard module
