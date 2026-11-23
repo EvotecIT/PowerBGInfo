@@ -3,6 +3,11 @@
   "SchemaVersion": 1,
   "Name": "PowerBGInfo",
   "BaseUrl": "https://powerbginfo.com",
+  "Cloudflare": {
+    "Cache": {
+      "EdgeTtlSeconds": 604800
+    }
+  },
   "DefaultTheme": "powerbginfo",
   "ThemeEngine": "scriban",
   "Features": [
